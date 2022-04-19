@@ -1,3 +1,10 @@
+2022-04-19
+* rewrite addon base part
+* epg cache improvements
+* create epg cache on xml epg export 
+* fixed showing channels in archive
+* logging improvements
+* performance and memory optimalisations
 2022-04-15
 * split addon to multiple modules
 * added access token cache and auto refresh

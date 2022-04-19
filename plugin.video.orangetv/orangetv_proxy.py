@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys,os,re,traceback
-sys.path.append( os.path.dirname(__file__)	)
+sys.path.append( os.path.dirname(__file__) )
 
 import threading
 try:
@@ -33,16 +33,6 @@ PROXY_VER='1'
 
 XMLEPG_DATA_FILE = 'orangetv.data.xml'
 XMLEPG_CHANNELS_FILE = 'orangetv.channels.xml'
-_quality = 'MOBILE'
-
-_COMMON_HEADERS = {
-	"X-NanguTv-Platform-Id": "b0af5c7d6e17f24259a20cf60e069c22",
-	"X-NanguTv-Device-size": "normal",
-	"X-NanguTv-Device-Name": "Nexus 7",
-	"X-NanguTv-App-Version": "Android#7.6.3-release",
-	"X-NanguTv-Device-density": "440",
-	"User-Agent": "Dalvik/2.1.0 (Linux; U; Android 9; Nexus 7 Build/LMY47V)",
-	"Connection": "keep-alive"}
 
 # settings for EPGImport
 
@@ -80,6 +70,17 @@ EPGLOAD_SOURCES_CONTENT ='''<?xml version="1.0" encoding="utf-8"?>
 	</sourcecat>
 </sources>
 '''
+
+# #################################################################################################
+
+def _log(message):
+	print(message)
+	try:
+		with open('/tmp/orangetv_proxy.log', 'a') as f:
+			dtn = datetime.now()
+			f.write(dtn.strftime("%d.%m.%Y %H:%M:%S.%f")[:-3] + " %s\n" % message)
+	except:
+		pass
 
 # #################################################################################################
 
@@ -133,8 +134,8 @@ def init_orangetv( settings = None ):
 
 	profile_dir =  '/usr/lib/enigma2/python/Plugins/Extensions/archivCZSK/resources/data/plugin.video.orangetv'
 	
-	if len(settings['deviceid']) > 0 and len(settings['orangetvuser']) > 0 and len( settings['orangetvpwd'] ) > 0:
-		orangetv = OrangeTV( settings['deviceid'], settings['orangetvuser'], settings['orangetvpwd'], _quality, profile_dir )
+	if len(settings['orangetvuser']) > 0 and len( settings['orangetvpwd'] ) > 0:
+		orangetv = OrangeTV( settings['orangetvuser'], settings['orangetvpwd'], settings['deviceid'], profile_dir )
 		orangetv.refresh_access_token()
 
 # #################################################################################################
@@ -144,7 +145,7 @@ def get_live_url( channel_key ):
 	
 	global orangetv
 	
-	result = orangetv.getVideoLink('', channel_key + '|||')
+	result = orangetv.getVideoLink(channel_key + '|||')
 	return result[0]['url']
 	
 # #################################################################################################
@@ -164,7 +165,7 @@ class Handler(BaseHTTPRequestHandler):
 				location = get_live_url( self.path[10:])
 			except:
 				location = None
-				print( traceback.format_exc())
+				_log( traceback.format_exc())
 				
 			if location and len(location) > 0:
 				self.send_response( 301 )
@@ -211,12 +212,14 @@ def create_xmlepg( data_file, channels_file, days ):
 			f.write('<tv generator-info-name="plugin.video.orangetv" generator-info-url="https://orangetv.sk" generator-info-partner="none">\n')
 
 			for channel in orangetv.live_channels():
-				print("Processing channel: %s (%s)" % (channel.name, channel.channel_key))
+				_log("Processing channel: %s (%s)" % (channel.name, channel.channel_key))
 
 				id_content = 'OrangeTV_' + channel.channel_key
 				fc.write( ' <channel id="%s">1:0:1:%X:0:0:E020000:0:0:0:http%%3a//</channel>\n' % (id_content, channel.id))
 				
 				epg = orangetv.getChannelEpg( channel.channel_key, fromts, tots )
+				# save 1 day to epg cache for usage in the addon
+				orangetv.fillChannelEpgCache(channel.channel_key, epg, fromts + (24 * 3600 * 1000))
 				
 				for event in epg:
 					try:
@@ -231,11 +234,14 @@ def create_xmlepg( data_file, channels_file, days ):
 						f.write( '	<desc lang="cs">%s</desc>\n' % xml_data['desc'] )
 						f.write( ' </programme>\n')
 					except:
-						print( traceback.format_exc())
+						_log( traceback.format_exc())
 						pass
 						
 			fc.write('</channels>\n')
 			f.write('</tv>\n')
+			orangetv.saveEpgCache()
+			# save some memory
+			orangetv.epg_cache = {}
 			
 # #################################################################################################
 
@@ -243,14 +249,14 @@ def generate_xmlepg_if_needed():
 	settings = load_settings()
 	
 	if settings['enable_xmlepg'] == False:
-		print("[ORANGE-XMLEPG] generator is disabled")
+		_log("[ORANGE-XMLEPG] generator is disabled")
 		return
 	
 	init_orangetv( settings )
 	global orangetv, data_mtime
 	
 	if orangetv == None:
-		print("[ORANGE-XMLEPG] No orangetv login credentials provided or they are wrong")
+		_log("[ORANGE-XMLEPG] No orangetv login credentials provided or they are wrong")
 		return
 	
 	# check if epgimport plugin exists
@@ -259,7 +265,7 @@ def generate_xmlepg_if_needed():
 	if os.path.exists( epgimport_check_file ) or os.path.exists( epgimport_check_file + 'o' ) or os.path.exists( epgimport_check_file + 'c' ):
 		epgimport_found = True
 	else:
-		print("[ORANGE-XMLEPG] EPGImport plugin not detected")
+		_log("[ORANGE-XMLEPG] EPGImport plugin not detected")
 		epgimport_found = False
 
 	# check if epgimport plugin exists
@@ -268,11 +274,11 @@ def generate_xmlepg_if_needed():
 	if os.path.exists( epgload_check_file ) or os.path.exists( epgload_check_file + 'o' ) or os.path.exists( epgload_check_file + 'c' ):
 		epgload_found = True
 	else:
-		print("[ORANGE-XMLEPG] EPGLoad plugin not detected")
+		_log("[ORANGE-XMLEPG] EPGLoad plugin not detected")
 		epgload_found = False
 	
 	if not epgimport_found and not epgload_found:
-		print("[ORANGE-XMLEPG] Neither EPGImport nor EPGLoad plugin not detected")
+		_log("[ORANGE-XMLEPG] Neither EPGImport nor EPGLoad plugin not detected")
 		return
 	
 	# create paths to export files
@@ -296,10 +302,10 @@ def generate_xmlepg_if_needed():
 		gen_time_start = time()
 		create_xmlepg(data_file, channels_file, settings['xmlepg_days'])
 		data_mtime = time()
-		print("[ORANGE-XMLEPG] Epg generated in %d seconds" % int(data_mtime - gen_time_start))
+		_log("[ORANGE-XMLEPG] Epg generated in %d seconds" % int(data_mtime - gen_time_start))
 	except Exception as e:
-		print("[ORANGE-XMLEPG] something's failed by generating epg")
-		print(traceback.format_exc())
+		_log("[ORANGE-XMLEPG] something's failed by generating epg")
+		_log(traceback.format_exc())
 
 	# generate proper sources file for EPGImport
 	if epgimport_found and not os.path.exists('/etc/epgimport'):
@@ -323,7 +329,7 @@ def generate_xmlepg_if_needed():
 	
 		# check for correct content of sources file and update it if needed
 		if not os.path.exists( epgplugin_data[1] ) or md5( open( epgplugin_data[1], 'rb' ).read() ).hexdigest() != xmlepg_source_content_md5:
-			print("[ORANGE-XMLEPG] Writing new sources file to " + epgplugin_data[1] )
+			_log("[ORANGE-XMLEPG] Writing new sources file to " + epgplugin_data[1] )
 			with open( epgplugin_data[1], 'w' ) as f:
 				f.write( xmlepg_source_content )
 	
@@ -334,7 +340,7 @@ def generate_xmlepg_if_needed():
 			epgimport_settings = { 'sources': [] }
 	
 		if 'OrangeTV' not in epgimport_settings['sources']:
-			print("[ORANGE-XMLEPG] Enabling OrangeTV in epgimport/epgload config %s" % epgplugin_data[2] )
+			_log("[ORANGE-XMLEPG] Enabling OrangeTV in epgimport/epgload config %s" % epgplugin_data[2] )
 			epgimport_settings['sources'].append('OrangeTV')
 			pickle.dump(epgimport_settings, open(epgplugin_data[2], 'wb'), pickle.HIGHEST_PROTOCOL)
 
@@ -348,16 +354,25 @@ class EpgThread(threading.Thread):
 
 	def run(self):
 		# after boot system time can be inacurate and this causes problems with modification times
-		# so wait 5m before first try
-		wait_time = 300
+		# so set wait time to 10s and periodicaly check to system time sync
+		wait_time = 10
 		
 		while not self.stopped.wait(wait_time):
-			generate_xmlepg_if_needed()
+			# some magic to check, if system time was already synced
+			if int(time()) < 1650358276:
+				_log("[ORANGE-XMLEPG] System time not synced yet - waiting ...")
+				continue
+			
+			try:
+				generate_xmlepg_if_needed()
+			except:
+				_log("[ORANGE-XMLEPG] EPG export failed:")
+				_log( traceback.format_exc())
 			
 			# let's repeat this check every hour
 			wait_time = 3600
 		
-		print("[ORANGE-XMLEPG] EPG thread stopped")
+		_log("[ORANGE-XMLEPG] EPG thread stopped")
 
 # #################################################################################################
 
@@ -387,10 +402,17 @@ if __name__ == '__main__':
 		pass
 
 	epg_stop_flag.set()
-	print("[ORANGE-XMLEPG] Waiting for EPG thread to stop")
+	_log("[ORANGE-XMLEPG] Waiting for EPG thread to stop")
 	epg_thread.join()
 	
 	try:
 		os.remove( pidfile )
 	except:
 		pass
+	
+	try:
+		# after addon update exec permission is lost, so restore it
+		os.chmod( os.path.dirname(__file__) + '/orangetv_proxy.sh', 0o755 )
+	except:
+		pass
+	

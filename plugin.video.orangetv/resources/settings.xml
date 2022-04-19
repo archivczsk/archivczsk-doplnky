@@ -4,9 +4,10 @@
 	<setting label="30000" id="orangetvuser" type="text" default="" />
 	<setting label="30001" id="orangetvpwd" type="text" default="" option="true" />
 	<setting label="Ukázať EPG (spomalí načítanie živých programov)" id="showliveepg" type="bool" default="true" />
-	<setting label="Koľko hodín EPG ukladať do cache" id="epgcache" type="enum" lvalues="0|6|12|24|48" default="2" />
+	<setting label="Koľko hodín EPG ukladať do cache" id="epgcache" type="labelenum" values="6|12|24|48|72" default="24" />
+	<setting label="Preferovaná kvalita videa" id="quality" type="enum" lvalues="Opýtať sa|Najlepšia|Najhoršia|720p|576p" default="1"/>
 	<setting label="Povoliť programy pre dospelých" id="enable_adult" type="bool" default="true" />
-	<setting label="Device Id (neodporúčam meniť, len pre pokročilých)" id="deviceid" type="text" default="Nexus7" visible="true" />
+	<setting label="Device Id (neodporúčam meniť, len pre pokročilých)" id="deviceid" type="text" default="Nexus7" visible="false"/>
 	<setting label="Povoliť špeciálnu sekciu hlavnej ponuke" id="enable_extra" type="bool" default="false" />
 	<setting label="Generovať XML EPG pre epgimport plugin (ak je nainštalovaný)" id="enable_xmlepg" type="bool" default="false" />
 	<setting label="Adresár pre vygenerované XML EPG (aspoň 20MB voľného miesta)" id="xmlepg_dir" type="text" default="/media/hdd" />

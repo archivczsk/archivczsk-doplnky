@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re,sys,os,string,base64,datetime,json,requests
 from time import time
+from uuid import getnode as get_mac
 
 _COMMON_HEADERS = {
 	"X-NanguTv-Platform-Id": "b0af5c7d6e17f24259a20cf60e069c22",
@@ -11,6 +12,11 @@ _COMMON_HEADERS = {
 	"User-Agent": "Dalvik/2.1.0 (Linux; U; Android 9; Nexus 7 Build/LMY47V)",
 	"Connection": "keep-alive"
 }
+
+def device_id():
+	mac = get_mac()
+	hexed	= hex((mac * 7919) % (2 ** 64))
+	return ('0000000000000000' + hexed[2:-1])[16:]
 
 def _to_string(text):
 	if type(text).__name__ == 'unicode':
@@ -50,24 +56,9 @@ def _log_dummy(message):
 	print('[ORANGETV]: ' + message )
 	pass
 
-_orangetv = None
-_orangetv_init_params = None
-
-def get_orangetv( device_id, username, password, quality, epg_cache_file=None, log_function=None ):
-	global _orangetv
-	global _orangetv_init_params
-	
-	if _orangetv and _orangetv_init_params == (device_id, username, password, quality):
-		return _orangetv
-	
-	_orangetv = OrangeTV( device_id, username, password, quality, epg_cache_file, log_function )
-	_orangetv_init_params = (device_id, username, password, quality)
-	
-	return _orangetv
-
 class OrangeTV:
 
-	def __init__(self, device_id, username, password, quality, data_dir=None, log_function=None):	# JiRo - doplněn parametr kvality
+	def __init__(self, username, password, device_id='Nexus7', data_dir=None, log_function=None ):
 		self.username = username
 		self.password = password
 		self._live_channels = {}
@@ -77,22 +68,19 @@ class OrangeTV:
 		self.locality = None
 		self.offer = None
 		self.device_id = device_id
-		self.quality = quality	# JiRo - doplněn parametr kvality
+		self.quality = 'MOBILE'
 		self.log_function = log_function if log_function else _log_dummy
 		self.devices = None
 		self.epg_cache = {}
 		self.data_dir = data_dir
 		self.cache_need_save = False
+		self.cache_mtime = 0
+		
+		if not self.device_id or len( self.device_id ) == 0:
+			# if not device id is provided, then create one
+			self.device_id = device_id()
 		
 		if self.data_dir:
-			try:
-				# load epg_cache
-				with open(self.data_dir + '/epg_cache.json', "r") as file:
-					self.epg_cache = json.load(file)
-					self.log_function("EPG loaded from cache")
-			except:
-				pass
-			
 			try:
 				# load access token
 				with open(self.data_dir + '/login.json', "r") as file:
@@ -107,6 +95,25 @@ class OrangeTV:
 	def __del__(self):
 		self.saveEpgCache()
 		
+	def loadEpgCache(self):
+		try:
+			try:
+				cache_file_mtime = int(os.path.getmtime(self.data_dir + '/epg_cache.json'))
+			except:
+				cache_file_mtime = 0
+			
+			if cache_file_mtime > self.cache_mtime:
+				with open(self.data_dir + '/epg_cache.json', "r") as file:
+					self.epg_cache = json.load(file)
+					self.log_function("EPG loaded from cache")
+				
+				self.cache_mtime = cache_file_mtime
+				self.cache_need_save = False
+		except:
+			pass
+		
+		return True if self.cache_mtime else False
+	
 	def saveEpgCache(self):
 		if self.data_dir and self.cache_need_save:
 			with open(self.data_dir + '/epg_cache.json', 'w') as f:
@@ -229,18 +236,18 @@ class OrangeTV:
 			items = j['channels']
 			for channel_id, item in items.items():
 				if channel_id in purchased_channels:
-					live = item['liveTvPlayable']
-					live = True # reseni nekterych nezobrazovanych kanalu?
 					if item['timeShiftDuration']:
 						timeshift = int(item['timeShiftDuration'])/60/24	# pocet dni zpetneho prehravani
-					if live:
-						channel_key = _to_string(item['channelKey'])
-						logo = _to_string(item['screenshots'][0]).replace('https://', 'http://')
-						if not logo.startswith('http://'):
-							logo = 'http://app01.gtm.orange.sk/' + logo
-						name = _to_string(item['channelName'])
-						adult = 'audience' in item and item['audience'].upper() == 'INDECENT'
-						channels[channel_key] = LiveChannel(channel_key, name, logo, item['weight'], self.quality, timeshift, item['channelNumber'], item['channelId'], item['logo'], adult)
+					else:
+						timeshift = 0
+
+					channel_key = _to_string(item['channelKey'])
+					logo = _to_string(item['screenshots'][0]).replace('https://', 'http://')
+					if not logo.startswith('http://'):
+						logo = 'http://app01.gtm.orange.sk/' + logo
+					name = _to_string(item['channelName'])
+					adult = 'audience' in item and item['audience'].upper() == 'INDECENT'
+					channels[channel_key] = LiveChannel(channel_key, name, logo, item['weight'], self.quality, timeshift, item['channelNumber'], item['channelId'], item['logo'], adult)
 						
 			self._live_channels = sorted(list(channels.values()), key=lambda _channel: _channel.number)
 			done = False
@@ -260,36 +267,59 @@ class OrangeTV:
 			return req.json()
 		
 		return []
+
+	def fillChannelEpgCache(self, ch, epg, last_timestamp = 0):
+		ch_epg = []
+
+		for one in epg:
+			title = _to_string(one["name"]) + " - " + datetime.datetime.fromtimestamp(one["startTimestamp"]/1000).strftime('%H:%M') + "-" + datetime.datetime.fromtimestamp(one["endTimestamp"]/1000).strftime('%H:%M')
+			ch_epg.append({"start": one["startTimestamp"], "end": one["endTimestamp"], "title": title, "desc": one["shortDescription"]})
+			
+			if last_timestamp and one["startTimestamp"] > last_timestamp:
+				break
+				
+
+		self.epg_cache[ch] = ch_epg
+		self.cache_need_save = True
 	
-	def getChannelPrograms(self,ch,cache_hours=0):
+	def getChannelCurrentEpg(self,ch,cache_hours=0):
 		fromts = int(time())*1000
 		tots = (int(time()) + (cache_hours * 3600) + 60) * 1000
 		title = ""
 		desc = ""
+		del_count = 0
 		
 		if ch in self.epg_cache:
 			for epg in self.epg_cache[ch]:
+				if epg["end"] < fromts:
+					# cleanup old events
+					del_count += 1
+				
 				if epg["start"] < fromts and epg["end"] > fromts:
 					title = epg["title"]
 					desc = epg["desc"]
 					break
+		
+		if del_count:
+			# save some memory - remove old events from cache
+			del self.epg_cache[ch][:del_count]
+			self.log_function("Deleted %d old events from EPG cache for channell %s" % (del_count, ch))
 			
+		# if we haven't found event in cache and epg refresh is enabled (cache_hours > 0)
+		if title == "" and cache_hours > 0:
+			# event not found in cache, so request fresh info from server (can be slow)
+			self.log_function("Requesting EPG for channel %s from %d to %d" % (ch, fromts/1000, tots/1000) )
+			
+			j = self.getChannelEpg(ch,fromts,tots)
+			self.fillChannelEpgCache(ch, j)
+			
+			# cache already filled with fresh entries, so the first one is current event
+			title = self.epg_cache[ch][0]['title']
+			desc = self.epg_cache[ch][0]['desc']
+		
 		if title == "":
-			self.refresh_configuration()
-
-			headers = _COMMON_HEADERS
-			cookies = {"access_token": self.access_token, "deviceId": self.device_id}
-			params = {"channelKey": ch, "fromTimestamp": fromts, "imageSize": "LARGE", "language": "ces", "offer": self.offer, "toTimestamp": tots}
-			req = requests.get('https://app01.gtm.orange.sk/sws/server/tv/channel-programs.json', params=params, headers=headers, cookies=cookies)
-			j = req.json()
-			self.epg_cache[ch] = []
-			for one in j:
-				title = _to_string(one["name"]) + " - " + datetime.datetime.fromtimestamp(one["startTimestamp"]/1000).strftime('%H:%M') + "-" + datetime.datetime.fromtimestamp(one["endTimestamp"]/1000).strftime('%H:%M')
-				self.epg_cache[ch].append({"start": one["startTimestamp"], "end": one["endTimestamp"], "title": title, "desc": one["shortDescription"]})
-			title = _to_string(j[0]["name"]) + " - " + datetime.datetime.fromtimestamp(j[0]["startTimestamp"]/1000).strftime('%H:%M') + "-" + datetime.datetime.fromtimestamp(j[0]["endTimestamp"]/1000).strftime('%H:%M')
-			desc = _to_string(j[0]["shortDescription"])
-			self.cache_need_save = True
-			
+			return None
+		
 		return {"title": title, "desc": desc}
 
 	def getArchivChannelPrograms(self,ch,day):
@@ -319,7 +349,7 @@ class OrangeTV:
 
 		return response
 	
-	def getVideoLink(self, name, url):
+	def getVideoLink(self, url):
 		channel_key,pid,fts,tts = url.split("|")
 		
 		self.refresh_configuration()
@@ -381,7 +411,7 @@ class OrangeTV:
 			else:
 				quality = "1080p"
 			url = m.group('chunklist')
-			result.append( {"url": url,"title": '['+quality+'] ' + name, 'bandwidth': bandwidth } )
+			result.append( {"url": url, "quality": quality, 'bandwidth': bandwidth } )
 		
 		result = sorted( result, key=lambda r: r['bandwidth'], reverse=True )
 		return result
