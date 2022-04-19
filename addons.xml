@@ -47,7 +47,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.antiktv" name="Antik TV" provider-name="skyjet" version="1.11">
+<addon id="plugin.video.antiktv" name="Antik TV" provider-name="skyjet" version="1.12">
   <requires>
     <import addon="xbmc.python" version="2.1.0" />
     <import addon="script.module.stream.resolver" version="1.6.22" />
@@ -446,11 +446,11 @@
 
 <addon id="plugin.video.orangetv"
        name="OrangeTV"
-       version="2.1"
+       version="2.2"
        provider-name="Michal Novotný, Štěpán Ort">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.dmd-czech.common" version="1.5.0"/>
+    <import addon="script.module.stream.resolver" version="1.6.22" />
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
     <provides>video</provides>
