@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<addon id="plugin.video.o2tv" name="O2TV" provider-name="Michal Novotny, Yoda" version="1.1.1">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0" />
+    <import addon="script.module.stream.resolver" version="1.6.24" />
+  </requires>
+  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en">O2TV</summary>
+    <summary lang="cs">O2TV</summary>
+    <summary lang="sk">O2TV</summary>
+    <description lang="en">Watch online TV</description>
+    <description lang="cs">Sledujte online TV</description>
+    <description lang="sk">Sledujte online TV</description>
+    <platform>all</platform>
+    <source>https://github.com/mx3L/archivczsk-doplnky</source>
+  </extension>
+</addon>

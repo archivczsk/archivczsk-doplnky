@@ -1,0 +1,7 @@
+1.1:
+- pridanie možnosti pre generovanie XML EPG ktoré je možné importovať pomocou epgimport pluginu
+- pridanie možnosti na automatické stiahnutie piconov pri generovaní userbouquet
+- lepšie ošetrenie stavu keď chýbajú niektoré python knižnice
+
+1.0:
+Initial version

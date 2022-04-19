@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+  <setting label="30062" id="strict-search" type="bool" default="false" />
+  <setting label="30050" id="quality" type="enum" lvalues="30051|30052|30053|30054|30055|30056" default="0" />
+  <setting label="30057" id="order-by" type="enum" lvalues="30058|30059|30060|30061" default="0" />
+</settings>

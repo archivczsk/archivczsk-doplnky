@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+	<string id="30050">Video quality</string>
+	<string id="30051">Always ask</string>
+	<string id="30052">Best</string>
+	<string id="30053">Worst</string>
+	<string id="30200">Category</string>
+	<string id="30201">All</string>
+	<string id="30202">Historical</string>
+	<string id="30203">Catastrophic</string>
+	<string id="30204">Conspiracy</string>
+	<string id="30205">Crime</string>
+	<string id="30206">Thinking</string>
+	<string id="30207">Nature</string>
+	<string id="30208">Technology</string>
+	<string id="30209">Space</string>
+	<string id="30210">Mysterious</string>
+	<string id="30211">Lifestyle</string>
+	<string id="30300">Order</string>
+	<string id="30301">By date</string>
+	<string id="30302">By title</string>
+	<string id="30303">By views</string>
+	<string id="30304">By likes</string>
+	<string id="30305">By comments</string>
+	<string id="30306">Random</string>
+</strings>

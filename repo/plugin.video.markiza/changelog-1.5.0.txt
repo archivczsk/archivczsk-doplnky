@@ -1,0 +1,8 @@
+[B]1.4.0:[/B]
+Make addon python 3.x compatible
+
+[B]1.4.2:[/B]
+Fix title najnovsie
+
+[B]1.4.1:[/B]
+Rewrite version

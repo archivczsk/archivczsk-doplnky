@@ -1,0 +1,6 @@
+2020-10-09
+ * epg, archiv, devices (misanov)
+2020-10-05
+ * update headers (misanov)
+2020-04-29
+ * OrangeTV - afteryear release 1.2.0 (misanov)

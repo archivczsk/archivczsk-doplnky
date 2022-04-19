@@ -1,0 +1,11 @@
+[B]1.2:[/B] 12.12.2020
+- vyber rozliseni vcetne kodeku (od 300p do max do rozliseni obrazovky)
+- rozliseni koncici na "p" je original a+v, "s" je spojene a+v (umi exteplayer3, nutny plugin serviceapp!)
+- funkcni zive vysilani
+- oprava zobrazeni kanalu (Menu - Videa kanalu, Ulozit kanal)
+
+[B]1.1:[/B] 17.11.2020
+- opravena chyba vyhledavani
+
+[B]1.0:[/B] 16.11.2020
+- initial simple version (misanov)

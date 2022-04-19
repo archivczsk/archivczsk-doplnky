@@ -1,0 +1,40 @@
+2020-06-26
+ * oprava pouziti free ws uctu (bez prihlaseni)
+ * oprava logovani
+ * oprava filtru explicitniho obsahu
+
+2020-06-20
+ * pridano filtrovani dle bitrate, velikosti a kvality
+ * oprava trideni A-Z
+ * oprava chyby u duration
+ * zobrazeni zanru i u streamu
+ * uprava hledani pro seeker
+
+2020-06-18
+ * uprava Novinky a Novinky dabovane za 365 dni
+ * oprava Jazykoveho filtru
+ * predelane A-Z do stromu max 50 filmu, pak zobrazi seznam
+ * A-Z trideni a zobrazeni nazvu pod priority cs, sk, en
+ * pridano Studio (max 200 zaznamu)
+ * vyhledavani vcetne historie
+ * trideni zanru a studii dle poctu
+ * uprava kvality streamu
+
+2020-06-11
+ * prvni pred-finalni verze, jeste bude hodne ladeni
+
+2020-05-26
+ * drobne opravy chyb
+ * A-Z nezobrazuje nyni nulove adresare
+
+2020-05-20
+ * SC2 beta 2.0.0
+
+2020-05-17
+ * oprava chybne ulozeneho souboru
+
+2020-05-16
+ * moznost prehravani/stahovani bez WS registrace (free ucet)
+
+2020-05-04
+ * SC2 - first release

@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<addon id="plugin.video.tv.sme.sk" name="TV SME.sk" provider-name="Michal Novotny" version="1.2">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0" />
+    <import addon="script.module.stream.resolver" version="1.6.22" />
+  </requires>
+  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>TV SME.sk video-archive plugin</summary>
+    <summary lang="sk">Internetová televízia SME.sk</summary>
+    <summary lang="cs">Internetová televize SME.sk</summary>
+    <description>Plugin to play TV video archive tv.sme.sk</description>
+    <description lang="cs">Plugin pro přehrávání videí z archivu tv.sme.sk</description>
+    <description lang="sk">Plugin pre prehrávanie videí z archívu tv.sme.sk</description>
+  </extension>
+</addon>

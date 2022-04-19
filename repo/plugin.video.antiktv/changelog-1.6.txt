@@ -1,0 +1,24 @@
+1.6:
+- vylepsena chybova hlaska o chybajucich knizniciach pre python 3.x
+- opravene zarovna EPG
+
+1.5:
+- opravena kompatibilita s python 3.x
+
+1.4:
+- nove api pre Video on Demand
+
+1.3:
+- pridany export EPG pre plugin EPGLoad
+- pridana moznost volby prehravaca pouziteho pre userbouquet pre DMM (OE >= 2.5)
+
+1.2:
+- automatický reštart AntikTV proxy pri inštalácii novej verzie
+
+1.1:
+- pridanie možnosti pre generovanie XML EPG ktoré je možné importovať pomocou epgimport pluginu
+- pridanie možnosti na automatické stiahnutie piconov pri generovaní userbouquet
+- lepšie ošetrenie stavu keď chýbajú niektoré python knižnice
+
+1.0:
+Initial version

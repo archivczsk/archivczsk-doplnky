@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<addon id="plugin.video.tvcom.cz" name="tvcom.cz" provider-name="misanov" version="1.1">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0" />
+    <import addon="script.module.stream.resolver" version="1.6.13" />
+  </requires>
+  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en">tvcom.cz</summary>
+    <summary lang="cs">tvcom.cz</summary>
+    <summary lang="sk">tvcom.cz</summary>
+    <description lang="en">Watch online TV archive from tvcom.cz</description>
+    <description lang="cs">Sledujte TV archiv zo serveru tvcom.cz</description>
+    <description lang="sk">Sledujte TV archív zo serveru tvcom.cz</description>
+    <platform>all</platform>
+  </extension>
+</addon>

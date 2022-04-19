@@ -1,0 +1,8 @@
+v1.2
+- fixed module loading addon dependencies
+
+v1.1
+- make addon python 3.x compatible
+
+v1.0
+- initial release

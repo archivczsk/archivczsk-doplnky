@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.archivo2tv" name="Sledování O2TV" provider-name="misanov,waladir" version="1.5.2">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.stream.resolver" version="1.6.25" />
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en_GB">Sledovaní O2TV</summary>
+    <summary lang="cs_CZ">Sledovaní O2TV</summary>
+    <description lang="en_GB">Umožnuje sledování O2TV, včetně základní práce s nahrávkami</description>
+    <description lang="cs_CZ">Umožnuje sledování O2TV, včetně základní práce s nahrávkami</description>
+  </extension>
+</addon>

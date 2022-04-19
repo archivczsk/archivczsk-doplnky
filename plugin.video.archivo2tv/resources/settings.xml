@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+	<category label="Přihlášení">
+        <setting label="Login" type="text" id="username" default=""/>
+        <setting label="Heslo" type="text" id="password" option="true" default=""/>
+        <setting label="Device Id" type="text" id="deviceid" default=""/>
+        <setting label="Device Name" type="text" id="devicename" default="tvbox"/>
+        <setting label="Device Type" type="text" id="devicetype" default="STB"/>
+	</category>
+	<category label="Nastavení">
+        <setting label="Pouze SD kvalita" type="bool" id="only_sd" default="false"/>
+        <setting label="Načítat detaily pořadů a postery (pomalejší)" type="bool" id="details" default="true"/>
+        <setting label="Zobrazovat detaily u budoucích nahrávek (pomalé)" type="bool" id="details_future" default="false"/>
+        <setting label="Přehrávat i po konci pořadu (minut)" type="text" id="offset" default="0"/>
+        <setting label="Historie vyhledávání" type="text" id="search_history" default="10"/>
+        <setting label="Skrýt položku Pořadí kanálů v menu" type="bool" id="hide_channel_list_edit" default="true"/>
+	</category>
+	<category label="Logování">
+        <setting label="Logování požadavků - URL" type="bool" id="log_request_url" default="false"/>
+        <setting label="Logování požadavků - data (logují se i citlivá data!)" type="bool" id="log_request_data" default="false"/>
+        <setting label="Logování odpovědí" type="bool" id="log_response" default="false"/>
+	</category>
+</settings>

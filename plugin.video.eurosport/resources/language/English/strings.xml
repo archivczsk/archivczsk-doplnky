@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+	<string id="30050">Video quality</string>
+	<string id="30051">Always ask</string>
+	<string id="30052">Best</string>
+	<string id="30053">Worst</string>
+	<string id="30001">General</string>
+	<string id="30002">Sort order</string>
+	<string id="30003">Authentication</string>
+	<string id="30004">Login token</string>
+	<string id="30005">Playback engine</string>
+	<string id="30006">Select engine</string>
+	<string id="30007">Stream type</string>
+	<string id="30010">Latest first</string>
+	<string id="30011">Earliest first</string>
+	<string id="30012">Ending soon</string>
+	<string id="30030">On schedule</string>
+	<string id="30031">On demand</string>
+</strings>

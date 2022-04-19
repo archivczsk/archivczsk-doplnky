@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+	<string id="30001">Video nie je dostupné, skontrolujte,[CR] či funguje prehrávanie na webe.</string>
+	<string id="30003">[B]Najnovšie epizódy[/B]</string>
+	<string id="30004">Zvolte zdroj</string>
+
+	<string id="30030">Adresár pre sťahovanie</string>
+	<string id="30031">Nastavte prosím zložku pre stahovanie</string>
+	<string id="30032">Zobrazovať stav sťahovania</string>
+	<string id="30033"> - zobraziť stav každých</string>
+	<string id="30034">10%</string>
+	<string id="30035">5%</string>
+	<string id="30036">1%</string>
+	<string id="30037">Stiahnuté súbory</string>
+	<string id="30050">Kvalita videa</string>
+	<string id="30051">Spýtať sa</string>
+	<string id="30052">Najlepšie</string>
+	<string id="30053">Najhoršie</string>
+	<string id="30054">720p</string>
+	<string id="30055">480p</string>
+	<string id="30056">360p</string>
+	<string id="30057">Triedenie filmov</string>
+	<string id="30058">Najnovšie</string>
+	<string id="30059">Najstaršie</string>
+	<string id="30060">Najlepšie</string>
+	<string id="30061">Najsledovanejšie</string>
+	<string id="31000">Dáta o použití sú zasláné len v okamžiku, keď spustíte prehrávánie alebo sťahovanie videa doplnkom.</string>
+</strings>

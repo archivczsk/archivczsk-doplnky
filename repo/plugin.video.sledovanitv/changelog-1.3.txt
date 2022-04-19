@@ -1,0 +1,11 @@
+2022-04-06
+* other python 3.x fixes
+
+2022-04-04
+* make addon python 3.x compatible
+
+2021-01-22
+ * Pridano nastaveni PIN pro blokovane kanaly
+
+2020-10-05
+ * Sledovani.tv - first release

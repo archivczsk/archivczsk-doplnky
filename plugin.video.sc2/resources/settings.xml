@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+	<setting label="30101" id="wsuser" type="text" default="" />
+	<setting label="30102" id="wspass" type="text" default="" option="true" />
+	<setting label="VIP days" id="wsvipdays" type="text" default="0" />
+	<setting label="30106" id="explicit_content" type="bool" default="false" />
+	<setting label="40107" id="item_filter_lang" type="enum" lvalues="401071|401072|401073|401074|401075" default="0" />
+	<setting label="40108" id="filter_hevc" type="bool" default="true" />
+	<setting label="40109" id="max_quality" type="enum" lvalues="401071|144p|240p|360p|480p|720p|1080p|2160p|4320p" default="0" />
+	<setting label="40110" id="max_size" type="enum" lvalues="401071|1|2|3|4|5|10|15|20" default="0" />
+	<setting label="40111" id="max_bitrate" type="enum" lvalues="401071|1|2|3|4|5|10|15|20|30|40|50" default="0" />
+	<setting label="30115" id="show_codec" type="bool" default="true" />
+	<setting label="30116" id="show_bitrate" type="bool" default="true" />
+	<setting label="30107" id="uuid" type="text" default="" visible="false" />
+	<setting label="30121" id="token" type="text" default="" visible="false" />
+</settings>

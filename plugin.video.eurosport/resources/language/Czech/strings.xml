@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+	<string id="30050">Kvalita videa</string>
+	<string id="30051">Zeptat se</string>
+	<string id="30052">Nejlepší</string>
+	<string id="30053">Nejhorší</string>
+	<string id="30001">Hlavní</string>
+	<string id="30002">Třídit dle</string>
+	<string id="30003">Authentication</string>
+	<string id="30004">Login token</string>
+	<string id="30005">Playback engine</string>
+	<string id="30006">Select engine</string>
+	<string id="30007">Stream type</string>
+	<string id="30010">Nejstarší</string>
+	<string id="30011">Nejnovější</string>
+	<string id="30012">Brzy končící</string>
+	<string id="30030">Podle plánu</string>
+	<string id="30031">Na vyžádání</string>
+</strings>

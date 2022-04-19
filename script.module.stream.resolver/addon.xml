@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+<addon id="script.module.stream.resolver" name="stream resolver" provider-name="Libor Zoubek" version="1.9.3">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0" />
+
+  </requires>
+  <extension library="lib" point="xbmc.python.module" />
+  <extension point="xbmc.addon.metadata">
+    <summary>xbmc-doplnky plugins common python modules mainly for resolving stream URLs</summary>
+    <description>Common python modules pack that is used by xbmc-doplnky plugins</description>
+    <license>GNU GPL</license>
+    <platform>all</platform>
+  </extension>
+</addon>

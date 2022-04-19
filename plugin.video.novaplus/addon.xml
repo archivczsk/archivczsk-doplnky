@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.novaplus"
+       name="Nova Plus TV"
+       version="2.3.0"
+       provider-name="Michal Novotny, Jiri Vyhnalek">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.dmd-czech.common" version="1.5.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>Nova Plus TV video-archive plugin</summary>
+    <summary lang="cs">Nova Plus TV - archiv</summary>
+    <description>
+        Plugin to play TV video archive Novaplus.nova.cz
+    </description>
+    <description lang="cs">
+        Plugin pro přehrávání videí z archivu Novaplus.nova.cz
+    </description>
+  </extension>
+</addon>

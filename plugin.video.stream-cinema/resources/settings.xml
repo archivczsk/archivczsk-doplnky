@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+    <setting label="30101" id="wsuser" type="text" default="" />
+    <setting label="30102" id="wspass" type="text" default="" option="true" />
+    <setting label="VIP days" id="wsvipdays" type="text" default="0" />
+    <setting label="30204" id="trakt_enabled" type="bool" default="false" />
+    <setting label="30205" id="trakt_filter" type="enum" lvalues="302051|302052|302053" default="0"/>
+    <setting label="30107" id="item_filter_lang" type="enum" lvalues="301071|301072|301073|301074|301075" default="0" />
+    <setting label="30108" id="keep-searches" type="text" default="10"/>
+  
+    <!--<setting label="30106" id="auto_subs" type="bool" default="true" />-->
+
+    <category label="30200">
+        <setting label="30103" id="item_order_country" type="enum" lvalues="301031|301032" default="0" />
+        <setting label="30104" id="item_order_quality" type="enum" lvalues="301031|301032" default="0" />
+        <setting label="30105" id="item_order_genre" type="enum" lvalues="301031|301032" default="0" />
+
+        <setting label="30202" id="stream_max_size" type="enum" lvalues="302021|302022|302023|302024|302025|302026|302027|302028" default="0" />
+        <setting label="30203" id="filter_hevc_3d" type="bool" default="false" />
+        
+        <setting label="Trakt token" id="trakt_token" type="text" default="" visible="false" />
+        <setting label="Trakt refresh token" id="trakt_refresh_token" default="" type="text" visible="false" />
+        <setting label="Token expire" id="trakt_token_expire" type="text" default="0" visible="false" />
+      
+        <setting label="30201" id="use_https" type="bool" default="false" />
+        <setting label="DeviceId" id="deviceid" type="text" default="" visible="false"/>
+        <setting label="Debug" id="debug_enabled" type="bool" default="false" visible="false"/>
+    </category>
+</settings>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+	<setting label="30000" type="text" id="keep-searches" default="20" />
+	<setting label="30058" id="filter_vp8" type="bool" default="true" />
+</settings>

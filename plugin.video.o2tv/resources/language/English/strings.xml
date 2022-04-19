@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+    <string id="30000">Login</string>
+    <string id="30001">Password</string>
+    <string id="30002">Quality</string>
+    <string id="300021">HD</string>
+    <string id="300022">SD</string>
+    <string id="30003">Load EPG</string>
+    <string id="30004">Location</string>
+    <string id="300041">SK</string>
+    <string id="300042">CZ</string>
+    <string id="30005">Login method</string>
+    <string id="300051">New</string>
+    <string id="300052">Old</string>
+</strings>

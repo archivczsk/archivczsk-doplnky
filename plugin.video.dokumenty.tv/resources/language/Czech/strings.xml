@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+	<string id="30050">Kvalita videa</string>
+	<string id="30051">Zeptat se</string>
+	<string id="30052">Nejlepší</string>
+	<string id="30053">Nejhorší</string>
+	<string id="30200">Kategorie</string>
+	<string id="30201">Všechno</string>
+	<string id="30202">Historické</string>
+	<string id="30203">Katastrofické</string>
+	<string id="30204">Konspirační</string>
+	<string id="30205">Krimi</string>
+	<string id="30206">Myšlení</string>
+	<string id="30207">Příroda</string>
+	<string id="30208">Technika</string>
+	<string id="30209">Vesmír</string>
+	<string id="30210">Záhady</string>
+	<string id="30211">Životní styl</string>
+	<string id="30300">Pořadí</string>
+	<string id="30301">Podle data</string>
+	<string id="30302">Podle názvu</string>
+	<string id="30303">Podle shlédnutí</string>
+	<string id="30304">Podle 'líbí se'</string>
+	<string id="30305">Podle komentářů</string>
+	<string id="30306">Náhodně</string>
+</strings>

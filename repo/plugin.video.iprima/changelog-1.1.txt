@@ -1,0 +1,8 @@
+2021-01-22 [1.1] (misanov)
+ * Add search
+ * Add archive of films
+ * Add titles to live channels
+ * Add local title to video player
+
+2021-01-21 [1.0] (misanov)
+ * Rewrite release based on Roman Smolka Kodi plugin

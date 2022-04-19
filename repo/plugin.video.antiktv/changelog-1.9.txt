@@ -1,0 +1,35 @@
+1.9:
+- opravená inštalácia antiktv proxy
+
+1.8:
+- pridanie podpory pre balancer API
+
+1.7:
+- rozdelenie addonu na moduly pre vylepšenie rýchlosti behu
+- pridanie logov v prípade problémov s inicializáciou
+- oprava chyby pri zobrazení EPG
+
+1.6:
+- vylepšená chybová hlaška o chýbajúcich knižniciach pre python 3.x
+- opravené zarovnanie EPG
+
+1.5:
+- opravená kompatibilita s python 3.x
+
+1.4:
+- nové api pre Video on Demand
+
+1.3:
+- pridaný export EPG pre plugin EPGLoad
+- pridaná možnosť voľby prehrávača použitého pre userbouquet pre DMM (OE >= 2.5)
+
+1.2:
+- automatický reštart AntikTV proxy pri inštalácii novej verzie
+
+1.1:
+- pridanie možnosti pre generovanie XML EPG ktoré je možné importovať pomocou epgimport pluginu
+- pridanie možnosti na automatické stiahnutie piconov pri generovaní userbouquet
+- lepšie ošetrenie stavu keď chýbajú niektoré python knižnice
+
+1.0:
+Initial version

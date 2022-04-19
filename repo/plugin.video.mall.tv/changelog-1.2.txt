@@ -1,0 +1,6 @@
+2020-10-25 v1.2
+ * video source fix
+2020-09-12
+ * changed url fixes
+2020-04-25
+ * Mall.TV - first release

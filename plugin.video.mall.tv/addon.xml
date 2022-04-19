@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.mall.tv"
+       name="Mall.tv"
+       version="1.5"
+       provider-name="Michal Novotný">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>Mall.tv video-archive plugin</summary>
+    <description>Plugin to play video archive from mall.tv</description>
+    <description lang="cs">Plugin pro přehrávání videí z mall.tv</description>
+  </extension>
+</addon>

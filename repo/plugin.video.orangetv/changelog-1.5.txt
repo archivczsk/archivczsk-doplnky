@@ -1,0 +1,14 @@
+2021-07-10 (misanov)
+ * app version change
+2021-01-20 (misanov)
+ * channel display fix
+ * channel default order
+2020-12-13 (misanov)
+ * cache epg
+ * reverse resolution
+2020-10-09
+ * epg, archiv, devices (misanov)
+2020-10-05
+ * update headers (misanov)
+2020-04-29
+ * OrangeTV - afteryear release 1.2.0 (misanov)

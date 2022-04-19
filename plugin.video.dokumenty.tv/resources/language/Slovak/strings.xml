@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+	<string id="30050">Kvalita videa</string>
+	<string id="30051">Spýtať sa</string>
+	<string id="30052">Najlepšie</string>
+	<string id="30053">Najhoršie</string>
+	<string id="30000">Dokumenty.tv</string>
+	<string id="30200">Kategórie</string>
+	<string id="30201">Všetko</string>
+	<string id="30202">Historické</string>
+	<string id="30203">Katastrofické</string>
+	<string id="30204">Konšpiračné</string>
+	<string id="30205">Krimi</string>
+	<string id="30206">Myslenie</string>
+	<string id="30207">Príroda</string>
+	<string id="30208">Technika</string>
+	<string id="30209">Vesmír</string>
+	<string id="30210">Záhady</string>
+	<string id="30211">Životný štýl</string>
+	<string id="30300">Poradie</string>
+	<string id="30301">Podľa dátumu</string>
+	<string id="30302">Podľa názvu</string>
+	<string id="30303">Podľa zhlédnutia</string>
+	<string id="30304">Podľa 'páči sa'</string>
+	<string id="30305">Podľa komentárov</string>
+	<string id="30306">Náhodne</string>
+</strings>

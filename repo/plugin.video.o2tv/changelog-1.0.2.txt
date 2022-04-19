@@ -1,0 +1,7 @@
+2018-11-23 verzia 1.0.2
+    - hot fix
+    - filtrovanie rovnakych nazvov kanalov
+2018-11-22 verzia 1.0.1
+    - pridane nastavenie na urcenie sposobu prihlasenia do uctu
+2018-11-11 verzia 1.0.0
+    - initial

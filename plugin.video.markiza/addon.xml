@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<addon id="plugin.video.markiza" name="markiza.sk" provider-name="misanov,rywko" version="1.5.1">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0" />
+    <import addon="script.module.stream.resolver" version="1.6.22" />
+  </requires>
+  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en">markiza.sk</summary>
+    <summary lang="cs">markiza.sk</summary>
+    <summary lang="sk">markiza.sk</summary>
+    <description lang="en">Watch online TV archive from videoarchiv.markiza.sk</description>
+    <description lang="cs">Sledujte online TV archiv ze serveru videoarchiv.markiza.sk</description>
+    <description lang="sk">Sledujte online TV archív zo serveru videoarchiv.markiza.sk</description>
+    <platform>all</platform>
+  </extension>
+</addon>

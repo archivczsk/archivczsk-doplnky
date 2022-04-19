@@ -1,0 +1,27 @@
+2022-04-06 [1.7]
+- some minor fixes
+
+2022-04-04 [1.6]
+- make addon python 3.x compatible
+
+2021-12-07 [1.5] (misanov)
+ * Uprava kvuli certifikatum
+ * Testovaci default ucet
+
+2021-11-16 [1.4] (misanov)
+ * Oprava nacitani tokenu
+
+2021-03-29 [1.3] (misanov)
+ * Oprava nacitani po upravach webu
+
+2021-03-19 [1.2] (misanov)
+ * Oprava autorizace
+
+2021-01-22 [1.1] (misanov)
+ * Add search
+ * Add archive of films
+ * Add titles to live channels
+ * Add local title to video player
+
+2021-01-21 [1.0] (misanov)
+ * Rewrite release based on Roman Smolka Kodi plugin

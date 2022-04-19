@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+    <setting label="30000" id="o2tvuser" type="text" default="" />
+    <setting label="30001" id="o2tvpwd" type="text" default="" option="true" />
+    <setting label="30005" id="login_method" type="enum" lvalues="300051|300052" default="0"/>
+    <setting label="30002" id="stream_quality" type="enum" lvalues="300021|300022" default="0"/>
+    <setting label="30003" id="show_epg" type="bool" default="true"/>
+    <setting label="30004" id="o2lang" type="enum" lvalues="300041|300042" default="0"/>
+    <setting label="DeviceId" id="deviceid" type="text" default="" visible="false"/>
+    <setting label="Debug" id="debug_enabled" type="bool" default="false" visible="false"/>
+</settings>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.sledovanitv"
+       name="Sledovani.tv"
+       version="1.3"
+       provider-name="misanov">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.stream.resolver" version="1.6.25" />
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>Sledovani.tv</summary>
+    <description>Plugin to play from sledovani.tv</description>
+    <description lang="cs">Plugin pro přehrávání videí ze sledovani.tv</description>
+  </extension>
+</addon>

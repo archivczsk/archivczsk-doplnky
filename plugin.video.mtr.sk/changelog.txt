@@ -1,0 +1,4 @@
+[B]1.1.0:[/B]
+Make addon python 3.x compatible
+[B]1.0.0:[/B]
+Initial version

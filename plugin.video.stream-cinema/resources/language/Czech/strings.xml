@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+    <string id="30010">webshare.cz</string>
+    <string id="30101">Uživ. jméno</string>
+    <string id="30102">Uživ. heslo</string>
+    <string id="30103">Řazení kategorie Krajina</string>
+    <string id="30104">Řazení kategorie Kvalita</string>
+    <string id="30105">Řazení kategorie Žánr</string>
+    <string id="301031">Výchozí</string>
+    <string id="301032">Rok</string>
+    <!--<string id="301033">Hodnocení</string>
+    <string id="301034">Datum přidání</string>-->
+    <string id="30106">Automatické titulky</string>
+    <string id="30107">Jazykový filtr</string>
+    <string id="301071">Všechno</string>
+    <string id="301072">CZ &amp; SK</string>
+    <string id="301073">CZ</string>
+    <string id="301074">SK</string>
+    <string id="301075">EN</string>
+    <string id="30108">Počet zapamatovaných hledání</string>
+
+    <string id="30200">Různé</string>
+    <string id="30201">Používat HTTPS protokol</string>
+    <string id="30202">Max. velikost nabízeného streamu</string>
+    <string id="302021">Bez omezení</string>
+    <string id="302022">1GB</string>
+    <string id="302023">1.5GB</string>
+    <string id="302024">2GB</string>
+    <string id="302025">2.5GB</string>
+    <string id="302026">3GB</string>
+    <string id="302027">3.5GB</string>
+    <string id="302028">4GB</string>
+    <string id="30203">Nezobrazovat HEVC a 3D streamy</string>
+    <string id="30204">Trakt zapnout</string>
+    <string id="30205">Trakt videné položky</string>
+    <string id="302051">Označit</string>
+    <string id="302052">Schovat</string>
+    <string id="302053">Nic</string>
+</strings>
