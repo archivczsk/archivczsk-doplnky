@@ -15,6 +15,5 @@
     <description lang="cs">Sledujte TV archiv zo serveru rtvs.sk</description>
     <description lang="sk">Sledujte TV archív zo serveru rtvs.sk</description>
     <platform>all</platform>
-    <source>https://github.com/mx3L/plugin.video.rtvs.sk</source>
   </extension>
 </addon>

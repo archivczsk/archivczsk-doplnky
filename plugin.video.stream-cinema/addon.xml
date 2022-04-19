@@ -16,7 +16,6 @@
         <disclaimer lang="cz">Watch online movies from stream-cinema.online</disclaimer>
         <platform>all</platform>
         <license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
-        <source>https://github.com/mx3L/archivczsk-doplnky</source>
         <assets>
             <icon>icon.png</icon>
             <fanart></fanart>

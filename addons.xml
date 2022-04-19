@@ -17,7 +17,6 @@
         <disclaimer lang="cz">Watch online movies from stream-cinema.online</disclaimer>
         <platform>all</platform>
         <license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
-        <source>https://github.com/mx3L/archivczsk-doplnky</source>
         <assets>
             <icon>icon.png</icon>
             <fanart></fanart>
@@ -195,7 +194,6 @@
     <description lang="cs">Sledujte TV archiv zo serveru rtvs.sk</description>
     <description lang="sk">Sledujte TV archív zo serveru rtvs.sk</description>
     <platform>all</platform>
-    <source>https://github.com/mx3L/plugin.video.rtvs.sk</source>
   </extension>
 </addon>
 
@@ -340,7 +338,6 @@
     <description lang="cs">Sledujte online TV</description>
     <description lang="sk">Sledujte online TV</description>
     <platform>all</platform>
-    <source>https://github.com/mx3L/archivczsk-doplnky</source>
   </extension>
 </addon>
 

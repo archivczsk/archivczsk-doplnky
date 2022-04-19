@@ -15,6 +15,5 @@
     <description lang="cs">Sledujte online TV</description>
     <description lang="sk">Sledujte online TV</description>
     <platform>all</platform>
-    <source>https://github.com/mx3L/archivczsk-doplnky</source>
   </extension>
 </addon>
