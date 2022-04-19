@@ -4,7 +4,6 @@ from __future__ import print_function
 import sys, os
 try:
 	sys.path.append( os.path.dirname(__file__)	)
-	sys.path.append(os.path.join (os.path.dirname(__file__), 'resources', 'lib'))
 except:
 	pass
 
@@ -12,7 +11,7 @@ import util
 import xbmcprovider
 
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
-from antik import antiktvContentProvider
+from antiktv import antiktvContentProvider
 
 # #################################################################################################
 

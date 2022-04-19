@@ -45,6 +45,8 @@ __addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
 # #################################################################################################
 
 def install_antiktv_proxy():
+	src_file = os.path.dirname(__file__) + '/antiktv_proxy.sh'
+
 	for i in range(3):
 		try:
 			response = requests.get( proxy_url + '/info', timeout=2 )
@@ -54,6 +56,8 @@ def install_antiktv_proxy():
 					# current running version match
 					return True
 				else:
+					os.chmod( src_file, 0o755 )
+					
 					# wrong runnig version - restart it and try again
 					os.system('/etc/init.d/antiktv_proxy.sh stop')
 					time.sleep(2)
@@ -65,8 +69,7 @@ def install_antiktv_proxy():
 		except:
 			# something's wrong - we will try again
 			pass
-#	src_file = os.path.dirname(__file__) + '/antiktv_proxy.sh'
-	src_file = '/usr/lib/enigma2/python/Plugins/Extensions/archivCZSK/resources/repositories/addons/plugin.video.antiktv/antiktv_proxy.sh'
+
 	os.chmod( src_file, 0o755 )
 	try:
 		os.symlink( src_file, '/etc/init.d/antiktv_proxy.sh' )

@@ -1,7 +1,7 @@
 import sys,os
 sys.path.append( os.path.dirname(__file__)	)
 
-import threading
+import threading, traceback
 try:
 	from SocketServer import ThreadingMixIn
 	from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
@@ -72,6 +72,17 @@ EPGLOAD_SOURCES_CONTENT ='''<?xml version="1.0" encoding="utf-8"?>
 	</sourcecat>
 </sources>
 '''
+
+# #################################################################################################
+
+def _log(message):
+	print(message)
+	try:
+		with open('/tmp/antiktv_proxy.log', 'a') as f:
+			dtn = datetime.now()
+			f.write(dtn.strftime("%d.%m.%Y %H:%M:%S.%f")[:-3] + " %s\n" % message)
+	except:
+		pass
 
 # #################################################################################################
 
@@ -256,7 +267,7 @@ def create_xmlepg( data_file, channels_file, days ):
 		
 				for cat in channels:
 					for channel in channels[cat]:
-#						print("Processing channel: %s (%s)" % (channel['name'], channel["id_content"]))
+						_log("Processing channel: %s (%s)" % (channel['name'], channel["id_content"]))
 						
 						id_epg = channel["id_content"]
 						id_content = 'AntikTV_' + id_epg
@@ -287,14 +298,14 @@ def generate_xmlepg_if_needed():
 	settings = load_settings()
 	
 	if settings['enable_xmlepg'] == False:
-		print("[XMLEPG] generator is disabled")
+		_log("[ANTIKTV-XMLEPG] generator is disabled")
 		return
 	
 	init_maxim( settings )
 	global maxim, data_mtime
 	
 	if maxim == None:
-		print("[XMLEPG] No antik login credentials provided or they are wrong")
+		_log("[ANTIKTV-XMLEPG] No antik login credentials provided or they are wrong")
 		return
 	
 	# check if epgimport plugin exists
@@ -303,7 +314,7 @@ def generate_xmlepg_if_needed():
 	if os.path.exists( epgimport_check_file ) or os.path.exists( epgimport_check_file + 'o' ) or os.path.exists( epgimport_check_file + 'c' ):
 		epgimport_found = True
 	else:
-		print("[XMLEPG] EPGImport plugin not detected")
+		_log("[ANTIKTV-XMLEPG] EPGImport plugin not detected")
 		epgimport_found = False
 
 	# check if epgimport plugin exists
@@ -312,11 +323,11 @@ def generate_xmlepg_if_needed():
 	if os.path.exists( epgload_check_file ) or os.path.exists( epgload_check_file + 'o' ) or os.path.exists( epgload_check_file + 'c' ):
 		epgload_found = True
 	else:
-		print("[XMLEPG] EPGLoad plugin not detected")
+		_log("[ANTIKTV-XMLEPG] EPGLoad plugin not detected")
 		epgload_found = False
 	
 	if not epgimport_found and not epgload_found:
-		print("[XMLEPG] Neither EPGImport nor EPGLoad plugin not detected")
+		_log("[ANTIKTV-XMLEPG] Neither EPGImport nor EPGLoad plugin not detected")
 		return
 	
 	# create paths to export files
@@ -340,10 +351,10 @@ def generate_xmlepg_if_needed():
 		gen_time_start = time()
 		create_xmlepg(data_file, channels_file, settings['xmlepg_days'])
 		data_mtime = time()
-		print("[XMLEPG] Epg generated in %d seconds" % int(data_mtime - gen_time_start))
-	except Exception as e:
-		print("[XMLEPG] something's failed by generating epg")
-		print(e)
+		_log("[ANTIKTV-XMLEPG] Epg generated in %d seconds" % int(data_mtime - gen_time_start))
+	except:
+		_log("[ANTIKTV-XMLEPG] something's failed by generating epg")
+		_log(traceback.format_exc())
 
 	# generate proper sources file for EPGImport
 	if epgimport_found and not os.path.exists('/etc/epgimport'):
@@ -367,7 +378,7 @@ def generate_xmlepg_if_needed():
 	
 		# check for correct content of sources file and update it if needed
 		if not os.path.exists( epgplugin_data[1] ) or md5( open( epgplugin_data[1], 'rb' ).read() ).hexdigest() != xmlepg_source_content_md5:
-			print("[XMLEPG] Writing new sources file to " + epgplugin_data[1] )
+			_log("[ANTIKTV-XMLEPG] Writing new sources file to " + epgplugin_data[1] )
 			with open( epgplugin_data[1], 'w' ) as f:
 				f.write( xmlepg_source_content )
 	
@@ -378,7 +389,7 @@ def generate_xmlepg_if_needed():
 			epgimport_settings = { 'sources': [] }
 	
 		if 'AntikTV' not in epgimport_settings['sources']:
-			print("[XMLEPG] Enabling AntikTV in epgimport/epgload config %s" % epgplugin_data[2] )
+			_log("[ANTIKTV-XMLEPG] Enabling AntikTV in epgimport/epgload config %s" % epgplugin_data[2] )
 			epgimport_settings['sources'].append('AntikTV')
 			pickle.dump(epgimport_settings, open(epgplugin_data[2], 'wb'), pickle.HIGHEST_PROTOCOL)
 
@@ -392,16 +403,25 @@ class EpgThread(threading.Thread):
 
 	def run(self):
 		# after boot system time can be inacurate and this causes problems with modification times
-		# so wait 5m before first try
-		wait_time = 300
+		# so set wait time to 10s and periodicaly check to system time sync
+		wait_time = 10
 		
 		while not self.stopped.wait(wait_time):
-			generate_xmlepg_if_needed()
-			
-			# let's repeat this check every hour
-			wait_time = 3600
+			# some magic to check, if system time was already synced
+			if int(time()) < 1650358276:
+				_log("[ANTIKTV-XMLEPG] System time not synced yet - waiting ...")
+				continue
 		
-		print("EPG thread stopped")
+			try:
+				generate_xmlepg_if_needed()
+			except:
+				_log("[ANTIKTV-XMLEPG] EPG export failed:")
+				_log( traceback.format_exc())
+				
+				# let's repeat this check every hour
+				wait_time = 3600
+		
+		_log("[ANTIKTV-XMLEPG] EPG thread stopped")
 			
 # #################################################################################################
 
@@ -429,10 +449,16 @@ if __name__ == '__main__':
 		pass
 
 	epg_stop_flag.set()
-	print("Waiting for EPG thread to stop")
+	_log("Waiting for EPG thread to stop")
 	epg_thread.join()
 	
 	try:
 		os.remove( pidfile )
+	except:
+		pass
+
+	try:
+		# after addon update exec permission is lost, so restore it
+		os.chmod( os.path.dirname(__file__) + '/antiktv_proxy.sh', 0o755 )
 	except:
 		pass
