@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <settings>
-   <setting id="tv_addon" type="bool" label="TV archiv" default="true" visible="false"/>
    <setting label="Stát" id="country" type="enum" lvalues="cz|sk" default="0"/>
 </settings>

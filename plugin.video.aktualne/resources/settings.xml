@@ -1,4 +1,3 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <settings>
-   <setting id="tv_addon" type="bool" label="TV archiv" default="true" visible="false"/>
 </settings>

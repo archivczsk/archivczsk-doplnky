@@ -10,5 +10,4 @@
     <setting id="auto_view_mode" type="bool" label="30026" default="true" />
     <setting id="send_errors" type="bool" label="30025" default="false" />
     <setting id="auto_unpause" type="bool" label="30027" default="false" /> -->
-   <setting id="tv_addon" type="bool" label="TV archiv" default="true" visible="false"/>
 </settings>
