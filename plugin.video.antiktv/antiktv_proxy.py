@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import sys,os
 sys.path.append( os.path.dirname(__file__)	)
 
@@ -30,7 +32,7 @@ maxim = None
 data_mtime = 0
 key_cache={}
 
-PROXY_VER='3'
+PROXY_VER='4'
 
 XMLEPG_DATA_FILE = 'antiktv.data.xml'
 XMLEPG_CHANNELS_FILE = 'antiktv.channels.xml'
@@ -76,7 +78,11 @@ EPGLOAD_SOURCES_CONTENT ='''<?xml version="1.0" encoding="utf-8"?>
 # #################################################################################################
 
 def _log(message):
-	print(message)
+	if is_py3:
+		print(message)
+	else:
+		print(message.encode('utf-8'))
+		
 	try:
 		with open('/tmp/antiktv_proxy.log', 'a') as f:
 			dtn = datetime.now()
@@ -417,9 +423,9 @@ class EpgThread(threading.Thread):
 			except:
 				_log("[ANTIKTV-XMLEPG] EPG export failed:")
 				_log( traceback.format_exc())
-				
-				# let's repeat this check every hour
-				wait_time = 3600
+
+			# let's repeat this check every hour
+			wait_time = 3600
 		
 		_log("[ANTIKTV-XMLEPG] EPG thread stopped")
 			

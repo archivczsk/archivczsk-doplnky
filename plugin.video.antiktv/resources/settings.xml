@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
 	<setting label="Prihlasovacie meno" id="username" type="text" default="" />
-	<setting label="Prihlasovcie heslo" id="password" type="text" default="" />
+	<setting label="Prihlasovcie heslo" id="password" type="text" default="" option="true"/>
 	<setting label="ID zariadenia" id="device_id" type="text" default="" visible="false" />
 	<setting label="Región" id="region" type="labelenum" values="SK|CZ" default="SK" />
 	<setting label="Povoliť h265 kodek" id="enable_h265" type="bool" default="true" />
@@ -12,4 +12,5 @@
 	<setting label="Pri generovaní userbouquetu automaticky stiahnuť picony" id="enable_picons" type="bool" default="false" />
 	<setting label="Povoliť špeciálnu sekciu hlavnej ponuke" id="enable_extra" type="bool" default="false" />
 	<setting label="Prehrávač použitý pre userbouquet" id="player_name" type="enum" lvalues="Predvolený|gstplayer|exteplayer3|gst + exte3|DMM|DVB (OE>=2.5)" default="3"/>
+	<setting label="Zobraziť v zozname TV doplnkov" id="tv_addon" type="bool" default="true" visible="false"/>
 </settings>

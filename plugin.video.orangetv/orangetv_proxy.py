@@ -74,7 +74,11 @@ EPGLOAD_SOURCES_CONTENT ='''<?xml version="1.0" encoding="utf-8"?>
 # #################################################################################################
 
 def _log(message):
-	print(message)
+	if is_py3:
+		print(message)
+	else:
+		print(message.encode('utf-8'))
+		
 	try:
 		with open('/tmp/orangetv_proxy.log', 'a') as f:
 			dtn = datetime.now()

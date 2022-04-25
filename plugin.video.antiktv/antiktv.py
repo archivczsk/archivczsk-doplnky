@@ -37,7 +37,7 @@ from lameDB import lameDB
 ######### contentprovider ##########
 
 proxy_url = "http://127.0.0.1:18080"
-PROXY_VER='3'
+PROXY_VER='4'
 
 __scriptid__ = 'plugin.video.antiktv'
 __addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)

@@ -1,3 +1,6 @@
+1.13:
+- oprava pádu pri generovaní EPG pre python 2.x
+
 1.12:
 - vylepšené logovanie v antiktv proxy
 - oprava opravneni pre štartovaní skript pre proxy
