@@ -14,10 +14,10 @@ except:
 import base64
 
 try:
-	from urllib.parse import quote_plus
+	from urllib.parse import quote
 	is_py3 = True
 except:
-	from urllib import quote_plus
+	from urllib import quote
 	is_py3 = False
 
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
@@ -57,6 +57,7 @@ def install_antiktv_proxy():
 					return True
 				else:
 					os.chmod( src_file, 0o755 )
+					flush_enigma2_settings()
 					
 					# wrong runnig version - restart it and try again
 					os.system('/etc/init.d/antiktv_proxy.sh stop')
@@ -76,6 +77,8 @@ def install_antiktv_proxy():
 	except:
 		pass
 	
+	flush_enigma2_settings()
+
 	try:
 		os.system('update-rc.d antiktv_proxy.sh defaults')
 		os.system('/etc/init.d/antiktv_proxy.sh start')
@@ -181,8 +184,20 @@ def download_picons( picons ):
 	
 # #################################################################################################
 
+def flush_enigma2_settings():
+	try:
+		from Components.config import configfile
+		
+		configfile.save()
+		
+		# reload configuration in antiktv_proxy
+		requests.get( proxy_url + '/reloadconfig' )
+	except:
+		pass
+
+# #################################################################################################
 class antiktvContentProvider(ContentProvider):
-	channels = { "tv": None, "radio": None, "cam": None, "next_load_time": { "tv": 0, "radio": 0, "cam":0 } }
+	channels = { "tv": None, "radio": None, "cam": None, "next_load_time": { "tv": 0, "radio": 0, "cam":0 }, 'tv_filters' : None }
 	channels_archive_ids = []
 	maxim = None
 	maxim_init_data = None
@@ -242,8 +257,9 @@ class antiktvContentProvider(ContentProvider):
 				return False
 			
 			if len( self.device_id ) == 0:
-				self.device_id = Maxim.create_device_id()
+				self.device_id = Maxim.create_device_id(True)
 				__addon__.setSetting( 'device_id', self.device_id )
+				flush_enigma2_settings()
 			
 			antiktvContentProvider.maxim = Maxim( self.username, self.password, self.device_id, self.region )
 			self.maxim = antiktvContentProvider.maxim
@@ -296,15 +312,15 @@ class antiktvContentProvider(ContentProvider):
 		if ret == False:
 			return "Odhlásanie zlyhalo: " + msg
 		
-		try:
-			response = requests.get( proxy_url + '/reloadconfig' )
-		except:
-			pass
-		
 		antiktvContentProvider.maxim = None
 		self.maxim = None
 		antiktvContentProvider.maxim_init_data = None
+		self.load_channel_list('tv')
+		self.load_channel_list('radio')
+		self.load_channel_list('cam')
 		__addon__.setSetting( 'device_id', "" )
+		flush_enigma2_settings()
+
 		client.showInfo("Zariadenie odregistrované: " + msg)
 
 	# #################################################################################################
@@ -327,6 +343,9 @@ class antiktvContentProvider(ContentProvider):
 
 	def list(self, url):
 		self.info("list %s" % url)
+		
+		if self.maxim == None:
+			return []
 		
 		if url == '#tv':
 			return self.show_tv()
@@ -407,7 +426,8 @@ class antiktvContentProvider(ContentProvider):
 
 	def generate_bouquet( self, channel_type="tv" ):
 		self.load_channel_list( channel_type )
-		
+		flush_enigma2_settings()
+
 		# if epg generator is disabled, then try to create service references based on lamedb
 		if __addon__.getSetting('enable_xmlepg').lower() == 'true':
 			lamedb = None
@@ -449,7 +469,7 @@ class antiktvContentProvider(ContentProvider):
 						continue
 					
 					url = self.encode_url( channel["url"] )
-					url = quote_plus( url )
+					url = quote( url )
 					
 					if channel["name"] in gst_blacklist:
 						# some channels don't work with gstplayer, so use exteplayer3 for it
@@ -774,14 +794,11 @@ class antiktvContentProvider(ContentProvider):
 	def load_channel_list( self, channel_type="tv" ):
 		if self.maxim == None:
 			self.channels[channel_type] = {}
+			self.channels['next_load_time'][channel_type] = 0
 			return
 		
 		act_time = int(time.time())
-		
-		if self.channels[channel_type] != None and self.channels['next_load_time'][channel_type] > act_time:
-			self.info("Channel type %s already loaded\n" % channel_type )
-			return
-		
+
 		filters = {}
 		if __addon__.getSetting('enable_h265') == "false":
 			filters["h265"] = "no"
@@ -789,6 +806,11 @@ class antiktvContentProvider(ContentProvider):
 		if __addon__.getSetting('enable_adult') == "false":
 			filters["adult"] = "no"
 		
+		if self.channels[channel_type] != None and self.channels['next_load_time'][channel_type] > act_time and self.channels['tv_filters'] == (filters.get('h265', '') + filters.get('adult', '')):
+			self.info("Channel type %s already loaded" % channel_type )
+			return
+		
+		self.info("Loading channel type %s from server" % channel_type )
 		channels = self.maxim.get_channel_list( channel_type, filters )
 		self.channels[channel_type] = channels
 		
@@ -800,6 +822,7 @@ class antiktvContentProvider(ContentProvider):
 						
 		# allow channels reload once a hour
 		self.channels['next_load_time'][channel_type] = act_time + 3600
+		self.channels['tv_filters'] = (filters.get('h265', '') + filters.get('adult', ''))
 
 	# #################################################################################################
 	
@@ -822,6 +845,9 @@ class antiktvContentProvider(ContentProvider):
 		
 		if not is_py3:
 			cat = cat.decode("utf-8")
+
+		if cat not in channels:
+			return result
 
 		epg_list = []
 		for channel in channels[ cat ]:

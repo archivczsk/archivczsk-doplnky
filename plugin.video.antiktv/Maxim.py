@@ -63,9 +63,14 @@ class Maxim:
 	# #################################################################################################
 	
 	@staticmethod
-	def create_device_id():
+	def create_device_id(atk=False):
 		mac_str = ':'.join(("%012X" % get_mac())[i:i+2] for i in range(0, 12, 2))
-		return hashlib.sha1( mac_str.encode("utf-8") ).hexdigest()[24:]
+		device_id = hashlib.sha1( mac_str.encode("utf-8") ).hexdigest()[24:]
+		
+		if atk:
+			device_id = 'ATK00162AF' + device_id[11:].upper()
+
+		return device_id
 
 	# #################################################################################################
 	#
@@ -182,19 +187,34 @@ class Maxim:
 	
 	def getDeviceInfo( self ):
 		if self.is_stb == True:
-			return {
-				"vendor": "Raspberry",
-				"model": "Android_AntikTV_VOD",
-				"os_version": "10",
-				"app_version": "1.1.18",
-				"app_name": "Antik TV",
-				"id": self.device_id,
-				"ip": "192.168.1.2",
-				"lang": self.lang,
-				"type": "stb",
-				"os": "Android",
-				"service": "OTT"
-			}
+			if self.device_id.startswith('ATK') and len(self.device_id) == 15:
+				return {
+					"vendor": "Antik",
+					"model": "hi3798mv200_rev4{DISPLAY}",
+					"model_name": "Antik Nano 3",
+					"os_version": "4.102.1 ATK",
+					"app_version": "2.2.180",
+					"id": self.device_id,
+					"ip": "192.168.1.4",
+					"lang": self.lang,
+					"type": "stb",
+					"os": "JuiceTV",
+					"service": "OTT"
+				}
+			else:
+				return {
+					"vendor": "Raspberry",
+					"model": "Android_AntikTV_VOD",
+					"os_version": "10",
+					"app_version": "1.1.18",
+					"app_name": "Antik TV",
+					"id": self.device_id,
+					"ip": "192.168.1.2",
+					"lang": self.lang,
+					"type": "stb",
+					"os": "Android",
+					"service": "OTT"
+				}
 		else:
 			return {
 				"vendor": "samsung",
@@ -203,7 +223,7 @@ class Maxim:
 				"app_version": "1.1.9",
 				"app_name": "Antik TV",
 				"id": self.device_id,
-				"ip": "192.168.1.2",
+				"ip": "192.168.1.3",
 				"lang": self.lang,
 				"type": "phone",
 				"os": "Android",
@@ -237,7 +257,7 @@ class Maxim:
 	
 	#
 	# #################################################################################################
-	# ####	Low level functions used to call Maxim API and returns True/False and json response	 ######
+	# ####  Low level functions used to call Maxim API and returns True/False and json response  ######
 	# #################################################################################################
 	
 	# #################################################################################################
@@ -334,7 +354,7 @@ class Maxim:
 		return self.do_request( json.dumps( json_data ).encode("utf-8"), "device" )
 
 	# #################################################################################################
-	# ####################################	Live TV calls  ############################################
+	# ####################################  Live TV calls  ############################################
 	# #################################################################################################
 	
 	# #################################################################################################
@@ -696,7 +716,7 @@ class Maxim:
 	
 	#
 	# #################################################################################################
-	# #########	  Higher level functions used to call Maxim API and some response processing  #########
+	# #########   Higher level functions used to call Maxim API and some response processing  #########
 	# #################################################################################################
 	
 	
@@ -907,61 +927,65 @@ class Maxim:
 			if "h265" in filters:
 				h265 = filters["h265"]
 		
-		for cat in [ data["channels"] ]:
-			for channel in cat:
-				
-				if adult == "no" and channel["adult"] == True:
-					continue
+		for channel in data["channels"]:
+			if adult == "no" and channel["adult"] == True:
+				continue
 
-				if adult == "only" and channel["adult"] == False:
-					continue
-				
-				quality=0
-				url=None
-				resolution=None
-				stream_list = {}
-				for stream in channel["stream"]:
-					if "video_codec_name" in stream:
-						vcodec = stream["video_codec_name"]
-					else:
-						vcodec = None
-						
-					stream_list[ stream["quality_id"] ] = { "url": stream["url"], "vcodec": vcodec, "resolution": str(stream["resolution"]) }
-					
-					if stream["quality_id"] > quality:
-						if vcodec != None:
-							if h265 == "no" and vcodec == "h265":
-								continue
-
-							if h265 == "only" and vcodec != "h265":
-								continue
-						
-						quality = stream["quality_id"]
-						url = stream["url"]
-						resolution = stream["resolution"]
-				
-				try:
-					channel_cat = channel["channel_category"][0]["category_plural"]
-				except:
-					try:
-						channel_cat = "Ostatné".decode("utf-8")
-					except:
-						channel_cat = "Ostatné"
-				
-				if channel_cat not in channels:
-					channels[channel_cat] = []
-				
-				if "snapshot" in channel:
-					snapshot = channel["snapshot"]["url"]
+			if adult == "only" and channel["adult"] == False:
+				continue
+			
+			quality=0
+			url=None
+			resolution=None
+			stream_list = {}
+			for stream in channel["stream"]:
+				if "video_codec_name" in stream:
+					vcodec = stream["video_codec_name"]
 				else:
-					snapshot = None
-
-				if "archive" in channel:
-					archive = channel["archive"]
-				else:
-					archive = False
+					vcodec = None
 					
-				channels[channel_cat].append( { "name": channel["name"], "url": url, "resolution": resolution, "logo": channel["logo"], "snapshot" : snapshot, "id_content" : channel["id_content"], "id" : channel["id"], "archive": archive, "streams": stream_list } )
+				stream_list[ stream["quality_id"] ] = {
+					"url": stream["url"].replace('hls://', 'http://'),
+					"vcodec": vcodec,
+					"resolution": str(stream["resolution"])
+				}
+				
+				if stream["quality_id"] > quality:
+					if vcodec != None:
+						if h265 == "no" and vcodec == "h265":
+							continue
+
+						if h265 == "only" and vcodec != "h265":
+							continue
+					
+					quality = stream["quality_id"]
+					url = stream["url"].replace('hls://', 'http://')
+					resolution = stream["resolution"]
+			
+			try:
+				channel_cat = channel["channel_category"][0]
+				
+				if isinstance( channel_cat, int ):
+					channel_cat = data["categories"][str(channel_cat)]['plural']
+				else:
+					channel_cat = channel_cat["category_plural"]
+			except:
+				channel_cat = u"Ostatné"
+			
+			if channel_cat not in channels:
+				channels[channel_cat] = []
+			
+			if "snapshot" in channel:
+				snapshot = channel["snapshot"]["url"]
+			else:
+				snapshot = None
+
+			if "archive" in channel:
+				archive = channel["archive"]
+			else:
+				archive = False
+				
+			channels[channel_cat].append( { "name": channel["name"], "url": url, "resolution": resolution, "logo": channel["logo"], "snapshot" : snapshot, "id_content" : channel["id_content"], "id" : channel["id"], "archive": archive, "streams": stream_list } )
 		
 		return channels
 
