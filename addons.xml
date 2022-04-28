@@ -47,7 +47,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.antiktv" name="Antik TV" provider-name="skyjet" version="1.13">
+<addon id="plugin.video.antiktv" name="Antik TV" provider-name="skyjet" version="1.14">
   <requires>
     <import addon="xbmc.python" version="2.1.0" />
     <import addon="script.module.stream.resolver" version="1.6.22" />
