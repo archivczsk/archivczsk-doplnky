@@ -9,8 +9,10 @@ else
 fi
 
 BUILD_DIR=repo
-echo "Cleaning up *.pyc files.."
+echo "Cleaning up .pyc .pyo and __pycache__ files/dirs ..."
 find . -name '*.pyc' | xargs rm -f
+find . -name '*.pyo' | xargs rm -f
+find . -name __pycache__ | xargs rm -rf
 
 if [ -z $1 ];
 then
