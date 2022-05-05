@@ -1,3 +1,8 @@
+1.15:
+- opravené prehrávanie filmov pri emulácii Antik STB
+- možnosť voľby medzi emuláciou Antik STB a Android TV
+- reorganizácia nastavení
+
 1.14:
 - pridanie možnosti emulácie Antik STB
 - vylepšená aktualizácia nastavení

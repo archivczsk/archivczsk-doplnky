@@ -185,9 +185,9 @@ class Maxim:
 	#
 	# #################################################################################################
 	
-	def getDeviceInfo( self ):
+	def getDeviceInfo( self, force_android=False ):
 		if self.is_stb == True:
-			if self.device_id.startswith('ATK') and len(self.device_id) == 15:
+			if force_android==False and self.device_id.startswith('ATK') and len(self.device_id) == 15:
 				return {
 					"vendor": "Antik",
 					"model": "hi3798mv200_rev4{DISPLAY}",
@@ -516,7 +516,7 @@ class Maxim:
 			"movie_id": movie_id,
 			"key": movie_key,
 			"network_mode": "ott",
-			"device": self.getDeviceInfo()
+			"device": self.getDeviceInfo(force_android=True)
 		}
 		
 		return self.do_request( json.dumps( json_data ).encode("utf-8"), "vod" )

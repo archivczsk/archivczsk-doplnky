@@ -40,7 +40,7 @@ proxy_url = "http://127.0.0.1:18080"
 PROXY_VER='4'
 
 __scriptid__ = 'plugin.video.antiktv'
-__addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
+addon = ArchivCZSK.get_xbmc_addon(__scriptid__)
 
 # #################################################################################################
 
@@ -250,15 +250,15 @@ class antiktvContentProvider(ContentProvider):
 			return False
 			
 		if self.maxim == None:
-			device_id = __addon__.getSetting( 'device_id' )
+			device_id = addon.getSetting( 'device_id' )
 			
 			if len( self.username ) == 0 or len( self.password ) == 0:
 				client.showInfo("Nie su zadané prihlasovacie údaje!\nTeraz sa vrátite do zoznamu pluginov. V ňom nechajte vybraný plugin Antik TV, stlačte tlačidlo MENU a vyberte NASTAVENIA. V nich budete mať možnosť zadať potrebné prihlasovacie údaje.")
 				return False
 			
 			if len( self.device_id ) == 0:
-				self.device_id = Maxim.create_device_id(True)
-				__addon__.setSetting( 'device_id', self.device_id )
+				self.device_id = Maxim.create_device_id( addon.getSetting( 'device_type' ) == "0")
+				addon.setSetting( 'device_id', self.device_id )
 				flush_enigma2_settings()
 			
 			antiktvContentProvider.maxim = Maxim( self.username, self.password, self.device_id, self.region )
@@ -318,7 +318,7 @@ class antiktvContentProvider(ContentProvider):
 		self.load_channel_list('tv')
 		self.load_channel_list('radio')
 		self.load_channel_list('cam')
-		__addon__.setSetting( 'device_id', "" )
+		addon.setSetting( 'device_id', "" )
 		flush_enigma2_settings()
 
 		client.showInfo("Zariadenie odregistrované: " + msg)
@@ -334,7 +334,7 @@ class antiktvContentProvider(ContentProvider):
 		result.append(self.dir_item("VOD balíky", "#vod_packages" ))
 		result.append(self.dir_item("Archív", "#archive" ))
 		
-		if __addon__.getSetting('enable_extra') == "true":
+		if addon.getSetting('enable_extra') == "true":
 			result.append(self.dir_item("Špeciálna sekcia", "#extra" ))
 			
 		return result
@@ -429,12 +429,12 @@ class antiktvContentProvider(ContentProvider):
 		flush_enigma2_settings()
 
 		# if epg generator is disabled, then try to create service references based on lamedb
-		if __addon__.getSetting('enable_xmlepg').lower() == 'true':
+		if addon.getSetting('enable_xmlepg').lower() == 'true':
 			lamedb = None
 		else:
 			lamedb = lameDB("/etc/enigma2/lamedb")
 		
-		player_name = __addon__.getSetting('player_name')
+		player_name = addon.getSetting('player_name')
 		
 		gst_blacklist = []
 		
@@ -456,7 +456,7 @@ class antiktvContentProvider(ContentProvider):
 		file_name = "userbouquet.antiktv_" + channel_type + ".tv"
 		
 		picons = {}
-		picons_enabled = __addon__.getSetting('enable_picons').lower() == 'true'
+		picons_enabled = addon.getSetting('enable_picons').lower() == 'true'
 		
 		with open( "/etc/enigma2/" + file_name, "w" ) as f:
 			f.write( "#NAME Antik " + channel_type + "\n")
@@ -800,10 +800,10 @@ class antiktvContentProvider(ContentProvider):
 		act_time = int(time.time())
 
 		filters = {}
-		if __addon__.getSetting('enable_h265') == "false":
+		if addon.getSetting('enable_h265') == "false":
 			filters["h265"] = "no"
 			
-		if __addon__.getSetting('enable_adult') == "false":
+		if addon.getSetting('enable_adult') == "false":
 			filters["adult"] = "no"
 		
 		if self.channels[channel_type] != None and self.channels['next_load_time'][channel_type] > act_time and self.channels['tv_filters'] == (filters.get('h265', '') + filters.get('adult', '')):
