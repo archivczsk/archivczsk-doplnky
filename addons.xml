@@ -231,7 +231,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.archivo2tv" name="Sledování O2TV" provider-name="misanov,waladir" version="1.5.2">
+<addon id="plugin.video.archivo2tv" name="Sledování O2TV" provider-name="misanov,waladir" version="1.6.0">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.stream.resolver" version="1.6.25" />
