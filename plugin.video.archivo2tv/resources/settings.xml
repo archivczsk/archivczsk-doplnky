@@ -1,23 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-	<category label="Přihlášení">
-        <setting label="Login" type="text" id="username" default=""/>
-        <setting label="Heslo" type="text" id="password" option="true" default=""/>
-        <setting label="Device Id" type="text" id="deviceid" default=""/>
-        <setting label="Device Name" type="text" id="devicename" default="tvbox"/>
-        <setting label="Device Type" type="text" id="devicetype" default="STB"/>
-	</category>
-	<category label="Nastavení">
-        <setting label="Pouze SD kvalita" type="bool" id="only_sd" default="false"/>
-        <setting label="Načítat detaily pořadů a postery (pomalejší)" type="bool" id="details" default="true"/>
-        <setting label="Zobrazovat detaily u budoucích nahrávek (pomalé)" type="bool" id="details_future" default="false"/>
-        <setting label="Přehrávat i po konci pořadu (minut)" type="text" id="offset" default="0"/>
-        <setting label="Historie vyhledávání" type="text" id="search_history" default="10"/>
-        <setting label="Skrýt položku Pořadí kanálů v menu" type="bool" id="hide_channel_list_edit" default="true"/>
-	</category>
-	<category label="Logování">
-        <setting label="Logování požadavků - URL" type="bool" id="log_request_url" default="false"/>
-        <setting label="Logování požadavků - data (logují se i citlivá data!)" type="bool" id="log_request_data" default="false"/>
-        <setting label="Logování odpovědí" type="bool" id="log_response" default="false"/>
+	<setting label="Přihlašovací jméno" type="text" id="username" default=""/>
+	<setting label="Přihlašovací heslo" type="text" id="password" option="true" default=""/>
+	<setting label="ID zařízení" type="text" id="deviceid" default="" visible="false"/>
+	<setting label="Jméno zařízení" type="text" id="devicename" default="tvbox"/>
+	<setting label="Preferovaná kvalita videa" id="quality" type="enum" lvalues="Zeptat se|Nejlepší|Nejhorší|720p|480p|360p" default="1"/>
+	<setting label="Povolit programy pro dospělé" id="enable_adult" type="bool" default="true" />
+	<setting label="Přehrávat i po konci pořadu (minut)" type="text" id="offset" default="0"/>
+	<setting label="Historie vyhledávání" type="text" id="keep-searches" default="20"/>
+	<category label="Speciální">
+		<setting label="Povolit speciální sekci v hlavním menu" id="enable_extra" type="bool" default="false" />
+		<setting label="Generovat XML EPG pre epgimport plugin (pokud je nainstalovaný)" id="enable_xmlepg" type="bool" default="false" />
+		<setting label="Adresář pro vygenerované XML EPG (aspoň 30MB volného místa)" id="xmlepg_dir" type="text" default="/media/hdd" />
+		<setting label="Pro kolik dní dopředu generovať EPG" id="xmlepg_days" type="enum" lvalues="1|2|3|4|5|6|7" default="4"/>
+		<setting label="Při generování userbouquetu automaticky stáhnout picony" id="enable_picons" type="bool" default="false" />
+		<setting label="Přehrávač použitý pro userbouquet" id="player_name" type="enum" lvalues="Předvolený|gstplayer|exteplayer3|DMM|DVB (OE>=2.5)" default="0"/>
 	</category>
 </settings>
