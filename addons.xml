@@ -87,7 +87,7 @@
 
 <addon id="plugin.video.novaplus"
        name="Nova Plus TV"
-       version="2.3.0"
+       version="2.3.1"
        provider-name="Michal Novotny, Jiri Vyhnalek">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
