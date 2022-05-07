@@ -26,11 +26,12 @@ icon =	os.path.join( home, 'icon.png' )
 def get_url(url,headers={}):
 	headers['User-Agent'] = _UserAgent_
 	
-	data = ''
-	with requests.get( url, headers=headers, verify=False ) as response:
-		data = response.text
+	response = requests.get( url, headers=headers, verify=False )
+
+	if response.status_code == 200:
+		return response.text
 	
-	return data
+	return ''
 
 class loguj(object):
 	ERROR = 0

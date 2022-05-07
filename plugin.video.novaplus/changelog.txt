@@ -1,3 +1,5 @@
+2022-05-07
+* oprava kompatibility so starsou verziou requests
 2022-04-04
  * make addon python 3.x compatible
 2022-03-09 (misanov)
