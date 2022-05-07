@@ -261,12 +261,10 @@ class O2tvContentProvider(ContentProvider):
 			epg_id = programs["epgId"]
 			
 			if start.strftime("%A") in day_translation_short:
-				title = programs["name"] + " (" + programs["channelKey"] + " | " + day_translation_short[start.strftime("%A")] + " " + start.strftime("%d.%m %H:%M") + " - " + end.strftime("%H:%M") + ")"
+				title = py2_encode_utf8(programs["name"]) + " (" + py2_encode_utf8(programs["channelKey"]) + " | " + day_translation_short[start.strftime("%A")] + " " + start.strftime("%d.%m %H:%M") + " - " + end.strftime("%H:%M") + ")"
 			else:
-				title = programs["name"] + " (" + programs["channelKey"] + " | " + start.strftime("%a") + " " + start.strftime("%d.%m %H:%M") + " - " + end.strftime("%H:%M") + ")"
+				title = py2_encode_utf8(programs["name"]) + " (" + py2_encode_utf8(programs["channelKey"]) + " | " + start.strftime("%a") + " " + start.strftime("%d.%m %H:%M") + " - " + end.strftime("%H:%M") + ")"
 				
-			title = py2_decode_utf8( title )
-			
 			item = self.video_item( "#play_video#" + json.dumps( { 'key': programs["channelKey"], "from" : startts, "to": endts, "epg_id" : epg_id }))
 			item['title'] = title
 			
@@ -452,9 +450,9 @@ class O2tvContentProvider(ContentProvider):
 				
 				day = date.today() - timedelta(days = i)
 				if i == 0:
-					day_name = u"Dnes"
+					day_name = "Dnes"
 				elif i == 1:
-					day_name = u"Včera"
+					day_name = "Včera"
 				else:
 					if day.strftime("%A") in day_translation:
 						day_name = day_translation[day.strftime("%A")] + " " + day.strftime("%d.%m.%Y")
@@ -464,7 +462,7 @@ class O2tvContentProvider(ContentProvider):
 				if channel['timeshift'] < 1440:
 					i = channel['timeshift']
 					
-				item = self.dir_item( py2_decode_utf8( day_name ), '#archive_program#' + str(i) + '#' + channel_key )
+				item = self.dir_item( py2_encode_utf8( day_name ), '#archive_program#' + str(i) + '#' + channel_key )
 				result.append(item)
 		
 		return result
@@ -496,12 +494,10 @@ class O2tvContentProvider(ContentProvider):
 				else:
 					title = start.strftime("%a") + " " + start.strftime("%d.%m %H:%M") + " - " + end.strftime("%H:%M") + " | " + event["name"]
 					
-				title = py2_decode_utf8( title )
-				
 				plot = event['shortDescription'] if 'shortDescription' in event else None
 				img = event['picture'] if 'picture' in event else None
 				
-				item = self.dir_item( title, "#add_recording#" + str(epg_id) )
+				item = self.dir_item( py2_encode_utf8( title ), "#add_recording#" + str(epg_id) )
 				
 				if plot:
 					item['plot'] = plot
@@ -555,12 +551,11 @@ class O2tvContentProvider(ContentProvider):
 			else:
 				title = start.strftime("%a") + " " + start.strftime("%d.%m %H:%M") + " - " + end.strftime("%H:%M") + " | " + str(event["name"])
 				
-			title = py2_decode_utf8( title )
 			plot = event['shortDescription'] if 'shortDescription' in event else None
 			img = event['picture'] if 'picture' in event else None
 			
 			item = self.video_item( "#play_video#" + json.dumps( { 'key': channel_key, "from" : startts, "to": endts, "epg_id" : epg_id }))
-			item['title'] = title
+			item['title'] = py2_encode_utf8( title )
 			
 			if plot:
 				item['plot'] = plot

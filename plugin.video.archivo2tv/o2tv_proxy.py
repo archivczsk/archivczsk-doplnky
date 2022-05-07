@@ -109,7 +109,7 @@ def _log(message):
 	if is_py3:
 		print('[O2TV-XMLEPG] ' + message)
 	else:
-		print(u'[O2TV-XMLEPG] ' + message.encode('utf-8'))
+		print('[O2TV-XMLEPG] ' + message.encode('utf-8'))
 		
 	try:
 		with open('/tmp/%s_proxy.log' % NAME_PREFIX, 'a') as f:
