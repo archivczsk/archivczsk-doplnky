@@ -1,3 +1,6 @@
+v1.6.3 (2022-05-09)
+- pridaná synchronizácia času po štarte proxy
+
 v1.6.2 (2022-05-07)
 - oprava kódovania reťazcov pre niektoré python2 image
 

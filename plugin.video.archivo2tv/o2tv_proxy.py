@@ -26,7 +26,7 @@ except:
 import base64
 import requests
 import binascii
-from time import time
+from time import time, sleep
 from datetime import datetime, timedelta
 from xml.sax.saxutils import escape
 from o2tv import O2tv
@@ -171,6 +171,24 @@ def init_service_client( settings = None ):
 	if service_client != None:
 		return
 
+	sync_try = 0
+	while int(time()) < 1650358276:
+		_log("Time not synced yet - trying manual sync")
+		
+		# time not synced yet - this will cause O2tv init error, so try to sync manualy
+		if sync_try > 12:
+			break
+			
+		if sync_try > 0:
+			sleep(1)
+		
+		try:
+			os.system( 'rdate -s time.fu-berlin.de' )
+		except:
+			pass
+		
+		sync_try += 1
+		
 	if settings == None:
 		settings = load_settings()
 
@@ -427,7 +445,11 @@ if __name__ == '__main__':
 	with open( pidfile,"w" ) as f:
 		f.write( "%d" % os.getpid() )
 	
-	init_service_client()
+	try:
+		init_service_client()
+	except:
+		_log( "Failed to init %s client" % NAME )
+		_log(traceback.format_exc())
 	
 	# start EPG update thread
 	epg_stop_flag = threading.Event()
