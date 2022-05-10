@@ -143,6 +143,9 @@ def init_maxim( settings = None ):
 	if settings == None:
 		settings = load_settings()
 
+	if settings['device_id'].startswith("ATK"):
+		return
+	
 	if len(settings['device_id']) > 0 and len(settings['username']) > 0 and len( settings['password'] ) > 0:
 		maxim = Maxim( settings['username'], settings['password'], settings['device_id'], settings['region'] )
 	

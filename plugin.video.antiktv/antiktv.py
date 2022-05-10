@@ -248,16 +248,22 @@ class antiktvContentProvider(ContentProvider):
 			self.error("Maxim init error: %s" % maxim_error_str )
 			client.showInfo("Nepodarilo sa inicializovať niektoré časti doplnku!\nSkontrolujte či máte nainštalované nasledujúce knižnice:\n%s" % missing_libs)
 			return False
-			
+		
+		device_id = addon.getSetting( 'device_id' )
+		
+		if device_id.startswith("ATK"):
+			# disable ATK emulation
+			self.unregister_device(True)
+			device_id = ""
+		
 		if self.maxim == None:
-			device_id = addon.getSetting( 'device_id' )
-			
 			if len( self.username ) == 0 or len( self.password ) == 0:
 				client.showInfo("Nie su zadané prihlasovacie údaje!\nTeraz sa vrátite do zoznamu pluginov. V ňom nechajte vybraný plugin Antik TV, stlačte tlačidlo MENU a vyberte NASTAVENIA. V nich budete mať možnosť zadať potrebné prihlasovacie údaje.")
 				return False
 			
 			if len( self.device_id ) == 0:
-				self.device_id = Maxim.create_device_id( addon.getSetting( 'device_type' ) == "0")
+#				self.device_id = Maxim.create_device_id( addon.getSetting( 'device_type' ) == "0")
+				self.device_id = Maxim.create_device_id()
 				addon.setSetting( 'device_id', self.device_id )
 				flush_enigma2_settings()
 			
@@ -301,16 +307,16 @@ class antiktvContentProvider(ContentProvider):
 	
 	# #################################################################################################
 	
-	def unregister_device( self ):
-		answer = client.getYesNoInput(self.session, "Naozaj odregistrovať toto zariadenie z používateľského účtu?")
+	def unregister_device( self, silent=False ):
+		if not silent:
+			answer = client.getYesNoInput(self.session, "Naozaj odregistrovať toto zariadenie z používateľského účtu?")
+		else:
+			answer = True
 		
 		if answer == False:
 			return "Operácia zrušená používateľom"
 
 		ret, msg = self.maxim.unregister_device_id()
-		
-		if ret == False:
-			return "Odhlásanie zlyhalo: " + msg
 		
 		antiktvContentProvider.maxim = None
 		self.maxim = None
@@ -321,7 +327,10 @@ class antiktvContentProvider(ContentProvider):
 		addon.setSetting( 'device_id', "" )
 		flush_enigma2_settings()
 
-		client.showInfo("Zariadenie odregistrované: " + msg)
+		if ret == False:
+			return "Odhlásanie zlyhalo: " + msg
+
+		return "Zariadenie odregistrované: " + msg
 
 	# #################################################################################################
 	

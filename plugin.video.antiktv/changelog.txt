@@ -1,3 +1,6 @@
+1.16:
+- vypnutie emulácie Antik STB
+
 1.15:
 - opravené prehrávanie filmov pri emulácii Antik STB
 - možnosť voľby medzi emuláciou Antik STB a Android TV

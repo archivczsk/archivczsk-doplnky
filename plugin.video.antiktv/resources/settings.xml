@@ -4,7 +4,7 @@
 	<setting label="Prihlasovcie heslo" id="password" type="text" default="" option="true"/>
 	<setting label="ID zariadenia" id="device_id" type="text" default="" visible="false" />
 	<setting label="Región" id="region" type="labelenum" values="SK|CZ" default="SK" />
-	<setting label="Identifikácia zariadenia" id="device_type" type="enum" lvalues="Antik Nano 3|Android TV" default="0" />
+	<setting label="Identifikácia zariadenia" id="device_type" type="enum" lvalues="Antik Nano 3|Android TV" default="1" visible="false"/>
 	<setting label="Povoliť h265 kodek" id="enable_h265" type="bool" default="true" />
 	<setting label="Povoliť programy pre dospelých" id="enable_adult" type="bool" default="true" />
 	<category label="Špeciálne">

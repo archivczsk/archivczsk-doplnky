@@ -265,6 +265,7 @@ class Maxim:
 	# Calls MwGetSettings method
 	#
 	# #################################################################################################
+	
 	def call_MwGetSettings( self, request_type="normal" ):
 		json_data = {
 			"function": "MwGetSettings",
@@ -793,6 +794,9 @@ class Maxim:
 		
 		if "ping" in data:
 			for i in 1,2,3,4,5:
+				if not "ping" in data:
+					break
+				
 				time.sleep(1)
 				ok, data = self.call_MwSyncCallbackPing( data["ping"] )
 				
