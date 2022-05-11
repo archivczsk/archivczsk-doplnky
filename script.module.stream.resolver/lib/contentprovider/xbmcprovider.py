@@ -196,7 +196,8 @@ class XBMContentProvider(object):
 							resolveTitle = item.get('resolveTitle',''),
 							customTitle = item.get('customTitle',''),
 							customFname = item.get('customFname',''),
-							addonDataItem = item.get('customDataItem',''))
+							addonDataItem = item.get('customDataItem',''),
+							player_settings = item.get('playerSettings'))
 			else:
 				xbmcutil.add_play(params['title'],
 						data['title'],
@@ -209,7 +210,8 @@ class XBMContentProvider(object):
 						resolveTitle = data.get('resolveTitle',''),
 						customTitle = data.get('customTitle',''),
 						customFname = data.get('customFname',''),
-						addonDataItem = data.get('customDataItem',''))
+						addonDataItem = data.get('customDataItem',''),
+						player_settings = data.get('playerSettings'))
 
 
 

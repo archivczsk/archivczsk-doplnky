@@ -287,7 +287,7 @@ def add_video(name, params={}, logo=None, infoLabels={}, menuItems={}, addonData
 		except:
 			add_dir(name, params, logo=logo, infoLabels=infoLabels, menuItems=menuItems)
 
-def add_play(title, provider_name, quality, url, subs=None, filename=None, image=None, infoLabels={}, menuItems={},headers={}, lang=None, resolveTitle=None, customTitle=None, customFname=None, addonDataItem=None):
+def add_play(title, provider_name, quality, url, subs=None, filename=None, image=None, infoLabels={}, menuItems={},headers={}, lang=None, resolveTitle=None, customTitle=None, customFname=None, addonDataItem=None, player_settings=None):
 
 	if customTitle:
 		title = customTitle
@@ -297,6 +297,10 @@ def add_play(title, provider_name, quality, url, subs=None, filename=None, image
 	infoLabels['title'] = replace_diacritic2(title)
 
 	settings = {"extra-headers":headers}
+	
+	if player_settings:
+		settings.update( player_settings )
+		
 	title = replace_diacritic2(title)
 	quality = replace_diacritic2(quality)
 	provider_name = replace_diacritic2(provider_name)
