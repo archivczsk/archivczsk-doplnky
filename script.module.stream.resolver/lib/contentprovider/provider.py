@@ -191,6 +191,9 @@ class ContentProvider(object):
 		else:
 			result.append(item)
 
+	def debug(self, msg):
+		util.debug('[%s] %s' % (self.name, msg))
+
 	def info(self, msg):
 		util.info('[%s] %s' % (self.name, msg))
 
@@ -208,6 +211,19 @@ class ContentProvider(object):
 
 		"""
 		pass
+	
+	def stats_ext(self, item, action, extra_params):
+		"""
+		Lists content on given url
+		Args:
+					item
+
+		Returns:
+			nothing
+
+		"""
+		pass
+	
 	def trakt(self, item, action):
 		"""
 		make some action with trakt.tv

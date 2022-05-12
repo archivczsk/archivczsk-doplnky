@@ -1,3 +1,6 @@
+1.9.4 (2022-05-13)
+    - added support for extended stats
+    - added possibility to set player settings from addon
 1.9.3 (2022-04-08)
     - added dailymotion resolver
 1.9.2 (2022-04-07)

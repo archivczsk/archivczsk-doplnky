@@ -77,14 +77,24 @@ class XBMContentProvider(object):
 		elif 'search-edit' in list(params.keys()):
 			return self.search_edit(params['search-edit'])
 		elif 'stats' in list(params.keys()):
-			if 'stats' in self.provider.capabilities():
+			if 'stats' in self.provider.capabilities() or 'stats-ext' in self.provider.capabilities():
 				itm = None
 				if 'item' in list(params.keys()):
 					itm = params['item']
+
+				extra_params = {}
+				if 'lastPlayPos' in params:
+					extra_params['lastPlayPos'] = params['lastPlayPos']
+					
 				rslog.logDebug("XBMC run stats '%s'"%params['stats'])
-				self.provider.stats(itm, params['stats'])
+				if 'stats' in self.provider.capabilities():
+					self.provider.stats(itm, params['stats'])
+				
+				if 'stats-ext' in self.provider.capabilities():
+					self.provider.stats_ext(itm, params['stats'], extra_params)
 			else:
 				rslog.logDebug("'%s' dont have capability 'stats'"%self.provider)
+
 		elif 'trakt' in list(params.keys()):
 			if 'trakt' in self.provider.capabilities():
 				itm = None
