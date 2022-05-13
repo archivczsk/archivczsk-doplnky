@@ -1,29 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-    <setting label="30101" id="wsuser" type="text" default="" />
-    <setting label="30102" id="wspass" type="text" default="" option="true" />
-    <setting label="VIP days" id="wsvipdays" type="text" default="0" />
-    <setting label="30204" id="trakt_enabled" type="bool" default="false" />
-    <setting label="30205" id="trakt_filter" type="enum" lvalues="302051|302052|302053" default="0"/>
-    <setting label="30107" id="item_filter_lang" type="enum" lvalues="301071|301072|301073|301074|301075" default="0" />
-    <setting label="30108" id="keep-searches" type="text" default="10"/>
-  
-    <!--<setting label="30106" id="auto_subs" type="bool" default="true" />-->
+	<setting label="Zobraziť žáner v názve položky" id="show-genre" type="bool" default="false" />
+	<setting label="Zobraziť starú štruktúru menu" id="old-menu" type="bool" default="false" />
+	<setting label="30108" id="keep-searches" type="labelenum" values="0|5|10|15|20|25|30|35|40|45|50" default="20"/>
+	<setting label="Počet posledných videných položiek" id="keep-last-seen" type="labelenum" values="0|5|10|15|20|25|30|35|40|45|50" default="20"/>
+	<setting label="Ukladať pozíciu prehrávania u videných položiek" id="save-last-play-pos" type="bool" default="false"/>
+	<setting label="30204" id="trakt_enabled" type="bool" default="false" visible="false"/>
+	
+	<setting label="DeviceId" id="deviceid" type="text" default="" visible="false"/>
 
-    <category label="30200">
-        <setting label="30103" id="item_order_country" type="enum" lvalues="301031|301032" default="0" />
-        <setting label="30104" id="item_order_quality" type="enum" lvalues="301031|301032" default="0" />
-        <setting label="30105" id="item_order_genre" type="enum" lvalues="301031|301032" default="0" />
-
-        <setting label="30202" id="stream_max_size" type="enum" lvalues="302021|302022|302023|302024|302025|302026|302027|302028" default="0" />
-        <setting label="30203" id="filter_hevc_3d" type="bool" default="false" />
-        
-        <setting label="Trakt token" id="trakt_token" type="text" default="" visible="false" />
-        <setting label="Trakt refresh token" id="trakt_refresh_token" default="" type="text" visible="false" />
-        <setting label="Token expire" id="trakt_token_expire" type="text" default="0" visible="false" />
-      
-        <setting label="30201" id="use_https" type="bool" default="false" />
-        <setting label="DeviceId" id="deviceid" type="text" default="" visible="false"/>
-        <setting label="Debug" id="debug_enabled" type="bool" default="false" visible="false"/>
-    </category>
+	<category label="Účty">
+		<setting label="Prihlasovacie meno (kra.sk)" id="kruser" type="text" default="" />
+		<setting label="Heslo (kra.sk)" id="krpass" type="text" default="" option="true" />
+		<setting label="Zostávajúce dni predplatného (kra.sk)" id="krvipdays" type="number" default="0" />
+		<setting label="Prihlasovacie meno (webshare.cz)" id="wsuser" type="text" default="" />
+		<setting label="Heslo (webshare.cz)" id="wspass" type="text" default="" option="true" />
+		<setting label="Zostávajúce dni predplatného (webshare.cz)" id="wsvipdays" type="number" default="0" />
+		<setting label="Používať primárne webshare vyhľadávanie" id="webshare-primary" type="bool" default="false" />
+	</category>
+	<category label="Filtre">
+		<setting label="Preferovaný jazyk pre položky a vyhľadávanie" id="lang" type="labelenum" values="CZ|SK|EN" default="CZ" />
+		<setting label="Vekové obmedzenie" id="maturity-rating" type="enum" lvalues="Žiadne|0|6|12|15" default="0" />
+		<setting label="Filter položiek podľa jazyka" id="item-lang-filter" type="enum" lvalues="Všetky|Iba dabing alebo titulky|Iba dabing" default="0" />
+		<setting label="Filter streamov podľa jazyka" id="stream-lang-filter" type="enum" lvalues="301071|301072|301073|301074|301075" default="0" />
+		<setting label="Minimálna ponúkaná kvalita streamu" id="min-quality" type="labelenum" values="Všetko|720p|1080p|4k" default="720p" />
+		<setting label="Maximálna ponúkaná kvalita streamu" id="max-quality" type="labelenum" values="720p|1080p|4k|8k" default="4k" />
+		<setting label="Zobraziť súbory s HDR" id="show-hdr" type="bool" default="true" />
+		<setting label="Zobraziť súbory s Dolby Vision (3D filmy)" id="show-dv" type="bool" default="false" />
+		<setting label="Povoliť h265/hevc kodek" id="enable-hevc" type="bool" default="true" />
+		<setting label="Maximálna veľkosť streamu (v GB)" id="max-file-size" type="number" default="0" />
+		<setting label="30205" id="trakt_filter" type="enum" lvalues="302051|302052|302053" default="0" visible="false"/>
+	</category>
 </settings>

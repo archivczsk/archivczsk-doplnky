@@ -1,3 +1,10 @@
+2022-05-13 2.0.0
+    - kompletne nový addon
+    - podpora nového SC API
+    - rozsirene moznosti filtrovania a triedenia
+    - podpora uloziska kraska
+    - podpora vyhladavania na webshare
+
 2022-04-07 1.4.1
     - fixed webshare login on python 3.x
     - fixed showing item descriptions
