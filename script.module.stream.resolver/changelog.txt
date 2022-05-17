@@ -1,3 +1,5 @@
+1.9.5 (2022-05-17)
+    - ignore error when loading search items
 1.9.4 (2022-05-13)
     - added support for extended stats
     - added possibility to set player settings from addon

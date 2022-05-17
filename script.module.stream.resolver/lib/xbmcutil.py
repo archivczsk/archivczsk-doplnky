@@ -170,19 +170,22 @@ def get_searches(addon, server, maximum=10):
 	local = os.path.join(local, server)
 	if not os.path.exists(local):
 		return []
-	f = open(local, 'r')
-	data = f.read()
-	searches = json.loads(py2_decode_utf8( data ))
-	f.close()
+	try:
+		with open(local, 'r') as f:
+			searches = json.load(f)
+	except:
+		searches = []
 
 	remove = len(searches) - maximum
 	if remove > 0:
 		for i in range(remove):
 			searches.pop()
-	f = open(local, 'w')
-	f.write(json.dumps(searches, ensure_ascii=True))
-	f.close()
+			
+		with open(local, 'w') as f:
+			json.dump(searches, f)
+
 	return searches
+
 
 def add_search(addon, server, search, maximum):
 	searches = []
@@ -191,10 +194,12 @@ def add_search(addon, server, search, maximum):
 		os.makedirs(local)
 	local = os.path.join(local, server)
 	if os.path.exists(local):
-		f = open(local, 'r')
-		data = f.read()
-		searches = json.loads(py2_decode_utf8( data ))
-		f.close()
+		try:
+			with open(local, 'r') as f:
+				searches = json.load(f)
+		except:
+			searches = []
+
 	if search in searches:
 		searches.remove(search)
 	searches.insert(0, search)
@@ -202,9 +207,10 @@ def add_search(addon, server, search, maximum):
 	if remove > 0:
 		for i in range(remove):
 			searches.pop()
-	f = open(local, 'w')
-	f.write(json.dumps(searches, ensure_ascii=True))
-	f.close()
+			
+	with open(local, 'w') as f:
+		json.dump(searches, f)
+
 
 def remove_search(addon, server, search):
 	local = addon.get_info('profile')
@@ -212,14 +218,15 @@ def remove_search(addon, server, search):
 		return
 	local = os.path.join(local, server)
 	if os.path.exists(local):
-		f = open(local, 'r')
-		data = f.read()
-		searches = json.loads(py2_decode_utf8( data ))
-		f.close()
+		try:
+			with open(local, 'r') as f:
+				searches = json.load(f)
+		except:
+			searches = []
 		searches.remove(search)
-		f = open(local, 'w')
-		f.write(json.dumps(searches, ensure_ascii=True))
-		f.close()
+		with open(local, 'w') as f:
+			json.dump(searches, f)
+
 
 def edit_search(addon, server, search, replacement):
 	local = addon.get_info('profile')
@@ -227,15 +234,17 @@ def edit_search(addon, server, search, replacement):
 		return
 	local = os.path.join(local, server)
 	if os.path.exists(local):
-		f = open(local, 'r')
-		data = f.read()
-		searches = json.loads(py2_decode_utf8( data ))
-		f.close()
+		try:
+			with open(local, 'r') as f:
+				searches = json.load(f)
+		except:
+			searches = []
+
 		searches.remove(search)
 		searches.insert(0, replacement)
-		f = open(local, 'w')
-		f.write(json.dumps(searches, ensure_ascii=True))
-		f.close()
+		with open(local, 'w') as f:
+			json.dump(searches, f)
+
 
 def add_search_item(name, params, logo=None, infoLabels={}, menuItems={}):
 	name = decode_html(name)
