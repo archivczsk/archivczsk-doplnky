@@ -322,7 +322,7 @@
   </extension>
 </addon>
 
-<addon id="script.module.stream.resolver" name="stream resolver" provider-name="Libor Zoubek" version="1.9.4">
+<addon id="script.module.stream.resolver" name="stream resolver" provider-name="Libor Zoubek" version="1.9.5">
   <requires>
     <import addon="xbmc.python" version="2.1.0" />
 
