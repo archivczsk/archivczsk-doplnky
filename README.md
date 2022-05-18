@@ -10,7 +10,6 @@ Tyto doplňky neposkytují žádný obsah, jen simulují prohlížeč veřejně 
 | Doplnok       | Portovany          | Test v py2         | Test v py3         | Funguje             | Poznamka            |
 | ---           | :---:              | :---:              | :---:              | :---:               | ---                 |
 | aktualne      | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  |
-| antiktv       | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  |
 | archivo2tv    | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  |
 | barrandov.tv  | odstraneny         |          -         |          -         |                     | Stranka komplet zmenena a vyzaduje predplatne
 | befun.cz      | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | Ciastocne           | Filmy su na streamuj.tv, ktory nie je podporovany
