@@ -833,7 +833,11 @@ class StreamCinemaContentProvider(ContentProvider):
 		if url == '#':
 			return None
 		elif url.startswith( '#webshare#' ):
-			return self.video_item( self.webshare.resolve( url[10:] ) )
+			try:
+				return self.video_item( self.webshare.resolve( url[10:] ) )
+			except Exception as e:
+				client.add_operation('SHOW_MSG', { 'msg': str(e), 'msgType': 'error', 'msgTimeout': 0, 'canClose': True, })
+				return None
 		
 		return self.resolve_video_streams( url )
 	

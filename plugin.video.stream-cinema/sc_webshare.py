@@ -50,6 +50,7 @@ class Webshare():
 				# load access token
 				with open(os.path.join(self.data_dir, 'webshare_login.json'), "r") as f:
 					self.login_data = json.load(f)
+					self.login_data['load_time'] = 0 # this will force reload of user data
 					self.log_function("Webshare login data loaded from cache")
 			except:
 				pass
@@ -58,15 +59,15 @@ class Webshare():
 	
 	def save_login_data(self):
 		if self.data_dir:
-			with open(os.path.join(self.data_dir, 'webshare_login.json'), "w") as f:
-				json.dump(self.login_data, f )
+				with open(os.path.join(self.data_dir, 'webshare_login.json' ), "w") as f:
+					json.dump(self.login_data, f )
 
 	# #################################################################################################
 	
 	def login(self):
 		if not self.username or len(self.username) == 0 or not self.password or len(self.password) == 0:
 			 self.log_function( "Nezadané prihlasovacie údaje pre Webshare - pokračujem s free účtom" )
-			 return
+			 raise WebshareNoSubsctiption( "Nezadané prihlasovacie údaje pre Webshare - pokračujem s free účtom" )
 		
 		try:
 #			self.log_function("Trying to get salt")
@@ -98,7 +99,6 @@ class Webshare():
 
 
 		self.login_data['token'] = xml.find('token').text
-		self.login_data['checksum'] = self.get_chsum()
 		
 	# #################################################################################################
 	
@@ -130,6 +130,9 @@ class Webshare():
 	# #################################################################################################
 
 	def get_chsum(self):
+		if not self.username or not self.password or len(self.username) == 0 or len( self.password) == 0:
+			return None
+		
 		return md5(
 			"{}|{}".format(self.password.encode('utf-8'),
 						   self.username.encode('utf-8')).encode('utf-8')).hexdigest()
@@ -157,8 +160,6 @@ class Webshare():
 		vipDays = xml.find('vip_days').text
 		ident = xml.find('ident').text
 
-
-
 		status = xml.find('status').text
 		if status != 'OK':
 			raise WebshareLoginFail( "%s" % status or "Nepodarilo sa získať informácie o užívateľovi" )
@@ -180,21 +181,23 @@ class Webshare():
 
 	def refresh_login_data(self, try_nr=0):
 		try:
-			if len(self.login_data) == 0 or self.login_data.get('checksum','') != self.get_chsum():
+			login_checksum = self.get_chsum()
+			if len(self.login_data) == 0 or self.login_data.get('checksum','') != login_checksum:
 				# data not loaded from cache - do fresh login
-				self.login_data = {}
+				self.login_data = { "checksum": login_checksum }
 				self.login()
-			
-			if not 'expiration' in self.login_data or self.login_data.get('load_time', 0) + (3600*24) < int(time()):
-				self.get_user_info()
 				
-			if int(time()) > self.login_data['expiration']:
-				raise WebshareNoSubsctiption("Platnosť predplatného vypršala")
+			if 'token' in self.login_data:
+				if not 'expiration' in self.login_data or self.login_data.get('load_time', 0) + (3600*24) < int(time()):
+					self.get_user_info()
+				
+				if int(time()) > self.login_data['expiration']:
+					self.log_function("Platnosť WebShare predplatného vypršala")
 
 		except Exception as e:
-			if try_nr == 0:
-				self.login_data = {}
-				
+			if try_nr == 0 and 'token' in self.login_data:
+				del self.login_data['token']
+			
 				# something failed try once more time with fresh login
 				self.refresh_login_data(try_nr+1)
 			else:
@@ -202,12 +205,22 @@ class Webshare():
 				self.save_login_data()
 		
 		return self.login_data.get('days_left', -1)
-	 
+	
 	# #################################################################################################
 	
 	def resolve(self, ident, dwnType='video_stream'):
 		self.refresh_login_data()
 		
+		if self.login_data.get('checksum') is not None:
+			# if there are login data provided, then check valid subscription
+			token = self.login_data.get('token')
+	
+			if not token:
+				raise WebshareLoginFail("Neplatné prihlasovacie údaje")
+			
+			if int(time()) > self.login_data.get('expiration', 0):
+				raise WebshareLoginFail("Platnosť predplatného vypršala")
+
 		data = self.call_ws_api('/api/file_link/', {'ident':ident, 'download_type': dwnType, 'device_uuid': self.device_id } )
 
 		xml = ET.fromstring(data)
