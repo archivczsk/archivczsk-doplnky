@@ -1,2 +1,0 @@
-[B]1.4.1:[/B]
-Rewrite version

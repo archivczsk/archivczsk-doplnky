@@ -1,8 +1,0 @@
-[B]1.1.0[/B]
-- make addon python 3.x compatible
-
-[B]1.0.1[/B]
-converted icon to 8-bit png
-
-[B]1.0.0:[/B]
-Initial version

@@ -1,5 +1,0 @@
-[B]1.0.1[/B]
-converted icon to 8-bit png
-
-[B]1.0.0:[/B]
-Initial version

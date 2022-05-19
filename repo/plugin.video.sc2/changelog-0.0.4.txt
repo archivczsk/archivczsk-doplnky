@@ -1,8 +1,0 @@
-2020-05-17
- * oprava chybne ulozeneho souboru
-
-2020-05-16
- * moznost prehravani/stahovani bez WS registrace (free ucet)
-
-2020-05-04
- * SC2 - first release

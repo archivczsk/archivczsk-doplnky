@@ -1,5 +1,0 @@
-2021-01-22
- * Pridano nastaveni PIN pro blokovane kanaly
-
-2020-10-05
- * Sledovani.tv - first release

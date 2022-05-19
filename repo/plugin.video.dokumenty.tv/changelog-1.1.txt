@@ -1,5 +1,0 @@
-v1.1
-- make addon python 3.x compatible
-
-v1.0
-- initial release
