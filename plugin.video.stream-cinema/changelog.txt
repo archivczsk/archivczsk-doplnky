@@ -1,3 +1,7 @@
+2022-05-13 2.0.1
+    - pridanie možnosti prehrať trailer
+    - oprava pádu pri filtrovaní streamov
+
 2022-05-13 2.0.0
     - kompletne nový addon
     - podpora nového SC API

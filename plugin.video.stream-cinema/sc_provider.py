@@ -388,6 +388,14 @@ class StreamCinemaContentProvider(ContentProvider):
 				item = None
 				
 			if item:
+				trailer = menu_item.get('info',{}).get('trailer')
+				if trailer:
+					menu = { "Prehrať trailer": { "play" : '#direct#' + trailer, 'title': item['title'] }}
+					if 'menu' in item and menu:
+						item['menu'].update(menu)
+					else:
+						item['menu'] = menu
+				
 				if '/latest' not in url:
 					menu = self.create_ctx_menu(url, resp.get('filter'), resp.get('system',{}).get('addSortMethods'))
 					if 'menu' in item and menu:
@@ -697,8 +705,11 @@ class StreamCinemaContentProvider(ContentProvider):
 	def parse_hr_size( self, size ):
 		units = {"B": 1, "KB": 2**10, "MB": 2**20, "GB": 2**30, "TB": 2**40}
 		
-		number, unit = [string.strip() for string in size.split()]
-		return int(float(number)*units[unit])
+		try:
+			number, unit = [string.strip() for string in size.split()]
+			return int(float(number.replace(',','')) * units[unit])
+		except:
+			return None
 	
    # #################################################################################################
    
@@ -706,12 +717,13 @@ class StreamCinemaContentProvider(ContentProvider):
 		result = []
 		
 		for strm in streams:
-			self.info( "Filtering stream")
+			self.debug( "Filtering stream [%s%s][%s][%s][%s]" % (strm.get('quality', '???'), strm.get('vinfo', '???' ), strm.get('size', '???'), strm.get('lang', '???'), strm.get('ainfo', '???')[2:].replace('[','').replace(']','')))
 			
 			# stream size filter
 			if self.settings['max-file-size'] > 0:
-				if self.parse_hr_size(strm.get('size', '0 B')) > self.settings['max-file-size']:
-					self.debug( "Stream filtered due size")
+				file_size = self.parse_hr_size(strm.get('size', '0 B'))
+				if file_size and file_size > self.settings['max-file-size']:
+					self.debug( "Stream filtered due size %s" % strm.get('size', '???'))
 					continue
 			
 			# hevc filter
@@ -788,7 +800,7 @@ class StreamCinemaContentProvider(ContentProvider):
 							self.debug( "Stream filtered due lang 2")
 							continue
 			
-			self.info( "Stream added")
+			self.debug( "Stream added")
 			# strm passed filtering
 			result.append(strm)
 			
@@ -832,6 +844,19 @@ class StreamCinemaContentProvider(ContentProvider):
 		
 		if url == '#':
 			return None
+		elif url.startswith( '#direct#' ):
+			url = url[8:]
+			if 'youtube.com' in url:
+				video_formats = client.getVideoFormats(url)
+				if video_formats and len(video_formats) > 0:
+					video_url = [video_formats[-1]]
+					url = video_url[0]['url']
+				else:
+					return None
+			
+			item['url'] = url
+			item['title'] = 'Trailer'
+			return item
 		elif url.startswith( '#webshare#' ):
 			try:
 				return self.video_item( self.webshare.resolve( url[10:] ) )
