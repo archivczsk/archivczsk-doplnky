@@ -236,8 +236,11 @@ class VideaceskyContentProvider(ContentProvider):
 
 			from Plugins.Extensions.archivCZSK.engine import client
 			video_formats = client.getVideoFormats(playlist_item['file'])
-			video_url = [video_formats[-1]]
-			print( video_url )
+			if video_formats and len(video_formats) > 0:
+				video_url = [video_formats[-1]]
+				print( video_url )
+			else:
+				raise ResolveException('Video nenalezeno')
 			subs = playlist_item['tracks']
 			if video_url and subs:
 				for i in video_url:

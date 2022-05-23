@@ -538,9 +538,12 @@ def play_trailer(id):
 		name = video.get('name','') or 'Trailer'
 		if 'youtube.com' in url:
 			video_formats = client.getVideoFormats(url)
-			video_url = [video_formats[-1]]
-			if video_url[0]['url']:
-				add_video(lang.upper()+": "+name,video_url[0]['url'],None,None)
+			if video_formats and len(video_formats) > 0:
+				video_url = [video_formats[-1]]
+				if video_url[0]['url']:
+					add_video(lang.upper()+": "+name,video_url[0]['url'],None,None)
+			else:
+				raise Exception("Video not found")
 		else:
 			add_video(lang.upper()+": "+name,url,None,None)
 #		from Plugins.Extensions.archivCZSK.engine.player.player import Player

@@ -1,3 +1,5 @@
+[B]1.1.0:[/B] 27.05.2022
+- oprava pádu pri nedostupnosti videa
 [B]1.1.0:[/B] 04.04.2022
 - make addon python 3.x compatible
 [B]1.0.25:[/B] 2. 1. 2019

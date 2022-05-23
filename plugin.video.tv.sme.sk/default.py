@@ -172,9 +172,10 @@ class TVSMEContentProvider(ContentProvider):
 		print( "url: %s" % url )
 		result = []
 		video_formats = client.getVideoFormats(url)
-		video_url = [video_formats[-1]]
-		print( 'videourl: %s' % video_url[:] )
-		if not video_url[:]:
+		if video_formats and len(video_formats) > 0:
+			video_url = [video_formats[-1]]
+			print( 'videourl: %s' % video_url[:] )
+		else:
 			raise ResolveException('Video nenalezeno')
 		i = video_url[:][0]
 		item = self.video_item()
