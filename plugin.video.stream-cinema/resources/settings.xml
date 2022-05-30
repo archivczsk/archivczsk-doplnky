@@ -5,7 +5,7 @@
 	<setting label="30108" id="keep-searches" type="labelenum" values="0|5|10|15|20|25|30|35|40|45|50" default="20"/>
 	<setting label="Počet posledných videných položiek" id="keep-last-seen" type="labelenum" values="0|5|10|15|20|25|30|35|40|45|50" default="20"/>
 	<setting label="Ukladať pozíciu prehrávania u videných položiek" id="save-last-play-pos" type="bool" default="false"/>
-	<setting label="30204" id="trakt_enabled" type="bool" default="false" visible="false"/>
+	<setting label="30204" id="trakt_enabled" type="bool" default="false"/>
 	
 	<setting label="DeviceId" id="deviceid" type="text" default="" visible="false"/>
 

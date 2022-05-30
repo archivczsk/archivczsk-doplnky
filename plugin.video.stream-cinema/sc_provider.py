@@ -10,6 +10,8 @@ from datetime import date, timedelta, datetime
 from Plugins.Extensions.archivCZSK.engine import client
 
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
+from Plugins.Extensions.archivCZSK.version import version as archivczsk_version
+from Plugins.Extensions.archivCZSK.engine.trakttv import trakttv
 
 from sc_cache import ExpiringLRUCache
 import util
@@ -59,19 +61,26 @@ API_VERSION='2.0'
 
 addon = ArchivCZSK.get_xbmc_addon('plugin.video.stream-cinema')
 
+XX=1
+
 # #################################################################################################
 
 class SCWatched:
 	
 	# #################################################################################################
 	
-	def __init__(self, data_dir, max_items=50 ):
+	def __init__(self, data_dir, tapi = None, max_items=50 ):
 		self.max_items = max_items
 		self.data_dir = data_dir
 		self.watched_file = os.path.join( self.data_dir, "watched.json" )
 		self.need_save = False
+		self.tapi = tapi
 		self.items = {}
 		self.load()
+		self.trakt_need_reload = True
+		self.trakt_movies = {}
+		self.trakt_shows = {}
+
 	
 	# #################################################################################################
 	
@@ -130,7 +139,7 @@ class SCWatched:
 			self.need_save = True
 			
 	# #################################################################################################
-	
+
 	def remove(self, wtype, url ):
 		if wtype in self.items:
 			type_root = self.items[wtype]
@@ -162,7 +171,103 @@ class SCWatched:
 			return self.items['last_played_position'].get(url, {}).get('pos', 0)
 		
 		return 0
+	
+	# #################################################################################################
+	
+	def load_trakt_watched(self):
+		self.items['trakt'] = { 'm': [], 's': [] }
+		self.trakt_movies = { 'trakt': {}, 'tvdb': {}, 'tmdb': {}, 'imdb': {} }
+		self.trakt_shows = { 'trakt': {}, 'tvdb': {}, 'tmdb': {}, 'imdb': {} }
 		
+		try:
+			self.items['trakt']['m'], self.items['trakt']['s'] = self.tapi.get_watched()
+			
+			# create search index for movies
+			for item in self.items['trakt']['m']:
+				for id_name in [ 'trakt', 'tvdb', 'tmdb', 'imdb' ]:
+					if id_name in item:
+						self.trakt_movies[id_name][ item[id_name] ] = item
+
+			# create search index for shows
+			for item in self.items['trakt']['s']:
+				for id_name in [ 'trakt', 'tvdb', 'tmdb', 'imdb' ]:
+					if id_name in item:
+						self.trakt_shows[id_name][ item[id_name] ] = item
+			
+		except:
+			util.error( traceback.format_exc() )
+	
+	# #################################################################################################
+	
+	def save_trakt_watched(self):
+		pass
+		
+	# #################################################################################################
+	
+	def is_trakt_watched_movie(self, unique_ids ):
+		if self.trakt_need_reload and self.tapi and self.tapi.valid():
+			self.load_trakt_watched()
+			self.trakt_need_reload = False
+			
+		for k, v in unique_ids.items():
+			if k in self.trakt_movies:
+				if v in self.trakt_movies[k]:
+					return True
+		
+		return False
+
+	# #################################################################################################
+
+	def is_trakt_watched_show(self, unique_ids, season, episode ):
+		if self.trakt_need_reload and self.tapi and self.tapi.valid():
+			self.load_trakt_watched()
+			self.trakt_need_reload = False
+
+		for k, v in unique_ids.items():
+			if k in self.trakt_shows:
+				if v in self.trakt_shows[k]:
+					if season in self.trakt_shows[k][v]['s']:
+						if episode in self.trakt_shows[k][v]['s'][season]:
+							return True
+					break
+				
+		return False
+
+	# #################################################################################################
+	
+	def is_trakt_watched_serie(self, unique_ids, seasons_count=-1 ):
+		if self.trakt_need_reload and self.tapi and self.tapi.valid():
+			self.load_trakt_watched()
+			self.trakt_need_reload = False
+
+		for k, v in unique_ids.items():
+			if k in self.trakt_shows:
+				if v in self.trakt_shows[k]:
+					if len( self.trakt_shows[k][v]['s'] ) == seasons_count:
+						return True, True
+					else:
+						return True, False
+				
+		return False, False
+
+	# #################################################################################################
+	
+	def is_trakt_watched_season(self, unique_ids, season, episodes_count=-1 ):
+		if self.trakt_need_reload and self.tapi and self.tapi.valid():
+			self.load_trakt_watched()
+			self.trakt_need_reload = False
+
+		for k, v in unique_ids.items():
+			if k in self.trakt_shows:
+				if v in self.trakt_shows[k]:
+					if season in self.trakt_shows[k][v]['s']:
+						if len( self.trakt_shows[k][v]['s'][season] ) == episodes_count:
+							return True, True
+						else:
+							return True, False
+				
+		return False, False
+	
 # #################################################################################################
 
 cache = ExpiringLRUCache( 100, 3600 )
@@ -174,6 +279,7 @@ class StreamCinemaContentProvider(ContentProvider):
 	webshare_init_params = None
 	watched = None
 	watched_init_params = None
+	tapi = None
 	
 	# #################################################################################################
 	
@@ -212,6 +318,7 @@ class StreamCinemaContentProvider(ContentProvider):
 			"keep-last-seen": int(addon.getSetting('keep-last-seen')),
 			"webshare-primary": addon.getSetting('webshare-primary') == 'true',
 			"wsvipdays": int(addon.getSetting('wsvipdays')),
+			"trakt_enabled": addon.getSetting('trakt_enabled') == 'true',
 		}
 
 		kruser = addon.getSetting('kruser')
@@ -255,11 +362,13 @@ class StreamCinemaContentProvider(ContentProvider):
 			self.info("New instance of Webshare initialised")
 		
 		self.webshare = StreamCinemaContentProvider.webshare
+
+		self.tapi = trakttv
 		
 		if StreamCinemaContentProvider.watched and StreamCinemaContentProvider.watched_init_params == self.settings['keep-last-seen']:
 			self.info("Watched cache already loaded")
 		else:
-			StreamCinemaContentProvider.watched = SCWatched( self.data_dir, self.settings['keep-last-seen'] )
+			StreamCinemaContentProvider.watched = SCWatched( self.data_dir, self.tapi, self.settings['keep-last-seen'] )
 			StreamCinemaContentProvider.watched_init_params = self.settings['keep-last-seen']
 			self.info("New instance of Watched cache initialised")
 		
@@ -269,6 +378,7 @@ class StreamCinemaContentProvider(ContentProvider):
 	
 	def call_sc_api(self, url, data = None, params = None):
 		err_msg = None
+		url_short = url
 		
 		if not url.startswith("https://"):
 			url = "https://stream-cinema.online/kodi" + url
@@ -279,6 +389,7 @@ class StreamCinemaContentProvider(ContentProvider):
 			'lang': self.lang_list[0],
 		}
 
+		# extract params from url and add them to default_params
 		u = urlparse( url )
 		default_params.update( dict(parse_qsl( u.query )) )
 		url = urlunparse( (u.scheme, u.netloc, u.path, '', '', '') )
@@ -307,7 +418,8 @@ class StreamCinemaContentProvider(ContentProvider):
 
 		try:
 			headers = {
-				'User-Agent' : 'Kodi/19 (X11; U; Unknown i686) (cs; ver0)',
+#				'User-Agent' : 'Kodi/19 (X11; U; Unknown i686) (cs; ver0)',
+				'User-Agent' : 'archivCZSK/%s (plugin.video.stream-cinema/%s)' % (archivczsk_version, addon.version),
 				'X-Uuid': self.device_id,
 			}
 
@@ -326,11 +438,10 @@ class StreamCinemaContentProvider(ContentProvider):
 
 					cache.put( rurl, resp, ttl )
 			
-#			with open( "/tmp/sc_last_query.txt", "w" ) as f:
-#				f.write( url + '?' + urlencode(default_params) + '\n' )
-				
-#			with open( "/tmp/sc_last_response.json", "w" ) as f:
-#				f.write( resp.text )
+			global XX
+			with open( "/tmp/%03d_sc_%s.txt" % (XX, url_short.replace('/','_')), "w" ) as f:
+				f.write( resp.text )
+				XX += 1
 			
 			if resp.status_code == 200:
 				try:
@@ -343,14 +454,15 @@ class StreamCinemaContentProvider(ContentProvider):
 			err_msg = str(e)
 		
 		if err_msg:
-			self.error( "SC_API error for URL %s: %s" % (url, traceback.format_exc()))
+			self.error( "SC_API error for URL %s: %s" % (url, err_msg) )
+			util.error(traceback.format_exc())
 			raise Exception( "SC_API: %s" % err_msg )
 
 	
 	# #################################################################################################
 	
 	def capabilities(self):
-		return ['categories', 'resolve', 'download', 'stats-ext']
+		return ['categories', 'resolve', 'download', 'stats-ext', 'trakt']
 
 	# #################################################################################################
 
@@ -358,16 +470,38 @@ class StreamCinemaContentProvider(ContentProvider):
 		return self.list('/')
 
 	# #################################################################################################
+	
+	def fill_trakt_info(self, menu_item ):
+		if not self.settings['trakt_enabled'] or 'unique_ids' not in menu_item:
+			return None
+		
+		if 'episode' in menu_item.get('info', {}):
+			trakt_type = 'show'
+		else:
+			 trakt_type = 'movie'
+			 
+		trakt_items = {
+			'type': trakt_type,
+			'ids' : menu_item['unique_ids'],
+			'episode' : menu_item['info'].get('episode') if menu_item['type'] == 'video' else None,
+			'season' : menu_item['info'].get('season') if menu_item['type'] == 'video' or menu_item['info'].get('mediatype', '') == 'season' else None,
+		}
+		
+		return { k: v for k, v in trakt_items.items() if v is not None }
 
-	def list(self, url, params=None):
+	# #################################################################################################
+	
+	def list(self, url, params=None, data=None):
 		result = []
 		
 		if url.startswith('#'):
 			return self.list_special(url)
-			
-		resp = self.call_sc_api( url, params=params )
+		
+		resp = self.call_sc_api( url, data=data, params=params )
 		
 		for menu_item in resp.get('menu', {}):
+			item = None
+			
 			if menu_item['type'] == 'dir':
 				item = self.get_dir_item( menu_item )
 			elif menu_item['type'] == 'next':
@@ -380,12 +514,13 @@ class StreamCinemaContentProvider(ContentProvider):
 					item = self.get_search_item( menu_item )
 				elif menu_item['action'] == 'last':
 					item = self.get_last_seen_dir( menu_item )
+				elif menu_item['action'] == 'trakt.list':
+					if self.tapi.valid():
+						item = self.get_trakt_dir()
 				else:
 					self.info("UNHANDLED ACTION: %s" % menu_item['action'])
-					item = None
 			else:
 				self.info("UNHANDLED ITEM TYPE: %s" % menu_item['type'])
-				item = None
 				
 			if item:
 				trailer = menu_item.get('info',{}).get('trailer')
@@ -403,6 +538,41 @@ class StreamCinemaContentProvider(ContentProvider):
 					else:
 						item['menu'] = menu
 				
+				# this is needed for trakt
+				item['trakt'] = self.fill_trakt_info( menu_item )
+				
+				if 'unique_ids' in menu_item:
+					cdi = menu_item
+					cdi.update( menu_item['unique_ids'] )
+#					cdi['id'] = menu_item['id']
+#					cdi['url'] = menu_item['url']
+					item['customDataItem'] = cdi
+					
+					if menu_item['type'] == 'video':
+						if 'episode' in menu_item.get('info', {}):
+							is_watched = self.watched.is_trakt_watched_show( menu_item['unique_ids'], menu_item['info'].get('season', 1), menu_item['info'].get('episode') )
+						else:
+							is_watched = self.watched.is_trakt_watched_movie( menu_item['unique_ids'] )
+							
+						if is_watched:
+							# mark item as watched
+							item['title'] = item['title'] + ' [B]*[/B]'
+							
+					elif menu_item['type'] == 'dir':
+						# if there is a season dir or the show has no seasons, then check if we watched all episodes
+						if menu_item['info'].get('mediatype', '') == 'season':
+							is_watched, is_fully_watched = self.watched.is_trakt_watched_season( menu_item['unique_ids'], menu_item['info'].get('season', 1), menu_item['info'].get('episode', -1) )
+						else:
+							is_watched, is_fully_watched = self.watched.is_trakt_watched_serie( menu_item['unique_ids'], menu_item['info'].get('season', -1) )
+
+						if is_watched:
+							# mark item as watched
+							if is_fully_watched:
+								item['title'] = item['title'] + ' [B]*[/B]'
+							else:
+								item['title'] = item['title'] + ' *'
+							
+						
 				result.append( { k: v for k, v in item.items() if v is not None } )
 				
 		return result
@@ -419,6 +589,10 @@ class StreamCinemaContentProvider(ContentProvider):
 			client.refresh_screen()
 			
 		elif url.startswith('#last-seen#'):
+			lid = url[11:]
+			return self.list( '/Last', data={'ids': [ w for w in self.watched.get(lid) ] } )
+				
+		elif url.startswith('#last-seenXXXX#'):
 			lid = url[11:]
 
 			for w in self.watched.get(lid):
@@ -486,6 +660,9 @@ class StreamCinemaContentProvider(ContentProvider):
 			wsquery = client.getTextInput(self.session, "", wsquery )
 			if wsquery is not "":
 				result = self.list_special( '#search-webshare#' + wsquery, add_ws_edit=False )
+		
+		elif url.startswith('#trakt_'):
+			result = self.get_trakt_dir( url )
 			
 		return result
 	
@@ -510,6 +687,42 @@ class StreamCinemaContentProvider(ContentProvider):
 			
 		return None
 		
+	# #################################################################################################
+	
+	def get_trakt_dir(self, url= None ):
+		if not url:
+			item = self.dir_item('Trakt.tv', '#trakt_show_lists#')
+			return item
+		
+		result = []
+
+		if url == '#trakt_show_lists#':
+			for titem in self.tapi.get_lists():
+				item = self.dir_item(titem['name'], '#trakt_list#' + titem['id'])
+				item['plot'] = titem.get('description')
+				result.append(item)
+				
+		elif url.startswith('#trakt_list#'):
+			slug = url[12:]
+			track_ids = []
+			
+			for titem in self.tapi.get_list_items(slug):
+				titem_type = titem.get('type')
+
+				if titem_type not in ['movie', 'tvshow', 'show']:
+					continue
+				
+				sc_type = 1 if titem_type == 'movie' else 3
+				data = titem.get(titem_type, {})
+				tr = data.get('ids', {}).get('trakt')
+				track_ids.append("{},{}".format(sc_type, tr))
+			
+			if len(track_ids) > 0:
+				result = self.list( '/Search/getTrakt', data={ 'ids' : json.dumps(track_ids)} )
+
+		return result
+	
+	
 	# #################################################################################################
 	
 	def get_dir_item(self, sc_item ):
@@ -688,6 +901,11 @@ class StreamCinemaContentProvider(ContentProvider):
 		item['title'] = stream['title']
 		item['quality'] = stream['quality']
 		item['customDataItem'] = info_item
+		item['trakt'] = self.fill_trakt_info(info_item)
+		
+		# this is needed for trakt
+		if 'unique_ids' in info_item:
+			item['customDataItem'].update( info_item['unique_ids'] )
 		
 		last_position = self.watched.get_last_position( info_item.get('url') )
 		duration = info_item.get('duration')
@@ -838,7 +1056,7 @@ class StreamCinemaContentProvider(ContentProvider):
 		return self.create_video_item(streams[idx], result.get('info'))
 	
 	# #################################################################################################
-
+	
 	def resolve(self, item, captcha_cb=None, select_cb=None):
 		url = item['url']
 		
@@ -923,3 +1141,29 @@ class StreamCinemaContentProvider(ContentProvider):
 			util.error(traceback.format_exc())
 
 	# #################################################################################################
+			
+	def trakt(self, item, action, result, msg):
+		# addon must have setting (bool) trakt_enabled ... and must be enabled to show trakt menu 
+		# and must set 'customDataItem' with imdb, tvdb, trakt property (identify video item in trakt.tv)
+		# addon must add capability 'trakt'
+
+		# action:
+		#	- add		add item to watchlist
+		#	- remove	remove item from watchlist
+		#	- watched	add to watched collection
+		#	- unwatched remove from watched collection
+
+		if self.settings['trakt_enabled']:
+			self.debug("Trakt action=%s, result=%s, msg=%s ..." % (action, result, msg) )
+			self.debug("Trakt item=%s" % item )
+			# do something
+			act = action.lower()
+			if act=='watched':
+				self.watched.trakt_need_reload = True
+#				client.add_operation_result("(Trakt) Operácia prebehla úspešne.", False)
+			if act=='unwatched':
+				self.watched.trakt_need_reload = True
+#				client.add_operation_result("(Trakt) Operácia prebehla úspešne.", False)
+				
+	# #################################################################################################
+	
