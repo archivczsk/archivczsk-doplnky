@@ -1,0 +1,6 @@
+[B]1.3:[/B]
+Fixed crash when video is not available
+[B]1.2:[/B]
+Make addon python 3.x compatible
+[B]1.1:[/B]
+Initial version (rewrite by misanov)
