@@ -1,3 +1,8 @@
+[B]1.10.1:[/B]
+- fixed A-Z archive
+- fixed images download
+[B]1.10.0:[/B]
+- make addon python 3.x compatible
 [B]1.9.3: (misanov)[/B]
 - Live Sport
 [B]1.9.2: (misanov)[/B]
