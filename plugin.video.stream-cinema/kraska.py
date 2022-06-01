@@ -82,7 +82,7 @@ class Kraska:
 		try:
 			login_checksum = self.get_chsum()
 			
-			if len(self.login_data) == 0 or self.login_data.get('checksum','') != login_checksum:
+			if 'token' not in self.login_data or self.login_data.get('checksum','') != login_checksum:
 				# data not loaded from cache or data from other account stored - do fresh login
 				self.login_data = { 'checksum': login_checksum }
 				self.login()

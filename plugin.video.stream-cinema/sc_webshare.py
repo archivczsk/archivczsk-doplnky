@@ -182,7 +182,7 @@ class Webshare():
 	def refresh_login_data(self, try_nr=0):
 		try:
 			login_checksum = self.get_chsum()
-			if len(self.login_data) == 0 or self.login_data.get('checksum','') != login_checksum:
+			if 'token' not in self.login_data == 0 or self.login_data.get('checksum','') != login_checksum:
 				# data not loaded from cache - do fresh login
 				self.login_data = { "checksum": login_checksum }
 				self.login()
