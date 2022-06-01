@@ -266,7 +266,7 @@ def add_search_folder(name, params, logo=None, infoLabels={}, menuItems={}):
 		infoLabels['title'] = name
 	client.add_dir(name, params, image=logo, infoLabels=infoLabels, menuItems=menuItems, search_folder=True)
 
-def add_dir(name, params, logo=None, infoLabels={}, menuItems={}, addonDataItem=None):
+def add_dir(name, params, logo=None, infoLabels={}, menuItems={}, addonDataItem=None, traktItem=None):
 	name = decode_html(name)
 	for key in list(params.keys()):
 		value = decode_html(params[key])
@@ -276,19 +276,19 @@ def add_dir(name, params, logo=None, infoLabels={}, menuItems={}, addonDataItem=
 		infoLabels['title'] = name
 	#client.add_dir(name, params, image=logo, infoLabels=infoLabels, menuItems=menuItems)
 	try:
-		client.add_dir(name, params, logo, infoLabels=infoLabels, menuItems=menuItems, dataItem=addonDataItem)
+		client.add_dir(name, params, logo, infoLabels=infoLabels, menuItems=menuItems, dataItem=addonDataItem, traktItem=traktItem)
 	except:
 		# back compatibility
-		client.add_dir(name, params, logo, infoLabels=infoLabels, menuItems=menuItems)
+		client.add_dir(name, params, logo, infoLabels=infoLabels, menuItems=menuItems )
 
-def add_video(name, params={}, logo=None, infoLabels={}, menuItems={}, addonDataItem=None):
+def add_video(name, params={}, logo=None, infoLabels={}, menuItems={}, addonDataItem=None, traktItem=None):
 	name = decode_html(name)
 	for key in list(params.keys()):
 		value = decode_html(params[key])
 		value = py2_encode_utf8( value )
 		params[key] = value
 	try:
-		client.add_dir(name, params, logo, infoLabels=infoLabels, menuItems=menuItems, video_item=True, dataItem=addonDataItem)
+		client.add_dir(name, params, logo, infoLabels=infoLabels, menuItems=menuItems, video_item=True, dataItem=addonDataItem, traktItem=traktItem)
 	except:
 		# back compatibility
 		try:
@@ -296,7 +296,7 @@ def add_video(name, params={}, logo=None, infoLabels={}, menuItems={}, addonData
 		except:
 			add_dir(name, params, logo=logo, infoLabels=infoLabels, menuItems=menuItems)
 
-def add_play(title, provider_name, quality, url, subs=None, filename=None, image=None, infoLabels={}, menuItems={},headers={}, lang=None, resolveTitle=None, customTitle=None, customFname=None, addonDataItem=None, player_settings=None):
+def add_play(title, provider_name, quality, url, subs=None, filename=None, image=None, infoLabels={}, menuItems={},headers={}, lang=None, resolveTitle=None, customTitle=None, customFname=None, addonDataItem=None, player_settings=None, traktItem=None):
 
 	if customTitle:
 		title = customTitle
@@ -318,10 +318,10 @@ def add_play(title, provider_name, quality, url, subs=None, filename=None, image
 	if client_version != 0:
 		if client_version > 1:
 			if addonDataItem is None:
-				client.add_video(title, url, subs=subs, quality = quality, provider_name = provider_name, filename=filename, image=image, infoLabels=infoLabels, menuItems=menuItems, settings=settings, lang=lang)
+				client.add_video(title, url, subs=subs, quality = quality, provider_name = provider_name, filename=filename, image=image, infoLabels=infoLabels, menuItems=menuItems, settings=settings, lang=lang, traktItem=traktItem)
 			else: # back compatibility
 				try:
-					client.add_video(title, url, subs=subs, quality = quality, provider_name = provider_name, filename=filename, image=image, infoLabels=infoLabels, menuItems=menuItems, settings=settings, lang=lang, dataItem=addonDataItem)
+					client.add_video(title, url, subs=subs, quality = quality, provider_name = provider_name, filename=filename, image=image, infoLabels=infoLabels, menuItems=menuItems, settings=settings, lang=lang, dataItem=addonDataItem, traktItem=traktItem)
 				except: # old version archiv using
 					client.add_video(title, url, subs=subs, quality = quality, provider_name = provider_name, filename=filename, image=image, infoLabels=infoLabels, menuItems=menuItems, settings=settings, lang=lang)
 		else:
@@ -334,10 +334,10 @@ def add_play(title, provider_name, quality, url, subs=None, filename=None, image
 					name = '[%s] %s - %s' % (quality,provider_name, title)
 			
 			if addonDataItem is None:
-				client.add_video(name, url, subs=subs, filename=filename, image=image, infoLabels=infoLabels, menuItems=menuItems, settings=settings)
+				client.add_video(name, url, subs=subs, filename=filename, image=image, infoLabels=infoLabels, menuItems=menuItems, settings=settings, traktItem=traktItem)
 			else: # back compatibility
 				try:
-					client.add_video(name, url, subs=subs, filename=filename, image=image, infoLabels=infoLabels, menuItems=menuItems, settings=settings, dataItem=addonDataItem)
+					client.add_video(name, url, subs=subs, filename=filename, image=image, infoLabels=infoLabels, menuItems=menuItems, settings=settings, dataItem=addonDataItem, traktItem=traktItem)
 				except:
 					client.add_video(name, url, subs=subs, filename=filename, image=image, infoLabels=infoLabels, menuItems=menuItems, settings=settings)
 	else:
@@ -349,10 +349,10 @@ def add_play(title, provider_name, quality, url, subs=None, filename=None, image
 			else:
 				name = '[%s] %s - %s' % (quality, provider_name, title)
 		if addonDataItem is None:
-			client.add_video(name, url, subs=subs, filename=filename, image=image, infoLabels=infoLabels, menuItems=menuItems)
+			client.add_video(name, url, subs=subs, filename=filename, image=image, infoLabels=infoLabels, menuItems=menuItems, traktItem=traktItem)
 		else: # back compatibility
 			try:
-				client.add_video(name, url, subs=subs, filename=filename, image=image, infoLabels=infoLabels, menuItems=menuItems, dataItem=addonDataItem)
+				client.add_video(name, url, subs=subs, filename=filename, image=image, infoLabels=infoLabels, menuItems=menuItems, dataItem=addonDataItem, traktItem=traktItem)
 			except:
 				client.add_video(name, url, subs=subs, filename=filename, image=image, infoLabels=infoLabels, menuItems=menuItems)
 

@@ -102,7 +102,7 @@ class XBMContentProvider(object):
 					itm = params['item']
 				rslog.logDebug("XBMC run trakt '%s'"%params['trakt'])
 				# @TODO how to return data to plugin ??? i dont know how for now
-				return self.provider.trakt(itm, params['trakt'])
+				return self.provider.trakt(itm, params['trakt'], params.get('result'), params.get('msg'))
 			else:
 				rslog.logDebug("'%s' dont have capability 'trakt'"%self.provider)
 				return None
@@ -207,7 +207,8 @@ class XBMContentProvider(object):
 							customTitle = item.get('customTitle',''),
 							customFname = item.get('customFname',''),
 							addonDataItem = item.get('customDataItem',''),
-							player_settings = item.get('playerSettings'))
+							player_settings = item.get('playerSettings'),
+							traktItem = item.get('trakt'))
 			else:
 				xbmcutil.add_play(params['title'],
 						data['title'],
@@ -221,7 +222,8 @@ class XBMContentProvider(object):
 						customTitle = data.get('customTitle',''),
 						customFname = data.get('customFname',''),
 						addonDataItem = data.get('customDataItem',''),
-						player_settings = data.get('playerSettings'))
+						player_settings = data.get('playerSettings'),
+						traktItem = data.get('trakt'))
 
 
 
@@ -308,7 +310,8 @@ class XBMContentProvider(object):
 						 img, 
 						 infoLabels=self._extract_infolabels(item), 
 						 menuItems=menuItems,
-						 addonDataItem = item.get('customDataItem',''))
+						 addonDataItem = item.get('customDataItem',''),
+						 traktItem = item.get('trakt'))
 
 	def _extract_infolabels(self, item):
 		infoLabels = {}
@@ -342,7 +345,8 @@ class XBMContentProvider(object):
 			item['img'],
 			infoLabels=self._extract_infolabels(item),
 			menuItems=menuItems,
-			addonDataItem = item.get('customDataItem','')
+			addonDataItem = item.get('customDataItem',''),
+			traktItem = item.get('trakt')
 		)
 
 	def categories(self):

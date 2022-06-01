@@ -224,7 +224,7 @@ class ContentProvider(object):
 		"""
 		pass
 	
-	def trakt(self, item, action):
+	def trakt(self, item, action, result, msg):
 		"""
 		make some action with trakt.tv
 		Args:
