@@ -70,6 +70,7 @@ class SCWatched:
 	# #################################################################################################
 	
 	def __init__(self, data_dir, tapi = None, max_items=50 ):
+		self.DEFAULT_VER = 1
 		self.max_items = max_items
 		self.data_dir = data_dir
 		self.watched_file = os.path.join( self.data_dir, "watched.json" )
@@ -80,7 +81,7 @@ class SCWatched:
 		self.trakt_need_reload = True
 		self.trakt_movies = {}
 		self.trakt_shows = {}
-
+		self.items['ver'] = self.DEFAULT_VER
 	
 	# #################################################################################################
 	
@@ -90,10 +91,11 @@ class SCWatched:
 			# sort last played items by time added and remove oldest over max items
 			lp = [ x[0] for x in sorted( lp.items(), key=lambda x: -x[1]['time']) ][self.max_items:]
 			self.need_save = True
-		
+
 		for wtype in self.items:
-			if wtype == 'last_played_position':
+			if wtype == 'last_played_position' or wtype == 'ver':
 				continue
+			
 			if len( self.items[wtype] ) > self.max_items:
 				self.items[wtype] = self.items[wtype][:self.max_items]
 				self.need_save = True
@@ -104,6 +106,23 @@ class SCWatched:
 		try:
 			with open( self.watched_file, "r" ) as f:
 				self.items = json.load(f)
+			
+			if 'ver' not in self.items:
+				ver = 0
+			else:
+				ver = self.items['ver']
+				
+			if ver == 0:
+				# history data are not compatible with current version - clean history
+				for wtype in list(self.items.keys()):
+					if wtype == 'last_played_position' or wtype == 'ver':
+						continue
+					
+					del self.items[wtype]
+						
+			elif ver > self.DEFAULT_VER:
+				# version of this file is newer then supported
+				self.items = {}
 				
 			self.clean()
 		except:
@@ -130,7 +149,7 @@ class SCWatched:
 			if wtype not in self.items:
 				self.items[wtype] = []
 			
-			self.remove( wtype, data['url'] )
+			self.remove( wtype, data )
 			self.items[wtype].insert(0, data )
 			
 			if len(self.items[wtype]) > self.max_items:
@@ -140,12 +159,12 @@ class SCWatched:
 			
 	# #################################################################################################
 
-	def remove(self, wtype, url ):
+	def remove(self, wtype, data ):
 		if wtype in self.items:
 			type_root = self.items[wtype]
 			i = 0
 			for x in type_root:
-				if x['url'] == url:
+				if x == data:
 					del self.items[wtype][i]
 					self.need_save = True
 					break
@@ -175,27 +194,56 @@ class SCWatched:
 	# #################################################################################################
 	
 	def load_trakt_watched(self):
-		self.items['trakt'] = { 'm': [], 's': [] }
-		self.trakt_movies = { 'trakt': {}, 'tvdb': {}, 'tmdb': {}, 'imdb': {} }
-		self.trakt_shows = { 'trakt': {}, 'tvdb': {}, 'tmdb': {}, 'imdb': {} }
+		if len(self.trakt_movies) == 0:
+			self.trakt_movies = { 'trakt': {}, 'tvdb': {}, 'tmdb': {}, 'imdb': {} }
+			reload_movies_index = True
+		else:
+			reload_movies_index = False
+		
+		if len(self.trakt_shows) == 0:
+			self.trakt_shows = { 'trakt': {}, 'tvdb': {}, 'tmdb': {}, 'imdb': {} }
+			reload_shows_index = True
+		else:
+			reload_shows_index = False
 		
 		try:
-			self.items['trakt']['m'], self.items['trakt']['s'] = self.tapi.get_watched()
+			mm, ms = self.tapi.get_watched_modifications()
 			
+			if mm and self.items['trakt'].get('mm', -1) < mm:
+				util.info("Loading watched movies from trakt")
+				self.items['trakt']['m'] = self.tapi.get_watched_movies()
+				self.items['trakt']['mm'] = mm
+				reload_movies_index = True
+				self.need_save = True
+				
+			if ms and self.items['trakt'].get('ms', -1) < ms:
+				util.info("Loading watched shows from trakt")
+				self.items['trakt']['s'] = self.tapi.get_watched_shows()
+				self.items['trakt']['ms'] = mm
+				reload_shows_index = True
+				self.need_save = True
+
+		except:
+			self.items['trakt'] = { 'm': [], 's': [] }
+			util.error( traceback.format_exc() )
+
+		self.trakt_need_reload = False
+		
+		if reload_movies_index:
 			# create search index for movies
 			for item in self.items['trakt']['m']:
 				for id_name in [ 'trakt', 'tvdb', 'tmdb', 'imdb' ]:
 					if id_name in item:
 						self.trakt_movies[id_name][ item[id_name] ] = item
 
+		if reload_shows_index:
 			# create search index for shows
 			for item in self.items['trakt']['s']:
 				for id_name in [ 'trakt', 'tvdb', 'tmdb', 'imdb' ]:
 					if id_name in item:
 						self.trakt_shows[id_name][ item[id_name] ] = item
-			
-		except:
-			util.error( traceback.format_exc() )
+		
+		self.save()
 	
 	# #################################################################################################
 	
@@ -207,7 +255,6 @@ class SCWatched:
 	def is_trakt_watched_movie(self, unique_ids ):
 		if self.trakt_need_reload and self.tapi and self.tapi.valid():
 			self.load_trakt_watched()
-			self.trakt_need_reload = False
 			
 		for k, v in unique_ids.items():
 			if k in self.trakt_movies:
@@ -221,7 +268,6 @@ class SCWatched:
 	def is_trakt_watched_show(self, unique_ids, season, episode ):
 		if self.trakt_need_reload and self.tapi and self.tapi.valid():
 			self.load_trakt_watched()
-			self.trakt_need_reload = False
 
 		for k, v in unique_ids.items():
 			if k in self.trakt_shows:
@@ -238,7 +284,6 @@ class SCWatched:
 	def is_trakt_watched_serie(self, unique_ids, seasons_count=-1 ):
 		if self.trakt_need_reload and self.tapi and self.tapi.valid():
 			self.load_trakt_watched()
-			self.trakt_need_reload = False
 
 		for k, v in unique_ids.items():
 			if k in self.trakt_shows:
@@ -255,7 +300,6 @@ class SCWatched:
 	def is_trakt_watched_season(self, unique_ids, season, episodes_count=-1 ):
 		if self.trakt_need_reload and self.tapi and self.tapi.valid():
 			self.load_trakt_watched()
-			self.trakt_need_reload = False
 
 		for k, v in unique_ids.items():
 			if k in self.trakt_shows:
@@ -542,12 +586,9 @@ class StreamCinemaContentProvider(ContentProvider):
 				item['trakt'] = self.fill_trakt_info( menu_item )
 				
 				if 'unique_ids' in menu_item:
-					cdi = menu_item
-					cdi.update( menu_item['unique_ids'] )
-#					cdi['id'] = menu_item['id']
-#					cdi['url'] = menu_item['url']
-					item['customDataItem'] = cdi
+					item['customDataItem'] = { 'url': menu_item['url'], 'lid': menu_item.get('lid'), 'mid': menu_item['unique_ids'].get('sc') }
 					
+					# check if this istem is watched
 					if menu_item['type'] == 'video':
 						if 'episode' in menu_item.get('info', {}):
 							is_watched = self.watched.is_trakt_watched_show( menu_item['unique_ids'], menu_item['info'].get('season', 1), menu_item['info'].get('episode') )
@@ -583,27 +624,20 @@ class StreamCinemaContentProvider(ContentProvider):
 		result = []
 
 		if url.startswith('#remove-last-seen#'):
-			lid, url = url[18:].split('#')
-			self.watched.remove(lid, url)
+			lid, mid = url[18:].split('#')
+			self.watched.remove(lid, mid)
 			self.watched.save()
 			client.refresh_screen()
 			
 		elif url.startswith('#last-seen#'):
 			lid = url[11:]
-			return self.list( '/Last', data={'ids': [ w for w in self.watched.get(lid) ] } )
+			result = self.list( '/Last', data={ 'ids' : json.dumps(self.watched.get(lid))} )
+			for item in result:
+				mid = item.get('customDataItem', {}).get('mid')
 				
-		elif url.startswith('#last-seenXXXX#'):
-			lid = url[11:]
-
-			for w in self.watched.get(lid):
-				if w['type'] == 'dir':
-					item = self.dir_item()
-				elif w['type'] == 'video':
-					item = self.video_item()
-
-				item.update(w)
-				item['menu'] = { 'Odstrániť z videných': { "list": '#remove-last-seen#' + lid + '#' + item['url'] }}
-				result.append(item)
+				if mid: 
+					item['menu'] = { 'Odstrániť z videných': { "list": '#remove-last-seen#' + lid + '#' + mid }}
+			
 		elif url.startswith('#set-sort#'):
 			url, sort_methods = url[10:].split('|')
 			sort_methods = sort_methods.split('#')
@@ -900,12 +934,10 @@ class StreamCinemaContentProvider(ContentProvider):
 		item = self.video_item( file_url )
 		item['title'] = stream['title']
 		item['quality'] = stream['quality']
-		item['customDataItem'] = info_item
 		item['trakt'] = self.fill_trakt_info(info_item)
 		
-		# this is needed for trakt
-		if 'unique_ids' in info_item:
-			item['customDataItem'].update( info_item['unique_ids'] )
+		# this is needed to store last play position and last seen items
+		item['customDataItem'] = { 'url': info_item['url'], 'lid': info_item.get('lid'), 'mid': info_item.get('unique_ids',{}).get('sc') }
 		
 		last_position = self.watched.get_last_position( info_item.get('url') )
 		duration = info_item.get('duration')
@@ -1090,41 +1122,16 @@ class StreamCinemaContentProvider(ContentProvider):
 		if item:
 			url = item.get('url')
 			lid = item.get('lid')
+			mid = item.get('mid')
 		else:
 			url = None
 			lid = None
-		
+			mid = None
+			
 		try:
 			if action.lower() == 'play':
-				if url and lid:
-					if url.count('/') > 2: # episode or serie -> convert to root item
-						title = self.get_i18n_list( item.get('i18n_info', {}) ).get('otitle')
-						
-						if not title:
-							title = item.get('info',{}).get('tvshowtitle') or item.get('info',{}).get('originaltitle')
-	
-						save_item = {
-							"type": "dir",
-							'title': title,
-							'url': '/FGet/' + item['id'],
-							'img': self.get_i18n_list( item.get('i18n_art', {}) ).get('poster')
-						}
-					else:
-						item['type'] = 'video'
-						save_item_tmp = self.get_video_item(item)
-						save_item = {
-							"type": "video",
-							'url': save_item_tmp['url'],
-							'title': save_item_tmp['title'],
-							'plot': save_item_tmp.get('plot'),
-							'rating': save_item_tmp.get('rating'),
-							'img': save_item_tmp.get('img'),
-							'genre': save_item_tmp.get('genre'),
-							'year': save_item_tmp.get('year'),
-							'duration': save_item_tmp.get('duration'),
-						}
-						
-					self.watched.set( lid, { k: v for k, v in save_item.items() if v is not None } )
+				if lid and mid:
+					self.watched.set( lid, mid )
 				
 			elif action.lower() == 'watching':
 				pass
@@ -1144,24 +1151,27 @@ class StreamCinemaContentProvider(ContentProvider):
 			
 	def trakt(self, item, action, result, msg):
 		# addon must have setting (bool) trakt_enabled ... and must be enabled to show trakt menu 
-		# and must set 'customDataItem' with imdb, tvdb, trakt property (identify video item in trakt.tv)
+		# and must set 'trakt' with imdb, tvdb, trakt property (identify video item in trakt.tv)
 		# addon must add capability 'trakt'
+		# trakt actions are handled directly by archivCZSK core - this callback is used to perform aditional operations 
 
 		# action:
 		#	- add		add item to watchlist
 		#	- remove	remove item from watchlist
 		#	- watched	add to watched collection
 		#	- unwatched remove from watched collection
+		
+		# result - result of operation from core (success, fail)
+		# msg - description of operation result
 
 		if self.settings['trakt_enabled']:
 			self.debug("Trakt action=%s, result=%s, msg=%s ..." % (action, result, msg) )
 			self.debug("Trakt item=%s" % item )
-			# do something
-			act = action.lower()
-			if act=='watched':
+
+			if action == 'watched':
 				self.watched.trakt_need_reload = True
 #				client.add_operation_result("(Trakt) Operácia prebehla úspešne.", False)
-			if act=='unwatched':
+			elif action == 'unwatched':
 				self.watched.trakt_need_reload = True
 #				client.add_operation_result("(Trakt) Operácia prebehla úspešne.", False)
 				
