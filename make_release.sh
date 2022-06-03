@@ -11,6 +11,6 @@ git add ${D}/addons.xml
 git add ${D}/addons.xml.md5
 
 git commit -m 'release'
-git rev-parse HEAD > commit
-git add commit
-git commit -m 'set commit to current release'
+#git rev-parse HEAD > commit
+#git add commit
+#git commit -m 'set commit to current release'
