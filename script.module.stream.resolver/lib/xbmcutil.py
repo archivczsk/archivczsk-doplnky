@@ -49,6 +49,7 @@ except:
 	import http.cookiejar as cookielib
 	is_py3 = True
 	unicode = str
+	unichr = chr
 	basestring = str
 
 	def py2_decode_utf8( text ):
@@ -117,7 +118,7 @@ def save_to_file(url, file):
 		f.close()
 		return True
 	except:
-		traceback.print_exc()
+		client.log.error(traceback.format_exc())
 
 
 def _substitute_entity(match):
@@ -143,7 +144,7 @@ def decode_html(data):
 		entity_re = re.compile(r'&(#?)(x?)(\w+);')
 		return entity_re.subn(_substitute_entity, data)[0]
 	except:
-		traceback.print_exc()
+		client.log.error(traceback.format_exc())
 		#print( [data] )
 		return data
 
@@ -418,5 +419,5 @@ def replace_diacritic2(string):
 		return ''.join(ret)
 	except:
 		#log
-		print( "XXXXXXXXXXXXXXXXXXXXXXXX replace_diacritic2 failed.\n%s" % traceback.format_exc() )
+		client.log.error( "replace_diacritic2 failed.\n%s" % traceback.format_exc() )
 		return string
