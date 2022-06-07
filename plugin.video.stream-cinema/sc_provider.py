@@ -11,7 +11,10 @@ from Plugins.Extensions.archivCZSK.engine import client
 
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.version import version as archivczsk_version
-from Plugins.Extensions.archivCZSK.engine.trakttv import trakttv
+try:
+	from Plugins.Extensions.archivCZSK.engine.trakttv import trakttv
+except:
+	trakttv = None
 
 from sc_cache import ExpiringLRUCache
 import util
@@ -61,7 +64,7 @@ API_VERSION='2.0'
 
 addon = ArchivCZSK.get_xbmc_addon('plugin.video.stream-cinema')
 
-XX=1
+__request_nr=1
 
 # #################################################################################################
 
@@ -193,31 +196,31 @@ class SCWatched:
 	
 	# #################################################################################################
 	
-	def load_trakt_watched(self):
-		if len(self.trakt_movies) == 0:
-			self.trakt_movies = { 'trakt': {}, 'tvdb': {}, 'tmdb': {}, 'imdb': {} }
-			reload_movies_index = True
-		else:
-			reload_movies_index = False
+	def force_reload(self):
+		self.trakt_need_reload = True
 		
-		if len(self.trakt_shows) == 0:
-			self.trakt_shows = { 'trakt': {}, 'tvdb': {}, 'tmdb': {}, 'imdb': {} }
-			reload_shows_index = True
-		else:
-			reload_shows_index = False
+		if 'trakt' in self.items:
+			self.items['trakt']['mm'] = -1
+			self.items['trakt']['ms'] = -1
+		
+	# #################################################################################################
+	
+	def load_trakt_watched(self):
+		reload_movies_index = False
+		reload_shows_index = False
 		
 		try:
 			mm, ms = self.tapi.get_watched_modifications()
 			
 			if mm and self.items['trakt'].get('mm', -1) < mm:
-				util.info("Loading watched movies from trakt")
+				util.info("Loading watched movies from Trakt.tv")
 				self.items['trakt']['m'] = self.tapi.get_watched_movies()
 				self.items['trakt']['mm'] = mm
 				reload_movies_index = True
 				self.need_save = True
 				
 			if ms and self.items['trakt'].get('ms', -1) < ms:
-				util.info("Loading watched shows from trakt")
+				util.info("Loading watched shows from Trakt.tv")
 				self.items['trakt']['s'] = self.tapi.get_watched_shows()
 				self.items['trakt']['ms'] = mm
 				reload_shows_index = True
@@ -229,14 +232,16 @@ class SCWatched:
 
 		self.trakt_need_reload = False
 		
-		if reload_movies_index:
+		if reload_movies_index or len(self.trakt_movies) == 0:
+			self.trakt_movies = { 'trakt': {}, 'tvdb': {}, 'tmdb': {}, 'imdb': {} }
 			# create search index for movies
 			for item in self.items['trakt']['m']:
 				for id_name in [ 'trakt', 'tvdb', 'tmdb', 'imdb' ]:
 					if id_name in item:
 						self.trakt_movies[id_name][ item[id_name] ] = item
 
-		if reload_shows_index:
+		if reload_shows_index or len(self.trakt_shows) == 0:
+			self.trakt_shows = { 'trakt': {}, 'tvdb': {}, 'tmdb': {}, 'imdb': {} }
 			# create search index for shows
 			for item in self.items['trakt']['s']:
 				for id_name in [ 'trakt', 'tvdb', 'tmdb', 'imdb' ]:
@@ -332,6 +337,7 @@ class StreamCinemaContentProvider(ContentProvider):
 		self.device_id = device_id
 		self.data_dir = data_dir
 		self.session = session
+		self.dump_sc_communication = False
 		
 		lang = addon.getSetting('lang')
 		
@@ -462,7 +468,6 @@ class StreamCinemaContentProvider(ContentProvider):
 
 		try:
 			headers = {
-#				'User-Agent' : 'Kodi/19 (X11; U; Unknown i686) (cs; ver0)',
 				'User-Agent' : 'archivCZSK/%s (plugin.video.stream-cinema/%s)' % (archivczsk_version, addon.version),
 				'X-Uuid': self.device_id,
 			}
@@ -482,10 +487,11 @@ class StreamCinemaContentProvider(ContentProvider):
 
 					cache.put( rurl, resp, ttl )
 			
-			global XX
-			with open( "/tmp/%03d_sc_%s.txt" % (XX, url_short.replace('/','_')), "w" ) as f:
-				f.write( resp.text )
-				XX += 1
+			if self.dump_sc_communication:
+				global __request_nr
+				with open( "/tmp/%03d_sc_%s.txt" % (__request_nr, url_short.replace('/','_')), "w" ) as f:
+					f.write( resp.text )
+					__request_nr += 1
 			
 			if resp.status_code == 200:
 				try:
@@ -515,20 +521,26 @@ class StreamCinemaContentProvider(ContentProvider):
 
 	# #################################################################################################
 	
-	def fill_trakt_info(self, menu_item ):
+	def fill_trakt_info(self, menu_item, is_watched=None ):
 		if not self.settings['trakt_enabled'] or 'unique_ids' not in menu_item:
 			return None
 		
-		if 'episode' in menu_item.get('info', {}):
-			trakt_type = 'show'
+		mediatype = menu_item.get('info',{}).get('mediatype')
+		
+		if mediatype == None:
+			return None
+		
+		if mediatype == 'movie':
+			trakt_type = 'movie'
 		else:
-			 trakt_type = 'movie'
-			 
+			trakt_type = 'show'
+
 		trakt_items = {
+			'watched': is_watched,
 			'type': trakt_type,
 			'ids' : menu_item['unique_ids'],
-			'episode' : menu_item['info'].get('episode') if menu_item['type'] == 'video' else None,
-			'season' : menu_item['info'].get('season') if menu_item['type'] == 'video' or menu_item['info'].get('mediatype', '') == 'season' else None,
+			'episode' : menu_item['info'].get('episode') if mediatype == 'episode' else None,
+			'season' : menu_item['info'].get('season') if mediatype == 'season' else None,
 		}
 		
 		return { k: v for k, v in trakt_items.items() if v is not None }
@@ -559,7 +571,7 @@ class StreamCinemaContentProvider(ContentProvider):
 				elif menu_item['action'] == 'last':
 					item = self.get_last_seen_dir( menu_item )
 				elif menu_item['action'] == 'trakt.list':
-					if self.tapi.valid():
+					if self.tapi and self.tapi.valid():
 						item = self.get_trakt_dir()
 				else:
 					self.info("UNHANDLED ACTION: %s" % menu_item['action'])
@@ -582,37 +594,39 @@ class StreamCinemaContentProvider(ContentProvider):
 					else:
 						item['menu'] = menu
 				
-				# this is needed for trakt
-				item['trakt'] = self.fill_trakt_info( menu_item )
-				
 				if 'unique_ids' in menu_item:
 					item['customDataItem'] = { 'url': menu_item['url'], 'lid': menu_item.get('lid'), 'mid': menu_item['unique_ids'].get('sc') }
 					
-					# check if this istem is watched
-					if menu_item['type'] == 'video':
-						if 'episode' in menu_item.get('info', {}):
-							is_watched = self.watched.is_trakt_watched_show( menu_item['unique_ids'], menu_item['info'].get('season', 1), menu_item['info'].get('episode') )
-						else:
-							is_watched = self.watched.is_trakt_watched_movie( menu_item['unique_ids'] )
-							
-						if is_watched:
-							# mark item as watched
-							item['title'] = item['title'] + ' [B]*[/B]'
-							
-					elif menu_item['type'] == 'dir':
-						# if there is a season dir or the show has no seasons, then check if we watched all episodes
-						if menu_item['info'].get('mediatype', '') == 'season':
-							is_watched, is_fully_watched = self.watched.is_trakt_watched_season( menu_item['unique_ids'], menu_item['info'].get('season', 1), menu_item['info'].get('episode', -1) )
-						else:
-							is_watched, is_fully_watched = self.watched.is_trakt_watched_serie( menu_item['unique_ids'], menu_item['info'].get('season', -1) )
-
-						if is_watched:
-							# mark item as watched
-							if is_fully_watched:
-								item['title'] = item['title'] + ' [B]*[/B]'
+					if self.settings['trakt_enabled']:
+						is_watched = None
+						
+						# check if this item is watched
+						if menu_item['type'] == 'video':
+							if 'episode' in menu_item.get('info', {}):
+								is_watched = self.watched.is_trakt_watched_show( menu_item['unique_ids'], menu_item['info'].get('season', 1), menu_item['info'].get('episode') )
 							else:
-								item['title'] = item['title'] + ' *'
+								is_watched = self.watched.is_trakt_watched_movie( menu_item['unique_ids'] )
+								
+							if is_watched:
+								# mark item as watched
+								item['title'] = item['title'] + ' [B]*[/B]'
+								
+						elif menu_item['type'] == 'dir':
+							# if there is a season dir or the show has no seasons, then check if we watched all episodes
+							if menu_item['info'].get('mediatype', '') == 'season':
+								is_watched, is_fully_watched = self.watched.is_trakt_watched_season( menu_item['unique_ids'], menu_item['info'].get('season', 1), menu_item['info'].get('episode', -1) )
+							else:
+								is_watched, is_fully_watched = self.watched.is_trakt_watched_serie( menu_item['unique_ids'], menu_item['info'].get('season', -1) )
+	
+							if is_watched:
+								# mark item as watched
+								if is_fully_watched:
+									item['title'] = item['title'] + ' [B]*[/B]'
+								else:
+									item['title'] = item['title'] + ' *'
 							
+						# this is needed for trakt
+						item['trakt'] = self.fill_trakt_info( menu_item, is_watched )
 						
 				result.append( { k: v for k, v in item.items() if v is not None } )
 				
@@ -788,7 +802,7 @@ class StreamCinemaContentProvider(ContentProvider):
 
 		info = self.get_i18n_list( sc_item.get('i18n_art', {}) )
 		if info:
-			img = info.get('poster')
+			img = self.getPosterUrl( info.get('poster') )
 
 		if img:
 			if img.startswith('http://') or img.startswith('https://'):
@@ -796,6 +810,9 @@ class StreamCinemaContentProvider(ContentProvider):
 			else:
 				if img in _KODI_IMG_MAP:
 					item['img'] = _KODI_IMG_URL + _KODI_IMG_MAP[ img ]
+		
+		if not item.get('img'):
+			item['img'] = self.getPosterUrl( None )
 
 		return item
 
@@ -815,7 +832,7 @@ class StreamCinemaContentProvider(ContentProvider):
 		sorttitle = info.get('sorttitle','')
 		
 		info = self.get_i18n_list( sc_item.get('i18n_art') )		
-		item['img'] = info.get('poster')
+		item['img'] = self.getPosterUrl( info.get('poster') )
 		
 		info = sc_item.get('info',{})
 		item['year'] = info.get('year')
@@ -950,6 +967,20 @@ class StreamCinemaContentProvider(ContentProvider):
 			
 		return item
 	
+	# #################################################################################################
+	
+	def getPosterUrl(self, url):
+		if not url:
+			return 'https://stream-cinema.online/images/poster_300x200.jpg'
+		
+		if 'image.tmdb.org' in url:
+			return url.replace('original', 'w400')
+		elif 'img.csfd.cz' in url:
+			return url + '?h480'
+		elif 'stream-cinema.online/images/poster_1000x680.jpg' in url:
+			return url.replace('1000x680', '300x200')
+		return url
+
 	# #################################################################################################
 
 	def parse_hr_size( self, size ):
@@ -1151,15 +1182,18 @@ class StreamCinemaContentProvider(ContentProvider):
 			
 	def trakt(self, item, action, result, msg):
 		# addon must have setting (bool) trakt_enabled ... and must be enabled to show trakt menu 
-		# and must set 'trakt' with imdb, tvdb, trakt property (identify video item in trakt.tv)
+		# and must set 'trakt' key with 'ids' dictionary with imdb, tvdb, trakt keys (identify video item in trakt.tv)
 		# addon must add capability 'trakt'
-		# trakt actions are handled directly by archivCZSK core - this callback is used to perform aditional operations 
+		# trakt actions are handled directly by archivCZSK core - this callback is used as notification
+		# to perform aditional operations related directly to addon 
 
-		# action:
+		# possible actions:
 		#	- add		add item to watchlist
 		#	- remove	remove item from watchlist
 		#	- watched	add to watched collection
 		#	- unwatched remove from watched collection
+		#	- scrobble  automatic scrobble (add to watched) when >80% of movie was watched
+		#	- reload    reload local cache
 		
 		# result - result of operation from core (success, fail)
 		# msg - description of operation result
@@ -1173,6 +1207,12 @@ class StreamCinemaContentProvider(ContentProvider):
 #				client.add_operation_result("(Trakt) Operácia prebehla úspešne.", False)
 			elif action == 'unwatched':
 				self.watched.trakt_need_reload = True
+#				client.add_operation_result("(Trakt) Operácia prebehla úspešne.", False)
+			elif action == 'scrobble':
+				self.watched.trakt_need_reload = True
+#				client.add_operation_result("(Trakt) Operácia prebehla úspešne.", False)
+			elif action == 'reload':
+				self.watched.force_reload()
 #				client.add_operation_result("(Trakt) Operácia prebehla úspešne.", False)
 				
 	# #################################################################################################
