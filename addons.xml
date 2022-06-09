@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
-<addon id="plugin.video.stream-cinema" name="Stream Cinema" provider-name="archivczsk" version="2.0.2">
+<addon id="plugin.video.stream-cinema" name="Stream Cinema" provider-name="archivczsk" version="2.0.3">
   <requires>
         <import addon="xbmc.python" version="2.1.0" />
         <import addon="script.module.stream.resolver" version="1.6.25" />
@@ -303,7 +303,7 @@
   </extension>
 </addon>
 
-<addon id="script.module.stream.resolver" name="stream resolver" provider-name="Libor Zoubek" version="1.9.5">
+<addon id="script.module.stream.resolver" name="stream resolver" provider-name="Libor Zoubek" version="1.9.6">
   <requires>
     <import addon="xbmc.python" version="2.1.0" />
 
