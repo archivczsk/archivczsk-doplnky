@@ -1,3 +1,7 @@
+2022-07-08
+* odstránenie externého proxy servera
+* pridaný autoštart a napojenie na interný http server v archivzsk
+* pridanie služby pre správu epg a automatického generovania userbouquetu
 2022-04-19
 * rewrite addon base part
 * epg cache improvements

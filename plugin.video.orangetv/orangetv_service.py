@@ -5,6 +5,7 @@ import os
 import traceback
 import threading, requests
 from Plugins.Extensions.archivCZSK.engine.service_helper import StartAddonServiceHelper, AddonServiceHelper
+from Plugins.Extensions.archivCZSK.engine.tools.bouquet_generator import BouquetGeneratorTemplate
 from twisted.internet.defer import inlineCallbacks, returnValue
 try:
 	from urllib import quote
@@ -31,7 +32,7 @@ import base64
 from time import time
 from datetime import datetime, timedelta
 from xml.sax.saxutils import escape
-from orangetv import OrangeTVcache, OrangeTvBouquetGenerator
+from orangetv import OrangeTVcache
 
 try:
 	from md5 import new as md5
@@ -104,6 +105,19 @@ except:
 	def strip_accents(s):
 		return ''.join(c for c in unicodedata.normalize('NFD', py2_decode_utf8(s)) if unicodedata.category(c) != 'Mn')
 
+# #################################################################################################
+
+class OrangeTvBouquetGenerator(BouquetGeneratorTemplate):
+	def __init__(self, endpoint):
+		# configuration to make this class little bit reusable also in other addons
+		self.prefix = NAME_PREFIX
+		self.name = NAME
+		self.sid_start = SERVICEREF_SID_START
+		self.tid = SERVICEREF_TID
+		self.onid = SERVICEREF_ONID
+		self.namespace = SERVICEREF_NAMESPACE
+		BouquetGeneratorTemplate.__init__(self, endpoint)
+		
 # #################################################################################################
 
 def init_orangetv( settings ):
@@ -284,7 +298,7 @@ def start_epg_generator(arg):
 	
 	epg_generator_running = True
 	# load actual settings and continue when received
-	service_helper.getSettings(['orangetvuser', 'orangetvpwd', 'deviceid', 'enable_xmlepg', 'xmlepg_dir', 'xmlepg_days'], settings_received_epg )
+	service_helper.getSettings(['orangetvuser', 'orangetvpwd', 'deviceid', 'enable_userbouquet', 'enable_xmlepg', 'xmlepg_dir', 'xmlepg_days'], settings_received_epg )
 	
 # #################################################################################################
 
@@ -298,7 +312,7 @@ def settings_received_epg( settings ):
 	# check received settings
 	print_settings( settings )
 	
-	if not settings['enable_xmlepg']:
+	if not settings['enable_xmlepg'] or not settings['enable_userbouquet']:
 		epg_generator_running = False
 		service_helper.logDebug("Generating of XMLEPG is disabled")
 		service_helper.runDelayed(EPG_GENERATOR_RUN_TIME, start_epg_generator, None )
@@ -323,6 +337,18 @@ def settings_received_epg( settings ):
 
 bouquet_generator_running = False
 
+def start_bouquet_generator(arg):
+	act_time = int(time())
+	
+	if act_time < 1650358276:
+		if act_time < 3600:
+			# time is not synced yet - wait a little bit and try again
+			return service_helper.runDelayed(10, start_bouquet_generator, None )
+		else:
+			return
+	
+	try_generate_userbouquet(False)
+
 #def bouquet_generator_stop( settings, endpoint ):
 def bouquet_generator_stop( data ):
 	global bouquet_generator_running
@@ -330,7 +356,7 @@ def bouquet_generator_stop( data ):
 	
 # #################################################################################################
 
-def try_generate_userbouquet( arg ):
+def try_generate_userbouquet( force=False ):
 	global bouquet_generator_running
 	
 	if bouquet_generator_running:
@@ -338,18 +364,18 @@ def try_generate_userbouquet( arg ):
 		return
 
 	bouquet_generator_running = True
-	service_helper.getHttpEndpoint( ADDON_NAME, http_endpoint_received )
+	service_helper.getHttpEndpoint( ADDON_NAME, http_endpoint_received, force=force )
 	
 # #################################################################################################
 
-def http_endpoint_received( addon_id, endpoint ):
+def http_endpoint_received( addon_id, endpoint, force ):
 	service_helper.logDebug("%s HTTP endpoint received: %s" % (addon_id, endpoint))
 	# load actual settings and continue when received
-	service_helper.getSettings(['orangetvuser', 'orangetvpwd', 'deviceid', 'enable_adult', 'enable_xmlepg', 'player_name', 'enable_picons'], settings_received_bouquet, endpoint )
+	service_helper.getSettings(['orangetvuser', 'orangetvpwd', 'deviceid', 'enable_userbouquet', 'enable_adult', 'enable_xmlepg', 'player_name', 'enable_picons'], settings_received_bouquet, endpoint=endpoint, force=force )
 
 # #################################################################################################
 
-def settings_received_bouquet( settings, endpoint ):
+def settings_received_bouquet( settings, endpoint, force ):
 	# check received settings
 	print_settings( settings )
 	
@@ -358,50 +384,72 @@ def settings_received_bouquet( settings, endpoint ):
 		service_helper.logError("No login data provided")
 		return
 	
-	service_helper.runDelayed(1, (generate_userbouquet, bouquet_generator_stop), (settings, endpoint) )
+	service_helper.runDelayed(1, (generate_userbouquet, bouquet_generator_stop), (settings, endpoint, force) )
 
 # #################################################################################################
 
 def generate_userbouquet( data ):
-	settings, endpoint = data
+	settings, endpoint, force = data
 	
-	orangetv = init_orangetv( settings )
-	if orangetv == None:
-		service_helper.logInfo("[ORANGE-XMLEPG] No orangetv login credentials provided or they are wrong")
+	obg = OrangeTvBouquetGenerator( endpoint )
+	if not settings['enable_userbouquet']:
+		if obg.userbouquet_remove():
+			service_helper.logDebug("Userbouquet removed")
+			
 		return
 
-	channels = []
-	for channel in orangetv.live_channels():
-		channels.append({
-				'id': channel.id,
-				'key': channel.channel_key,
-				'name': channel.name,
-				'adult': channel.adult,
-				'picon': channel.picon
-			}) 
+	orangetv = init_orangetv( settings )
+	if orangetv == None:
+		service_helper.logInfo("No orangetv login credentials provided or they are wrong")
+		if obg.userbouquet_remove():
+			service_helper.logDebug("Userbouquet removed")
+		return
 
 	try:	
-		obg = OrangeTvBouquetGenerator( endpoint )
-		obg.generate_bouquet( channels, settings['enable_adult'], settings['enable_xmlepg'], settings['enable_picons'], settings['player_name'])
-		msg = "OrangeTV userbouquet vygenerovaný"
-		service_helper.showInfoMessage( msg )
+		channels = []
+		service_helper.logDebug("Requesting channel list for userbouquet generator")
+		for channel in orangetv.live_channels():
+			channels.append({
+					'id': channel.id,
+					'key': channel.channel_key,
+					'name': channel.name,
+					'adult': channel.adult,
+					'picon': channel.picon
+				}) 
+
+		service_helper.logDebug("Starting generating of userbouquet")
+		if obg.generate_bouquet( channels, settings['enable_adult'], settings['enable_xmlepg'], settings['enable_picons'], settings['player_name'] ):
+			service_helper.logDebug("Userbouquet successfuly generated")
+		else:
+			service_helper.logDebug("No need to regenerate userbouquet")
+
 	except:
-		msg = "Pri generovaní userbouquetu pre OrangeTV nastala chyba. Skontrolujte log súbor a zareportujte chybu."
-		service_helper.showErrorMessage( msg )
+		if force:
+			msg = "Pri generovaní userbouquetu pre OrangeTV nastala chyba. Skontrolujte log súbor a zareportujte chybu."
+			service_helper.showErrorMessage( msg )
+			
 		service_helper.logException( traceback.format_exc())
 	
 	
 # #################################################################################################	
 	
-def loop_test( data ):
-	service_helper.logInfo("Toto bezi v slucke: %s" % data )
-	
 class OrangeAddonServiceHelper( AddonServiceHelper ):
 	def handle_userbouquet_gen(self):
-		self.runDelayed(1, try_generate_userbouquet, None )
+		self.runDelayed(1, try_generate_userbouquet, True )
 	
 # #################################################################################################
-	
+
+if os.path.lexists( '/etc/init.d/orangetv_proxy.sh' ):
+	# remove the rest of old proxy server
+	try:
+		if os.path.exists( '/tmp/orangetv_proxy.pid' ):
+			os.system('kill -TERM `cat /tmp/orangetv_proxy.pid`')
+		os.system( 'update-rc.d -f orangetv_proxy.sh remove' )
+		os.remove( '/etc/init.d/orangetv_proxy.sh' )
+	except:
+		pass
+
 service_helper = StartAddonServiceHelper(OrangeAddonServiceHelper(), start_epg_generator, None)
-#service_helper.runLoop( 5, loop_test, 123 )
+#service_helper.runDelayed(1, start_bouquet_generator, None )
+service_helper.runLoop( 4*3600, start_bouquet_generator, None )
 service_helper.run()

@@ -23,7 +23,6 @@ from Plugins.Extensions.archivCZSK.engine import client
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 
 from orangetv import OrangeTVcache
-from lameDB import lameDB
 import util
 from provider import ContentProvider
 
@@ -50,7 +49,8 @@ day_translation_short = {"Monday": "Po", "Tuesday": "Ut", "Wednesday": "St", "Th
 
 
 class orangetvContentProvider(ContentProvider):
-
+	enable_userbouquet = None
+	userbuquet_player = None
 	
 	# #################################################################################################
 	
@@ -59,6 +59,18 @@ class orangetvContentProvider(ContentProvider):
 		
 		self.session = session
 		self.orangetv = OrangeTVcache.get(username, password, device_id, data_dir, client.log.info )
+
+		ub_enable = __addon__.getSetting('enable_userbouquet') == "true"
+		ub_player = __addon__.getSetting('player_name')
+		if orangetvContentProvider.enable_userbouquet == None or orangetvContentProvider.userbuquet_player == None:
+			orangetvContentProvider.enable_userbouquet = ub_enable
+			orangetvContentProvider.userbuquet_player = ub_player
+		
+		if orangetvContentProvider.enable_userbouquet != ub_enable or orangetvContentProvider.userbuquet_player != ub_player:
+			# configuration options for userbouquet generator changed - call service to rebuild or remove userbouquet
+			orangetvContentProvider.enable_userbouquet = ub_enable
+			orangetvContentProvider.userbuquet_player = ub_player
+			client.sendServiceCommand( ArchivCZSK.get_addon('plugin.video.orangetv'), 'userbouquet_gen' )
 
 	# #################################################################################################
 
@@ -104,11 +116,6 @@ class orangetvContentProvider(ContentProvider):
 		result = []
 		
 		if section is None:
-			item = self.video_item( "#extra#bouquet_tv" )
-			item['title'] = "Vygenerovať userbouquet pre živé vysielanie"
-			item['plot'] = 'Tímto sa vytvorí userbouquet pre Orange live TV.'
-			result.append( item )
-	
 			item=self.dir_item( 'Zaregistrované zariadenia', '#extra#devices')
 			item['plot'] = "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočná zariadenia, aby ste sa mohli znova inde prihlásiť."
 			result.append( item )
@@ -124,9 +131,6 @@ class orangetvContentProvider(ContentProvider):
 				item['menu'] = {'Zmazať zariadenie!': {'list': '#extra#deldev#' + pdev["deviceId"], 'action-type': 'list'}}
 				result.append(item)
 				
-		elif section == '#bouquet_tv':
-			client.add_operation('SEND_SERVICE_COMMAND', { 'cmd': "userbouquet_gen", 'msg': "Generovanie userbouquetu bolo spustené", 'msgType': 'info', 'msgTimeout': 3, 'canClose': True })
-			return None
 		elif section.startswith('#deldev#'):
 			dev_name = section[8:]
 			self.orangetv.device_remove(dev_name)
@@ -142,7 +146,7 @@ class orangetvContentProvider(ContentProvider):
 		show_epg = __addon__.getSetting('showliveepg').lower() == 'true'
 		enable_adult = __addon__.getSetting('enable_adult').lower() == 'true'
 		cache_hours = int(__addon__.getSetting('epgcache'))
-		enable_xmlepg = __addon__.getSetting('enable_xmlepg').lower() == 'true'
+		enable_xmlepg = __addon__.getSetting('enable_xmlepg').lower() == 'true' and __addon__.getSetting('enable_userbouquet').lower() == 'true'
 		
 		if show_epg:
 			# reload EPG cache if needed

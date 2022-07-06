@@ -10,7 +10,7 @@ from Plugins.Extensions.archivCZSK.engine.client import log
 from Plugins.Extensions.archivCZSK.engine.httpserver import archivCZSKHttpServer, AddonHttpRequestHandler
 
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
-from .orangetv import OrangeTVcache
+from orangetv import OrangeTVcache
 
 # #################################################################################################
 

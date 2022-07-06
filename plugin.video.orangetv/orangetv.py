@@ -3,6 +3,7 @@ import re,sys,os,string,base64,datetime,json,requests
 from time import time
 from uuid import getnode as get_mac
 import threading
+from hashlib import md5
 
 try:
 	from urllib import quote
@@ -75,7 +76,8 @@ class OrangeTVcache:
 	@staticmethod
 	def get(username=None, password=None, device_id=None, data_dir=None, log_function=_log_dummy):
 		if OrangeTVcache.orangetv and OrangeTVcache.orangetv_init_params == (username, password, device_id):
-			log_function("OrangeTV already loaded")
+#			log_function("OrangeTV already loaded")
+			pass
 		else:
 			OrangeTVcache.orangetv = OrangeTV(username, password, device_id, data_dir, log_function )
 			OrangeTVcache.orangetv_init_params = (username, password, device_id)
@@ -277,7 +279,7 @@ class OrangeTV:
 						logo = 'http://app01.gtm.orange.sk/' + logo
 					name = _to_string(item['channelName'])
 					adult = 'audience' in item and item['audience'].upper() == 'INDECENT'
-					channels[channel_key] = LiveChannel(channel_key, name, logo, item['weight'], self.quality, timeshift, item['channelNumber'], item['channelId'], item['logo'], adult)
+					channels[channel_key] = LiveChannel(channel_key, name, logo, item['weight'], self.quality, timeshift, item['channelNumber'], item['channelId'], item['logo'].replace('https://', 'http://').replace('64x64','220x220'), adult)
 						
 			self._live_channels = sorted(list(channels.values()), key=lambda _channel: _channel.number)
 			done = False
@@ -448,161 +450,4 @@ class OrangeTV:
 
 # #################################################################################################
 
-class OrangeTvBouquetGenerator:
-	def __init__(self, endpoint):
-		# configuration to make this class little bit reusable also in other addons
-		self.proxy_url = endpoint
-		self.prefix = "orangetv"
-		self.name = "Orange TV"
-		self.sid_start = 0x100
-		self.tid = 4
-		self.onid = 3
-		self.namespace = 0xE020000
-	
-	# bouquet generator funcions based on AntikTV addon
-	@staticmethod
-	def download_picons(picons):
-		if not os.path.exists( '/usr/share/enigma2/picon' ):
-			os.mkdir('/usr/share/enigma2/picon')
-			
-		for ref in picons:
-			if not picons[ref].endswith('.png'):
-				continue
-			
-			fileout = '/usr/share/enigma2/picon/' + ref + '.png'
-			
-			if not os.path.exists(fileout):
-				try:
-					r = requests.get( picons[ref].replace('https://', 'http://').replace('64x64','220x220'), timeout=3 )
-					if r.status_code == 200:
-						with open(fileout, 'wb') as f:
-							f.write( r.content )
-				except:
-					pass
-	
-	def build_service_ref( self, service, player_id ):
-		return player_id + ":0:{:X}:{:X}:{:X}:{:X}:{:X}:0:0:0:".format( service.ServiceType, service.ServiceID, service.Transponder.TransportStreamID, service.Transponder.OriginalNetworkID, service.Transponder.DVBNameSpace )
-
-
-	def service_ref_get( self, lamedb, channel_name, player_id, channel_id ):
-		
-		skylink_freq = [ 11739, 11778, 11856, 11876, 11934, 11954, 11973, 12012, 12032, 12070, 12090, 12110, 12129, 12168, 12344, 12363 ]
-		antik_freq = [ 11055, 11094, 11231, 11283, 11324, 11471, 11554, 11595, 11637, 12605 ]
-		
-		def cmp_freq( f, f_list ):
-			f = int(f/1000)
-			
-			for f2 in f_list:
-				if abs( f - f2) < 5:
-					return True
-		
-			return False
-	
-		if lamedb != None:
-			try:
-				services = lamedb.Services[ lamedb.name_normalise( channel_name ) ]
-				
-				# try position 23.5E first
-				for s in services:
-					if s.Transponder.Data.OrbitalPosition == 235 and cmp_freq( s.Transponder.Data.Frequency, skylink_freq ):
-						return self.build_service_ref(s, player_id)
-		
-				# then 16E
-				for s in services:
-					if s.Transponder.Data.OrbitalPosition == 160 and cmp_freq( s.Transponder.Data.Frequency, antik_freq ):
-						return self.build_service_ref(s, player_id)
-		
-				for s in services:
-					if s.Transponder.Data.OrbitalPosition == 235:
-						return self.build_service_ref(s, player_id)
-		
-				# then 16E
-				for s in services:
-					if s.Transponder.Data.OrbitalPosition == 160:
-						return self.build_service_ref(s, player_id)
-		
-				# then 0,8W
-				for s in services:
-					if s.Transponder.Data.OrbitalPosition == -8:
-						return self.build_service_ref(s, player_id)
-		
-				# then 192
-				for s in services:
-					if s.Transponder.Data.OrbitalPosition == 192:
-						return self.build_service_ref(s, player_id)
-		
-				# take the first one
-				for s in services:
-					return self.build_service_ref(s, player_id)
-		
-			except:
-				pass
-		
-		return player_id + ":0:1:%X:%X:%X:%X:0:0:0:" % (self.sid_start + channel_id, self.tid, self.onid, self.namespace)
-	
-	
-	def generate_bouquet(self, channels, enable_adult=True, enable_xmlepg=False, enable_picons=False, player_name="0"):
-		# if epg generator is disabled, then try to create service references based on lamedb
-		if enable_xmlepg:
-			lamedb = None
-		else:
-			lamedb = lameDB("/etc/enigma2/lamedb")
-		
-		if player_name == "1": # gstplayer
-			player_id = "5001"
-		elif player_name == "2": # exteplayer3
-			player_id = "5002"
-		elif player_name == "3": # DMM
-			player_id = "8193"
-		elif player_name == "4": # DVB service (OE >=2.5)
-			player_id = "1"
-		else:
-			player_id = "4097" # system default
-	
-		file_name = "userbouquet.%s.tv" % self.prefix
-		
-		picons = {}
-		
-		service_ref_uniq = ':%X:%X:%X:0:0:0:' % (self.tid, self.onid, self.namespace)
-		
-		with open( "/etc/enigma2/" + file_name, "w" ) as f:
-			f.write( "#NAME %s\n" % self.name )
-			
-			for channel in channels:
-				if not enable_adult and channel['adult']:
-					continue
-				
-				channel_name = channel['name']
-				url = self.proxy_url + '/playlive/' + base64.b64encode( channel['key'].encode('utf-8') ).decode('utf-8')
-				url = quote( url )
-				
-				service_ref = self.service_ref_get( lamedb, channel_name, player_id, channel['id'] )
-					
-				f.write( "#SERVICE " + service_ref + url + ":" + channel_name + "\n")
-				f.write( "#DESCRIPTION " + channel_name + "\n")
-				
-				try:
-					if enable_picons and service_ref.endswith( service_ref_uniq ):
-						picons[ service_ref[:-1].replace(':', '_') ] = channel['picon']
-				except:
-					pass
-		
-		first_export = True
-		with open( "/etc/enigma2/bouquets.tv", "r" ) as f:
-			for line in f.readlines():
-				if file_name in line:
-					first_export = False
-					break
-		
-		if first_export:
-			with open( "/etc/enigma2/bouquets.tv", "a" ) as f:
-				f.write( '#SERVICE 1:7:1:0:0:0:0:0:0:0:FROM BOUQUET "' + file_name + '" ORDER BY bouquet' + "\n" )
-	
-		try:
-			requests.get("http://127.0.0.1/web/servicelistreload?mode=2")
-		except:
-			pass
-		
-		if enable_picons:
-			threading.Thread(target=OrangeTvBouquetGenerator.download_picons,args=(picons,)).start()
 	
