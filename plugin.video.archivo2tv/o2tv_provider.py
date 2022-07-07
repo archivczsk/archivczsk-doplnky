@@ -12,7 +12,7 @@ from Plugins.Extensions.archivCZSK.engine import client
 
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 
-from o2tv import O2tv
+from o2tv import O2tvCache
 import util
 from provider import ContentProvider
 
@@ -45,34 +45,25 @@ day_translation_short = {"Monday": "Po", "Tuesday": "Ut", "Wednesday": "St", "Th
 
 
 class O2tvContentProvider(ContentProvider):
-	o2tv = None
-	o2tv_init_params = None
 	favourites = None
-	
+	enable_userbouquet = None
+	userbuquet_player = None
+
 	# #################################################################################################
 	
 	def __init__(self, username=None, password=None, device_id=None, data_dir=None, session=None, filter=None, tmp_dir='/tmp'):
 		ContentProvider.__init__(self, 'o2tv', '/', username, password, filter, tmp_dir)
 		
-		self.username = username
-		self.password = password
-		self.device_id = device_id
 		self.session = session
 		self.data_dir = data_dir
 		self.favourites = None
-		
-		if O2tvContentProvider.o2tv and O2tvContentProvider.o2tv_init_params == (username, password, device_id):
-			self.info("O2TV already loaded")
+
+		if not username or not password or not device_id:
+			self.error("No login data provided")
+			self.o2tv = None
 		else:
-			if username and len(username) > 0 and password and len(password) > 0 and device_id and len(device_id) > 0:
-				O2tvContentProvider.o2tv = O2tv(username, password, device_id, addon.getSetting('devicename'), data_dir, self.info )
-				O2tvContentProvider.o2tv_init_params = (username, password, device_id)
-				self.info("New instance of O2TV initialised")
-			else:
-				self.error("No login data provided")
-		
-		self.o2tv = O2tvContentProvider.o2tv
-		
+			self.o2tv = O2tvCache.get(username, password, device_id, addon.getSetting('devicename'), data_dir, client.log.info )
+			
 		if O2tvContentProvider.favourites:
 			# load cached favourites from global cache
 			self.favourites = O2tvContentProvider.favourites
@@ -80,6 +71,18 @@ class O2tvContentProvider(ContentProvider):
 			# load favourites from disc and save it to global cache
 			self.load_favourites()
 			O2tvContentProvider.favourites = self.favourites
+
+		ub_enable = addon.getSetting('enable_userbouquet') == "true"
+		ub_player = addon.getSetting('player_name')
+		if O2tvContentProvider.enable_userbouquet == None or O2tvContentProvider.userbuquet_player == None:
+			O2tvContentProvider.enable_userbouquet = ub_enable
+			O2tvContentProvider.userbuquet_player = ub_player
+		
+		if O2tvContentProvider.enable_userbouquet != ub_enable or O2tvContentProvider.userbuquet_player != ub_player:
+			# configuration options for userbouquet generator changed - call service to rebuild or remove userbouquet
+			O2tvContentProvider.enable_userbouquet = ub_enable
+			O2tvContentProvider.userbuquet_player = ub_player
+			client.sendServiceCommand( ArchivCZSK.get_addon('plugin.video.archivo2tv'), 'userbouquet_gen' )
 
 	# #################################################################################################
 
@@ -193,11 +196,6 @@ class O2tvContentProvider(ContentProvider):
 		result = []
 		
 		if section is None:
-			item = self.video_item( "#extra#bouquet_tv" )
-			item['title'] = "Vygenerovat userbouquet pro živé vysilání"
-			item['plot'] = 'Tímto se vytvoří userbouquet pre live O2TV.'
-			result.append( item )
-	
 			item=self.dir_item( 'Zaregistrované zařízení', '#extra#devices')
 			item['plot'] = "Tu si můžete zobrazit a případně vymazat/odregistrovat zbytečná zařízení, aby ste se mohli znova jinde přihlásit."
 			result.append( item )
@@ -213,16 +211,6 @@ class O2tvContentProvider(ContentProvider):
 				item['menu'] = {'Smazat zařízení!': {'list': '#extra#deldev#' + pdev["deviceId"], 'action-type': 'list'}}
 				result.append(item)
 				
-		elif section == '#bouquet_tv':
-			from o2tv import O2tvBouquetGenerator
-			o2tvbg = O2tvBouquetGenerator()
-			
-			msg = o2tvbg.generate_bouquet( self.o2tv.get_channels_sorted(), addon.getSetting("enable_adult") == 'true', addon.getSetting("enable_xmlepg") == 'true', addon.getSetting("enable_picons") == 'true', addon.getSetting("player_name"))
-			if o2tvbg.install_proxy():
-				msg += "\nO2TV proxy funguje."
-			else:
-				msg += "\Selhalo spuštení O2TV proxy serveru"
-			return msg
 		elif section.startswith('#deldev#'):
 			dev_name = section[8:]
 			self.o2tv.device_remove(dev_name)

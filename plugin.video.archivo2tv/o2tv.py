@@ -9,7 +9,6 @@ from datetime import date
 import threading, traceback
 
 import base64
-from lameDB import lameDB
 
 try:
 	from urllib import quote
@@ -47,6 +46,23 @@ def _log_dummy(message):
 	print('[O2TV]: ' + message )
 	pass
 
+class O2tvCache:
+	o2tv = None
+	o2tv_init_params = None
+
+	# #################################################################################################
+	
+	@staticmethod
+	def get(username=None, password=None, device_id=None, devicename=None, data_dir=None, log_function=_log_dummy):
+		if O2tvCache.o2tv and O2tvCache.o2tv_init_params == (username, password, device_id, devicename):
+#			log_function("O2TV already loaded")
+			pass
+		else:
+			O2tvCache.o2tv = O2tv(username, password, device_id, devicename, data_dir, log_function )
+			O2tvCache.o2tv_init_params = (username, password, device_id, devicename)
+			log_function("New instance of O2TV initialised")
+		
+		return O2tvCache.o2tv
 
 class O2tv:
 	def __init__(self, username, password, deviceid, devicename="tvbox", data_dir=None, log_function=None ):
@@ -292,7 +308,7 @@ class O2tv:
 							'name': item['channelName'],
 							'weight': item['weight'],
 							'adult' : 'audience' in item and item['audience'].upper() == 'INDECENT',
-							'picon': item['logo'],
+							'picon': item['logo'].replace('https://', 'http://').replace('64x64','220x220'),
 							'timeshift': item['timeShiftDuration'] if item['timeShiftEnabled'] else 0,
 							'screenshot': item['screenshots'][0],
 						}
@@ -506,232 +522,3 @@ class O2tv:
 		return self.resolve_streams(post)
 
 	# #################################################################################################
-	
-
-class O2tvBouquetGenerator:
-	def __init__(self):
-		# configuration to make this class little bit reusable also in other addons
-		self.proxy_url = "http://127.0.0.1:18082"
-		self.PROXY_VER='1'
-		self.prefix = "o2tv"
-		self.name = "O2TV"
-		self.sid_start = 0xE000
-		self.tid = 5
-		self.onid = 2
-		self.namespace = 0xE030000
-	
-	def flush_enigma2_settings(self):
-		try:
-			from Components.config import configfile
-			
-			configfile.save()
-			
-			# reload configuration in antiktv_proxy
-			requests.get( self.proxy_url + '/reloadconfig' )
-		except:
-			pass
-
-	# bouquet generator funcions based on AntikTV addon
-	@staticmethod
-	def download_picons(picons):
-		if not os.path.exists( '/usr/share/enigma2/picon' ):
-			os.mkdir('/usr/share/enigma2/picon')
-			
-		for ref in picons:
-			if not picons[ref].endswith('.png'):
-				continue
-			
-			fileout = '/usr/share/enigma2/picon/' + ref + '.png'
-			
-			if not os.path.exists(fileout):
-				try:
-					r = requests.get( picons[ref].replace('https://', 'http://').replace('64x64','220x220'), timeout=3 )
-					if r.status_code == 200:
-						with open(fileout, 'wb') as f:
-							f.write( r.content )
-				except:
-					pass
-	
-	def build_service_ref( self, service, player_id ):
-		return player_id + ":0:{:X}:{:X}:{:X}:{:X}:{:X}:0:0:0:".format( service.ServiceType, service.ServiceID, service.Transponder.TransportStreamID, service.Transponder.OriginalNetworkID, service.Transponder.DVBNameSpace )
-
-
-	def service_ref_get( self, lamedb, channel_name, player_id, channel_id ):
-		
-		skylink_freq = [ 11739, 11778, 11856, 11876, 11934, 11954, 11973, 12012, 12032, 12070, 12090, 12110, 12129, 12168, 12344, 12363 ]
-		antik_freq = [ 11055, 11094, 11231, 11283, 11324, 11471, 11554, 11595, 11637, 12605 ]
-		
-		def cmp_freq( f, f_list ):
-			f = int(f/1000)
-			
-			for f2 in f_list:
-				if abs( f - f2) < 5:
-					return True
-		
-			return False
-	
-		if lamedb != None:
-			try:
-				services = lamedb.Services[ lamedb.name_normalise( channel_name ) ]
-				
-				# try position 23.5E first
-				for s in services:
-					if s.Transponder.Data.OrbitalPosition == 235 and cmp_freq( s.Transponder.Data.Frequency, skylink_freq ):
-						return self.build_service_ref(s, player_id)
-		
-				# then 16E
-				for s in services:
-					if s.Transponder.Data.OrbitalPosition == 160 and cmp_freq( s.Transponder.Data.Frequency, antik_freq ):
-						return self.build_service_ref(s, player_id)
-		
-				for s in services:
-					if s.Transponder.Data.OrbitalPosition == 235:
-						return self.build_service_ref(s, player_id)
-		
-				# then 16E
-				for s in services:
-					if s.Transponder.Data.OrbitalPosition == 160:
-						return self.build_service_ref(s, player_id)
-		
-				# then 0,8W
-				for s in services:
-					if s.Transponder.Data.OrbitalPosition == -8:
-						return self.build_service_ref(s, player_id)
-		
-				# then 192
-				for s in services:
-					if s.Transponder.Data.OrbitalPosition == 192:
-						return self.build_service_ref(s, player_id)
-		
-				# take the first one
-				for s in services:
-					return self.build_service_ref(s, player_id)
-		
-			except:
-				pass
-		
-		return player_id + ":0:1:%X:%X:%X:%X:0:0:0:" % (self.sid_start + channel_id, self.tid, self.onid, self.namespace)
-	
-	
-	def generate_bouquet(self, channels, enable_adult=True, enable_xmlepg=False, enable_picons=False, player_name="0"):
-		# if epg generator is disabled, then try to create service references based on lamedb
-		if enable_xmlepg:
-			lamedb = None
-		else:
-			lamedb = lameDB("/etc/enigma2/lamedb")
-		
-		if player_name == "1": # gstplayer
-			player_id = "5001"
-		elif player_name == "2": # exteplayer3
-			player_id = "5002"
-		elif player_name == "3": # DMM
-			player_id = "8193"
-		elif player_name == "4": # DVB service (OE >=2.5)
-			player_id = "1"
-		else:
-			player_id = "4097" # system default
-	
-		file_name = "userbouquet.%s.tv" % self.prefix
-		
-		picons = {}
-		
-		service_ref_uniq = ':%X:%X:%X:0:0:0:' % (self.tid, self.onid, self.namespace)
-		
-		with open( "/etc/enigma2/" + file_name, "w" ) as f:
-			f.write( "#NAME %s TV\n" % self.name )
-			
-			for channel in channels:
-				if not enable_adult and channel['adult']:
-					continue
-				
-				channel_name = channel['name']
-				url = self.proxy_url + '/playlive/' + base64.b64encode( channel['key'].encode('utf-8') ).decode('utf-8')
-				url = quote( url )
-				
-				service_ref = self.service_ref_get( lamedb, channel_name, player_id, channel['id'] )
-					
-				f.write( "#SERVICE " + service_ref + url + ":" + channel_name + "\n")
-				f.write( "#DESCRIPTION " + channel_name + "\n")
-				
-				try:
-					if enable_picons and service_ref.endswith( service_ref_uniq ):
-						picons[ service_ref[:-1].replace(':', '_') ] = channel['picon']
-				except:
-					pass
-		
-		first_export = True
-		with open( "/etc/enigma2/bouquets.tv", "r" ) as f:
-			for line in f.readlines():
-				if file_name in line:
-					first_export = False
-					break
-		
-		if first_export:
-			with open( "/etc/enigma2/bouquets.tv", "a" ) as f:
-				f.write( '#SERVICE 1:7:1:0:0:0:0:0:0:0:FROM BOUQUET "' + file_name + '" ORDER BY bouquet' + "\n" )
-	
-		try:
-			requests.get("http://127.0.0.1/web/servicelistreload?mode=2")
-		except:
-			pass
-		
-		if enable_picons:
-			threading.Thread(target=O2tvBouquetGenerator.download_picons,args=(picons,)).start()
-		
-		
-		return "%s userbouquet vygenerovaný" % self.name
-	
-	
-	def install_proxy(self):
-		src_file = os.path.dirname(__file__) + '/' + self.prefix + '_proxy.sh'
-		
-		for i in range(3):
-			try:
-				response = requests.get( self.proxy_url + '/info', timeout=2 )
-				
-				if response.text.startswith( self.prefix + "_proxy"):
-					if response.text == self.prefix + "_proxy" + self.PROXY_VER:
-						# current running version match
-						return True
-					else:
-						os.chmod( src_file, 0o755 )
-						self.flush_enigma2_settings()
-						
-						# wrong runnig version - restart it and try again
-						os.system('/etc/init.d/%s_proxy.sh stop' % self.prefix )
-						time.sleep(2)
-						os.system('/etc/init.d/%s_proxy.sh start' % self.prefix )
-						time.sleep(2)
-				else:
-					# incorrect response - install new proxy
-					break
-			except:
-				# something's wrong - we will try again
-				pass
-		
-		os.chmod( src_file, 0o755 )
-		self.flush_enigma2_settings()
-		try:
-			os.symlink( src_file, '/etc/init.d/%s_proxy.sh' % self.prefix )
-		except:
-			pass
-		
-		try:
-			os.system('update-rc.d %s_proxy.sh defaults' % self.prefix )
-			os.system('/etc/init.d/%s_proxy.sh start' % self.prefix )
-			time.sleep(1)
-		except:
-			pass
-	
-		for i in range(5):
-			try:
-				response = requests.get( self.proxy_url + '/info', timeout=1 )
-			except:
-				response = None
-				time.sleep(1)
-				pass
-			
-			if response != None and response.text == self.prefix + "_proxy" + self.PROXY_VER:
-				return True
-		
-		return False
