@@ -1,3 +1,7 @@
+1.9.7 (2022-07-12)
+    - add movie duration to extended stats
+1.9.6 (2022-06-03)
+    - fixed html decoding on python3
 1.9.5 (2022-05-17)
     - ignore error when loading search items
 1.9.4 (2022-05-13)
