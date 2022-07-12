@@ -1,3 +1,6 @@
+2022-07-12 2.0.4
+    - konf. voľba určujúca maximálnu pozíciu pre ukladanie obnovenie prehrávania
+
 2022-06-04 2.0.3
     - pridaná podpora pre trakt.tv
     - vylepšené ukladanie histórie
