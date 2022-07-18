@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
-<addon id="plugin.video.stream-cinema" name="Stream Cinema" provider-name="archivczsk" version="2.0.3">
+<addon id="plugin.video.stream-cinema" name="Stream Cinema" provider-name="archivczsk" version="2.0.4">
   <requires>
         <import addon="xbmc.python" version="2.1.0" />
-        <import addon="script.module.stream.resolver" version="1.6.25" />
+        <import addon="script.module.stream.resolver" version="1.9.7" />
     </requires>
     <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
         <provides>video</provides>
@@ -44,6 +44,29 @@
     <description lang="en">Watch online tales mostly in czech language on pohadkar.cz</description>
     <description lang="cs">Sledujte online pohádky ze servru pohádkář.cz. Ideální pro zabavení dětí.</description>
     <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.telly"
+       name="Telly"
+       version="1.0.0"
+       provider-name="archivczsk">
+  <requires>
+    <import addon="enigma2.archivczsk" version="1.5.1"/>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.stream.resolver" version="1.6.22" />
+  </requires>
+  <extension point="xbmc.service" library="telly_service.py"/>
+  <extension point="xbmc.autostart" library="telly_autostart.py"/>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>Telly live plugin</summary>
+    <description>Plugin to play Telly live TV</description>
+    <description lang="cs">Plugin pro přehrávání Telly live TV</description>
+    <description lang="sk">Plugin pre prehrávanie Telly live TVk</description>
   </extension>
 </addon>
 
@@ -212,11 +235,14 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.archivo2tv" name="Sledování O2TV" provider-name="misanov,waladir" version="1.6.3">
+<addon id="plugin.video.archivo2tv" name="Sledování O2TV" provider-name="misanov,waladir" version="1.7.0">
   <requires>
+    <import addon="enigma2.archivczsk" version="1.5.1"/>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.stream.resolver" version="1.6.25" />
   </requires>
+  <extension point="xbmc.service" library="o2tv_service.py"/>
+  <extension point="xbmc.autostart" library="o2tv_autostart.py"/>
   <extension point="xbmc.python.pluginsource" library="default.py">
     <provides>video</provides>
   </extension>
@@ -303,7 +329,7 @@
   </extension>
 </addon>
 
-<addon id="script.module.stream.resolver" name="stream resolver" provider-name="Libor Zoubek" version="1.9.6">
+<addon id="script.module.stream.resolver" name="stream resolver" provider-name="Libor Zoubek" version="1.9.7">
   <requires>
     <import addon="xbmc.python" version="2.1.0" />
 
@@ -408,12 +434,15 @@
 
 <addon id="plugin.video.orangetv"
        name="OrangeTV"
-       version="2.2"
+       version="2.3"
        provider-name="Michal Novotný, Štěpán Ort">
   <requires>
+    <import addon="enigma2.archivczsk" version="1.5.1"/>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.stream.resolver" version="1.6.22" />
   </requires>
+  <extension point="xbmc.service" library="orangetv_service.py"/>
+  <extension point="xbmc.autostart" library="orangetv_autostart.py"/>
   <extension point="xbmc.python.pluginsource" library="default.py">
     <provides>video</provides>
   </extension>
