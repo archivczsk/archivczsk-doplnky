@@ -35,12 +35,12 @@ class O2tvHTTPRequestHandler( AddonHttpRequestHandler ):
 			path = base64.b64decode(path).decode("utf-8")
 			result = o2tv.get_live_link(path)
 			location = result[0]['url']
-			log.debug("Resolved stream address: %s" % location )
+#			log.debug("Resolved stream address: %s" % location )
 		except:
 			log.error(traceback.format_exc())
 			return self.reply_error500( request )
 
-		return self.reply_redirect( request, location)
+		return self.reply_redirect( request, location.encode('utf-8') )
 	
 	def default_handler(self, request, path_full ):
 		data = "Default handler pre o2tv pre path: %s" % path_full

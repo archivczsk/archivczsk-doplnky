@@ -279,7 +279,13 @@ def generate_xmlepg_if_needed(settings):
 # #################################################################################################
 
 def print_settings( settings ):
-	return service_helper.logDebug("Received cfgs: %s" % settings)
+	settings = settings.copy()
+
+	# remove sensitive data from logs
+	if 'orangetvpwd' in settings and len(settings['orangetvpwd']) > 0:
+		settings['orangetvpwd'] = '***'
+	
+	return service_helper.logDebug("Received settings: %s" % settings)
 
 # #################################################################################################
 

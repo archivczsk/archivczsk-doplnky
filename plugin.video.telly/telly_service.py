@@ -286,7 +286,7 @@ def generate_xmlepg_if_needed(settings):
 # #################################################################################################
 
 def print_settings( settings ):
-	return service_helper.logDebug("Received cfgs: %s" % settings)
+	return service_helper.logDebug("Received settings: %s" % settings)
 
 # #################################################################################################
 

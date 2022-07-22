@@ -52,7 +52,7 @@ class TellyHTTPRequestHandler( AddonHttpRequestHandler ):
 			log.error(traceback.format_exc())
 			return self.reply_error500( request )
 
-		return self.reply_redirect( request, location)
+		return self.reply_redirect( request, location.encode('utf-8'))
 	
 	def default_handler(self, request, path_full ):
 		data = "Default Telly handler pre path: %s" % path_full

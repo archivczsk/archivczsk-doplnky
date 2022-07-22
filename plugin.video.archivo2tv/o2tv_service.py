@@ -274,6 +274,12 @@ def generate_xmlepg_if_needed(settings):
 # #################################################################################################
 
 def print_settings( settings ):
+	settings = settings.copy()
+
+	# remove sensitive data from logs
+	if 'password' in settings and len(settings['password']) > 0:
+		settings['password'] = '***'
+
 	return service_helper.logDebug("Received cfgs: %s" % settings)
 
 # #################################################################################################
