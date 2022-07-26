@@ -27,6 +27,7 @@ class TellyHTTPRequestHandler( AddonHttpRequestHandler ):
 		try:
 			data_dir = __addon__.getAddonInfo('profile')
 			enable_h265 = __addon__.getSetting('enable_h265')=='true'
+			stream_http = __addon__.getSetting('use_http_for_stream')=='true'
 
 			telly = TellyCache.get(data_dir, log.info)
 			path = base64.b64decode(path).decode("utf-8")
@@ -47,6 +48,9 @@ class TellyHTTPRequestHandler( AddonHttpRequestHandler ):
 			if not location:
 				location = result[-1]['url']
 
+			if stream_http:
+				location = location.replace('https://', 'http://')
+				
 #			log.debug("Resolved stream address: %s" % location )
 		except:
 			log.error(traceback.format_exc())
