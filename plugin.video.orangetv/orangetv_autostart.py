@@ -11,6 +11,7 @@ from Plugins.Extensions.archivCZSK.engine.httpserver import archivCZSKHttpServer
 
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from orangetv import OrangeTVcache
+from time import time
 
 # #################################################################################################
 
@@ -22,7 +23,8 @@ __language__ = __addon__.getLocalizedString
 class OrangetvHTTPRequestHandler( AddonHttpRequestHandler ):
 	def __init__(self):
 		AddonHttpRequestHandler.__init__(self, __scriptid__)
-
+		self.live_cache = {}
+		
 	def P_playlive(self, request, path):
 		try:
 			username=__addon__.getSetting('orangetvuser')
@@ -32,7 +34,14 @@ class OrangetvHTTPRequestHandler( AddonHttpRequestHandler ):
 
 			orangetv = OrangeTVcache.get(username, password, device_id, data_dir, log.info )
 			path = base64.b64decode(path).decode("utf-8")
-			result = orangetv.getVideoLink(path + '|||')
+			
+			if path in self.live_cache and self.live_cache[path]['life'] > int(time()):
+				log.debug("Returning result from cache" )
+				result = self.live_cache[path]['result']
+			else:
+				result = orangetv.getVideoLink(path + '|||')
+				self.live_cache[path] = { 'life': int(time())+900, 'result': result }
+
 			location = result[0]['url']
 #			log.debug("Resolved stream address: %s" % location )
 		except:

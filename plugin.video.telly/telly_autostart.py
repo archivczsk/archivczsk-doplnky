@@ -32,7 +32,7 @@ class TellyHTTPRequestHandler( AddonHttpRequestHandler ):
 			telly = TellyCache.get(data_dir, log.info)
 			path = base64.b64decode(path).decode("utf-8")
 			result = telly.get_video_link_by_id(path, enable_h265)
-			
+
 			max_bitrate = __addon__.getSetting('max_bitrate')
 			if ' Mbit' in max_bitrate:
 				max_bitrate = int(max_bitrate.split(' ')[0]) * 1000

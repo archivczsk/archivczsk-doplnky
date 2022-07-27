@@ -11,6 +11,7 @@ from Plugins.Extensions.archivCZSK.engine.httpserver import archivCZSKHttpServer
 
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from o2tv import O2tvCache
+from time import time
 
 # #################################################################################################
 
@@ -22,6 +23,7 @@ __language__ = __addon__.getLocalizedString
 class O2tvHTTPRequestHandler( AddonHttpRequestHandler ):
 	def __init__(self):
 		AddonHttpRequestHandler.__init__(self, __scriptid__)
+		self.live_cache = {}
 
 	def P_playlive(self, request, path):
 		try:
@@ -33,7 +35,14 @@ class O2tvHTTPRequestHandler( AddonHttpRequestHandler ):
 
 			o2tv = O2tvCache.get(username, password, device_id, device_name, data_dir, log.info )
 			path = base64.b64decode(path).decode("utf-8")
-			result = o2tv.get_live_link(path)
+			
+			if path in self.live_cache and self.live_cache[path]['life'] > int(time()):
+				log.debug("Returning result from cache" )
+				result = self.live_cache[path]['result']
+			else:
+				result = o2tv.get_live_link(path)
+				self.live_cache[path] = { 'life': int(time())+900, 'result': result }
+				
 			location = result[0]['url']
 #			log.debug("Resolved stream address: %s" % location )
 		except:

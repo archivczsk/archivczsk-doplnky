@@ -1,3 +1,5 @@
+2022-07-27
+* pridaná url stream cache
 2022-07-22
 * oprava behu na python3 a DreamOS
 * odstránenie citlivých dát z log súboru
