@@ -1,0 +1,9 @@
+1.0.2 - 26.07.2022
+    - pridaná možnosť vynútiť streamovanie cez http namiesto https
+
+1.0.1 - 22.07.2022
+    - oprava behu na python3 a DreamOS
+    
+1.0.0 - 18.07.2022
+    - úvodná verejná verzia
+	- podpora pre Live TV, archív a userbouquet
