@@ -101,10 +101,13 @@ def get_streams_from_manifest_url(url):
 				stream['bandwidth'] = int(val)
 			if key == "RESOLUTION":
 				stream['quality'] = val.split("x")[1] + "p"
-		if m.group('chunk')[0] == '/':
-			stream['url'] = '/'.join(url.split('/',3)[0:3]) + m.group('chunk')
+		chunk_url = m.group('chunk')
+		if chunk_url.startswith('http'):
+			stream['url'] = chunk_url
+		elif chunk_url.startswith('/'):
+			stream['url'] = '/'.join(url.split('/',3)[0:3]) + chunk_url
 		else:
-			stream['url'] = url[:url.rfind('/') + 1] + m.group('chunk')
+			stream['url'] = url[:url.rfind('/') + 1] + chunk_url
 		result.append(stream)
 	result.sort(key=lambda x:x['bandwidth'], reverse=True)
 	return result
