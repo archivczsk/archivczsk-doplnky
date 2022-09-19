@@ -90,12 +90,13 @@
 </addon>
 
 <addon id="plugin.video.novaplus"
-       name="Nova Plus TV"
-       version="2.3.1"
-       provider-name="Michal Novotny, Jiri Vyhnalek">
+       name="TV Nova"
+       version="3.0"
+       provider-name="archivczsk">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.dmd-czech.common" version="1.5.0"/>
+    <import addon="script.module.stream.resolver" version="1.6.22" />
+    <import addon="script.module.dmd-czech.common" version="1.6.1" />
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
     <provides>video</provides>
@@ -105,10 +106,10 @@
     <summary>Nova Plus TV video-archive plugin</summary>
     <summary lang="cs">Nova Plus TV - archiv</summary>
     <description>
-        Plugin to play TV video archive Novaplus.nova.cz
+        Plugin to play TV video archive tv.nova.cz
     </description>
     <description lang="cs">
-        Plugin pro přehrávání videí z archivu Novaplus.nova.cz
+        Plugin pro přehrávání videí z archivu tv.nova.cz
     </description>
   </extension>
 </addon>
@@ -132,7 +133,7 @@
   </extension>
 </addon>
 
-<addon id="script.module.dmd-czech.common" name="dmd-czech common python modules" version="1.6.0" provider-name="Jiri Vyhnalek">
+<addon id="script.module.dmd-czech.common" name="dmd-czech common python modules" version="1.6.1" provider-name="Jiri Vyhnalek">
   <requires>
     <import addon="xbmc.python" version="2.1.0" />
   </requires>
