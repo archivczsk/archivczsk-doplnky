@@ -1,3 +1,5 @@
+2022-09-19 (verze 3.0.0)
+* kompletne novy addon kvuli zmenam na strance 
 2022-05-07
 * oprava kompatibility so starsou verziou requests
 2022-04-04
