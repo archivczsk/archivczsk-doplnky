@@ -98,7 +98,7 @@ class SledovaniTV:
 	
 	def showError(self, msg):
 		self.log_function("SLEDOVANI.TV API ERROR: %s" % msg )
-		raise Exception(msg)
+		raise Exception("SLEDOVANI.TV: %s" % msg)
 
 	# #################################################################################################
 
@@ -153,7 +153,7 @@ class SledovaniTV:
 		
 		if err_msg:
 			self.log_function( "Sledovani.tv error for URL %s: %s" % (url, traceback.format_exc()))
-			self.showError( "SLEDOVANI.TV: %s" % err_msg )
+			self.showError( "%s" % err_msg )
 
 	# #################################################################################################
 

@@ -124,7 +124,11 @@ def init_sledovanitv( settings ):
 	profile_dir = '/usr/lib/enigma2/python/Plugins/Extensions/archivCZSK/resources/data/%s' % ADDON_NAME
 	
 	if len(settings['username']) > 0 and len( settings['password'] ) > 0:
-		sledovanitv = SledovaniTvCache.get( settings['username'], settings['password'], settings['pin'], settings['serialid'], profile_dir, service_helper.logInfo )
+		try:
+			sledovanitv = SledovaniTvCache.get( settings['username'], settings['password'], settings['pin'], settings['serialid'], profile_dir, service_helper.logInfo )
+		except Exception as e:
+			service_helper.logError("Failed to init Sledovani.TV client: %s" % str(e))
+			sledovanitv = None
 	else:
 		sledovanitv = None
 		
@@ -419,7 +423,7 @@ def generate_userbouquet( data ):
 
 	sledovanitv = init_sledovanitv( settings )
 	
-	if not sledovanitv.check_pairing():
+	if sledovanitv and not sledovanitv.check_pairing():
 		sledovanitv = None
 	
 	if sledovanitv == None:

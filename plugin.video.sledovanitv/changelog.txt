@@ -1,4 +1,7 @@
-2022-09-08
+2.1 - 2022-10-02
+* vylepšené ošetrovanie chýb pri prihlásení
+
+2.0 - 2022-09-08
 * kompletný prepis - rozdelenie na klientské API a vykresľovanie GUI
 * pridaná služba pre manažment exportu zoznamu TV programov ako userbouquet
 * pridanie možnosti na export EPG pre EPGImport/EPGLoad pluginy

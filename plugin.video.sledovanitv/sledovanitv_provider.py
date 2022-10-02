@@ -55,12 +55,22 @@ class SledovaniTVContentProvider(ContentProvider):
 		
 		self.session = session
 		self.data_dir = data_dir
+		self.init_error_msg = None
 
 		if not username or not password or not serialid:
 			self.error("No login data provided")
 			self.sledovanitv = None
 		else:
-			self.sledovanitv = SledovaniTvCache.get(username, password, pin, serialid, data_dir, client.log.info )
+			try:
+				self.sledovanitv = SledovaniTvCache.get(username, password, pin, serialid, data_dir, client.log.info )
+			except Exception as e:
+				client.log.error("Sledovani.tv Addon ERROR:\n%s" % traceback.format_exc())
+			
+				if "SLEDOVANI.TV" in str(e):
+					self.init_error_msg = str(e)
+					self.sledovanitv = None
+				else:
+					raise
 			
 		ub_enable = addon.getSetting('enable_userbouquet') == "true"
 		ub_player = addon.getSetting('player_name')
@@ -84,7 +94,12 @@ class SledovaniTVContentProvider(ContentProvider):
 	def categories(self):
 		if not self.sledovanitv:
 			item = self.video_item('#')
-			item['title'] = "Nejsou nastaveny přihlašovací údaje"
+			
+			if self.init_error_msg:
+				client.add_operation('SHOW_MSG', { 'msg': self.init_error_msg, 'msgType': 'error', 'msgTimeout': 0, 'canClose': True, })
+				item['title'] = "%s" % self.init_error_msg
+			else:
+				item['title'] = "Nejsou nastaveny přihlašovací údaje"
 			return [ item ]
 		
 		result = []
