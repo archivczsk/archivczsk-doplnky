@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
-<addon id="plugin.video.stream-cinema" name="Stream Cinema" provider-name="archivczsk" version="2.0.3">
+<addon id="plugin.video.stream-cinema" name="Stream Cinema" provider-name="archivczsk" version="2.0.4">
   <requires>
         <import addon="xbmc.python" version="2.1.0" />
-        <import addon="script.module.stream.resolver" version="1.6.25" />
+        <import addon="script.module.stream.resolver" version="1.9.7" />
     </requires>
     <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
         <provides>video</provides>

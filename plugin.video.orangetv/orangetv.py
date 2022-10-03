@@ -2,6 +2,15 @@
 import re,sys,os,string,base64,datetime,json,requests
 from time import time
 from uuid import getnode as get_mac
+import threading
+from hashlib import md5
+
+try:
+	from urllib import quote
+	is_py3 = False
+except:
+	from urllib.parse import quote
+	is_py3 = True
 
 _COMMON_HEADERS = {
 	"X-NanguTv-Platform-Id": "b0af5c7d6e17f24259a20cf60e069c22",
@@ -55,6 +64,29 @@ class NoPurchasedServiceError(BaseException):
 def _log_dummy(message):
 	print('[ORANGETV]: ' + message )
 	pass
+
+# #################################################################################################
+
+class OrangeTVcache:
+	orangetv = None
+	orangetv_init_params = None
+
+	# #################################################################################################
+	
+	@staticmethod
+	def get(username=None, password=None, device_id=None, data_dir=None, log_function=_log_dummy):
+		if OrangeTVcache.orangetv and OrangeTVcache.orangetv_init_params == (username, password, device_id):
+#			log_function("OrangeTV already loaded")
+			pass
+		else:
+			OrangeTVcache.orangetv = OrangeTV(username, password, device_id, data_dir, log_function )
+			OrangeTVcache.orangetv_init_params = (username, password, device_id)
+			OrangeTVcache.orangetv.loadEpgCache()
+			log_function("New instance of OrangeTV initialised")
+		
+		return OrangeTVcache.orangetv
+	
+# #################################################################################################
 
 class OrangeTV:
 
@@ -247,7 +279,7 @@ class OrangeTV:
 						logo = 'http://app01.gtm.orange.sk/' + logo
 					name = _to_string(item['channelName'])
 					adult = 'audience' in item and item['audience'].upper() == 'INDECENT'
-					channels[channel_key] = LiveChannel(channel_key, name, logo, item['weight'], self.quality, timeshift, item['channelNumber'], item['channelId'], item['logo'], adult)
+					channels[channel_key] = LiveChannel(channel_key, name, logo, item['weight'], self.quality, timeshift, item['channelNumber'], item['channelId'], item['logo'].replace('https://', 'http://').replace('64x64','220x220'), adult)
 						
 			self._live_channels = sorted(list(channels.values()), key=lambda _channel: _channel.number)
 			done = False
@@ -415,3 +447,7 @@ class OrangeTV:
 		
 		result = sorted( result, key=lambda r: r['bandwidth'], reverse=True )
 		return result
+
+# #################################################################################################
+
+	

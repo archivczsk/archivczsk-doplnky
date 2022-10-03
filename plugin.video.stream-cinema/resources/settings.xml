@@ -5,6 +5,7 @@
 	<setting label="Počet zapamätaných vyhľadávaní" id="keep-searches" type="labelenum" values="0|5|10|15|20|25|30|35|40|45|50" default="20"/>
 	<setting label="Počet posledných videných položiek" id="keep-last-seen" type="labelenum" values="0|5|10|15|20|25|30|35|40|45|50" default="20"/>
 	<setting label="Ukladať pozíciu prehrávania u videných položiek" id="save-last-play-pos" type="bool" default="false"/>
+	<setting label="Neukladať ak je pozícia prehrávania viac ako (v %)" id="last-play-pos-limit" type="labelenum" values="80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100" default="95"/>
 	<setting label="Povoliť integráciu s Trakt.tv" id="trakt_enabled" type="bool" default="false"/>
 	
 	<setting label="DeviceId" id="deviceid" type="text" default="" visible="false"/>

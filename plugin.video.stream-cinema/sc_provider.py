@@ -182,7 +182,11 @@ class SCWatched:
 			
 			lp = self.items['last_played_position']
 			
-			lp[url] = { 'pos': position, 'time': int(time.time()) }
+			if position:
+				lp[url] = { 'pos': position, 'time': int(time.time()) }
+			elif url in lp:
+				del lp[url]
+				
 			self.need_save = True
 			self.clean()
 
@@ -365,6 +369,7 @@ class StreamCinemaContentProvider(ContentProvider):
 			"min-quality": addon.getSetting('min-quality'),
 			"max-quality": addon.getSetting('max-quality'),
 			"save-last-play-pos": addon.getSetting('save-last-play-pos') == 'true',
+			"last-play-pos-limit": int(addon.getSetting('last-play-pos-limit')),
 			"keep-last-seen": int(addon.getSetting('keep-last-seen')),
 			"webshare-primary": addon.getSetting('webshare-primary') == 'true',
 			"wsvipdays": int(addon.getSetting('wsvipdays')),
@@ -957,8 +962,9 @@ class StreamCinemaContentProvider(ContentProvider):
 		item['customDataItem'] = { 'url': info_item['url'], 'lid': info_item.get('lid'), 'mid': info_item.get('unique_ids',{}).get('sc') }
 		
 		last_position = self.watched.get_last_position( info_item.get('url') )
-		duration = info_item.get('duration')
-		if last_position > 0 and (not duration or last_position < duration):
+		duration = info_item.get('info', {}).get('duration')
+		
+		if last_position > 0 and (not duration or last_position < (duration * self.settings['last-play-pos-limit']) // 100):
 			if client.getYesNoInput(self.session, "Obnoviť prehrávanie od poslednej pozície?"):
 				item['playerSettings'] = { 'resume_time_sec' : last_position }
 		
@@ -1169,8 +1175,13 @@ class StreamCinemaContentProvider(ContentProvider):
 				
 			elif action.lower() == 'end':
 				last_play_pos = extra_params.get('lastPlayPos')
+				duration = extra_params.get('duration')
 				if url and last_play_pos and self.settings['save-last-play-pos']:
-					self.watched.set_last_position( url, last_play_pos )
+					if not duration or last_play_pos < (duration * self.settings['last-play-pos-limit']) // 100:
+						self.watched.set_last_position( url, last_play_pos )
+					else:
+						# remove saved position from database
+						self.watched.set_last_position( url, None )
 					
 				self.watched.save()
 				

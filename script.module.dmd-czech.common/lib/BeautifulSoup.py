@@ -369,8 +369,9 @@ class PageElement(object):
 		g = generator()
 		while True:
 			try:
-				i = g.next()
-			except StopIteration:
+				i = next(g)
+#			except StopIteration:
+			except:
 				break
 			if i:
 				found = strainer.search(i)
@@ -555,10 +556,10 @@ class Tag(PageElement):
 		self.escapeUnrecognizedEntities = parser.escapeUnrecognizedEntities
 
 		# Convert any HTML, XML, or numeric entities in the attribute values.
-		convert = lambda k, val: (k,
+		convert = lambda a: (a[0],
 								   re.sub("&(#\d+|#x[0-9a-fA-F]+|\w+);",
 										  self._convertEntities,
-										  val))
+										  a[1]))
 		self.attrs = map(convert, self.attrs)
 
 	def getString(self):

@@ -85,6 +85,9 @@ class XBMContentProvider(object):
 				extra_params = {}
 				if 'lastPlayPos' in params:
 					extra_params['lastPlayPos'] = params['lastPlayPos']
+
+				if 'duration' in params:
+					extra_params['duration'] = params['duration']
 					
 				rslog.logDebug("XBMC run stats '%s'"%params['stats'])
 				if 'stats' in self.provider.capabilities():

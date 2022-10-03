@@ -1,3 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <settings>
+  <setting label="30050" id="quality" type="enum" lvalues="30051|30052|30053" default="0" />
+  <setting label="Zobrazovat VOYO obsah (označí se *)" id="list-voyo" type="bool" default="true" />
+  <setting label="Přihašovací jméno" id="username" type="text" default="" visible="false"/>
+  <setting label="Heslo" id="password" type="text" default="" option="true" visible="false"/>
 </settings>

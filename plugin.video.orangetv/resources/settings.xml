@@ -8,9 +8,10 @@
 	<setting label="Povoliť programy pre dospelých" id="enable_adult" type="bool" default="true" />
 	<setting label="Device Id (neodporúčam meniť, len pre pokročilých)" id="deviceid" type="text" default="Nexus7" visible="false"/>
 	<setting label="Povoliť špeciálnu sekciu hlavnej ponuke" id="enable_extra" type="bool" default="false" />
+	<setting label="Automaticky exportovať zoznam staníc ako userbouquet" id="enable_userbouquet" type="bool" default="false" />
 	<setting label="Generovať XML EPG pre epgimport plugin (ak je nainštalovaný)" id="enable_xmlepg" type="bool" default="false" />
 	<setting label="Adresár pre vygenerované XML EPG (aspoň 20MB voľného miesta)" id="xmlepg_dir" type="text" default="/media/hdd" />
 	<setting label="Pre koľko dní dopredu generovať EPG" id="xmlepg_days" type="enum" lvalues="1|2|3|4|5|6|7" default="4"/>
-	<setting label="Pri generovaní userbouquetu automaticky stiahnuť picony" id="enable_picons" type="bool" default="false" />
+	<setting label="Pri exportovaní userbouquetu automaticky stiahnuť picony" id="enable_picons" type="bool" default="false" />
 	<setting label="Prehrávač použitý pre userbouquet" id="player_name" type="enum" lvalues="Predvolený|gstplayer|exteplayer3|DMM|DVB (OE>=2.5)" default="0"/>
 </settings>
