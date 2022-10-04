@@ -459,6 +459,30 @@
   </extension>
 </addon>
 
+<addon id="plugin.video.autosalontv"
+       name="Autosalon"
+       version="1.0"
+       provider-name="archivczsk">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.stream.resolver" version="1.6.22" />
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>Autosalon.TV + Auto-salon.sk</summary>
+    <summary lang="cs">Autosalon.TV + Auto-salon.sk</summary>
+    <description>
+        Plugin to play video archive from autosalon.cz and auto-salon.sk
+    </description>
+    <description lang="cs">
+        Archiv pořadů ze serveru AutosalonTV.cz a Autosalón.sk
+    </description>
+  </extension>
+</addon>
+
 <addon id="plugin.video.mtr.sk"
        name="Mestská TV Ružomberok"
        version="1.1.0"
