@@ -86,8 +86,8 @@ class autosalontvContentProvider(ContentProvider):
 		
 		for item in items:
 			for x in range(0, len(item) + 2):
-				title = item.select('h3')[x].string + '/ ' + item.select('h4')[x].string
-				year = item.select('h3')[x].string[-5:]
+				title = item.find_all('h3')[x].string + '/ ' + item.find_all('h4')[x].string
+				year = item.find_all('h3')[x].string[-5:]
 				url = "https://autosalon.tv" + item.find_all('a')[x].attrs['href']
 				
 				ritem = self.dir_item( title, '#autosalon_tv_list#' + url)
@@ -209,7 +209,12 @@ class autosalontvContentProvider(ContentProvider):
 		req = requests.get(url_link).text
 		id = re.findall('https://www.youtube.com/embed/(.*?)"',str(req), re.DOTALL)[0]
 		
-		video_formats = client.getVideoFormats('https://youtube.com/watch?v=' + str(id))
+		try:
+			video_formats = client.getVideoFormats('https://youtube.com/watch?v=' + str(id))
+		except Exception as e:
+			self.error("Failed to extract youtube video link: %s" % str(e))
+			video_formats = None
+			
 		if video_formats:
 			for vf in video_formats:
 				if vf.get('fmt', 0) not in [38, 44, 43, 45, 46, 100, 101, 102]:
