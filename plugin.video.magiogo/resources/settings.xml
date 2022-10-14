@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+	<setting label="Región" id="region" type="labelenum" values="SK|CZ" default="SK" />
+	<setting label="Prihlasovacie meno" id="username" type="text" default="" />
+	<setting label="Prihlasovacie heslo" id="password" type="text" default="" option="true" />
+	<setting label="Identifikácia zariadenia" id="devicetype" type="enum" lvalues="Android|iPad|Set-top-box|Android TV|Skyworth" default="1" />
+	<setting label="ID zariadenia" id="deviceid" type="text" default="" visible="false" />
+	<setting label="Povoliť programy pre dospelých" id="enable_adult" type="bool" default="true" />
+	<category label="Userbouquet">
+		<setting label="Automaticky exportovať zoznam staníc ako userbouquet" id="enable_userbouquet" type="bool" default="false" />
+		<setting label="Generovať XML EPG pre epgimport plugin (ak je nainštalovaný)" id="enable_xmlepg" type="bool" default="false" />
+		<setting label="Adresár pre vygenerované XML EPG (aspoň 20MB voľného miesta)" id="xmlepg_dir" type="text" default="/media/hdd" />
+		<setting label="Pre koľko dní dopredu generovať XML EPG" id="xmlepg_days" type="enum" lvalues="1|2|3|4|5|6|7" default="4"/>
+		<setting label="Pri exportovaní userbouquetu automaticky stiahnuť picony" id="enable_picons" type="bool" default="false" />
+		<setting label="Prehrávač použitý pre userbouquet" id="player_name" type="enum" lvalues="Predvolený|gstplayer|exteplayer3|DMM|DVB (OE>=2.5)" default="0"/>
+	</category>
+	<category label="Pre pokročilých">
+		<setting label="Povoliť špeciálnu sekciu hlavnej ponuke" id="enable_extra" type="bool" default="false" />
+		<setting label="Koľko hodín EPG ukladať do cache" id="epgcache" type="labelenum" values="6|12|24|48|72" default="24" />
+		<setting label="Použiť preprocessing pre HLS streamy" id="preprocess_hls" type="bool" default="false" />
+		<setting label="Použiť preprocessing pre MPEG-DASH streamy" id="preprocess_mpd" type="bool" default="true" />
+	</category>
+</settings>
