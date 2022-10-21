@@ -436,6 +436,29 @@
   </extension>
 </addon>
 
+<addon id="plugin.video.magiogo"
+       name="Magio GO"
+       version="1.0"
+       provider-name="archivczsk">
+  <requires>
+    <import addon="enigma2.archivczsk" version="1.5.7"/>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.stream.resolver" version="1.6.22" />
+  </requires>
+  <extension point="xbmc.service" library="magiogo_service.py"/>
+  <extension point="xbmc.autostart" library="magiogo_autostart.py"/>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>Magio GO/TV Go live plugin</summary>
+    <description>Plugin to play Magio GO live TV</description>
+    <description lang="cs">Plugin pro přehrávání Magio Go</description>
+    <description lang="sk">Plugin pre prehrávanie Magio GO</description>
+  </extension>
+</addon>
+
 <addon id="plugin.video.orangetv"
        name="OrangeTV"
        version="2.5"
@@ -461,7 +484,7 @@
 
 <addon id="plugin.video.autosalontv"
        name="Autosalon"
-       version="1.0"
+       version="1.1"
        provider-name="archivczsk">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>

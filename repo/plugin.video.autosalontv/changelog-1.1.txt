@@ -1,0 +1,7 @@
+07.10.2022 - 1.1
+ - catch exception when youtube link extraction fails
+ - remove dependency on soupsieve
+
+04.10.2022 - 1.0
+ - first release
+ 
