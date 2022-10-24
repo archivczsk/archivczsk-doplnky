@@ -1,3 +1,7 @@
-1.0.0 - 21.10.2022
+1.1 - 21.10.2022
+    - oprava zobrazenia EPG
+    - rozšírenie podporovaných typov emulácii
+
+1.0 - 21.10.2022
     - úvodná verejná verzia
 	- podpora pre Live TV, archív a userbouquet

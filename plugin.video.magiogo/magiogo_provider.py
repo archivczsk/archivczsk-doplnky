@@ -191,15 +191,9 @@ class magiogoContentProvider(ContentProvider):
 	# #################################################################################################
 	
 	def show_tv(self):
-		channels = self.magiogo.get_channel_list()
+		channels = self.magiogo.get_channel_list(True)
 		enable_adult = __addon__.getSetting('enable_adult').lower() == 'true'
-		cache_hours = int(__addon__.getSetting('epgcache'))
-		enable_xmlepg = __addon__.getSetting('enable_xmlepg').lower() == 'true' and __addon__.getSetting('enable_userbouquet').lower() == 'true'
 
-		# reload EPG cache if needed
-		ret = self.magiogo.load_epg_cache()
-		
-		self.magiogo.fill_epg_cache([channel.id for channel in channels], cache_hours)
 		result = []
 		for channel in channels:
 			if not enable_adult and channel.adult:
@@ -208,11 +202,9 @@ class magiogoContentProvider(ContentProvider):
 			item = self.video_item( '#live_video_link#' + channel.id )
 			item['img'] = channel.preview
 			
-			epg = self.magiogo.get_channel_current_epg(channel.id)
-
-			if epg:
-				item['title'] = channel.name+' [COLOR yellow]'+epg["title"]+'[/COLOR]'
-				item['plot'] = epg['desc']
+			if channel.epg_name and channel.epg_desc:
+				item['title'] = channel.name+' [COLOR yellow]'+channel.epg_name+'[/COLOR]'
+				item['plot'] = channel.epg_desc
 			else:
 				item['title'] = channel.name
 			

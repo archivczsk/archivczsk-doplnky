@@ -43,6 +43,8 @@ class MagioGoChannel:
 		self.picon = channel_info['logoUrl'].replace('https', 'http')
 		self.adult = False
 		self.preview = None
+		self.epg_name = None
+		self.epg_desc = None
 
 	# #################################################################################################
 	
@@ -52,6 +54,12 @@ class MagioGoChannel:
 			self.preview = preview_urls[0]
 			
 		self.adult = info.get('adult', False)
+
+# #################################################################################################
+
+	def set_current_epg(self, info):
+		self.epg_name = info.get('name')
+		self.epg_desc = info.get('longDescription')
 
 # #################################################################################################
 
@@ -118,12 +126,13 @@ class MagioGo:
 		("OTT_ANDROID", "Xiaomi Mi 11"),        # 0
 		("OTT_IPAD", "iPad Pro"),               # 1
 		("OTT_STB", "KSTB6077"),                # 2
-#		("OTT_TV_WEBOS", "LGG50UP7500"),        # 3
 		("OTT_TV_ANDROID", "XR-65X95J"),        # 3
 		("OTT_SKYWORTH_STB", "Skyworth"),       # 4
+		("OTT_LINUX", "Web Browser"),           # 5
+		("OTT_WIN", "Web Browser"),             # 6
 	]
 
-	def __init__(self, region = None, username=None, password=None, device_id=None, device_type = None, data_dir=None, log_function=None ):
+	def __init__(self, region=None, username=None, password=None, device_id=None, device_type=None, data_dir=None, log_function=None ):
 		self.username = username
 		self.password = password
 		self.device_id = device_id
@@ -136,9 +145,6 @@ class MagioGo:
 		self.devices = None
 		self.settings = None
 		self.data_dir = data_dir
-		self.epg_cache = {}
-		self.cache_need_save = False
-		self.cache_mtime = 0
 		self.region = region.lower()
 		self.common_headers = {
 			"Content-type": "application/json",
@@ -201,36 +207,6 @@ class MagioGo:
 				pass
 	# #################################################################################################
 	
-	def load_epg_cache(self):
-		try:
-			try:
-				cache_file_mtime = int(os.path.getmtime(self.data_dir + '/epg_cache.json'))
-			except:
-				cache_file_mtime = 0
-			
-			if cache_file_mtime > self.cache_mtime:
-				with open(self.data_dir + '/epg_cache.json', "r") as file:
-					self.epg_cache = json.load(file)
-					self.log_function("EPG loaded from cache")
-				
-				self.cache_mtime = cache_file_mtime
-				self.cache_need_save = False
-		except:
-			pass
-		
-		return True if self.cache_mtime else False
-	
-	# #################################################################################################
-	
-	def save_epg_cache(self):
-		if self.data_dir and self.cache_need_save:
-			with open(self.data_dir + '/epg_cache.json', 'w') as f:
-				json.dump( self.epg_cache, f)
-				self.log_function("EPG saved to cache")
-				self.cache_need_save = False
-				
-	# #################################################################################################
-	
 	def showError(self, msg):
 		self.log_function("Magio GO API ERROR: %s" % msg )
 		raise Exception("Magio GO: %s" % msg)
@@ -259,7 +235,7 @@ class MagioGo:
 			resp = requests.request( method, url, data=data, params=params, headers=headers )
 			
 #			writeDebugRequest( url, params, data, resp.json())
-			if resp.status_code == 200 or resp.status_code == 401 or resp.status_code == 417:
+			if resp.status_code == 200 or (resp.status_code > 400 and resp.status_code < 500):
 				try:
 					return resp.json()
 				except:
@@ -380,9 +356,13 @@ class MagioGo:
 
 	# #################################################################################################
 
-	def get_channel_list(self):
-			
-		if not self.channel_list or (int(time()) - self.channel_list_load_time) > 3600: 
+	def get_channel_list(self, fill_epg=False):
+		if fill_epg:
+			channel_cache_life = 60
+		else:
+			channel_cache_life = 3600
+		
+		if not self.channel_list or (int(time()) - self.channel_list_load_time) > channel_cache_life: 
 			self.refresh_login_data()
 			
 			params = {
@@ -399,6 +379,10 @@ class MagioGo:
 			for ch in ret.get('items', []):
 				channel = MagioGoChannel(ch['channel'])
 				channel.set_aditional( ch.get('live',{}) )
+				
+				if fill_epg:
+					channel.set_current_epg( ch.get('live',{}) )
+					
 				channels.append(channel)
 				self.channels[channel.id] = channel
 				
@@ -472,81 +456,6 @@ class MagioGo:
 		
 	# #################################################################################################
 	
-	def fill_epg_cache(self, channel_ids, cache_hours=0, epg_data=None, auto_save=True ):
-		if cache_hours == 0:
-			return
-
-		fromts = int(time())
-		tots = (int(time()) + (cache_hours * 3600) + 60)
-
-		if not epg_data:
-			if self.cache_mtime and self.cache_mtime < tots - 3600:
-				# no need to refill epg cache
-				return
-			
-			epg_data = self.get_channels_epg( channel_ids, fromts, tots )
-		
-		if not epg_data:
-			self.log_function("Failed to get EPG for channels from Mago GO server")
-			return
-		
-		for epg_item in epg_data:
-			channel_id = epg_item.get('channel',{}).get('channelId')
-			
-			if not channel_id:
-				continue
-
-			ch_epg = []
-				
-			for one in epg_item.get('programs',[]):
-				
-				title = py2_encode_utf8(one['program']["title"]) + " - " + one["startTime"][11:16] + "-" + one["endTime"][11:16]
-				one_startts = self.magioformat_to_timestamp(one["startTime"])
-				one_endts = self.magioformat_to_timestamp(one["endTime"])
-				
-				ch_epg.append({"start": one_startts, "end": one_endts, "title": title, "desc": one['program']["description"]})
-				
-				if one_startts > tots:
-					break
-				
-			self.epg_cache[str(channel_id)] = ch_epg
-			self.cache_need_save = True
-			
-		if auto_save:
-			self.save_epg_cache()
-		
-	# #################################################################################################
-
-	def get_channel_current_epg(self, epg_id):
-		fromts = int(time())
-		title = ""
-		desc = ""
-		del_count = 0
-		
-		epg_id = str(epg_id)
-		if epg_id in self.epg_cache:
-			for epg in self.epg_cache[epg_id]:
-				if epg["end"] < fromts:
-					# cleanup old events
-					del_count += 1
-				
-				if epg["start"] < fromts and epg["end"] > fromts:
-					title = epg["title"]
-					desc = epg["desc"]
-					break
-		
-		if del_count:
-			# save some memory - remove old events from cache
-			del self.epg_cache[epg_id][:del_count]
-			self.log_function("Deleted %d old events from EPG cache for channell %s" % (del_count, epg_id))
-			
-		if title == "":
-			return None
-		
-		return {"title": title, "desc": desc}
-
-	# #################################################################################################
-
 	def get_archiv_channel_programs(self, channel_id, day):
 		fromts = int(day)
 		tots = (int(day)+86400)
