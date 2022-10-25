@@ -350,9 +350,9 @@ class MagioGo:
 			'id': device_id
 		}
 		
-		ret = self.call_magiogo_api("v2/home/deleteDevice", method = "GET", params = params )
+		ret = self.call_magiogo_api("home/deleteDevice", method = "GET", params = params )
 		
-		return req["success"], ret.get('errorMessage', '')
+		return ret["success"], ret.get('errorMessage', '')
 
 	# #################################################################################################
 
