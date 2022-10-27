@@ -125,7 +125,11 @@ def init_magiogo( settings ):
 	profile_dir = '/usr/lib/enigma2/python/Plugins/Extensions/archivCZSK/resources/data/%s' % ADDON_NAME
 	
 	if len(settings['username']) > 0 and len( settings['password'] ) > 0:
-		magiogo = MagioGoCache.get( settings['region'], settings['username'], settings['password'], settings['deviceid'], int(settings['devicetype']), profile_dir, service_helper.logInfo )
+		try:
+			magiogo = MagioGoCache.get( settings['region'], settings['username'], settings['password'], settings['deviceid'], int(settings['devicetype']), profile_dir, service_helper.logInfo )
+		except Exception as e:
+			service_helper.logError("Failed to init Magio GO client: %s" % str(e))
+			magiogo = None
 	else:
 		magiogo = None
 		
