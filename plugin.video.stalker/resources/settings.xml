@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+	<setting label="Povoliť programy pre dospelých" id="enable_adult" type="bool" default="true" visible="false"/>
+	<setting label="Povoliť načítavanie EPG (môže byť pomalé)" id="enable_epg" type="bool" default="true"/>
+	<setting label="Prehrávač použitý pre userbouquet" id="player_name" type="enum" lvalues="Predvolený|gstplayer|exteplayer3|DMM|DVB (OE>=2.5)" default="0"/>
+</settings>
