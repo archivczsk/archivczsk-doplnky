@@ -112,18 +112,55 @@ class OrangeTV:
 			# if not device id is provided, then create one
 			self.device_id = device_id()
 		
+		self.load_login_data()
+		
+	
+	def load_login_data(self):
 		if self.data_dir:
 			try:
 				# load access token
-				with open(self.data_dir + '/login.json', "r") as file:
-					login_data = json.load(file)
-					self.access_token = login_data['token']
-					self.access_token_life = login_data['expires']
+				with open(self.data_dir + '/login.json', "r") as f:
+					login_data = json.load(f)
 					
-					self.log_function("Login data loaded from cache")
+					if self.get_chsum() == login_data.get('checksum'):
+						self.access_token = login_data['access_token']
+						self.access_token_life = login_data['access_token_life']
+						self.log_function("Login data loaded from cache")
+					else:
+						self.access_token = None
+						self.access_token_life = 0
+						self.log_function("Not using cached login data - wrong checksum")
+			except:
+				self.access_token = None
+				self.access_token_life = 0
+				
+		
+	def save_login_data(self):
+		if self.data_dir:
+			try:
+				if self.access_token:
+					# save access token
+					with open(self.data_dir + '/login.json', "w") as f:
+						data = {
+							'access_token': self.access_token,
+							'access_token_life': self.access_token_life,
+							'checksum': self.get_chsum()
+						}
+						json.dump( data, f )
+				else:
+					os.remove(self.data_dir + '/login.json')
 			except:
 				pass
-				
+
+			
+	def get_chsum(self):
+		if not self.username or not self.password or len(self.username) == 0 or len( self.password) == 0:
+			return None
+
+		data = "{}|{}|{}".format(self.password, self.username, self.device_id)
+		return md5( data.encode('utf-8') ).hexdigest()
+
+			
 	def __del__(self):
 		self.saveEpgCache()
 		
@@ -158,6 +195,7 @@ class OrangeTV:
 		
 		if not self.username or not self.password:
 			self.log_function('No username or password provided...')
+			self.save_login_data()
 			raise AuthenticationError()
 		
 		headers = _COMMON_HEADERS
@@ -178,22 +216,16 @@ class OrangeTV:
 		j = req.json()
 		if 'error' in j:
 			error = j['error']
+			self.save_login_data()
 			if error == 'authentication-failed':
 				self.log_function('Authentication Error')
 				return None
 			else:
 				raise Exception(error)
+			
 		self.access_token = j["access_token"]
 		self.access_token_life = (int(time()) +  int(j["expires_in"] / 1000)) - 3600
-		
-		if self.data_dir:
-			with open(self.data_dir + '/login.json', "w") as file:
-				login_data = {
-					'token': self.access_token,
-					'expires': self.access_token_life
-				}
-				json.dump( login_data, file )
-
+		self.save_login_data()
 		self.log_function('Token OK')
 		return self.access_token
 

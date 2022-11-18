@@ -184,7 +184,9 @@ class MagioGo:
 						self.access_token_life = 0
 						self.log_function("Not using cached login data - wrong checksum")
 			except:
-				pass
+				self.access_token = None
+				self.refresh_token = None
+				self.access_token_life = 0
 		
 	# #################################################################################################
 
@@ -205,6 +207,7 @@ class MagioGo:
 					os.remove(self.data_dir + '/login.json')
 			except:
 				pass
+			
 	# #################################################################################################
 	
 	def showError(self, msg):

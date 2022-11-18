@@ -1,3 +1,5 @@
+2022-11-18
+* vylepšené ukladanie autorizačného tokenu
 2022-07-27
 * pridaná url stream cache
 2022-07-22

@@ -6,6 +6,7 @@ from datetime import date
 import threading, traceback
 
 import base64
+from hashlib import md5
 
 try:
 	from urllib import quote
@@ -64,7 +65,7 @@ class SledovaniTV:
 		self.log_function = log_function if log_function else _log_dummy
 		self.headers = _HEADERS
 	
-		self.load_access_token()
+		self.load_login_data()
 		
 		self.channels = {}
 		self.channels_next_load = 0
@@ -73,27 +74,49 @@ class SledovaniTV:
 
 	# #################################################################################################
 
-	def load_access_token(self):
+	def get_chsum(self):
+		if not self.username or not self.password or len(self.username) == 0 or len( self.password) == 0:
+			return None
+
+		data = "{}|{}|{}".format(self.password, self.username, self.serialid)
+		return md5( data.encode('utf-8') ).hexdigest()
+	
+	# #################################################################################################
+	
+	def load_login_data(self):
 		if self.data_dir:
 			try:
 				# load access token
-				with open(os.path.join(self.data_dir, 'login.json'), "r") as file:
-					login_data = json.load(file)
-					self.sessionid = login_data['token']
-					self.log_function("Login data loaded from cache")
+				with open(self.data_dir + '/login.json', "r") as f:
+					login_data = json.load(f)
+					
+					if self.get_chsum() == login_data.get('checksum'):
+						self.sessionid = login_data['access_token']
+						self.log_function("Login data loaded from cache")
+					else:
+						self.sessionid = None
+						self.log_function("Not using cached login data - wrong checksum")
+			except:
+				self.sessionid = None
+		
+	# #################################################################################################
+
+	def save_login_data(self):
+		if self.data_dir:
+			try:
+				if self.sessionid:
+					# save access token
+					with open(self.data_dir + '/login.json', "w") as f:
+						data = {
+							'access_token': self.sessionid,
+							'checksum': self.get_chsum()
+						}
+						json.dump( data, f )
+				else:
+					os.remove(self.data_dir + '/login.json')
 			except:
 				pass
-
-	# #################################################################################################
-	
-	def save_access_token(self):
-		if self.data_dir and self.sessionid:
-			with open( os.path.join(self.data_dir, 'login.json'), "w") as file:
-				login_data = {
-					'token': self.sessionid,
-				}
-				json.dump( login_data, file )
-
+			
 	# #################################################################################################
 	
 	def showError(self, msg):
@@ -211,6 +234,8 @@ class SledovaniTV:
 		
 		if "status" not in data or data['status'] is 0:
 			self.showError("Problém při přihlášení: %s" % data['error'])
+			self.sessionid = None
+			self.save_login_data()
 			return False
 	
 		if 'deviceId' in data and 'password' in data:
@@ -225,11 +250,13 @@ class SledovaniTV:
 			data = self.call_api("device-login", params = params, enable_retry=False )
 			if "status" not in data or data['status'] is 0:
 				self.showError("Problém při přihlášení: %s" % data['error'])
+				self.sessionid = None
+				self.save_login_data()
 				return False
 	
 			if "PHPSESSID" in data:
 				self.sessionid = data["PHPSESSID"]
-				self.save_access_token()
+				self.save_login_data()
 				
 				params = {
 					"PHPSESSID": self.sessionid
@@ -238,9 +265,14 @@ class SledovaniTV:
 				self.call_api("keepalive", params = params, enable_retry=False )
 			else:
 				self.showError("Problém s příhlášením: no session")
+				self.sessionid = None
+				self.save_login_data()
 				return False
 		else:
 			self.showError("Problém s příhlášením: no deviceid")
+			self.sessionid = None
+			self.save_login_data()
+
 			return False
 		
 		return True

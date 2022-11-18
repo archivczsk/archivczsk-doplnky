@@ -1,3 +1,6 @@
+2.2 - 2022-11-18
+* vylepšené ukladanie autorizačného tokenu
+
 2.1 - 2022-10-02
 * vylepšené ošetrovanie chýb pri prihlásení
 

@@ -9,6 +9,7 @@ from datetime import date
 import threading, traceback
 
 import base64
+from hashlib import md5
 
 try:
 	from urllib import quote
@@ -83,31 +84,60 @@ class O2tv:
 		self.header["X-NanguTv-Device-Name"] = self.devicename
 		self.channels = {}
 
-		if self.data_dir:
-			try:
-				# load access token
-				with open(os.path.join(self.data_dir, 'login.json'), "r") as file:
-					login_data = json.load(file)
-					self.access_token = login_data['token']
-					self.access_token_life = login_data['expires']
-					
-					self.header_unity["x-o2tv-access-token"] = self.access_token
-					self.header["X-NanguTv-Access-Token"] = self.access_token
-
-					self.log_function("Login data loaded from cache")
-			except:
-				pass
+		self.load_login_data()
+		
+		if self.access_token:
+			self.header_unity["x-o2tv-access-token"] = self.access_token
+			self.header["X-NanguTv-Access-Token"] = self.access_token
 
 	# #################################################################################################
 	
-	def save_access_token(self):
-		if self.data_dir and self.access_token:
-			with open( os.path.join(self.data_dir, 'login.json'), "w") as file:
-				login_data = {
-					'token': self.access_token,
-					'expires': self.access_token_life
-				}
-				json.dump( login_data, file )
+	def load_login_data(self):
+		if self.data_dir:
+			try:
+				# load access token
+				with open(self.data_dir + '/login.json', "r") as f:
+					login_data = json.load(f)
+					
+					if self.get_chsum() == login_data.get('checksum'):
+						self.access_token = login_data['access_token']
+						self.access_token_life = login_data['access_token_life']
+						self.log_function("Login data loaded from cache")
+					else:
+						self.access_token = None
+						self.access_token_life = 0
+						self.log_function("Not using cached login data - wrong checksum")
+			except:
+				self.access_token = None
+				self.access_token_life = 0
+		
+	# #################################################################################################
+		
+	def save_login_data(self):
+		if self.data_dir:
+			try:
+				if self.access_token:
+					# save access token
+					with open(self.data_dir + '/login.json', "w") as f:
+						data = {
+							'access_token': self.access_token,
+							'access_token_life': self.access_token_life,
+							'checksum': self.get_chsum()
+						}
+						json.dump( data, f )
+				else:
+					os.remove(self.data_dir + '/login.json')
+			except:
+				pass
+			
+	# #################################################################################################
+	
+	def get_chsum(self):
+		if not self.username or not self.password or len(self.username) == 0 or len( self.password) == 0:
+			return None
+
+		data = "{}|{}|{}|{}".format(self.password, self.username, self.deviceid, self.devicename)
+		return md5( data.encode('utf-8') ).hexdigest()
 
 	# #################################################################################################
 	
@@ -188,7 +218,7 @@ class O2tv:
 			self.access_token = data["access_token"]
 			self.access_token_life = (int(time.time()) +  int(data["expires_in"] / 1000)) - 3600
 
-		self.save_access_token()
+		self.save_login_data()
 		self.log_function('Token OK')
 
 	# #################################################################################################

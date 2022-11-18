@@ -1,3 +1,6 @@
+v1.7.3 (2022-11-18)
+- vylepšené ukladanie autorizačného tokenu
+
 v1.7.2 (2022-07-27)
 - pridaná url stream cache
 
