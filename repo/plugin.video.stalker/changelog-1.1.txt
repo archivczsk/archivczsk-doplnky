@@ -1,0 +1,5 @@
+1.1 - 20.11.2022
+    - zobrazenie chybového hlásenia pri nesprávnom konf. súbore
+
+1.0 - 16.11.2022
+    - úvodná verejná verzia
