@@ -102,7 +102,12 @@ class stalkerContentProvider(ContentProvider):
 	def categories(self):
 		result = []
 		
-		portals = StalkerCache.load_portals_cfg()
+		try:
+			portals = StalkerCache.load_portals_cfg()
+		except Exception as e:
+			client.log.error('Error by reading stalker config file:\n' + str(e))
+			client.showError('Konfiguračný súbor /etc/stalker.conf má nesprávny formát:\n' + str(e))
+			return result
 
 		if len(portals) > 0:		
 			for portal in portals:
@@ -444,11 +449,15 @@ class stalkerContentProvider(ContentProvider):
 		if url.startswith('#portal_link#'):
 			ck, cmd, use_tmp_link = json.loads(url[13:])
 			s = StalkerCache.get_by_key( ck )
-			
-			if use_tmp_link:
-				url = s.create_video_link( cmd )
-			else:
-				url = s.cmd_to_url( cmd )
+
+			try:
+				if use_tmp_link:
+					url = s.create_video_link( cmd )
+				else:
+					url = s.cmd_to_url( cmd )
+			except Exception as e:
+				client.add_operation('SHOW_MSG', { 'msg': 'Chyba pri prehrávaní:\n' + str(e), 'msgType': 'error', 'msgTimeout': 3, 'canClose': True, })
+				return None
 			
 			item['url'] = url
 		elif url.startswith('#portal_vod_link#'):
