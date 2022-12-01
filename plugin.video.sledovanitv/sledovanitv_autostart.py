@@ -16,8 +16,7 @@ from time import time
 # #################################################################################################
 
 __scriptid__ = 'plugin.video.sledovanitv'
-__addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
-__language__ = __addon__.getLocalizedString
+addon = ArchivCZSK.get_addon(__scriptid__)
 
 
 class SledovaniTvHTTPRequestHandler( AddonHttpRequestHandler ):
@@ -27,11 +26,11 @@ class SledovaniTvHTTPRequestHandler( AddonHttpRequestHandler ):
 		
 	def P_playlive(self, request, path):
 		try:
-			username=__addon__.getSetting('username')
-			password=__addon__.getSetting('password')
-			pin=__addon__.getSetting('pin')
-			serialid = __addon__.getSetting( 'serialid' )
-			data_dir=__addon__.getAddonInfo('profile')
+			username=addon.get_setting('username')
+			password=addon.get_setting('password')
+			pin=addon.get_setting('pin')
+			serialid = addon.get_setting( 'serialid' )
+			data_dir=addon.get_info('profile')
 			
 			sledovanitv = SledovaniTvCache.get(username, password, pin, serialid, data_dir, log.info )
 			path = base64.b64decode(path).decode("utf-8")
@@ -65,3 +64,18 @@ request_handler = SledovaniTvHTTPRequestHandler()
 
 archivCZSKHttpServer.registerRequestHandler( request_handler )
 log.info( "SledovaniTV http endpoint: %s" % archivCZSKHttpServer.getAddonEndpoint( request_handler ) )
+
+def setting_changed_notification(name, value):
+	if name and value:
+		log.debug('SledovaniTV setting "%s" changed to "%s"' % (name, value) )
+		
+	# check if we need service to be enabled
+	if addon.get_setting('username') and addon.get_setting('password') and addon.get_setting('enable_userbouquet'):
+		addon.set_service_enabled(True)
+	else:
+		addon.set_service_enabled(False)
+	
+addon.add_setting_change_notifier('username', setting_changed_notification )
+addon.add_setting_change_notifier('password', setting_changed_notification )
+addon.add_setting_change_notifier('enable_userbouquet', setting_changed_notification )
+setting_changed_notification(None, None)

@@ -16,8 +16,7 @@ from time import time
 # #################################################################################################
 
 __scriptid__ = 'plugin.video.archivo2tv'
-__addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
-__language__ = __addon__.getLocalizedString
+addon = ArchivCZSK.get_addon(__scriptid__)
 
 
 class O2tvHTTPRequestHandler( AddonHttpRequestHandler ):
@@ -27,11 +26,11 @@ class O2tvHTTPRequestHandler( AddonHttpRequestHandler ):
 
 	def P_playlive(self, request, path):
 		try:
-			username=__addon__.getSetting('username')
-			password=__addon__.getSetting('password')
-			device_id=__addon__.getSetting( 'deviceid' )
-			device_name =__addon__.getSetting( 'devicename' )
-			data_dir=__addon__.getAddonInfo('profile')
+			username=addon.get_setting('username')
+			password=addon.get_setting('password')
+			device_id=addon.get_setting( 'deviceid' )
+			device_name=addon.get_setting( 'devicename' )
+			data_dir=addon.get_info('profile')
 
 			o2tv = O2tvCache.get(username, password, device_id, device_name, data_dir, log.info )
 			path = base64.b64decode(path).decode("utf-8")
@@ -65,3 +64,19 @@ request_handler = O2tvHTTPRequestHandler()
 
 archivCZSKHttpServer.registerRequestHandler( request_handler )
 log.info( "O2TV http endpoint: %s" % archivCZSKHttpServer.getAddonEndpoint( request_handler ) )
+
+def setting_changed_notification(name, value):
+	if name and value:
+		log.debug('O2TV setting "%s" changed to "%s"' % (name, value) )
+		
+	# check if we need service to be enabled
+	if addon.get_setting('username') and addon.get_setting('password') and addon.get_setting('enable_userbouquet'):
+		addon.set_service_enabled(True)
+	else:
+		addon.set_service_enabled(False)
+	
+addon.add_setting_change_notifier('username', setting_changed_notification )
+addon.add_setting_change_notifier('password', setting_changed_notification )
+addon.add_setting_change_notifier('enable_userbouquet', setting_changed_notification )
+setting_changed_notification(None, None)
+

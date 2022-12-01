@@ -15,9 +15,7 @@ from telly import TellyCache
 # #################################################################################################
 
 __scriptid__ = 'plugin.video.telly'
-__addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
-__language__ = __addon__.getLocalizedString
-
+addon = ArchivCZSK.get_addon(__scriptid__)
 
 class TellyHTTPRequestHandler( AddonHttpRequestHandler ):
 	def __init__(self):
@@ -25,15 +23,15 @@ class TellyHTTPRequestHandler( AddonHttpRequestHandler ):
 
 	def P_playlive(self, request, path):
 		try:
-			data_dir = __addon__.getAddonInfo('profile')
-			enable_h265 = __addon__.getSetting('enable_h265')=='true'
-			stream_http = __addon__.getSetting('use_http_for_stream')=='true'
+			data_dir = addon.get_info('profile')
+			enable_h265 = addon.get_setting('enable_h265')
+			stream_http = addon.get_setting('use_http_for_stream')
 
 			telly = TellyCache.get(data_dir, log.info)
 			path = base64.b64decode(path).decode("utf-8")
 			result = telly.get_video_link_by_id(path, enable_h265)
 
-			max_bitrate = __addon__.getSetting('max_bitrate')
+			max_bitrate = addon.get_setting('max_bitrate')
 			if ' Mbit' in max_bitrate:
 				max_bitrate = int(max_bitrate.split(' ')[0]) * 1000
 			else:
@@ -67,3 +65,16 @@ request_handler = TellyHTTPRequestHandler()
 
 archivCZSKHttpServer.registerRequestHandler( request_handler )
 log.info( "Telly http endpoint: %s" % archivCZSKHttpServer.getAddonEndpoint( request_handler ) )
+
+def setting_changed_notification(name, value):
+	if name and value:
+		log.debug('Telly setting "%s" changed to "%s"' % (name, value) )
+		
+	# check if we need service to be enabled
+	if addon.get_setting('enable_userbouquet'):
+		addon.set_service_enabled(True)
+	else:
+		addon.set_service_enabled(False)
+	
+addon.add_setting_change_notifier('enable_userbouquet', setting_changed_notification )
+setting_changed_notification(None, None)

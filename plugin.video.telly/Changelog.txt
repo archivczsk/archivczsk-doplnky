@@ -1,3 +1,6 @@
+1.0.3 - 01.12.2022
+    - podpora pre zapínanie/vypínanie podpornej služby podľa potreby
+    
 1.0.2 - 26.07.2022
     - pridaná možnosť vynútiť streamovanie cez http namiesto https
 

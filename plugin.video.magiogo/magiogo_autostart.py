@@ -19,8 +19,7 @@ import requests
 # #################################################################################################
 
 __scriptid__ = 'plugin.video.magiogo'
-__addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
-__language__ = __addon__.getLocalizedString
+addon = ArchivCZSK.get_addon(__scriptid__)
 
 # #################################################################################################
 
@@ -38,13 +37,13 @@ class MagioGoTvHTTPRequestHandler( AddonHttpRequestHandler ):
 #				log.debug("Returning result from cache" )
 				index_url = self.live_cache[channel_id]['index_url']
 			else:
-				device_type = int(__addon__.getSetting('devicetype'))
-				region = __addon__.getSetting('region')
+				device_type = int(addon.get_setting('devicetype'))
+				region = addon.get_setting('region')
 
-				username=__addon__.getSetting('username')
-				password=__addon__.getSetting('password')
-				device_id = __addon__.getSetting( 'deviceid' )
-				data_dir=__addon__.getAddonInfo('profile')
+				username=addon.get_setting('username')
+				password=addon.get_setting('password')
+				device_id = addon.get_setting( 'deviceid' )
+				data_dir=addon.get_info('profile')
 				
 				magiogo = MagioGoCache.get(region, username, password, device_id, device_type, data_dir, log.info )
 				
@@ -191,12 +190,12 @@ class MagioGoTvHTTPRequestHandler( AddonHttpRequestHandler ):
 			index_url = self.get_stream_index_url(channel_id, service_type)
 			
 			if 'index.mpd' in index_url:
-				if __addon__.getSetting('preprocess_mpd') == 'true':
+				if addon.get_setting('preprocess_mpd'):
 					return self.handle_mpd_manifest( request, channel_id, index_url )
 				else:
 					return self.reply_redirect( request, index_url.encode('utf-8'))
 			elif 'index.m3u8' in index_url:
-				if __addon__.getSetting('preprocess_hls') == 'true':
+				if addon.get_setting('preprocess_hls'):
 					return self.handle_m3u8_master_playlist( request, channel_id, index_url )
 				else:
 					return self.reply_redirect( request, index_url.encode('utf-8'))
@@ -228,3 +227,18 @@ request_handler = MagioGoTvHTTPRequestHandler()
 
 archivCZSKHttpServer.registerRequestHandler( request_handler )
 log.info( "Magio GO http endpoint: %s" % archivCZSKHttpServer.getAddonEndpoint( request_handler ) )
+
+def setting_changed_notification(name, value):
+	if name and value:
+		log.debug('Magio GO setting "%s" changed to "%s"' % (name, value) )
+		
+	# check if we need service to be enabled
+	if addon.get_setting('username') and addon.get_setting('password') and addon.get_setting('enable_userbouquet'):
+		addon.set_service_enabled(True)
+	else:
+		addon.set_service_enabled(False)
+	
+addon.add_setting_change_notifier('username', setting_changed_notification )
+addon.add_setting_change_notifier('password', setting_changed_notification )
+addon.add_setting_change_notifier('enable_userbouquet', setting_changed_notification )
+setting_changed_notification(None, None)

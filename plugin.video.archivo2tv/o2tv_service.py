@@ -124,8 +124,12 @@ def init_o2tv( settings ):
 	profile_dir = '/usr/lib/enigma2/python/Plugins/Extensions/archivCZSK/resources/data/%s' % ADDON_NAME
 	
 	if len(settings['username']) > 0 and len( settings['password'] ) > 0 and len( settings['deviceid'] ) > 0:
-		o2tv = O2tvCache.get( settings['username'], settings['password'], settings['deviceid'], settings['devicename'], profile_dir )
-		o2tv.refresh_configuration()
+		try:
+			o2tv = O2tvCache.get( settings['username'], settings['password'], settings['deviceid'], settings['devicename'], profile_dir )
+			o2tv.refresh_configuration()
+		except Exception as e:
+			service_helper.logError("O2TV client init failed: %s" % str(e))
+			o2tv = None
 	else:
 		o2tv = None
 		
@@ -348,16 +352,24 @@ def start_bouquet_generator(arg):
 		else:
 			return
 	
-	try_generate_userbouquet(False)
+	try_generate_userbouquet( (False,False) )
 
-#def bouquet_generator_stop( settings, endpoint ):
+# #################################################################################################
+
 def bouquet_generator_stop( data ):
 	global bouquet_generator_running
 	bouquet_generator_running = False
 	
 # #################################################################################################
 
-def try_generate_userbouquet( force=False ):
+def service_stop( data ):
+	service_helper.logInfo("Stopping service")
+	service_helper.service_stop()
+	
+# #################################################################################################
+
+def try_generate_userbouquet( data ):
+	force, stop_service = data
 	global bouquet_generator_running
 	
 	if bouquet_generator_running:
@@ -365,46 +377,60 @@ def try_generate_userbouquet( force=False ):
 		return
 
 	bouquet_generator_running = True
-	service_helper.getHttpEndpoint( ADDON_NAME, http_endpoint_received, force=force )
+	service_helper.getHttpEndpoint( ADDON_NAME, http_endpoint_received, force=force, stop_service=stop_service )
 	
 # #################################################################################################
 
-def http_endpoint_received( addon_id, endpoint, force ):
+def http_endpoint_received( addon_id, endpoint, force, stop_service ):
 	service_helper.logDebug("%s HTTP endpoint received: %s" % (addon_id, endpoint))
 	# load actual settings and continue when received
-	service_helper.getSettings(['username', 'password', 'deviceid', 'devicename', 'enable_userbouquet', 'enable_adult', 'enable_xmlepg', 'player_name', 'enable_picons'], settings_received_bouquet, endpoint=endpoint, force=force )
+	service_helper.getSettings(['username', 'password', 'deviceid', 'devicename', 'enable_userbouquet', 'enable_adult', 'enable_xmlepg', 'player_name', 'enable_picons'], settings_received_bouquet, endpoint=endpoint, force=force, stop_service=stop_service )
 
 # #################################################################################################
 
-def settings_received_bouquet( settings, endpoint, force ):
+def settings_received_bouquet( settings, endpoint, force, stop_service ):
 	# check received settings
 	print_settings( settings )
 	
 	if not settings['username'] or not settings['password'] or not settings['deviceid'] or not settings['devicename']:
-		bouquet_generator_running = False
 		service_helper.logError("No login data provided")
+		
+		if stop_service:
+			service_helper.runDelayed(1, (remove_userbouquet, bouquet_generator_stop, service_stop), endpoint )
+		else:
+			service_helper.runDelayed(1, (remove_userbouquet, bouquet_generator_stop), endpoint )
+			
 		return
 	
-	service_helper.runDelayed(1, (generate_userbouquet, bouquet_generator_stop), (settings, endpoint, force) )
+	if stop_service:
+		service_helper.runDelayed(1, (generate_userbouquet, bouquet_generator_stop, service_stop), (settings, endpoint, force) )
+	else:
+		service_helper.runDelayed(1, (generate_userbouquet, bouquet_generator_stop), (settings, endpoint, force) )
+
+# #################################################################################################
+
+def remove_userbouquet(endpoint):
+	obg = O2tvBouquetGenerator( endpoint )
+	service_helper.logDebug("Removing userbouquet")
+	if obg.userbouquet_remove():
+		service_helper.logDebug("Userbouquet removed")
 
 # #################################################################################################
 
 def generate_userbouquet( data ):
 	settings, endpoint, force = data
 	
-	obg = O2tvBouquetGenerator( endpoint )
 	if not settings['enable_userbouquet']:
-		if obg.userbouquet_remove():
-			service_helper.logDebug("Userbouquet removed")
+		remove_userbouquet(endpoint)
 		return
 
-	
 	o2tv = init_o2tv( settings )
 	if o2tv == None:
 		service_helper.logInfo("No o2tv login credentials provided or they are wrong")
-		if obg.userbouquet_remove():
-			service_helper.logDebug("Userbouquet removed")
+		remove_userbouquet(endpoint)
 		return
+
+	obg = O2tvBouquetGenerator( endpoint )
 
 	try:	
 		if obg.generate_bouquet( o2tv.get_channels_sorted(), settings['enable_adult'], settings['enable_xmlepg'], settings['enable_picons'], settings['player_name'] ):
@@ -424,7 +450,10 @@ def generate_userbouquet( data ):
 	
 class O2TVAddonServiceHelper( AddonServiceHelper ):
 	def handle_userbouquet_gen(self):
-		self.runDelayed(1, try_generate_userbouquet, True )
+		self.runDelayed(1, try_generate_userbouquet, (True, False) )
+	
+	def handle_stop(self):
+		self.runDelayed(1, try_generate_userbouquet, (True, True) )
 	
 # #################################################################################################
 

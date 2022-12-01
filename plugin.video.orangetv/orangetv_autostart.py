@@ -16,9 +16,7 @@ from time import time
 # #################################################################################################
 
 __scriptid__ = 'plugin.video.orangetv'
-__addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
-__language__ = __addon__.getLocalizedString
-
+ddon = ArchivCZSK.get_addon(__scriptid__)
 
 class OrangetvHTTPRequestHandler( AddonHttpRequestHandler ):
 	def __init__(self):
@@ -27,10 +25,10 @@ class OrangetvHTTPRequestHandler( AddonHttpRequestHandler ):
 		
 	def P_playlive(self, request, path):
 		try:
-			username=__addon__.getSetting('orangetvuser')
-			password=__addon__.getSetting('orangetvpwd')
-			device_id=__addon__.getSetting( 'deviceid' )
-			data_dir=__addon__.getAddonInfo('profile')
+			username=addon.get_setting('orangetvuser')
+			password=addon.get_setting('orangetvpwd')
+			device_id=addon.get_setting( 'deviceid' )
+			data_dir=addon.get_info('profile')
 
 			orangetv = OrangeTVcache.get(username, password, device_id, data_dir, log.info )
 			path = base64.b64decode(path).decode("utf-8")
@@ -64,3 +62,18 @@ request_handler = OrangetvHTTPRequestHandler()
 
 archivCZSKHttpServer.registerRequestHandler( request_handler )
 log.info( "OrangeTV http endpoint: %s" % archivCZSKHttpServer.getAddonEndpoint( request_handler ) )
+
+def setting_changed_notification(name, value):
+	if name and value:
+		log.debug('OrangeTV setting "%s" changed to "%s"' % (name, value) )
+		
+	# check if we need service to be enabled
+	if addon.get_setting('orangetvuser') and addon.get_setting('orangetvpwd') and addon.get_setting('enable_userbouquet'):
+		addon.set_service_enabled(True)
+	else:
+		addon.set_service_enabled(False)
+	
+addon.add_setting_change_notifier('orangetvuser', setting_changed_notification )
+addon.add_setting_change_notifier('orangetvpwd', setting_changed_notification )
+addon.add_setting_change_notifier('enable_userbouquet', setting_changed_notification )
+setting_changed_notification(None, None)

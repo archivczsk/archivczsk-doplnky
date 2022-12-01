@@ -348,16 +348,24 @@ def start_bouquet_generator(arg):
 		else:
 			return
 	
-	try_generate_userbouquet(False)
+	try_generate_userbouquet( (False,False) )
 
-#def bouquet_generator_stop( settings, endpoint ):
+# #################################################################################################
+
 def bouquet_generator_stop( data ):
 	global bouquet_generator_running
 	bouquet_generator_running = False
+
+# #################################################################################################
+
+def service_stop( data ):
+	service_helper.logInfo("Stopping service")
+	service_helper.service_stop()
 	
 # #################################################################################################
 
-def try_generate_userbouquet( force=False ):
+def try_generate_userbouquet( data ):
+	force, stop_service = data
 	global bouquet_generator_running
 	
 	if bouquet_generator_running:
@@ -365,41 +373,51 @@ def try_generate_userbouquet( force=False ):
 		return
 
 	bouquet_generator_running = True
-	service_helper.getHttpEndpoint( ADDON_NAME, http_endpoint_received, force=force )
+	service_helper.getHttpEndpoint( ADDON_NAME, http_endpoint_received, force=force, stop_service=stop_service )
 	
 # #################################################################################################
 
-def http_endpoint_received( addon_id, endpoint, force ):
+def http_endpoint_received( addon_id, endpoint, force, stop_service ):
 	service_helper.logDebug("%s HTTP endpoint received: %s" % (addon_id, endpoint))
 	# load actual settings and continue when received
-	service_helper.getSettings(['enable_userbouquet', 'enable_adult', 'enable_xmlepg', 'player_name', 'enable_picons'], settings_received_bouquet, endpoint=endpoint, force=force )
+	service_helper.getSettings(['enable_userbouquet', 'enable_adult', 'enable_xmlepg', 'player_name', 'enable_picons'], settings_received_bouquet, endpoint=endpoint, force=force, stop_service=stop_service )
 
 # #################################################################################################
 
-def settings_received_bouquet( settings, endpoint, force ):
+def settings_received_bouquet( settings, endpoint, force, stop_service ):
 	# check received settings
 	print_settings( settings )
 	
-	service_helper.runDelayed(1, (generate_userbouquet, bouquet_generator_stop), (settings, endpoint, force) )
+	if stop_service:
+		service_helper.runDelayed(1, (generate_userbouquet, bouquet_generator_stop, service_stop), (settings, endpoint, force) )
+	else:
+		service_helper.runDelayed(1, (generate_userbouquet, bouquet_generator_stop), (settings, endpoint, force) )
+
+# #################################################################################################
+
+def remove_userbouquet(endpoint):
+	obg = TellyBouquetGenerator( endpoint )
+	service_helper.logDebug("Removing userbouquet")
+	if obg.userbouquet_remove():
+		service_helper.logDebug("Userbouquet removed")
 
 # #################################################################################################
 
 def generate_userbouquet( data ):
 	settings, endpoint, force = data
 	
-	obg = TellyBouquetGenerator( endpoint )
 	if not settings['enable_userbouquet']:
-		if obg.userbouquet_remove():
-			service_helper.logDebug("Userbouquet removed")
-			
+		remove_userbouquet(endpoint)
 		return
-	
+
 	telly = init_telly( settings )
+	
 	if not telly or not telly.device_token:
 		service_helper.logInfo("Device not paired to Telly or pairing expired")
-		if obg.userbouquet_remove():
-			service_helper.logDebug("Userbouquet removed")
+		remove_userbouquet(endpoint)
 		return
+
+	obg = TellyBouquetGenerator( endpoint )
 
 	try:
 		channels = []
@@ -430,7 +448,10 @@ def generate_userbouquet( data ):
 	
 class TellyAddonServiceHelper( AddonServiceHelper ):
 	def handle_userbouquet_gen(self):
-		self.runDelayed(1, try_generate_userbouquet, True )
+		self.runDelayed(1, try_generate_userbouquet, (True, False) )
+	
+	def handle_stop(self):
+		self.runDelayed(1, try_generate_userbouquet, (True, True) )
 	
 # #################################################################################################
 
