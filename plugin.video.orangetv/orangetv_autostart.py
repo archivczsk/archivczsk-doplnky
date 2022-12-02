@@ -16,7 +16,7 @@ from time import time
 # #################################################################################################
 
 __scriptid__ = 'plugin.video.orangetv'
-ddon = ArchivCZSK.get_addon(__scriptid__)
+addon = ArchivCZSK.get_addon(__scriptid__)
 
 class OrangetvHTTPRequestHandler( AddonHttpRequestHandler ):
 	def __init__(self):
