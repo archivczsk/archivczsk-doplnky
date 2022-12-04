@@ -216,12 +216,15 @@ def VIDEOLINK(url):
 		descr = ""
 	try:
 		src = re.search('VideoSource":"(.*?)"', html, re.S).group(1)
-		if src[0:2] == '//':
-			src = 'http:'+src
 		if src == '':
 			add_video("[COLOR red]Video zatím neexistuje[/COLOR]","#",None,None)
 		else:
-			add_video(title,src+'.m3u8',None,image,infoLabels={'plot':descr})
+			if src[0:2] == '//':
+				src = 'http:'+src
+
+			if not src.endswith('.m3u8'):
+				src = src+'.m3u8'
+			add_video(title,src,None,image,infoLabels={'plot':descr})
 		print( src )
 	except:
 		add_video("[COLOR red]Video nelze načíst[/COLOR]","#",None,None)

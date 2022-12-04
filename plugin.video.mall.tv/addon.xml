@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="plugin.video.mall.tv"
        name="Mall.tv"
-       version="1.5"
+       version="1.6"
        provider-name="Michal Novotný">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
