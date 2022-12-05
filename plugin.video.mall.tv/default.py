@@ -224,8 +224,7 @@ def VIDEOLINK(url):
 
 			if not src.endswith('.m3u8'):
 				src = src+'.m3u8'
-			add_video(title,src,None,image,infoLabels={'plot':descr})
-		print( src )
+			add_video(title,src,None,image,infoLabels={'plot':descr},settings={ 'resolve_hls_master' : False })
 	except:
 		add_video("[COLOR red]Video nelze načíst[/COLOR]","#",None,None)
 

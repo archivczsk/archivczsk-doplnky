@@ -1,3 +1,5 @@
+2022-12-05 v1.7
+* vypnutie spracovania master playlistu archivom 
 2022-12-04 v1.6
 * oprava prehrávania po zmenách na stránke
 2022-04-06 v1.5
