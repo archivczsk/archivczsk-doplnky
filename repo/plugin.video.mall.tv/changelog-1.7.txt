@@ -1,0 +1,19 @@
+2022-12-05 v1.7
+* vypnutie spracovania master playlistu archivom 
+2022-12-04 v1.6
+* oprava prehrávania po zmenách na stránke
+2022-04-06 v1.5
+* some minor fixes
+2022-04-04 v1.4
+* make addon python 3.x compatible
+2020-12-02 v1.3
+ * pridano vyhledavani
+ * zruseno popularni
+ * uprava detail info
+2020-10-25 v1.2
+ * video source fix
+2020-09-12
+ * changed url fixes
+2020-04-25
+ * Mall.TV - first release
+ 
