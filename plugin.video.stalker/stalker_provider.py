@@ -123,22 +123,33 @@ class stalkerContentProvider(ContentProvider):
 	# #################################################################################################
 
 	def list(self, url):
-		if url.startswith('#portal_root#'):
-			return self.show_portal_root(url[13:])
-		elif url.startswith('#portal_module#'):
-			return self.show_portal_module(url[15:])
-		elif url.startswith('#portal_tv_group#'):
-			return self.show_portal_tv_group(url[17:])
-		elif url.startswith('#portal_vod_cat#'):
-			return self.show_portal_vod_category(url[16:])
-		elif url.startswith('#portal_series_cat#'):
-			return self.show_portal_series_category(url[19:])
-		elif url.startswith('#portal_series#'):
-			return self.show_portal_series(url[15:])
-		elif url.startswith('#portal_episodes#'):
-			return self.show_portal_episodes(url[17:])
-		elif url.startswith('#create_userbouquet#'):
-			return self.create_userbouquet(url[20:])
+		try:
+			if url.startswith('#portal_root#'):
+				return self.show_portal_root(url[13:])
+			elif url.startswith('#portal_module#'):
+				return self.show_portal_module(url[15:])
+			elif url.startswith('#portal_tv_group#'):
+				return self.show_portal_tv_group(url[17:])
+			elif url.startswith('#portal_vod_cat#'):
+				return self.show_portal_vod_category(url[16:])
+			elif url.startswith('#portal_series_cat#'):
+				return self.show_portal_series_category(url[19:])
+			elif url.startswith('#portal_series#'):
+				return self.show_portal_series(url[15:])
+			elif url.startswith('#portal_episodes#'):
+				return self.show_portal_episodes(url[17:])
+			elif url.startswith('#create_userbouquet#'):
+				return self.create_userbouquet(url[20:])
+		except Exception as e:
+			client.log.error("Stalker Addon ERROR:\n%s" % traceback.format_exc())
+		
+			if "Stalker: " in str(e):
+				client.add_operation('SHOW_MSG', { 'msg': str(e), 'msgType': 'error', 'msgTimeout': 0, 'canClose': True, })
+				item = self.video_item('#')
+				item['title'] = "%s" % str(e)
+				return [ item ]
+			else:
+				raise
 
 		return []
 

@@ -67,6 +67,10 @@ log.info( "SledovaniTV http endpoint: %s" % archivCZSKHttpServer.getAddonEndpoin
 
 def setting_changed_notification(name, value):
 	if name and value:
+		if name == 'password':
+			# do write sensitive data to log file
+			value = '***'
+
 		log.debug('SledovaniTV setting "%s" changed to "%s"' % (name, value) )
 		
 	# check if we need service to be enabled

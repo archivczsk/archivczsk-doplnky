@@ -1,3 +1,5 @@
+2022-12-15
+* drobné opravy
 2022-12-01
 * podpora pre zapínanie/vypínanie podpornej služby podľa potreby
 2022-11-18

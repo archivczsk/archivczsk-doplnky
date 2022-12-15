@@ -195,9 +195,9 @@ class autosalontvContentProvider(ContentProvider):
 		
 		html = requests.get("https://video.onnetwork.tv/frame" + ver + ".php?mid=" + mid, headers = {"referer": "https://www.autosalon.tv/"}).content
 		
-		urls = re.findall('"hls"(.*?)3u8',str(html), re.DOTALL)[0]
-		url = re.findall('"url": "(.*?).m',str(urls), re.DOTALL)[-1]
-		stream = url.replace("\\", "") + ".m3u8"
+		urls = re.findall('playerVideos=(.*?);',str(html), re.DOTALL)[0]
+		url = json.loads(urls)[0]["url"]
+		stream = url.replace("\\", "")
 		
 		return stream
 	

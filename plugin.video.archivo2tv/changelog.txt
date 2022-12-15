@@ -1,3 +1,6 @@
+v1.7.5 (2022-12-15)
+- drobné opravy
+
 v1.7.4 (2022-12-01)
 - podpora pre zapínanie/vypínanie podpornej služby podľa potreby
 

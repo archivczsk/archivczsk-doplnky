@@ -1,3 +1,6 @@
+1.5 - 15.12.2022
+    - drobné vylepšenia
+
 1.4 - 01.12.2022
     - podpora pre zapínanie/vypínanie podpornej služby podľa potreby
 

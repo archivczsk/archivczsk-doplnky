@@ -230,6 +230,10 @@ log.info( "Magio GO http endpoint: %s" % archivCZSKHttpServer.getAddonEndpoint( 
 
 def setting_changed_notification(name, value):
 	if name and value:
+		if name == 'password':
+			# do write sensitive data to log file
+			value = '***'
+
 		log.debug('Magio GO setting "%s" changed to "%s"' % (name, value) )
 		
 	# check if we need service to be enabled

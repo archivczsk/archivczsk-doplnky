@@ -1,3 +1,6 @@
+v1.3
+- drobné opravy
+
 v1.2
 - fixed module loading addon dependencies
 

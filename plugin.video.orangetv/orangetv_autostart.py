@@ -65,6 +65,10 @@ log.info( "OrangeTV http endpoint: %s" % archivCZSKHttpServer.getAddonEndpoint( 
 
 def setting_changed_notification(name, value):
 	if name and value:
+		if name == 'orangetvpwd':
+			# do write sensitive data to log file
+			value = '***'
+
 		log.debug('OrangeTV setting "%s" changed to "%s"' % (name, value) )
 		
 	# check if we need service to be enabled

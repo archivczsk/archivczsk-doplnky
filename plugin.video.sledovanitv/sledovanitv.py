@@ -146,7 +146,7 @@ class SledovaniTV:
 				try:
 					ret = resp.json()
 					
-					if "status" not in ret or ret['status'] is 0:
+					if "status" not in ret or ret['status'] == 0:
 						if ret['error'] == 'not logged' and enable_retry:
 							old_sessionid = self.sessionid
 							self.load_access_token()
@@ -184,7 +184,7 @@ class SledovaniTV:
 		if self.sessionid:
 			data = self.call_api('content-home', params = { 'PHPSESSID': self.sessionid } )
 
-		if not self.sessionid or "status" not in data or data['status'] is 0:
+		if not self.sessionid or "status" not in data or data['status'] == 0:
 			if self.pair_device():
 				self.pin_unlock()
 				return True
@@ -232,7 +232,7 @@ class SledovaniTV:
 		
 		data = self.call_api("create-pairing", params = params, enable_retry=False)
 		
-		if "status" not in data or data['status'] is 0:
+		if "status" not in data or data['status'] == 0:
 			self.showError("Problém při přihlášení: %s" % data['error'])
 			self.sessionid = None
 			self.save_login_data()
@@ -248,7 +248,7 @@ class SledovaniTV:
 			}
 			
 			data = self.call_api("device-login", params = params, enable_retry=False )
-			if "status" not in data or data['status'] is 0:
+			if "status" not in data or data['status'] == 0:
 				self.showError("Problém při přihlášení: %s" % data['error'])
 				self.sessionid = None
 				self.save_login_data()
@@ -286,7 +286,7 @@ class SledovaniTV:
 		
 		data = self.call_api('get-devices', params = params )
 		
-		if "status" not in data or data['status'] is 0:
+		if "status" not in data or data['status'] == 0:
 			self.showError("Problém s načtením seznamu zařízení: %s" % data['error'])
 			return []
 		
@@ -330,7 +330,7 @@ class SledovaniTV:
 		
 		data = self.call_api("show-category", params = params )
 		
-		if "status" not in data or data['status'] is 0:
+		if "status" not in data or data['status'] == 0:
 			self.showError("Problém s načtením kanálů: %s" % data['error'])
 			return False
 		
@@ -402,7 +402,7 @@ class SledovaniTV:
 		
 		epgdata = self.call_api("epg-search", params=params)
 		
-		if "status" not in epgdata or epgdata['status'] is 0:
+		if "status" not in epgdata or epgdata['status'] == 0:
 			self.showError("Problém s načtením EPG: %s"%epgdata['error'])
 			epgdata = []
 
@@ -425,7 +425,7 @@ class SledovaniTV:
 		
 		epgdata = self.call_api("epg", params=params)
 		
-		if "status" not in epgdata or epgdata['status'] is 0:
+		if "status" not in epgdata or epgdata['status'] == 0:
 			self.showError("Problém s načtením EPG: %s"%epgdata['error'])
 			epgdata = {}
 		
@@ -448,7 +448,7 @@ class SledovaniTV:
 			
 			data = self.call_api("playlist", params=params )
 			
-			if "status" not in data or data['status'] is 0:
+			if "status" not in data or data['status'] == 0:
 				self.showError("Problém s načtením kanálů: %s"%data['error'])
 				return []
 			
@@ -497,7 +497,7 @@ class SledovaniTV:
 		}
 
 		data = self.call_api('get-pvr', params = params )
-		if "status" not in data or data['status'] is 0:
+		if "status" not in data or data['status'] == 0:
 			self.showError("Problém s načtením nahrávek: %s" % data['error'])
 			return None
 
@@ -513,7 +513,7 @@ class SledovaniTV:
 		}
 
 		data = self.call_api('delete-record', params = params )
-		if "status" not in data or data['status'] is 0:
+		if "status" not in data or data['status'] == 0:
 			self.showError("Problém s smazáním nahrávky: %s" % data['error'])
 			return False
 		
@@ -527,7 +527,7 @@ class SledovaniTV:
 		}
 
 		data = self.call_api('record-event', params = params )
-		if "status" not in data or data['status'] is 0:
+		if "status" not in data or data['status'] == 0:
 			self.showError("Problém s nastavením nahrávky: %s" % data['error'])
 			return False
 		
@@ -590,7 +590,7 @@ class SledovaniTV:
 		}
 
 		data = self.call_api('event-timeshift', params = params )
-		if "status" not in data or data['status'] is 0:
+		if "status" not in data or data['status'] == 0:
 			self.showError("Problém s načtením nahrávky: %s" % data['error'])
 			return None
 		
@@ -606,7 +606,7 @@ class SledovaniTV:
 		}
 
 		data = self.call_api('record-timeshift', params = params )
-		if "status" not in data or data['status'] is 0:
+		if "status" not in data or data['status'] == 0:
 			self.showError("Problém s načtením nahrávky: %s" % data['error'])
 			return None
 		

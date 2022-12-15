@@ -67,6 +67,10 @@ log.info( "O2TV http endpoint: %s" % archivCZSKHttpServer.getAddonEndpoint( requ
 
 def setting_changed_notification(name, value):
 	if name and value:
+		if name == 'password':
+			# do write sensitive data to log file
+			value = '***'
+
 		log.debug('O2TV setting "%s" changed to "%s"' % (name, value) )
 		
 	# check if we need service to be enabled

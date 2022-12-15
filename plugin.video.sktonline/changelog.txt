@@ -1,3 +1,6 @@
+[B]1.3:[/B] 15.12.2022
+- some small changes
+
 [B]1.2:[/B] 08.04.2022
 - fixed module loading addon dependencies
 
