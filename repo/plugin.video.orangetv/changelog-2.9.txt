@@ -1,0 +1,45 @@
+2022-12-15
+* drobné opravy
+2022-12-01
+* podpora pre zapínanie/vypínanie podpornej služby podľa potreby
+2022-11-18
+* vylepšené ukladanie autorizačného tokenu
+2022-07-27
+* pridaná url stream cache
+2022-07-22
+* oprava behu na python3 a DreamOS
+* odstránenie citlivých dát z log súboru
+2022-07-08
+* odstránenie externého proxy servera
+* pridaný autoštart a napojenie na interný http server v archivzsk
+* pridanie služby pre správu epg a automatického generovania userbouquetu
+2022-04-19
+* rewrite addon base part
+* epg cache improvements
+* create epg cache on xml epg export 
+* fixed showing channels in archive
+* logging improvements
+* performance and memory optimalisations
+2022-04-15
+* split addon to multiple modules
+* added access token cache and auto refresh
+* added possibility to generate permanent userbouquet with help of orangetv proxy
+* added XML EPG export for epgimport/epgload plugin + picons download
+2022-04-05
+* another python 3. compatibility fixes
+2022-04-04
+* make addon python 3.x compatible
+2021-07-10 (misanov)
+ * app version change
+2021-01-20 (misanov)
+ * channel display fix
+ * channel default order
+2020-12-13 (misanov)
+ * cache epg
+ * reverse resolution
+2020-10-09
+ * epg, archiv, devices (misanov)
+2020-10-05
+ * update headers (misanov)
+2020-04-29
+ * OrangeTV - afteryear release 1.2.0 (misanov)
