@@ -212,30 +212,6 @@ class SweetTVContentProvider(ContentProvider):
 		return result
 	
 	# #################################################################################################
-	# XXX
-	def show_home(self):
-		channels = self.sweettv.get_home()
-
-		result = []
-		for channel in channels:
-			item = self.video_item( '#play_event#' + channel['eventid'] )
-			
-			item['title'] = channel['title']
-			item['img'] = channel.get('thumb')
-			item['plot'] = channel.get('plot')
-			item['duration'] = channel.get('duration')
-			start_time = channel.get('start_time')
-
-			if start_time and start_time > int(time.time()):
-				item['title'] = '[COLOR grey]' + item['title'] + '[/COLOR]'
-				item['url'] = '#'
-			
-			result.append(item)
-		
-		return result
-		
-
-	# #################################################################################################
 	
 	def show_channels(self):
 		channels = self.sweettv.get_channels_sorted()
@@ -358,7 +334,7 @@ class SweetTVContentProvider(ContentProvider):
 			if startts < from_ts:
 				continue
 
-			if to_ts <= int(endts):
+			if to_ts <= int(startts):
 				break
 			
 			if start.strftime("%A") in day_translation_short:
