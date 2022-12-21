@@ -72,7 +72,7 @@
 
 <addon id="plugin.video.sweettv"
        name="Sweet.tv"
-       version="1.0"
+       version="1.1"
        provider-name="archivczsk">
   <requires>
     <import addon="enigma2.archivczsk" version="1.6.0"/>
@@ -330,6 +330,28 @@
     <description lang="cs">Sledujte videa, reklamy, seriály, články a návody ze servru videacesky.cz</description>
     <description lang="sk">Sledujte videá, reklamy, seriály, články a návody zo serveru videacesky.cz</description>
     <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.rebittv"
+       name="Rebit.tv"
+       version="1.0"
+       provider-name="archivczsk">
+  <requires>
+    <import addon="enigma2.archivczsk" version="1.6.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.stream.resolver" version="1.6.25" />
+  </requires>
+  <extension point="xbmc.service" library="rebittv_service.py"/>
+  <extension point="xbmc.autostart" library="rebittv_autostart.py"/>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>Rebit.tv</summary>
+    <description>Plugin to play videos and live tv from rebit.tv</description>
+    <description lang="sk">Plugin pre prehrávanie live tv z rebit.tv</description>
   </extension>
 </addon>
 
