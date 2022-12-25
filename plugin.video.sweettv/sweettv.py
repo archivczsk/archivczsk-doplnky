@@ -548,7 +548,7 @@ class SweetTV:
 
 	# #################################################################################################
 	
-	def resolve_streams(self, url ):
+	def resolve_streams(self, url, stream_id=None ):
 		try:
 			req = requests.get(url)
 		except:
@@ -578,12 +578,25 @@ class SweetTV:
 					stream_url = url[:url.rfind('/') + 1] + stream_url
 				
 			stream_info['url'] = stream_url
+			if stream_id:
+				stream_info['stream_id'] = stream_id
+
 			streams.append( stream_info )
 		
 		return sorted(streams,key=lambda i: int(i['bandwidth']), reverse = True)
 	
 	# #################################################################################################
 
+	def close_stream(self, stream_id ):
+		req_data = {
+			'stream_id': int(stream_id)
+		}
+		
+		data = self.call_api('TvService/CloseStream.json', data=req_data )
+		return data.get('result') == 'OK'
+		
+	# #################################################################################################
+	
 	def get_live_link(self, channel_key, event_id=None ):
 		req_data = {
 			'without_auth': True,
@@ -603,7 +616,7 @@ class SweetTV:
 		
 		hs = data['http_stream']
 		url = 'http://%s:%d%s' % (hs['host']['address'], hs['host']['port'], hs['url']) 
-		return self.resolve_streams(url)
+		return self.resolve_streams(url, data.get('stream_id'))
 
 	# #################################################################################################
 	

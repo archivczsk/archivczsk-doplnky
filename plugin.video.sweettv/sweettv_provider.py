@@ -87,7 +87,7 @@ class SweetTVContentProvider(ContentProvider):
 	# #################################################################################################
 
 	def capabilities(self):
-		return ['categories', 'resolve', 'search', '!download']
+		return ['categories', 'resolve', 'search', '!download', 'stats-ext']
 
 	# #################################################################################################
 
@@ -487,13 +487,39 @@ class SweetTVContentProvider(ContentProvider):
 			
 		for one in stream_links:
 			item = item.copy()
-			self.debug("%s STREAM URL: %s" % (one['name'], one['url']) )
+			self.debug("%s STREAM URL: %s" % (one.get('name', '???'), one['url']) )
 			item['url'] = one['url']
-			item['quality'] = one['name']
+			item['quality'] = one.get('name', '???')
+			item['customDataItem'] = { 'stream_id': one.get('stream_id') }
+
 			result.append(item)
 			
 		if select_cb and len(result) > 0:
 			return select_cb(result)
 
 		return result
+	
+	# #################################################################################################
+	
+	def stats_ext(self, item, action, extra_params):
+		if item:
+			stream_id = item.get('stream_id')
+		else:
+			stream_id = None
+			
+		try:
+			if action.lower() == 'play':
+				pass
+				
+			elif action.lower() == 'watching':
+				pass
+				
+			elif action.lower() == 'end':
+				if stream_id:
+					self.sweettv.close_stream( stream_id )
+		except:
+			self.error("Stats processing failed")
+			util.error(traceback.format_exc())
+	
+	# #################################################################################################
 	
