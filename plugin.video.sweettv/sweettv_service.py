@@ -448,7 +448,7 @@ def generate_userbouquet( data ):
 				}) 
 
 		service_helper.logDebug("Starting generating of userbouquet")
-		if obg.generate_bouquet( channels, settings['enable_adult'], settings['enable_xmlepg'], settings['enable_picons'], settings['player_name'] ):
+		if obg.generate_bouquet( channels, settings['enable_adult'], settings['enable_xmlepg'], settings['enable_picons'], settings['player_name'], sweettv.common_headers_stream['User-Agent'] ):
 			service_helper.logDebug("Userbouquet successfuly generated")
 		else:
 			service_helper.logDebug("No need to regenerate userbouquet")

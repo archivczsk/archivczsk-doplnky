@@ -101,6 +101,8 @@ class SweetTVContentProvider(ContentProvider):
 			else:
 				item['title'] = "Nie sú nastavené prihlasovacie údaje"
 			return [ item ]
+		else:
+			self.sweettv.check_login()
 		
 		result = []
 		
@@ -173,6 +175,15 @@ class SweetTVContentProvider(ContentProvider):
 			item=self.dir_item( 'Zaregistrované zariadenia', '#extra#devices')
 			item['plot'] = "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočné zariadenia, aby ste se mohli znova inde prihlásiť."
 			result.append( item )
+			item=self.dir_item( 'Odhlásiť sa z tohto zariadenia', '#extra#logout')
+			item['plot'] = "Vynúti odhlásenie z tohto zariadenia a vykoná nové prihlásenie. Použite to v prípade problémov s prehrávaním. Po spustení tejto voľby je nutné doplnok opustiť a vrátiť sa späť pre opätovné prihlásenie."
+			result.append( item )
+		elif section == '#logout':
+			self.sweettv.logout()
+			item = self.video_item('#')
+			item['title'] = "[COLOR red]Boli ste odhlásený![/COLOR]"
+			result.append(item)
+			
 		elif section == '#devices':
 			
 			for pdev in self.sweettv.get_devices():
@@ -184,7 +195,6 @@ class SweetTVContentProvider(ContentProvider):
 				item['plot'] = 'V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!'
 				item['menu'] = {'Zmazať zariadenie!': {'list': '#extra#deldev#' + str(pdev["token_id"]), 'action-type': 'list'}}
 				result.append(item)
-				
 		elif section.startswith('#deldev#'):
 			dev_name = section[8:]
 			self.sweettv.device_remove(dev_name)
@@ -491,6 +501,7 @@ class SweetTVContentProvider(ContentProvider):
 			item['url'] = one['url']
 			item['quality'] = one.get('name', '???')
 			item['customDataItem'] = { 'stream_id': one.get('stream_id') }
+			item['playerSettings'] = { 'user-agent' : self.sweettv.common_headers_stream['User-Agent']}
 
 			result.append(item)
 			

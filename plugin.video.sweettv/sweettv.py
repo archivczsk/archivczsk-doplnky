@@ -74,8 +74,10 @@ class SweetTV:
 		self.device_id = device_id
 		self.access_token = None
 		self.refresh_token = None
+		self.login_ver = 0
 		self.data_dir = data_dir
 		self.log_function = log_function if log_function else _log_dummy
+		self.api_session = requests.Session()
 		
 		self.common_headers = {
 			"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0",
@@ -85,6 +87,14 @@ class SweetTV:
 			'Accept-language': 'sk',
 			"Content-type": "application/json",
 			"x-device": "1;22;0;2;3.2.80"
+		}
+
+		self.common_headers_stream = {
+			"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0",
+			"Origin": "https://sweet.tv",
+			"Referer": "https://sweet.tv",
+			"Accept-encoding": "gzip",
+			'Accept-language': 'sk',
 		}
 
 		self.device_info = {
@@ -136,6 +146,7 @@ class SweetTV:
 					if self.get_chsum() == login_data.get('checksum'):
 						self.access_token = login_data['access_token']
 						self.refresh_token = login_data['refresh_token']
+						self.login_ver = login_data.get('login_ver', 0)
 						self.log_function("Login data loaded from cache")
 					else:
 						self.access_token = None
@@ -155,6 +166,7 @@ class SweetTV:
 						data = {
 							'access_token': self.access_token,
 							'refresh_token': self.refresh_token,
+							'login_ver': 1,
 							'checksum': self.get_chsum()
 						}
 						json.dump( data, f )
@@ -188,7 +200,7 @@ class SweetTV:
 				del headers['authorization']
 
 		try:
-			resp = requests.post( url, data=json.dumps(data, separators=(',', ':')), headers=headers )
+			resp = self.api_session.post( url, data=json.dumps(data, separators=(',', ':')), headers=headers )
 			
 #			writeDebugRequest( url, data, resp.json())
 			
@@ -211,7 +223,7 @@ class SweetTV:
 					return ret
 
 				except:
-					print(traceback.format_exc())
+					self.log_function(traceback.format_exc())
 					return {}
 			else:
 				err_msg = "Neočekávaný návratový kód zo servera: %d" % resp.status_code
@@ -226,7 +238,12 @@ class SweetTV:
 
 	def check_login(self):
 		if self.access_token:
-			data = self.call_api('TvService/GetUserInfo.json', data={})
+			if self.login_ver == 0:
+				# force refresh of login data saved in old version
+				self.logout()
+				data = {}
+			else:
+				data = self.call_api('TvService/GetUserInfo.json', data={})
 
 		if self.access_token and data.get('status') == 'OK':
 			return True
@@ -256,6 +273,7 @@ class SweetTV:
 	
 		self.access_token = data.get('access_token')
 		self.refresh_token = data.get('refresh_token')
+		self.login_ver = 1
 		self.save_login_data()
 		
 		return True
@@ -298,10 +316,12 @@ class SweetTV:
 			"refresh_token": self.refresh_token,
 		}
 		
-		self.call_api('SigninService/Logout.json', data=data, enable_retry=False, auth_header=False)
+		self.call_api('SigninService/Logout.json', data=data, enable_retry=False)
 		self.access_token = None
 		self.refresh_token_token = None
 		self.save_login_data()
+		self.channels = {}
+		self.channels_next_load = 0
 		
 		return True
 		
@@ -550,7 +570,7 @@ class SweetTV:
 	
 	def resolve_streams(self, url, stream_id=None ):
 		try:
-			req = requests.get(url)
+			req = requests.get(url, headers=self.common_headers_stream)
 		except:
 			self.log_function("%s" % traceback.format_exc())
 			self.showError("Nastal problém pri načítení videa.")
