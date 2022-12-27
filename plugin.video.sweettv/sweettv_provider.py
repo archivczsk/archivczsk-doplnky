@@ -417,10 +417,7 @@ class SweetTVContentProvider(ContentProvider):
 					continue
 				
 				if movie['trailer']:
-					try:
-						url = '#play_raw#' + self.sweettv.resolve_streams(movie['trailer'])[0]['url']
-					except:
-						url = '#'
+					url = '#play_raw#' + movie['trailer']
 				else:
 					url = '#'
 				title = "[COLOR yellow]*[/COLOR] " + movie['title']
@@ -432,10 +429,15 @@ class SweetTVContentProvider(ContentProvider):
 			item['img'] = movie['poster']
 			item['duration'] = movie['duration']
 			item['year'] = movie['year']
-			result.append(item)
 
 			if movie['rating']:
 				item['rating'] = movie['rating']
+
+			if movie['trailer'] and movie['available']:
+				item['menu'] = { "Prehrať trailer": { "play" : '#play_raw#' + movie['trailer'], 'title': title }}
+
+			result.append(item)
+
 			
 		return result
 
@@ -476,7 +478,7 @@ class SweetTVContentProvider(ContentProvider):
 				stream_links = self.sweettv.get_live_link( channel_id, epg_id )
 				
 			elif url.startswith('#play_movie#'):
-				movie_id, owner_id = url[13:].split('#')
+				movie_id, owner_id = url[12:].split('#')
 				stream_links = self.sweettv.get_movie_link( movie_id, owner_id )
 
 			elif url.startswith('#play_raw#'):
@@ -501,7 +503,7 @@ class SweetTVContentProvider(ContentProvider):
 			item['url'] = one['url']
 			item['quality'] = one.get('name', '???')
 			item['customDataItem'] = { 'stream_id': one.get('stream_id') }
-			item['playerSettings'] = { 'user-agent' : self.sweettv.common_headers_stream['User-Agent']}
+			item['playerSettings'] = { 'user-agent' : self.sweettv.common_headers_stream['User-Agent'], 'resolve_hls_master' : False }
 
 			result.append(item)
 			

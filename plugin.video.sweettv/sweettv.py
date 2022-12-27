@@ -646,8 +646,8 @@ class SweetTV:
 		
 		req_data = {
 			'audio_track': -1,
-			'movie_id': movie_id,
-			'owner_id': owner_id,
+			'movie_id': int(movie_id),
+			'owner_id': int(owner_id),
 			'preferred_link_type': 1,
 			'subtitle': 'all'
 		}
@@ -655,7 +655,7 @@ class SweetTV:
 		data = self.call_api('MovieService/GetLink.json', data=req_data )
 		
 		if data.get('status') != 'OK':
-			self.showError("Nastal problém zo získaním adresy filmu: %s" % data.get('message',''))
+			self.showError("Nastal problém zo získaním adresy filmu: %s" % data['message'] if 'message' in data else data.get('status', ''))
 			return None
 
 		if data.get('link_type') != 'HLS':

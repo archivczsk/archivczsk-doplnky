@@ -1,3 +1,6 @@
+1.4 - 27.12.2022
+    - oprava prehrávania filmov a trailerov
+
 1.3 - 25.12.2022
     - pridanie možnosti na vynútené odhlásenie v špeciálnej sekcii
     - automatické obnovenie starších prihlasovacích údajov uložených v predchádzajúcej verzii
