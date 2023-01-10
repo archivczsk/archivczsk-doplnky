@@ -117,6 +117,7 @@ class Stalker:
 		
 		self.url = url
 		self.mac = portal_cfg['mac']
+		self.name = portal_cfg['name']
 		self.portal_cfg = portal_cfg
 		self.endpoint = 'server/load.php'
 		self.data_dir = data_dir
@@ -130,6 +131,7 @@ class Stalker:
 		self.lang = "en_GB.utf8"
 #		self.lang = "en"
 		self.time_zone = "Europe/Berlin"
+		self.user_agent = 'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG200 stbapp ver: 2 rev: 250 Safari/533.3'
 		self.load_login_data()
 		
 	# #################################################################################################
@@ -226,7 +228,7 @@ class Stalker:
 		
 		headers = {
 			"Cookie" : "mac=%s; stb_lang=%s, timezone=%s" % (quote(self.mac), self.lang, quote(self.time_zone)),
-			"User-Agent": 'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG200 stbapp ver: 2 rev: 250 Safari/533.3',
+			"User-Agent": self.user_agent,
 			"X-User-Agent": "Model: MAG250; Link: WiFi",
 			'Accept-Encoding': 'gzip',
 			'Referer': self.url

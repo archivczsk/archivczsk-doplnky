@@ -60,6 +60,7 @@ class stalkerContentProvider(ContentProvider):
 	def __init__(self, data_dir=None, session=None, tmp_dir='/tmp'):
 		ContentProvider.__init__(self, 'stalker', '/', None, None, None, tmp_dir)
 		self.data_dir = data_dir
+		self.max_items_per_page = 200
 		
 #		from Plugins.Extensions.archivCZSK.engine.httpserver import archivCZSKHttpServer
 #		self.http_endpoint = archivCZSKHttpServer.getAddonEndpoint( __scriptid__ )
@@ -255,9 +256,11 @@ class stalkerContentProvider(ContentProvider):
 			bq_name = '%s: %s' % (s.portal_cfg['name'], group_name)
 		else:
 			bq_name = '%s: %s' % (s.portal_cfg['name'], 'Live TV')
-			
+		
+		bq_name = bq_name.replace('"','').replace("'",'').replace('/','')
+		
 		bg = StalkerBouquetGenerator(bq_name)
-		bg.generate_bouquet(channels, player_name=player_name)
+		bg.generate_bouquet(channels, player_name=player_name, user_agent=s.user_agent)
 		
 		item = self.video_item('#')
 		item['title'] = '[COLOR yellow]Userbouquet %s vygenerovaný![/COLOR]' % bq_name
@@ -311,35 +314,44 @@ class stalkerContentProvider(ContentProvider):
 		s = StalkerCache.get_by_key( ck )
 		
 		result = []
-		vod_data = s.get_vod_list('vod', cat_id, page=page, sortby=sortby)
+
+		i = 0
+		while True:
+			vod_data = s.get_vod_list('vod', cat_id, page=page, sortby=sortby)
+			
+			for vod_item in vod_data['data']:
+				item = self.video_item('#portal_vod_link#' + json.dumps( [ck, vod_item['cmd'], -1] ) )
+				item['title'] = vod_item['name']
+				item['plot'] = vod_item['description']
+				item['img'] = vod_item['screenshot_uri']
+				
+				if not item['img'].startswith('http'):
+					item['img'] = ''
+				
+				if sortby == 'added':
+					item['menu'] = {
+						'Zoradiť podľa názvu': { 'list': '#portal_vod_cat#' + json.dumps( [ck, cat_id, 1, 'name'] ) },
+						'Zoradiť podľa hodnotenia': { 'list': '#portal_vod_cat#' + json.dumps( [ck, cat_id, 1, 'rating'] ) }
+					}
+				elif sortby == 'name':
+					item['menu'] = {
+						'Zoradiť podľa dátumu pridania' : { 'list': '#portal_vod_cat#' + json.dumps( [ck, cat_id, 1, 'added'] ) },
+						'Zoradiť podľa hodnotenia': { 'list': '#portal_vod_cat#' + json.dumps( [ck, cat_id, 1, 'rating'] ) }
+					}
+				elif sortby == 'rating':
+					item['menu'] = {
+						'Zoradiť podľa dátumu pridania' : { 'list': '#portal_vod_cat#' + json.dumps( [ck, cat_id, 1, 'added'] ) },
+						'Zoradiť podľa názvu': { 'list': '#portal_vod_cat#' + json.dumps( [ck, cat_id, 1, 'name'] ) },
+					}
+				
+				result.append(item)
+				i += 1
 		
-		for vod_item in vod_data['data']:
-			item = self.video_item('#portal_vod_link#' + json.dumps( [ck, vod_item['cmd'], -1] ) )
-			item['title'] = vod_item['name']
-			item['plot'] = vod_item['description']
-			item['img'] = vod_item['screenshot_uri']
+			if i > self.max_items_per_page or vod_data['max_page_items'] * page >= vod_data['total_items']:
+				break
 			
-			if not item['img'].startswith('http'):
-				item['img'] = ''
+			page += 1
 			
-			if sortby == 'added':
-				item['menu'] = {
-					'Zoradiť podľa názvu': { 'list': '#portal_vod_cat#' + json.dumps( [ck, cat_id, 1, 'name'] ) },
-					'Zoradiť podľa hodnotenia': { 'list': '#portal_vod_cat#' + json.dumps( [ck, cat_id, 1, 'rating'] ) }
-				}
-			elif sortby == 'name':
-				item['menu'] = {
-					'Zoradiť podľa dátumu pridania' : { 'list': '#portal_vod_cat#' + json.dumps( [ck, cat_id, 1, 'added'] ) },
-					'Zoradiť podľa hodnotenia': { 'list': '#portal_vod_cat#' + json.dumps( [ck, cat_id, 1, 'rating'] ) }
-				}
-			elif sortby == 'rating':
-				item['menu'] = {
-					'Zoradiť podľa dátumu pridania' : { 'list': '#portal_vod_cat#' + json.dumps( [ck, cat_id, 1, 'added'] ) },
-					'Zoradiť podľa názvu': { 'list': '#portal_vod_cat#' + json.dumps( [ck, cat_id, 1, 'name'] ) },
-				}
-			
-			result.append(item)
-		
 		if vod_data['max_page_items'] * page < vod_data['total_items']:
 			item = self.dir_item('Ďalšie', '#portal_vod_cat#' + json.dumps( [ck, cat_id, page + 1, sortby] ) )
 			item['type'] = 'next'
@@ -355,33 +367,41 @@ class stalkerContentProvider(ContentProvider):
 		s = StalkerCache.get_by_key( ck )
 		
 		result = []
-		vod_data = s.get_vod_list('series', cat_id, page=page, sortby=sortby)
 		
-		for vod_item in vod_data['data']:
-			item = self.dir_item(vod_item['name'], '#portal_series#' + json.dumps( [ck, cat_id, vod_item['id'], 1, 'added'] ) )
-			item['plot'] = vod_item['description']
-			item['img'] = vod_item['screenshot_uri']
+		i = 0
+		while True:
+			vod_data = s.get_vod_list('series', cat_id, page=page, sortby=sortby)
+			
+			for vod_item in vod_data['data']:
+				item = self.dir_item(vod_item['name'], '#portal_series#' + json.dumps( [ck, cat_id, vod_item['id'], 1, 'added'] ) )
+				item['plot'] = vod_item['description']
+				item['img'] = vod_item['screenshot_uri']
+	
+				if not item['img'].startswith('http'):
+					item['img'] = ''
+	
+				if sortby == 'added':
+					item['menu'] = {
+						'Zoradiť podľa názvu': { 'list': '#portal_series_cat#' + json.dumps( [ck, cat_id, 1, 'name'] ) },
+						'Zoradiť podľa hodnotenia': { 'list': '#portal_series_cat#' + json.dumps( [ck, cat_id, 1, 'rating'] ) }
+					}
+				elif sortby == 'name':
+					item['menu'] = {
+						'Zoradiť podľa dátumu pridania' : { 'list': '#portal_series_cat#' + json.dumps( [ck, cat_id, 1, 'added'] ) },
+						'Zoradiť podľa hodnotenia': { 'list': '#portal_series_cat#' + json.dumps( [ck, cat_id, 1, 'rating'] ) }
+					}
+				elif sortby == 'rating':
+					item['menu'] = {
+						'Zoradiť podľa dátumu pridania' : { 'list': '#portal_series_cat#' + json.dumps( [ck, cat_id, 1, 'added'] ) },
+						'Zoradiť podľa názvu': { 'list': '#portal_series_cat#' + json.dumps( [ck, cat_id, 1, 'name'] ) },
+					}
+	
+				result.append(item)
 
-			if not item['img'].startswith('http'):
-				item['img'] = ''
-
-			if sortby == 'added':
-				item['menu'] = {
-					'Zoradiť podľa názvu': { 'list': '#portal_series_cat#' + json.dumps( [ck, cat_id, 1, 'name'] ) },
-					'Zoradiť podľa hodnotenia': { 'list': '#portal_series_cat#' + json.dumps( [ck, cat_id, 1, 'rating'] ) }
-				}
-			elif sortby == 'name':
-				item['menu'] = {
-					'Zoradiť podľa dátumu pridania' : { 'list': '#portal_series_cat#' + json.dumps( [ck, cat_id, 1, 'added'] ) },
-					'Zoradiť podľa hodnotenia': { 'list': '#portal_series_cat#' + json.dumps( [ck, cat_id, 1, 'rating'] ) }
-				}
-			elif sortby == 'rating':
-				item['menu'] = {
-					'Zoradiť podľa dátumu pridania' : { 'list': '#portal_series_cat#' + json.dumps( [ck, cat_id, 1, 'added'] ) },
-					'Zoradiť podľa názvu': { 'list': '#portal_series_cat#' + json.dumps( [ck, cat_id, 1, 'name'] ) },
-				}
-
-			result.append(item)
+			if i > self.max_items_per_page or vod_data['max_page_items'] * page >= vod_data['total_items']:
+				break
+			
+			page += 1
 
 		if vod_data['max_page_items'] * page < vod_data['total_items']:
 			item = self.dir_item('Ďalšie', '#portal_series_cat#' + json.dumps( [ck, cat_id, page + 1, sortby] ) )
@@ -398,33 +418,42 @@ class stalkerContentProvider(ContentProvider):
 		s = StalkerCache.get_by_key( ck )
 		
 		result = []
-		vod_data = s.get_vod_list('series', cat_id, vod_id, page=page, sortby=sortby)
 		
-		for vod_item in vod_data['data']:
-			item = self.dir_item(vod_item['name'], '#portal_episodes#' + json.dumps( [ck, vod_item['cmd'], vod_item['series']] ) )
-			item['plot'] = vod_item['description']
-			item['img'] = vod_item['screenshot_uri']
+		i = 0
+		while True:
+			vod_data = s.get_vod_list('series', cat_id, vod_id, page=page, sortby=sortby)
 			
-			if not item['img'].startswith('http'):
-				item['img'] = ''
-
-			if sortby == 'added':
-				item['menu'] = {
-					'Zoradiť podľa názvu': { 'list': '#portal_series#' + json.dumps( [ck, cat_id, vod_id, 1, 'name'] ) },
-					'Zoradiť podľa hodnotenia': { 'list': '#portal_series#' + json.dumps( [ck, cat_id, vod_id, 1, 'rating'] ) }
-				}
-			elif sortby == 'name':
-				item['menu'] = {
-					'Zoradiť podľa dátumu pridania' : { 'list': '#portal_series#' + json.dumps( [ck, cat_id, vod_id, 1, 'added'] ) },
-					'Zoradiť podľa hodnotenia': { 'list': '#portal_series#' + json.dumps( [ck, cat_id, vod_id, 1, 'rating'] ) }
-				}
-			elif sortby == 'rating':
-				item['menu'] = {
-					'Zoradiť podľa dátumu pridania' : { 'list': '#portal_series#' + json.dumps( [ck, cat_id, vod_id, 1, 'added'] ) },
-					'Zoradiť podľa názvu': { 'list': '#portal_series#' + json.dumps( [ck, cat_id, vod_id, 1, 'name'] ) },
-				}
+			for vod_item in vod_data['data']:
+				item = self.dir_item(vod_item['name'], '#portal_episodes#' + json.dumps( [ck, vod_item['cmd'], vod_item['series']] ) )
+				item['plot'] = vod_item['description']
+				item['img'] = vod_item['screenshot_uri']
 				
-			result.append(item)
+				if not item['img'].startswith('http'):
+					item['img'] = ''
+	
+				if sortby == 'added':
+					item['menu'] = {
+						'Zoradiť podľa názvu': { 'list': '#portal_series#' + json.dumps( [ck, cat_id, vod_id, 1, 'name'] ) },
+						'Zoradiť podľa hodnotenia': { 'list': '#portal_series#' + json.dumps( [ck, cat_id, vod_id, 1, 'rating'] ) }
+					}
+				elif sortby == 'name':
+					item['menu'] = {
+						'Zoradiť podľa dátumu pridania' : { 'list': '#portal_series#' + json.dumps( [ck, cat_id, vod_id, 1, 'added'] ) },
+						'Zoradiť podľa hodnotenia': { 'list': '#portal_series#' + json.dumps( [ck, cat_id, vod_id, 1, 'rating'] ) }
+					}
+				elif sortby == 'rating':
+					item['menu'] = {
+						'Zoradiť podľa dátumu pridania' : { 'list': '#portal_series#' + json.dumps( [ck, cat_id, vod_id, 1, 'added'] ) },
+						'Zoradiť podľa názvu': { 'list': '#portal_series#' + json.dumps( [ck, cat_id, vod_id, 1, 'name'] ) },
+					}
+					
+				result.append(item)
+				
+			if i > self.max_items_per_page or vod_data['max_page_items'] * page >= vod_data['total_items']:
+				break
+			
+			page += 1
+
 
 		if vod_data['max_page_items'] * page < vod_data['total_items']:
 			item = self.dir_item('Ďalšie', '#portal_series#' + json.dumps( [ck, cat_id, vod_id, page + 1, sortby] ) )
@@ -481,6 +510,8 @@ class stalkerContentProvider(ContentProvider):
 			url = s.create_video_link( cmd, 'vod', series=series )
 			
 			item['url'] = url
+		
+		item['playerSettings'] = { 'user-agent' : s.user_agent }
 		
 		return item
 
