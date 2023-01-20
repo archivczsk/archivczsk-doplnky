@@ -67,7 +67,7 @@ def strip_accents(s):
 	return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
 
 def ws_api_request(url, data):
-	return requests.post(ws_api + url, data=data, headers={'User-Agent': UA2, 'X-Uuid': xuuid}, timeout=loading_timeout)
+	return requests.post(ws_api + url, data=data, headers={'User-Agent': UA2, 'X-Uuid': xuuid}, timeout=loading_timeout, verify=False)
 
 def login():
 	username = addon.getSetting('wsuser')
@@ -120,7 +120,7 @@ def api_request(url,post_data=''):
 	if '?' in url: url = url + '&access_token=' + TK
 	else: url = url + '?access_token=' + TK
 	try:
-		data = requests.get(url=url, data=post_data, headers={'User-Agent': UA2, 'Authorization': AU2, 'X-Uuid': xuuid, 'Content-Type': 'application/json'}, timeout=loading_timeout)
+		data = requests.get(url=url, data=post_data, headers={'User-Agent': UA2, 'Authorization': AU2, 'X-Uuid': xuuid, 'Content-Type': 'application/json'}, timeout=loading_timeout, verify=False)
 		if data.status_code != 200:
 			client.add_operation("SHOW_MSG", {'msg': addon.getLocalizedString(30501), 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
 			return {'data': "" }
