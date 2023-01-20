@@ -1,3 +1,6 @@
+2023-01-20 [2.2.4]
+* update na nove API a par uprav
+
 2022-05-23 [2.2.3]
 * oprava pádu pri nedostupnosti ydl
 
