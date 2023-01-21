@@ -29,7 +29,7 @@ addon_userdata_dir = addon.getAddonInfo('profile')+'/'
 home = addon.getAddonInfo('path')
 christmas = datetime.date(datetime.date.today().year, 12, 20) <= datetime.date.today() <= datetime.date(datetime.date.today().year+1, 1, 6)
 icon = os.path.join(home, 'icon.png')
-hotshot_url = 'https://plugin.sc2.zone'
+hotshot_url = 'http://plugin.sc2.zone'
 ws_api = 'https://webshare.cz/api'
 UA = "KODI/18.6 (Windows; U; Windows NT; en) ver1.3.26"
 UA2 = 'SCC Enigma2'
