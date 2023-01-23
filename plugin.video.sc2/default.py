@@ -562,7 +562,7 @@ def play_trailer(id):
 #		client.refresh_screen()
 
 def get_csfd_api(url):
-	cookies = {'tv_stations':'2%2C3%2C4%2C5%2C24%2C19%2C26%2C33%2C16%2C78%2C1%2C8%2C93%2C13%2C22%2C14%2C41%2C88'}
+	cookies = {'tv_stations':'2%2C3%2C4%2C5%2C24%2C19%2C26%2C33%2C16%2C78%2C1%2C8%2C93%2C13%2C22%2C14%2C41%2C88', 'tv_tips_order':'2'}
 	headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0'}
 	result = requests.get('https://www.csfd.cz'+url, headers=headers, cookies=cookies, timeout=loading_timeout, verify=False)
 	if result.status_code != 200:
