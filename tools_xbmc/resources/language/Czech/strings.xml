@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+	<string id="200">Je vyžadováno opsání kódu obrázku</string>
+	<string id="201">Vyčkejte...</string>
+	<string id="30003">[B]Vyhledat[/B]</string>
+	<string id="30004">[B]Nové hledání[/B]</string>
+	<string id="30005">Vyberte zdroj</string>
+	<string id="30006">[B]Stažené soubory[/B]</string>
+	<string id="30007">[B]Další[/B]</string>
+	<string id="30008">[B]Předchozí[/B]</string>
+	<string id="30009">Nastavte prosím složku pro stahování</string>
+	<string id="30010">Chcete pro získání souboru použít VIP úcet?</string>
+	<string id="30011">Přihlášení selhalo, zkontrolujte nastavení</string>
+	<string id="30012">[B]Nejnovější videa[/B]</string>
+	<string id="30013">[B]Nejsledovanější videa[/B]</string>
+	<string id="30014">Čekání na soubor %ss</string>
+</strings>
