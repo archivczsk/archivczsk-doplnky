@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<addon id="tools.archivczsk" name="addons helper" version="1.0">
+	<extension point="archivczsk.addon.tools" />
+	<extension point="xbmc.addon.metadata">
+		<description>Helper module for easy addon creating</description>
+	</extension>
+</addon>
