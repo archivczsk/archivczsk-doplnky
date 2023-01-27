@@ -1,25 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.novaplus"
-       name="TV Nova"
-       version="3.0"
-       provider-name="archivczsk">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.stream.resolver" version="1.6.22" />
-    <import addon="script.module.dmd-czech.common" version="1.6.1" />
-  </requires>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Nova Plus TV video-archive plugin</summary>
-    <summary lang="cs">Nova Plus TV - archiv</summary>
-    <description>
-        Plugin to play TV video archive tv.nova.cz
-    </description>
-    <description lang="cs">
-        Plugin pro přehrávání videí z archivu tv.nova.cz
-    </description>
-  </extension>
+<addon id="plugin.video.novaplus" name="TV Nova" provider-name="archivczsk" version="3.1">
+	<requires>
+		<import addon="enigma2.archivczsk" version="1.7.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description lang="en">Plugin to play TV video archive tv.nova.cz</description>
+		<description lang="cs">Plugin pro přehrávání videí z archivu tv.nova.cz</description>
+	</extension>
 </addon>

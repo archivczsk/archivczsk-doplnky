@@ -16,10 +16,10 @@ except:
 	
 import requests
 import json
-import util
 
-from provider import ContentProvider
-import xbmcprovider
+from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
+from tools_xbmc.contentprovider.provider import ContentProvider
+from tools_xbmc.compat import XBMCCompatInterface
 
 _baseurl = "https://tv.nova.cz/"
 
@@ -377,8 +377,12 @@ __scriptid__	= 'plugin.video.novaplus'
 __addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
 __language__	= __addon__.getLocalizedString
 
-settings = {'quality':__addon__.getSetting('quality')}
 
-provider = novatvContentProvider(username=__addon__.getSetting('username'), password=__addon__.getSetting('password'), list_voyo=__addon__.getSetting('list-voyo')=='true')
+def nova_run(session, params):
+	settings = {'quality':__addon__.getSetting('quality')}
+	provider = novatvContentProvider(username=__addon__.getSetting('username'), password=__addon__.getSetting('password'), list_voyo=__addon__.getSetting('list-voyo') == 'true')
+	XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
 
-xbmcprovider.XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
+def main(addon):
+	return XBMCCompatInterface(nova_run)
+
