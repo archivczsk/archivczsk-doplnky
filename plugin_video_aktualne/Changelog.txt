@@ -1,5 +1,8 @@
-2022-04-04
+1.3 - 2023-01-27
+* convert addon to be compatible with archivCZSK >= 1.7.0
+
+1.2 - 2022-04-04
 * make addon python 3.x compatible
 
-2020-04-23
+1.0 - 2020-04-23
  * Aktualne.cz - first release

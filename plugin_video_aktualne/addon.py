@@ -11,10 +11,7 @@
 
 import re,os,time,datetime,json
 import email.utils as eut
-from Components.config import config
-from parseutils import *
-from util import addDir, addLink
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
+from tools_xbmc.dmd_czech.util import addDir, addLink
 
 try:
 	from urllib2 import urlopen, Request
@@ -24,15 +21,8 @@ except:
 	from urllib.parse import unquote_plus, quote_plus
 
 
-
 __baseurl__ = 'https://video.aktualne.cz/rss/'
 _UserAgent_ = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0'
-addon =	 ArchivCZSK.get_xbmc_addon('plugin.video.aktualne')
-profile = addon.getAddonInfo('profile')
-__settings__ = addon
-home = __settings__.getAddonInfo('path')
-icon =	os.path.join( home, 'icon.png' )
-fanart = os.path.join( home, 'fanart.jpg' )
 
 def get_url(url):
 	req = Request(url)
@@ -113,35 +103,39 @@ def videoLink(url):
 			addLink(version['label'] + " " + title,version['src'],image,descr)
 
 
-url=None
-name=None
-thumb=None
-mode=None
-page=None
-offset=0
+def run(session, params):
+	url = None
+	name = None
+	thumb = None
+	mode = None
+	page = None
+	offset = 0
 
-try:
-		url=unquote_plus(params["url"])
-except:
-		pass
-try:
-		name=unquote_plus(params["name"])
-except:
-		pass
-try:
-		mode=int(params["mode"])
-except:
-		pass
-try:
-		page=int(params["page"])
-except:
-		pass
-try:
-		offset=int(urllib.unquote_plus(re.search('offset=([0-9]+)', url, re.S).group(1)))
-except:
-		pass
+	try:
+			url = unquote_plus(params["url"])
+	except:
+			pass
+	try:
+			name = unquote_plus(params["name"])
+	except:
+			pass
+	try:
+			mode = int(params["mode"])
+	except:
+			pass
+	try:
+			page = int(params["page"])
+	except:
+			pass
+	try:
+			offset = int(urllib.unquote_plus(re.search('offset=([0-9]+)', url, re.S).group(1)))
+	except:
+			pass
 
-if mode==None or url==None or len(url)<1:
-		listItems(offset)
-elif mode==3:
-		videoLink(url)
+	if mode == None or url == None or len(url) < 1:
+			listItems(offset)
+	elif mode == 3:
+			videoLink(url)
+
+def main(addon):
+	return run
