@@ -18,13 +18,16 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
+import os
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine import client
 import re,datetime,json
-import util
-from provider import ContentProvider
-import xbmcprovider
 from Components.config import config
+
+from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
+from tools_xbmc.contentprovider.provider import ContentProvider
+from tools_xbmc.tools import util
+from tools_xbmc.compat import XBMCCompatInterface
 
 try:
 	import cookielib
@@ -181,9 +184,16 @@ class DokumentyTVContentProvider(ContentProvider):
 
 __addon__ = ArchivCZSK.get_xbmc_addon('plugin.video.dokumenty.tv')
 addon_userdata_dir = __addon__.getAddonInfo('profile')
-settings = {'quality':__addon__.getSetting('quality')}
 
-#print("PARAMS: %s"%params)
+def dokumenty_tv_run(session, params):
+	settings = {'quality':__addon__.getSetting('quality')}
 
-provider = DokumentyTVContentProvider()
-xbmcprovider.XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
+	provider = DokumentyTVContentProvider()
+	XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
+
+# #################################################################################################
+
+def main(addon):
+	return XBMCCompatInterface(dokumenty_tv_run)
+
+# #################################################################################################

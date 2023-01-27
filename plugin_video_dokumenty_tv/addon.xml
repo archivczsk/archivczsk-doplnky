@@ -1,17 +1,13 @@
-<?xml version='1.0' encoding='utf-8'?>
-<addon id="plugin.video.dokumenty.tv" name="Dokumenty.tv" provider-name="misanov" version="1.3">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-    <import addon="script.module.stream.resolver" version="1.6.22" />
-  </requires>
-  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Dokumenty.tv plugin</summary>
-    <description>Plugin to play videos from dokumenty.tv</description>
-    <description lang="cs">Plugin pro přehrávání videí z dokumenty.tv</description>
-    <description lang="sk">Plugin pre prehrávanie videí z dokumenty.tv</description>
-  </extension>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.dokumenty.tv" name="Dokumenty.tv" provider-name="misanov" version="1.4">
+	<requires>
+		<import addon="enigma2.archivczsk" version="1.7.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to play videos from dokumenty.tv</description>
+		<description lang="cs">Plugin pro přehrávání videí z dokumenty.tv</description>
+		<description lang="sk">Plugin pre prehrávanie videí z dokumenty.tv</description>
+	</extension>
 </addon>

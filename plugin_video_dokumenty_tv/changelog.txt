@@ -1,3 +1,6 @@
+v1.4
+- konverzia na module pre archivCZSK >=1.7.0
+
 v1.3
 - drobné opravy
 
