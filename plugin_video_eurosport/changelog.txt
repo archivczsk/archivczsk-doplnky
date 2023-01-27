@@ -1,5 +1,8 @@
 vvv CESKA VERZE JE UPLNE DOLE vvv
 
+[B]1.8:[/B]
+- convert to module for archivCZSK >=1.7.0
+
 [B]1.7:[/B]
 - fixed module loading addon dependencies
 

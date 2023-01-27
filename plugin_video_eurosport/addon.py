@@ -18,12 +18,15 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
+import os
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine import client
 import re,datetime,time,json
-import util
-from provider import ContentProvider
-import xbmcprovider
+
+from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
+from tools_xbmc.contentprovider.provider import ContentProvider
+from tools_xbmc.tools import util
+from tools_xbmc.compat import XBMCCompatInterface
 from Components.config import config
 
 try:
@@ -268,23 +271,34 @@ class EPContentProvider(ContentProvider):
 
 __addon__ = ArchivCZSK.get_xbmc_addon('plugin.video.eurosport')
 addon_userdata_dir = __addon__.getAddonInfo('profile')
-settings = {'quality':__addon__.getSetting('quality')}
-cookie_file = addon_userdata_dir + "/" + "cookie"
 
-#print("PARAMS: %s"%params)
+# #################################################################################################
 
-try:
-	token = open(cookie_file,"r").read()
-except:
-	token = __addon__.getSetting('eurosporttoken')
+def ep_run(session, params):
+	settings = {'quality':__addon__.getSetting('quality')}
+	cookie_file = addon_userdata_dir + "/" + "cookie"
+
+	#print("PARAMS: %s"%params)
+
+	try:
+		token = open(cookie_file, "r").read()
+	except:
+		token = __addon__.getSetting('eurosporttoken')
+		if token:
+			f = open(cookie_file, 'w')
+			f.write(token)
+			f.close()
+		else:
+			token = None
 	if token:
-		f = open(cookie_file, 'w')
-		f.write(token)
-		f.close()
+		provider = EPContentProvider(token=token.strip())
+		XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
 	else:
-		token = None
-if token:
-	provider = EPContentProvider(token=token.strip())
-	xbmcprovider.XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
-else:
-	client.showInfo('Pro přehrávání pořadů je potřeba účet na eurosportplayer.com\n\nPokud účet máte, musíte vložit dlouhý token z webu.\n\nPřečtěte si prosím Změny nebo soubor readme.md v adresáři doplňku jak na to.', timeout=20)
+		client.showInfo('Pro přehrávání pořadů je potřeba účet na eurosportplayer.com\n\nPokud účet máte, musíte vložit dlouhý token z webu.\n\nPřečtěte si prosím Změny nebo soubor readme.md v adresáři doplňku jak na to.', timeout=20)
+
+# #################################################################################################
+
+def main(addon):
+	return XBMCCompatInterface(ep_run)
+
+# #################################################################################################
