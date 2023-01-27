@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 import os
-from md5crypt import md5crypt
+from tools_xbmc.tools.md5crypt import md5crypt
 import xml.etree.ElementTree as ET
 from hashlib import md5, sha1
 import traceback

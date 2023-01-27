@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """ LRU caching class and decorator """
 from abc import abstractmethod
 from abc import ABCMeta

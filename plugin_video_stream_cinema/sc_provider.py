@@ -1,9 +1,5 @@
+# -*- coding: utf-8 -*-
 import re,sys,os,time,requests,traceback,random
-
-try:
-	sys.path.append( os.path.dirname(__file__) )
-except:
-	pass
 
 import threading, json
 from datetime import date, timedelta, datetime
@@ -16,11 +12,11 @@ try:
 except:
 	trakttv = None
 
-from sc_cache import ExpiringLRUCache
-import util
-from provider import ContentProvider
-from kraska import Kraska
-from sc_webshare import Webshare
+from .sc_cache import ExpiringLRUCache
+from tools_xbmc.tools import util
+from tools_xbmc.contentprovider.provider import ContentProvider
+from .kraska import Kraska
+from .sc_webshare import Webshare
 
 try:
 	from urlparse import urlparse, urlunparse, parse_qsl

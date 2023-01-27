@@ -1,34 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import sys, os
-try:
-	sys.path.append( os.path.dirname(__file__) )
-except:
-	pass
-
-import util, xbmcutil
-from xbmcprovider import XBMContentProvider
+from tools_xbmc.tools import xbmcutil
+from tools_xbmc.contentprovider.xbmcprovider import XBMContentProvider
+from tools_xbmc.compat import XBMCCompatInterface
 
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine import client
-from sc_provider import StreamCinemaContentProvider
+from .sc_provider import StreamCinemaContentProvider
 
 # #################################################################################################
 
 __scriptid__ = 'plugin.video.stream-cinema'
-__scriptname__ = 'stream-cinema'
 __addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
-__language__ = __addon__.getLocalizedString
-
-settings = {'quality':__addon__.getSetting('quality')}
-
-device_id = __addon__.getSetting( 'deviceid' )
-if not device_id or len(device_id) == 0:
-	import random, string
-	device_id = 'e2-'+''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(32))
-	__addon__.setSetting("deviceid", device_id)
-
-provider = StreamCinemaContentProvider( device_id=device_id, data_dir=__addon__.getAddonInfo('profile'), session=session )
 
 # #################################################################################################
 
@@ -112,7 +95,6 @@ class StreamCinemaXBMContentProvider( XBMContentProvider ):
 			try:
 				maximum = int(self.settings['keep-searches'])
 			except:
-				util.error('Unable to parse convert addon setting to number')
 				pass
 			xbmcutil.add_search(self.addon, self.provider.name + action_id, what, maximum)
 			self.csearch(what, action_id)
@@ -124,4 +106,22 @@ class StreamCinemaXBMContentProvider( XBMContentProvider ):
 
 	# #################################################################################################	
 
-StreamCinemaXBMContentProvider(provider, settings, __addon__, session).run(params)
+
+def sc_run(session, params):
+	settings = {'quality':__addon__.get_setting('quality')}
+
+	device_id = __addon__.get_setting('deviceid')
+	if not device_id or len(device_id) == 0:
+		import random, string
+		device_id = 'e2-' + ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(32))
+		__addon__.set_setting("deviceid", device_id)
+
+	provider = StreamCinemaContentProvider(device_id=device_id, data_dir=__addon__.get_info('profile'), session=session)
+	StreamCinemaXBMContentProvider(provider, settings, __addon__, session).run(params)
+	
+# #################################################################################################
+
+def main(addon):
+	return XBMCCompatInterface(sc_run)
+
+# #################################################################################################
