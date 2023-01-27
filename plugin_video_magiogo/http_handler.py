@@ -1,17 +1,14 @@
-try:
-	sys.path.append( os.path.dirname(__file__) )
-except:
-	pass
+# -*- coding: utf-8 -*-
 
 import traceback
 import base64
 import re
 from Plugins.Extensions.archivCZSK.version import version
 from Plugins.Extensions.archivCZSK.engine.client import log
-from Plugins.Extensions.archivCZSK.engine.httpserver import archivCZSKHttpServer, AddonHttpRequestHandler
+from Plugins.Extensions.archivCZSK.engine.httpserver import AddonHttpRequestHandler
 
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
-from magiogo import MagioGoCache
+from .magiogo import MagioGoCache
 from time import time
 import xml.etree.ElementTree as ET
 import requests
@@ -223,26 +220,3 @@ class MagioGoTvHTTPRequestHandler( AddonHttpRequestHandler ):
 #		return server.NOT_DONE_YET
 #		return data.encode('utf-8')
 
-request_handler = MagioGoTvHTTPRequestHandler()
-
-archivCZSKHttpServer.registerRequestHandler( request_handler )
-log.info( "Magio GO http endpoint: %s" % archivCZSKHttpServer.getAddonEndpoint( request_handler ) )
-
-def setting_changed_notification(name, value):
-	if name and value:
-		if name == 'password':
-			# do write sensitive data to log file
-			value = '***'
-
-		log.debug('Magio GO setting "%s" changed to "%s"' % (name, value) )
-		
-	# check if we need service to be enabled
-	if addon.get_setting('username') and addon.get_setting('password') and addon.get_setting('enable_userbouquet'):
-		addon.set_service_enabled(True)
-	else:
-		addon.set_service_enabled(False)
-	
-addon.add_setting_change_notifier('username', setting_changed_notification )
-addon.add_setting_change_notifier('password', setting_changed_notification )
-addon.add_setting_change_notifier('enable_userbouquet', setting_changed_notification )
-setting_changed_notification(None, None)

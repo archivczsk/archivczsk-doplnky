@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import re,sys,os,time,requests,traceback
-try:
-	sys.path.append( os.path.dirname(__file__) )
-except:
-	pass
 
 import threading
 import base64
@@ -14,9 +10,8 @@ from Plugins.Extensions.archivCZSK.engine import client
 
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 
-from magiogo import MagioGoCache
-import util
-from provider import ContentProvider
+from .magiogo import MagioGoCache
+from tools_xbmc.contentprovider.provider import ContentProvider
 
 try:
 	from urllib import quote

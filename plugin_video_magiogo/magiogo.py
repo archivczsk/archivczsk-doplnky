@@ -2,7 +2,6 @@
 import re,sys,os,string,base64,datetime,json,requests,traceback
 from time import time, mktime
 from datetime import datetime
-import threading
 import uuid
 from hashlib import sha1, md5
 

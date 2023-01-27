@@ -1,3 +1,6 @@
+1.6 - 27.01.2023
+    - konverzia na modul pre achivCZSK >=1.7.0
+    
 1.5 - 15.12.2022
     - drobné vylepšenia
 
