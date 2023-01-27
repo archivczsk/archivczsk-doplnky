@@ -12,9 +12,9 @@ from datetime import datetime, timedelta
 import time
 import random
 
-import util
-from provider import ContentProvider
-import ivysilani
+from tools_xbmc.tools import util
+from tools_xbmc.contentprovider.provider import ContentProvider
+from . import ivysilani
 
 try:
 	import cookielib
