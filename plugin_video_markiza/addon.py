@@ -24,13 +24,13 @@ from Plugins.Extensions.archivCZSK.engine.tools.util import toString
 from Plugins.Extensions.archivCZSK.engine import client
 
 import re
-import resolver
 import time
 from datetime import date
-import util
-from provider import ContentProvider
-from provider import ResolveException
-import xbmcprovider
+
+from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
+from tools_xbmc.contentprovider.provider import ContentProvider, ResolveException
+from tools_xbmc.tools import util
+from tools_xbmc.compat import XBMCCompatInterface
 
 try:
 	from urllib2 import urlopen, Request, HTTPCookieProcessor, build_opener, install_opener
@@ -330,8 +330,12 @@ __scriptname__ = 'markiza.sk'
 __addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
 __language__	= __addon__.getLocalizedString
 
-settings = {'quality':__addon__.getSetting('quality')}
 
-provider = markizaContentProvider(username=__addon__.getSetting('markiza_user'), password=__addon__.getSetting('markiza_pass'))
+def markiza_run(session, params):
+	settings = {'quality':__addon__.getSetting('quality')}
+	provider = markizaContentProvider(username=__addon__.getSetting('markiza_user'), password=__addon__.getSetting('markiza_pass'))
+	XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
 
-xbmcprovider.XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
+def main(addon):
+	return XBMCCompatInterface(markiza_run)
+
