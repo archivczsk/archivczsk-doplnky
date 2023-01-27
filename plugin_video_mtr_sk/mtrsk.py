@@ -21,10 +21,10 @@
 # */
 
 import re,os
-import util
 
 import xml.etree.ElementTree as ET
-from provider import ContentProvider
+from tools_xbmc.contentprovider.provider import ContentProvider
+from tools_xbmc.tools import util
 
 try:
 	from urllib2 import HTTPCookieProcessor, build_opener, install_opener

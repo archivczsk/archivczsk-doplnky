@@ -1,22 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.mtr.sk"
-       name="Mestská TV Ružomberok"
-       version="1.1.0"
-       provider-name="Libor Zoubek">
-  <requires>
-    <import addon="xbmc.python" version="2.0" />
-    <import addon="script.module.stream.resolver" version="1.6.7" />
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="en">mtr.sk</summary>
-    <summary lang="cs">mtr.sk</summary>
-    <description lang="en">Watch online mtr.sk</description>
-    <description lang="cs">Sledujte online mtr.sk</description>
-    <platform>all</platform>
-  </extension>
+<addon id="plugin.video.mtr.sk" name="Mestská TV Ružomberok" provider-name="Libor Zoubek" version="1.2.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="1.7.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description lang="en">Watch online mtr.sk</description>
+		<description lang="cs">Sledujte online mtr.sk</description>
+	</extension>
 </addon>
