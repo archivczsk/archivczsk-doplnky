@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import re,sys,os,time,requests,traceback,random
-try:
-	sys.path.append( os.path.dirname(__file__) )
-except:
-	pass
 
 import threading, json
 from datetime import date, timedelta, datetime
@@ -12,9 +8,8 @@ from Plugins.Extensions.archivCZSK.engine import client
 
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 
-from o2tv import O2tvCache
-import util
-from provider import ContentProvider
+from .o2tv import O2tvCache
+from tools_xbmc.contentprovider.provider import ContentProvider
 
 try:
 	from urllib import quote
