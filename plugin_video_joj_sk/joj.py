@@ -25,8 +25,8 @@ import random
 from xml.etree.ElementTree import fromstring
 from Plugins.Extensions.archivCZSK.engine import client
 
-import util
-from provider import ContentProvider
+from tools_xbmc.tools import util
+from tools_xbmc.contentprovider.provider import ContentProvider
 try:
 	from urllib2 import urlopen, HTTPCookieProcessor, build_opener, install_opener
 	from urlparse import urlparse

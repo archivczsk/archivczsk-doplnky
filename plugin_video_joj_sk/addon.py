@@ -19,21 +19,17 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
-sys.path.append( os.path.join ( os.path.dirname(__file__),'resources','lib') )
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
-import joj
-import xbmcprovider
-import util
+from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
+from tools_xbmc.compat import XBMCCompatInterface
+from .joj import JojContentProvider
 
 __scriptid__   = 'plugin.video.joj.sk'
 __scriptname__ = 'joj.sk'
 __addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
 __language__   = __addon__.getLocalizedString
 
-settings = {'quality':__addon__.getSetting('quality')}
-provider = joj.JojContentProvider()
-
-class XBMCJojContentProvider(xbmcprovider.XBMCMultiResolverContentProvider):
+class XBMCJojContentProvider(XBMCMultiResolverContentProvider):
 	def render_default(self, item):
 		if item['type'] == 'showoff':
 			item['title'] = item['title'] + '  (Nevys)'
@@ -43,6 +39,13 @@ class XBMCJojContentProvider(xbmcprovider.XBMCMultiResolverContentProvider):
 			self.render_video(item)
 		else:
 			self.render_dir(item)
-			
-		
-XBMCJojContentProvider(provider,settings,__addon__, session).run(params)
+
+
+def joj_run(session, params):
+	settings = {'quality':__addon__.getSetting('quality')}
+	provider = JojContentProvider()
+	XBMCJojContentProvider(provider, settings, __addon__, session).run(params)
+
+def main(addon):
+	return XBMCCompatInterface(joj_run)
+

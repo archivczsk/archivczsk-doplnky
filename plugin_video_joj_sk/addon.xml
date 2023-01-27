@@ -1,19 +1,13 @@
-<?xml version='1.0' encoding='utf-8'?>
-<addon id="plugin.video.joj.sk" name="joj.sk" provider-name="Maros Ondrasek" version="1.4.0">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-    <import addon="script.module.stream.resolver" version="1.6.24" />
-  </requires>
-  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="en">joj.sk</summary>
-    <summary lang="cs">joj.sk</summary>
-    <summary lang="sk">joj.sk</summary>
-    <description lang="en">Watch online TV archive from joj.sk</description>
-    <description lang="cs">Sledujte online TV archiv zo serveru joj.sk</description>
-    <description lang="sk">Sledujte online TV archív zo serveru joj.sk</description>
-    <platform>all</platform>
-  </extension>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.joj.sk" name="joj.sk" provider-name="Maros Ondrasek" version="1.5.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="1.7.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description lang="en">Watch online TV archive from joj.sk</description>
+		<description lang="cs">Sledujte online TV archiv zo serveru joj.sk</description>
+		<description lang="sk">Sledujte online TV archív zo serveru joj.sk</description>
+	</extension>
 </addon>
