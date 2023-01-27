@@ -170,7 +170,7 @@ def VYBERY(url):
 				if int(li[0]) > 0:
 					addDir(unescapeHTML(li[1]),'#',5,None,li[0])
 
-def VIDEA(sid):
+def VIDEA(sid, session):
 	strana = 0
 	celkem = 10 # max stran pro jistotu, aby se nezacyklil a u nejnovejsich a popularnich jsou to tisice!
 	if sid==10002: # hledat
@@ -228,56 +228,61 @@ def VIDEOLINK(url):
 	except:
 		add_video("[COLOR red]Video nelze načíst[/COLOR]","#",None,None)
 
-name=None
-url=None
-mode=None
-thumb=None
-page=None
-desc=None
 
-try:
-		url=unquote_plus(params["url"])
-except:
-		pass
-try:
-		name=unquote_plus(params["name"])
-except:
-		pass
-try:
-		mode=int(params["mode"])
-except:
-		pass
-try:
-		page=int(params["page"])
-except:
-		pass
-try:
-		thumb=unquote_plus(params["thumb"])
-except:
-		pass
+def mall_tv_run(session, params):
+	name = None
+	url = None
+	mode = None
+	thumb = None
+	page = None
+	desc = None
 
-#loguj.logInfo('URL: '+str(url))
-#loguj.logInfo('NAME: '+str(name))
-#loguj.logInfo('MODE: '+str(mode))
-#loguj.logInfo('PAGE: '+str(page))
-#loguj.logInfo('IMG: '+str(thumb))
+	try:
+			url = unquote_plus(params["url"])
+	except:
+			pass
+	try:
+			name = unquote_plus(params["name"])
+	except:
+			pass
+	try:
+			mode = int(params["mode"])
+	except:
+			pass
+	try:
+			page = int(params["page"])
+	except:
+			pass
+	try:
+			thumb = unquote_plus(params["thumb"])
+	except:
+			pass
 
-if mode==None or url==None or len(url)<1:
-		OBSAH()
-elif mode==2:
-		KATEGORIE()
-elif mode==3:
-		PORADY()
-elif mode==4:
-		VYBERY(url)
-elif mode==5:
-		VIDEA(page)
-elif mode==6:
-		PODKATEGORIE(url)
-elif mode==7:
-		ZIVE(page)
-elif mode==9:
-		VIDEOLINK(url)
+	#loguj.logInfo('URL: '+str(url))
+	#loguj.logInfo('NAME: '+str(name))
+	#loguj.logInfo('MODE: '+str(mode))
+	#loguj.logInfo('PAGE: '+str(page))
+	#loguj.logInfo('IMG: '+str(thumb))
 
-if len(client.GItem_lst[0]) == 0:
-	addDir('Nic nenalezeno nebo chyba','',1,None)
+	if mode == None or url == None or len(url) < 1:
+			OBSAH()
+	elif mode == 2:
+			KATEGORIE()
+	elif mode == 3:
+			PORADY()
+	elif mode == 4:
+			VYBERY(url)
+	elif mode == 5:
+			VIDEA(page, session)
+	elif mode == 6:
+			PODKATEGORIE(url)
+	elif mode == 7:
+			ZIVE(page)
+	elif mode == 9:
+			VIDEOLINK(url)
+
+	if len(client.GItem_lst[0]) == 0:
+		addDir('Nic nenalezeno nebo chyba', '', 1, None)
+
+def main(addon):
+	return mall_tv_run

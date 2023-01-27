@@ -1,3 +1,5 @@
+2023-01-27 v1.8
+* konverzia na modul pre archivCZSK >=1.7.0 
 2022-12-05 v1.7
 * vypnutie spracovania master playlistu archivom 
 2022-12-04 v1.6
