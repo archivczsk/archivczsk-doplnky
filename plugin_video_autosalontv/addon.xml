@@ -1,24 +1,12 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.autosalontv"
-       name="Autosalon"
-       version="1.2"
-       provider-name="archivczsk">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.stream.resolver" version="1.6.22" />
-  </requires>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Autosalon.TV + Auto-salon.sk</summary>
-    <summary lang="cs">Autosalon.TV + Auto-salon.sk</summary>
-    <description>
-        Plugin to play video archive from autosalon.cz and auto-salon.sk
-    </description>
-    <description lang="cs">
-        Archiv pořadů ze serveru AutosalonTV.cz a Autosalón.sk
-    </description>
-  </extension>
+<addon id="plugin.video.autosalontv" name="Autosalon" provider-name="archivczsk" version="1.3">
+	<requires>
+		<import addon="enigma2.archivczsk" version="1.7.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to play video archive from autosalon.cz and auto-salon.sk</description>
+		<description lang="cs">Archiv pořadů ze serveru AutosalonTV.cz a Auto-salon.sk</description>
+	</extension>
 </addon>

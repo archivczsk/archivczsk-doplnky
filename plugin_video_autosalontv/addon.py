@@ -4,7 +4,6 @@
 # Thank you!
 
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
-from Plugins.Extensions.archivCZSK.engine.tools.util import toString
 from Plugins.Extensions.archivCZSK.engine import client
 
 import re
@@ -16,10 +15,11 @@ except:
 	
 import requests
 import json
-import util
 
-from provider import ContentProvider
-import xbmcprovider
+from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
+from tools_xbmc.contentprovider.provider import ContentProvider
+from tools_xbmc.compat import XBMCCompatInterface
+
 
 def get_page(url):
 	r = requests.get(
@@ -256,10 +256,15 @@ class autosalontvContentProvider(ContentProvider):
 
 __scriptid__	= 'plugin.video.autosalontv'
 __addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
-__language__	= __addon__.getLocalizedString
 
-settings = {'quality':__addon__.getSetting('quality')}
 
-provider = autosalontvContentProvider()
+def autosalon_run(session, params):
+	settings = {'quality':__addon__.getSetting('quality')}
+	XBMCMultiResolverContentProvider(autosalontvContentProvider(), settings, __addon__, session).run(params)
 
-xbmcprovider.XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
+# #################################################################################################
+
+def main(addon):
+	return XBMCCompatInterface(autosalon_run)
+
+# #################################################################################################
