@@ -23,11 +23,11 @@ from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine.tools.util import toString
 from Plugins.Extensions.archivCZSK.engine import client
 import re
-import resolver
-import util
-from provider import ContentProvider
-from provider import ResolveException
-import xbmcprovider
+
+from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
+from tools_xbmc.contentprovider.provider import ContentProvider
+from tools_xbmc.tools import util
+from tools_xbmc.compat import XBMCCompatInterface
 
 try:
 	from urllib2 import HTTPCookieProcessor, build_opener, install_opener
@@ -107,10 +107,13 @@ __scriptname__ = 'SkTonline'
 __addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
 __language__ = __addon__.getLocalizedString
 
-settings = {'quality':__addon__.getSetting('quality')}
 
-provider = SKTContentProvider()
+def sktonline_run(session, params):
+	settings = {'quality':__addon__.getSetting('quality')}
 
-#print("PARAMS: %s"%params)
+	provider = SKTContentProvider()
+	XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
 
-xbmcprovider.XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
+
+def main(addon):
+	return XBMCCompatInterface(sktonline_run)
