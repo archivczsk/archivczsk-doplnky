@@ -27,8 +27,8 @@ import calendar
 from time import sleep
 from datetime import date
 
-import util
-from provider import ContentProvider
+from tools_xbmc.contentprovider.provider import ContentProvider
+from tools_xbmc.tools import util
 from Plugins.Extensions.archivCZSK.engine.client import showInfo
 
 import json
