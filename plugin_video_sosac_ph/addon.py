@@ -20,15 +20,16 @@
 # *
 # */
 
-sys.path.append( os.path.join ( os.path.dirname(__file__),'resources','lib') )
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine import client
 
+from tools_xbmc.contentprovider import xbmcprovider
+from tools_xbmc.contentprovider.provider import ResolveException
+from tools_xbmc.resolver import resolver
+from tools_xbmc.compat import XBMCCompatInterface
 
 import re
-import util,xbmcprovider,xbmcutil, resolver
-from provider import ResolveException
-from sosac import SosacContentProvider
+from .sosac import SosacContentProvider
 
 __scriptid__   = 'plugin.video.sosac.ph'
 __scriptname__ = 'sosac.ph'
@@ -43,10 +44,6 @@ sosac = SosacContentProvider(reverse_eps=reverse_eps)
 sosac.streamujtv_user = __set__('streamujtv_user')
 sosac.streamujtv_pass = __set__('streamujtv_pass')
 sosac.streamujtv_location = __set__('streamujtv_location')
-
-
-print("Running sosac provider with params:", params)
-#xbmcprovider.XBMCMultiResolverContentProvider2(sosac,settings,__addon__, session).run(params)
 
 class SosacProvider(xbmcprovider.XBMContentProvider):
 
@@ -73,5 +70,9 @@ class SosacProvider(xbmcprovider.XBMContentProvider):
 		except ResolveException as e:
 			self._handle_exc(e)
 
-SosacProvider(sosac,settings,__addon__, session).run(params)
 
+def sosac_run(session, params):
+	SosacProvider(sosac, settings, __addon__, session).run(params)
+
+def main(addon):
+	return XBMCCompatInterface(sosac_run)

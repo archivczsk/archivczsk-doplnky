@@ -24,8 +24,8 @@ import hashlib
 import sys
 import json
 
-import util
-from provider import ContentProvider, cached, ResolveException
+from tools_xbmc.contentprovider.provider import ContentProvider, cached, ResolveException
+from tools_xbmc.tools import util
 
 try:
 	from urllib2 import urlopen, Request, HTTPCookieProcessor, HTTPRedirectHandler, build_opener, install_opener
