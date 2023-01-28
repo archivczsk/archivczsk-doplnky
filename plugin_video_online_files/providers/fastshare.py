@@ -19,9 +19,9 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
-import re,random,util,sys,os,traceback
-from provider import ContentProvider
-from provider import ResolveException
+import re, random, sys, os, traceback
+from tools_xbmc.contentprovider.provider import ContentProvider, ResolveException
+from tools_xbmc.tools import util
 
 try:
 	from urllib2 import urlopen, Request, HTTPError, HTTPCookieProcessor, build_opener, install_opener, OpenerDirector, HTTPHandler, UnknownHandler

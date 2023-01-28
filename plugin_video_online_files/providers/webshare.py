@@ -19,10 +19,10 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
-import re,random,util,sys,os,traceback,hashlib
-from provider import ContentProvider
-from provider import ResolveException
-from md5crypt import md5crypt
+import re, random, sys, os, traceback, hashlib
+from tools_xbmc.contentprovider.provider import ContentProvider, ResolveException
+from tools_xbmc.tools.md5crypt import md5crypt
+from tools_xbmc.tools import util
 import xml.etree.ElementTree as ET
 
 try:

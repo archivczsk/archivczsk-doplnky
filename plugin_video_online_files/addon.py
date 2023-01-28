@@ -36,16 +36,14 @@ __addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
 __language__ = __addon__.getLocalizedString
 __settings__ = __addon__.getSetting
 
-sys.path.append(os.path.join (os.path.dirname(__file__), 'resources', 'lib'))
-
 from threading import Lock
-import util, search
 
-import xbmcutil
-import hellspy, ulozto, fastshare, webshare
-import xbmcprovider
+from tools_xbmc.contentprovider import xbmcprovider
+from tools_xbmc.contentprovider.provider import ResolveException
+from tools_xbmc.tools import util, search, xbmcutil
+from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 
-from provider import ResolveException
+from .providers import hellspy, ulozto, fastshare, webshare
 
 def search_cb(what):
 
@@ -152,44 +150,7 @@ class XBMCHellspyContentProvider(xbmcprovider.XBMCLoginRequiredContentProvider):
 			self.provider.to_downloads(params['to-downloads'])
 
 settings = {}
-
 providers = {}
-
-if __settings__('ulozto_enabled'):
-	p = ulozto.UloztoContentProvider(__settings__('ulozto_user'), __settings__('ulozto_pass'), filter=ulozto_filter)
-	extra = {
-			'vip':__settings__('ulozto_usevip'),
-			'keep-searches':__settings__('ulozto_keep-searches'),
-			'search-type':__settings__('ulozto_search-type')
-	}
-	extra.update(settings)
-	providers[p.name] = XBMCUloztoContentProvider(p, extra, __addon__, session)
-
-if __settings__('hellspy_enabled'):
-	p = hellspy.HellspyContentProvider(__settings__('hellspy_user'), __settings__('hellspy_pass'), site_url=__settings__('hellspy_site_url'))
-	extra = {
-			'keep-searches':__settings__('hellspy_keep-searches')
-	}
-	extra.update(settings)
-	providers[p.name] = XBMCHellspyContentProvider(p, extra, __addon__, session)
-
-if __settings__('fastshare_enabled'):
-	p = fastshare.FastshareContentProvider(username='', password='', tmp_dir=__addon__.getAddonInfo('profile'))
-	extra = {
-				'vip':'0',
-				'keep-searches':__settings__('fastshare_keep-searches')
-	}
-	extra.update(settings)
-	providers[p.name] = xbmcprovider.XBMCLoginOptionalContentProvider(p, extra, __addon__, session)
-
-if __settings__('webshare_enabled'):
-	p = webshare.WebshareContentProvider(username=__settings__('webshare_user'), password=__settings__('webshare_pass'),filter=webshare_filter)
-	extra = {
-			'vip':'0',
-			'keep-searches':__settings__('webshare_keep-searches')
-	}
-	extra.update(settings)
-	providers[p.name] = xbmcprovider.XBMCLoginOptionalContentProvider(p,extra,__addon__, session)
 
 def icon(provider):
 	icon_file = os.path.join(__addon__.get_info('path'), 'resources', 'icons', provider + '.png')
@@ -203,11 +164,56 @@ def root():
 		xbmcutil.add_dir(provider, {'cp':provider}, icon(provider))
 	return
 
-if params == {}:
-	root()
-elif 'cp' in list(params.keys()):
-	cp = params['cp']
-	if cp in list(providers.keys()):
-		providers[cp].run(params)
-else:
-	search.main(session, __addon__, 'search_history', params, search_cb)
+
+def online_files_run(session, params):
+	global settings, providers
+	settings = {}
+	providers = {}
+
+	if __settings__('ulozto_enabled'):
+		p = ulozto.UloztoContentProvider(__settings__('ulozto_user'), __settings__('ulozto_pass'), filter=ulozto_filter)
+		extra = {
+				'vip':__settings__('ulozto_usevip'),
+				'keep-searches':__settings__('ulozto_keep-searches'),
+				'search-type':__settings__('ulozto_search-type')
+		}
+		extra.update(settings)
+		providers[p.name] = XBMCUloztoContentProvider(p, extra, __addon__, session)
+
+	if __settings__('hellspy_enabled'):
+		p = hellspy.HellspyContentProvider(__settings__('hellspy_user'), __settings__('hellspy_pass'), site_url=__settings__('hellspy_site_url'))
+		extra = {
+				'keep-searches':__settings__('hellspy_keep-searches')
+		}
+		extra.update(settings)
+		providers[p.name] = XBMCHellspyContentProvider(p, extra, __addon__, session)
+
+	if __settings__('fastshare_enabled'):
+		p = fastshare.FastshareContentProvider(username='', password='', tmp_dir=__addon__.getAddonInfo('profile'))
+		extra = {
+					'vip':'0',
+					'keep-searches':__settings__('fastshare_keep-searches')
+		}
+		extra.update(settings)
+		providers[p.name] = xbmcprovider.XBMCLoginOptionalContentProvider(p, extra, __addon__, session)
+
+	if __settings__('webshare_enabled'):
+		p = webshare.WebshareContentProvider(username=__settings__('webshare_user'), password=__settings__('webshare_pass'), filter=webshare_filter)
+		extra = {
+				'vip':'0',
+				'keep-searches':__settings__('webshare_keep-searches')
+		}
+		extra.update(settings)
+		providers[p.name] = xbmcprovider.XBMCLoginOptionalContentProvider(p, extra, __addon__, session)
+	
+	if params == {}:
+		root()
+	elif 'cp' in list(params.keys()):
+		cp = params['cp']
+		if cp in list(providers.keys()):
+			providers[cp].run(params)
+	else:
+		search.main(session, __addon__, 'search_history', params, search_cb)
+
+def main(addon):
+	return online_files_run

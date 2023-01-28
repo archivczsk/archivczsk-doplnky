@@ -19,9 +19,10 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
-import re,random,util,sys,os,traceback
+import re, random, sys, os, traceback
 from base64 import b64decode
-from provider import ContentProvider
+from tools_xbmc.contentprovider.provider import ContentProvider
+from tools_xbmc.tools import util
 
 try:
 	from urllib2 import HTTPError, HTTPCookieProcessor, build_opener, install_opener
