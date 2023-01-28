@@ -19,9 +19,14 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
-import os
-import util, xbmcprovider, xbmcutil, resolver
-from provider import ResolveException
+import sys, os
+
+from tools_xbmc.contentprovider import xbmcprovider
+from tools_xbmc.contentprovider.provider import ResolveException
+from tools_xbmc.tools import xbmcutil
+from tools_xbmc.compat import XBMCCompatInterface
+from . import pohadkar
+
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 __scriptid__ = 'plugin.video.pohadkar.cz'
 __scriptname__ = 'Pohádkář.cz'
@@ -29,8 +34,6 @@ __addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
 __language__ = __addon__.getLocalizedString
 __settings__ = __addon__.getSetting
 
-sys.path.append(os.path.join (__addon__.getAddonInfo('path'), 'resources', 'lib'))
-import pohadkar
 settings = {'downloads':__addon__.getSetting('downloads'), 'quality':__addon__.getSetting('quality')}
 
 def vp8_youtube_filter(stream):
@@ -128,4 +131,10 @@ class PohadkarContentProvider(xbmcprovider.XBMCMultiResolverContentProvider):
 		except ResolveException as e:
 			self._handle_exc(e)
 
-PohadkarContentProvider(pohadkar.PohadkarContentProvider(tmp_dir=__addon__.getAddonInfo('profile')), settings, __addon__, session).run(params)
+
+def pohadkar_run(session, params):
+	PohadkarContentProvider(pohadkar.PohadkarContentProvider(tmp_dir=__addon__.getAddonInfo('profile')), settings, __addon__, session).run(params)
+
+
+def main(addon):
+	return XBMCCompatInterface(pohadkar_run)

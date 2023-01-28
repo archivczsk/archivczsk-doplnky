@@ -1,22 +1,12 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.pohadkar.cz"
-       name="Pohádkář.cz"
-       version="1.2.1"
-       provider-name="Libor Zoubek">
-  <requires>
-    <import addon="xbmc.python" version="2.0" />
-    <import addon="script.module.stream.resolver" version="1.6.5" />
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="en">pohadkar.cz</summary>
-    <summary lang="cs">pohadkar.cz</summary>
-    <description lang="en">Watch online tales mostly in czech language on pohadkar.cz</description>
-    <description lang="cs">Sledujte online pohádky ze servru pohádkář.cz. Ideální pro zabavení dětí.</description>
-    <platform>all</platform>
-  </extension>
+<addon id="plugin.video.pohadkar.cz" name="Pohádkář.cz" provider-name="Libor Zoubek" version="1.3.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="1.7.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description lang="en">Watch online tales mostly in czech language on pohadkar.cz</description>
+		<description lang="cs">Sledujte online pohádky ze servru pohádkář.cz. Ideální pro zabavení dětí.</description>
+	</extension>
 </addon>

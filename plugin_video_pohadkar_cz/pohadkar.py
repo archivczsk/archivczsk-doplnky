@@ -22,11 +22,10 @@
 
 LETTERS = ['A','B','C','Č','D','Ď','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','Ř','S','Š','T','Ť','U','V','W','X','Y','Z','Ž']
 import re,sys,os,traceback
-import util
 from threading import Lock
-from provider import ContentProvider
-from provider import ResolveException
-import resolver
+from tools_xbmc.contentprovider.provider import ContentProvider, ResolveException
+from tools_xbmc.tools import util
+from tools_xbmc.resolver import resolver
 
 try:
 	from urllib2 import HTTPCookieProcessor, build_opener, install_opener
