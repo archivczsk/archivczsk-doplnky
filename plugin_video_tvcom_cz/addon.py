@@ -19,12 +19,15 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
+import os
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine import client
-import re,util,datetime,json
-from provider import ContentProvider
-import xbmcprovider
-import util
+import re, datetime, json
+from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
+from tools_xbmc.contentprovider.provider import ContentProvider
+from tools_xbmc.tools import util
+from tools_xbmc.compat import XBMCCompatInterface
+
 from Components.config import config
 
 try:
@@ -146,10 +149,10 @@ __scriptname__ = 'tvcom.cz'
 __addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
 __language__ = __addon__.getLocalizedString
 
-settings = {'quality':__addon__.getSetting('quality')}
+def tvcom_run(session, params):
+	settings = {'quality':__addon__.getSetting('quality')}
+	provider = TvcomContentProvider()
+	XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
 
-provider = TvcomContentProvider()
-
-#print("PARAMS: %s"%params)
-
-xbmcprovider.XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
+def main(addon):
+	return XBMCCompatInterface(tvcom_run)
