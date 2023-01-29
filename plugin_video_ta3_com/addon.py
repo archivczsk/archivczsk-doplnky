@@ -19,12 +19,15 @@
 # *
 # */
 
+import sys, os
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
-import util
+from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
+from tools_xbmc.contentprovider.provider import ContentProvider
+from tools_xbmc.tools import util
+from tools_xbmc.compat import XBMCCompatInterface
+
 import re,json
-import xbmcprovider
 from datetime import datetime
-from provider import ContentProvider
 from Plugins.Extensions.archivCZSK.engine.tools.util import toString
 from Components.config import config
 from Screens.MessageBox import MessageBox
@@ -45,27 +48,17 @@ __scriptname__ = 'ta3.com'
 __addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
 __language__ = __addon__.getLocalizedString
 
-LOG_FILE = os.path.join(config.plugins.archivCZSK.logPath.getValue(),'ta3.log')
-
-def writeLog(msg, type='INFO'):
-		try:
-				f = open(LOG_FILE, 'a')
-				dtn = datetime.now()
-				f.write(dtn.strftime("%d.%m.%Y %H:%M:%S.%f")[:-3] + " [" + type + "] %s\n" % msg)
-				f.close()
-		except:
-				pass
-
-def showInfo(msg, timeout=20):
-	session.open(MessageBox, text=msg, timeout=timeout, type=MessageBox.TYPE_INFO, close_on_any_key=False, enable_input=True)
-
 class TA3ContentProvider(ContentProvider):
 
-	def __init__(self, username=None, password=None, filter=None, tmp_dir='/tmp'):
+	def __init__(self, username=None, password=None, filter=None, tmp_dir='/tmp', session=None):
 		ContentProvider.__init__(self, 'ta3.com', 'http://www.ta3.com/', username, password, filter, tmp_dir)
 		self.cp = HTTPCookieProcessor(cookielib.LWPCookieJar())
 		self.init_urllib()
 		self.cnt = 5
+		self.session = session
+
+	def showInfo(msg, timeout=20):
+		self.session.open(MessageBox, text=msg, timeout=timeout, type=MessageBox.TYPE_INFO, close_on_any_key=False, enable_input=True)
 
 	def init_urllib(self):
 		opener = build_opener(self.cp)
@@ -134,7 +127,7 @@ class TA3ContentProvider(ContentProvider):
 				except:
 					pass
 		except:
-			showInfo('Chyba vyhledávania.')
+			self.showInfo('Chyba vyhledávania.')
 		return result
 
 	def list_latest(self, url):
@@ -169,7 +162,7 @@ class TA3ContentProvider(ContentProvider):
 				else:
 					result.extend(self.list_latest(data['next_page_url']))
 		except:
-			showInfo('Chyba zpracovania.')
+			self.showInfo('Chyba zpracovania.')
 		return result
 
 	def list_w(self, url):
@@ -204,7 +197,7 @@ class TA3ContentProvider(ContentProvider):
 				item['url'] = next_page_match.group('url').replace('&amp;','&')+"#w"
 				self._filter(result, item)
 		except:
-			showInfo('Chyba zpracovania.')
+			self.showInfo('Chyba zpracovania.')
 		return result
 
 	def list_categories(self, url):
@@ -227,7 +220,7 @@ class TA3ContentProvider(ContentProvider):
 			if next_page_match:
 				result.extend(self.list_categories(next_page_match.group('url').replace('&amp;','&')))
 		except:
-			showInfo('Chyba zpracovania.')
+			self.showInfo('Chyba zpracovania.')
 		return result
 
 	def list_videos(self, url):
@@ -268,7 +261,7 @@ class TA3ContentProvider(ContentProvider):
 				else:
 					result.extend(self.list_videos(next_page_match.group('url').replace('&amp;','&')))
 		except:
-			showInfo('Chyba zpracovania.')
+			self.showInfo('Chyba zpracovania.')
 		return result
 
 	def resolve(self, item, captcha_cb=None, select_cb=None):
@@ -311,7 +304,7 @@ class TA3ContentProvider(ContentProvider):
 				for idx, item in enumerate(resolved):
 					item['quality'] += 'b/s'
 		except:
-			showInfo('Chyba zpracovania videa.')
+			self.showInfo('Chyba zpracovania videa.')
 		return resolved
 
 	def _resolve_live(self, item):
@@ -339,11 +332,15 @@ class TA3ContentProvider(ContentProvider):
 				# only first manifest url looks to be is valid
 				break
 		except:
-			showInfo('Chyba zpracovania videa.')
+			self.showInfo('Chyba zpracovania videa.')
 		return resolved
 
-settings = {'quality':__addon__.getSetting('quality')}
 
-provider = TA3ContentProvider(tmp_dir='/tmp')
+def ta3_run(session, params):
+	settings = {'quality':__addon__.getSetting('quality')}
+	provider = TA3ContentProvider(tmp_dir='/tmp', session=session)
+	XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
 
-xbmcprovider.XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
+def main(addon):
+	return XBMCCompatInterface(ta3_run)
+
