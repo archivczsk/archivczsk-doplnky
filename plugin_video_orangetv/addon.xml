@@ -1,23 +1,13 @@
-<?xml version="1.2.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.orangetv"
-       name="OrangeTV"
-       version="2.9"
-       provider-name="Michal Novotný, Štěpán Ort">
-  <requires>
-    <import addon="enigma2.archivczsk" version="1.6.0"/>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.stream.resolver" version="1.6.22" />
-  </requires>
-  <extension point="xbmc.service" library="orangetv_service.py"/>
-  <extension point="xbmc.autostart" library="orangetv_autostart.py"/>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>OrangeTV live plugin</summary>
-    <description>Plugin to play live videos from orange.sk</description>
-    <description lang="cs">Plugin pro přehrávání živých videí z orange.sk</description>
-    <description lang="sk">Plugin pre prehrávanie živých videí z orange.sk</description>
-  </extension>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.orangetv" name="OrangeTV" provider-name="archivczsk" version="2.10">
+	<requires>
+		<import addon="enigma2.archivczsk" version="1.7.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video" preload="yes"/>
+	<extension point="xbmc.addon.metadata">
+		<description>Plugin to play Live TV and archive from orange.sk</description>
+		<description lang="cs">Plugin pro přehrávání Live TV a archívu z orange.sk</description>
+		<description lang="sk">Plugin pre prehrávanie Live TV a archívu z orange.sk</description>
+	</extension>
 </addon>

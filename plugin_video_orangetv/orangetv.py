@@ -2,7 +2,6 @@
 import re,sys,os,string,base64,datetime,json,requests
 from time import time
 from uuid import getnode as get_mac
-import threading
 from hashlib import md5
 
 try:
