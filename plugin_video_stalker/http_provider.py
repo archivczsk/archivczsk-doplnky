@@ -10,7 +10,7 @@ from datetime import datetime
 from datetime import timedelta
 import time
 import json
-from stalker import StalkerCache, get_cache_key
+from .stalker import StalkerCache, get_cache_key
 from binascii import crc32
 
 # #################################################################################################

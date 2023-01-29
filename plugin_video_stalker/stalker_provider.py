@@ -16,15 +16,12 @@ from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine.tools.util import toString
 from Plugins.Extensions.archivCZSK.engine import client
 
-import util
-from provider import ContentProvider
-import xbmcprovider
-from datetime import datetime
-from datetime import timedelta
+from tools_xbmc.contentprovider.provider import ContentProvider
+from datetime import datetime, timedelta
 import time
 import json
-from stalker import StalkerCache, get_cache_key
-from Plugins.Extensions.archivCZSK.engine.tools.bouquet_generator import BouquetGeneratorTemplate
+from .stalker import StalkerCache, get_cache_key
+from .bouquet import StalkerBouquetGenerator
 from Plugins.Extensions.archivCZSK.engine.httpserver import archivCZSKHttpServer
 from binascii import crc32
 
@@ -32,18 +29,6 @@ from binascii import crc32
 
 __scriptid__ = 'plugin.video.stalker'
 addon = ArchivCZSK.get_xbmc_addon(__scriptid__)
-
-
-class StalkerBouquetGenerator(BouquetGeneratorTemplate):
-	def __init__(self, name):
-		# configuration to make this class little bit reusable also in other addons
-		self.prefix = name.replace(' ', '_').replace(':', '').lower()
-		self.name = name
-		self.sid_start = 0xB000
-		self.tid = 10
-		self.onid = 1
-		self.namespace = 0xE000000 + crc32(name.encode('utf-8')) & 0xFFFFFF
-		BouquetGeneratorTemplate.__init__(self, archivCZSKHttpServer.getAddonEndpoint(__scriptid__))
 
 # #################################################################################################
 
@@ -62,9 +47,6 @@ class stalkerContentProvider(ContentProvider):
 		self.data_dir = data_dir
 		self.max_items_per_page = 200
 		
-#		from Plugins.Extensions.archivCZSK.engine.httpserver import archivCZSKHttpServer
-#		self.http_endpoint = archivCZSKHttpServer.getAddonEndpoint( __scriptid__ )
-
 	# #################################################################################################
 
 	def capabilities(self):
@@ -240,18 +222,7 @@ class stalkerContentProvider(ContentProvider):
 			groups = [ group_name ]
 		else:
 			groups = [ g for g in channels_grouped.keys() ]
-				
-		channels = []
-		for g in groups:
-			for channel in channels_grouped[g]:
-				channels.append({
-					'id': int(channel['id']),
-					'key': json.dumps( [ ck, channel['cmd'], channel['use_tmp_link'] ] ),
-					'name': channel['title'],
-					'adult': False,
-					'picon': None
-				})
-		
+
 		if group_name:
 			bq_name = '%s: %s' % (s.portal_cfg['name'], group_name)
 		else:
@@ -259,9 +230,8 @@ class stalkerContentProvider(ContentProvider):
 		
 		bq_name = bq_name.replace('"','').replace("'",'').replace('/','')
 		
-		bg = StalkerBouquetGenerator(bq_name)
-		bg.generate_bouquet(channels, player_name=player_name, user_agent=s.user_agent)
-		
+		StalkerBouquetGenerator(bq_name, ck, groups, channels_grouped, archivCZSKHttpServer.getAddonEndpoint(__scriptid__), player_name=addon.getSetting('player_name'), user_agent=s.user_agent).run()
+
 		item = self.video_item('#')
 		item['title'] = '[COLOR yellow]Userbouquet %s vygenerovaný![/COLOR]' % bq_name
 

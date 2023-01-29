@@ -1,16 +1,14 @@
-try:
-	sys.path.append( os.path.dirname(__file__) )
-except:
-	pass
+# -*- coding: utf-8 -*-
 
 import traceback
 import base64
 from Plugins.Extensions.archivCZSK.version import version
 from Plugins.Extensions.archivCZSK.engine.client import log
-from Plugins.Extensions.archivCZSK.engine.httpserver import archivCZSKHttpServer, AddonHttpRequestHandler
+from Plugins.Extensions.archivCZSK.engine.httpserver import AddonHttpRequestHandler
 
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
-from stalker import StalkerCache
+from .stalker import StalkerCache
+from .http_provider import stalkerHttpProvider
 from time import time
 import json
 
@@ -37,14 +35,14 @@ class StalkerHTTPRequestHandler( AddonHttpRequestHandler ):
 	def P_playlive(self, request, path):
 		path_orig = path
 		
-		if path.endswith(b'.m3u8'):
+		if path.endswith('.m3u8'):
 			is_m3u8 = True
 			path = path[:-5]
 		else:
 			is_m3u8 = False
 			
 		try:
-			path = base64.b64decode(path).decode("utf-8")
+			path = base64.b64decode(path.encode('utf-8')).decode("utf-8")
 			link_info = json.loads(path)
 			
 			if len( link_info ) == 3:
@@ -56,10 +54,10 @@ class StalkerHTTPRequestHandler( AddonHttpRequestHandler ):
 				ck, cmd, use_tmp_link, link_type, name, series = link_info
 
 			if is_m3u8:
-				ret = '#EXTM3U\n#EXTVLCOPT:http-user-agent=%s\n%s/playlive/%s\n' % (self.user_agent, archivCZSKHttpServer.getAddonEndpoint( request_handler, base_url = request.getRequestHostname() ), path_orig[:-5].decode('utf-8'))
+				ret = '#EXTM3U\n#EXTVLCOPT:http-user-agent=%s\n%s/playlive/%s\n' % (self.user_agent, self.get_endpoint(request), path_orig[:-5])
 				request.setHeader('Content-Disposition', 'attachment; filename="%s.m3u8"' % self.file_name_sanitize(name))
 				
-				return self.reply_ok( request, ret.encode('utf-8'), "application/x-mpegURL; charset=UTF-8")
+				return self.reply_ok(request, ret, "application/x-mpegURL; charset=UTF-8")
 				
 			if path in self.live_cache and self.live_cache[path]['life'] > int(time()):
 				log.debug("Returning result from cache" )
@@ -85,23 +83,22 @@ class StalkerHTTPRequestHandler( AddonHttpRequestHandler ):
 			return self.reply_error500( request )
 
 		if location:
-			return self.reply_redirect( request, location.encode('utf-8'))
+			return self.reply_redirect(request, location)
 		else:
 			return self.reply_error404( request )
 	
 	# #################################################################################################
 	
 	def default_handler(self, request, path_full ):
-		if path_full == b'' or path_full.startswith(b'list/'):
-			endpoint = archivCZSKHttpServer.getAddonEndpoint( request_handler, base_url = request.getRequestHostname() )
+		if path_full == '' or path_full.startswith('list/'):
+			endpoint = self.get_endpoint(request)
 			
-			from stalker_http_provider import stalkerHttpProvider
 			data_dir=__addon__.getAddonInfo('profile')
 			
 			try:
-				if path_full.endswith(b'.m3u8'):
+				if path_full.endswith('.m3u8'):
 					content_encoding = "application/x-mpegURL; charset=UTF-8"
-					ret, file_name = stalkerHttpProvider( endpoint, data_dir ).handle_m3u8(path_full[:-5].decode('utf-8'))
+					ret, file_name = stalkerHttpProvider(endpoint, data_dir).handle_m3u8(path_full[:-5])
 
 					data = ('#EXTM3U\n#EXTVLCOPT:http-user-agent=%s\n' % self.user_agent)
 					
@@ -113,7 +110,7 @@ class StalkerHTTPRequestHandler( AddonHttpRequestHandler ):
 					request.setHeader('Content-Disposition', 'attachment; filename="%s.m3u8"' % self.file_name_sanitize(file_name))
 				else:
 					content_encoding = "text/html; charset=UTF-8"
-					ret = stalkerHttpProvider( endpoint, data_dir ).handle_html(path_full.decode('utf-8'))
+					ret = stalkerHttpProvider(endpoint, data_dir).handle_html(path_full)
 				
 					if isinstance(ret,type([])):
 						data = '<html>' + ''.join(ret) + '</html>'
@@ -130,7 +127,7 @@ class StalkerHTTPRequestHandler( AddonHttpRequestHandler ):
 			content_encoding = "text/plain; charset=UTF-8"
 			
 		if data:
-			return self.reply_ok( request, data.encode('utf-8'), content_encoding)
+			return self.reply_ok(request, data, content_encoding)
 		else:
 			return self.reply_error404( request )
 
@@ -142,18 +139,5 @@ class StalkerHTTPRequestHandler( AddonHttpRequestHandler ):
 
 # #################################################################################################
 
-def init_all_portals():
-	portals = StalkerCache.load_portals_cfg()
-	data_dir=__addon__.getAddonInfo('profile')
-	
-	for portal in portals:
-		StalkerCache.get( portal[1], data_dir, log.info )
 
-# #################################################################################################	
-	
-request_handler = StalkerHTTPRequestHandler()
-
-archivCZSKHttpServer.registerRequestHandler( request_handler )
-log.info( "Stalker http endpoint: %s" % archivCZSKHttpServer.getAddonEndpoint( request_handler ) )
-init_all_portals()
 
