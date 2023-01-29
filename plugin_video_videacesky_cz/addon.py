@@ -20,9 +20,13 @@
 # *
 # */
 import os
-import util, xbmcprovider, xbmcutil, resolver
-from provider import ResolveException
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
+from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
+from tools_xbmc.contentprovider.provider import ResolveException
+from tools_xbmc.resolver import resolver
+from tools_xbmc.tools import xbmcutil
+from tools_xbmc.compat import XBMCCompatInterface
+from .videacesky import VideaceskyContentProvider
 
 __scriptid__ = 'plugin.video.videacesky.cz'
 __scriptname__ = 'videacesky.cz'
@@ -31,8 +35,6 @@ __addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
 __language__ = __addon__.getLocalizedString
 __settings__ = __addon__.getSetting
 
-sys.path.append(os.path.join (__addon__.getAddonInfo('path'), 'resources', 'lib'))
-import videacesky
 settings = {'quality':__addon__.getSetting('quality')}
 
 
@@ -74,7 +76,7 @@ def vp8_youtube_filter(stream):
 	return False
 
 
-class VideaceskyXBMCContentProvider(xbmcprovider.XBMCMultiResolverContentProvider):
+class VideaceskyXBMCContentProvider(XBMCMultiResolverContentProvider):
 	
 	def play(self, params):
 		stream = self.resolve(params['play'])
@@ -87,7 +89,7 @@ class VideaceskyXBMCContentProvider(xbmcprovider.XBMCMultiResolverContentProvide
 				if len(sdict) > 1:
 					break
 			else:
-				return xbmcprovider.XBMCMultiResolverContentProvider.play(self,params)
+				return XBMCMultiResolverContentProvider.play(self, params)
 				
 			# resolved to mutliple files, we'll feed playlist and play the first one
 			playlist = []
@@ -135,4 +137,9 @@ class VideaceskyXBMCContentProvider(xbmcprovider.XBMCMultiResolverContentProvide
 		except ResolveException as e:
 			self._handle_exc(e)
 
-VideaceskyXBMCContentProvider(videacesky.VideaceskyContentProvider(),settings, __addon__,session).run(params)
+
+def videacesky_run(session, params):
+	VideaceskyXBMCContentProvider(VideaceskyContentProvider(), settings, __addon__, session).run(params)
+
+def main(addon):
+	return XBMCCompatInterface(videacesky_run)

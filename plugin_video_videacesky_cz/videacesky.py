@@ -26,10 +26,8 @@ from xml.etree.ElementTree import fromstring
 #from demjson import demjson
 import json
 
-import util
-import resolver
-from provider import ResolveException
-from provider import ContentProvider
+from tools_xbmc.contentprovider.provider import ContentProvider, ResolveException
+from tools_xbmc.tools import util
 
 try:
 	from urllib2 import HTTPCookieProcessor, build_opener, install_opener
