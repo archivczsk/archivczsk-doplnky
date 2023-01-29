@@ -1,3 +1,6 @@
+1.1.0 - 29.01.2023
+    - konverzia na modul pre archivCZSK >=1.7.0
+
 1.0.3 - 01.12.2022
     - podpora pre zapínanie/vypínanie podpornej služby podľa potreby
     

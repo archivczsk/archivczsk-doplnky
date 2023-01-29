@@ -1,7 +1,4 @@
-try:
-	sys.path.append( os.path.dirname(__file__) )
-except:
-	pass
+# -*- coding: utf-8 -*-
 
 import traceback
 import base64
@@ -10,7 +7,7 @@ from Plugins.Extensions.archivCZSK.engine.client import log
 from Plugins.Extensions.archivCZSK.engine.httpserver import archivCZSKHttpServer, AddonHttpRequestHandler
 
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
-from telly import TellyCache
+from .telly import TellyCache
 
 # #################################################################################################
 
@@ -28,7 +25,7 @@ class TellyHTTPRequestHandler( AddonHttpRequestHandler ):
 			stream_http = addon.get_setting('use_http_for_stream')
 
 			telly = TellyCache.get(data_dir, log.info)
-			path = base64.b64decode(path).decode("utf-8")
+			path = base64.b64decode(path.encode('utf-8')).decode("utf-8")
 			result = telly.get_video_link_by_id(path, enable_h265)
 
 			max_bitrate = addon.get_setting('max_bitrate')
@@ -54,27 +51,9 @@ class TellyHTTPRequestHandler( AddonHttpRequestHandler ):
 			log.error(traceback.format_exc())
 			return self.reply_error500( request )
 
-		return self.reply_redirect( request, location.encode('utf-8'))
+		return self.reply_redirect(request, location)
 	
 	def default_handler(self, request, path_full ):
 		data = "Default Telly handler pre path: %s" % path_full
-		return self.reply_ok( request, data.encode('utf-8'), "text/plain; charset=UTF-8")
+		return self.reply_ok(request, data, "text/plain; charset=UTF-8")
 
-		
-request_handler = TellyHTTPRequestHandler()
-
-archivCZSKHttpServer.registerRequestHandler( request_handler )
-log.info( "Telly http endpoint: %s" % archivCZSKHttpServer.getAddonEndpoint( request_handler ) )
-
-def setting_changed_notification(name, value):
-	if name and value:
-		log.debug('Telly setting "%s" changed to "%s"' % (name, value) )
-		
-	# check if we need service to be enabled
-	if addon.get_setting('enable_userbouquet'):
-		addon.set_service_enabled(True)
-	else:
-		addon.set_service_enabled(False)
-	
-addon.add_setting_change_notifier('enable_userbouquet', setting_changed_notification )
-setting_changed_notification(None, None)

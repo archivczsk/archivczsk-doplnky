@@ -1,20 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import re,sys,os,time,requests,traceback
-try:
-	sys.path.append( os.path.dirname(__file__) )
-except:
-	pass
+import time, traceback
 
-import threading
 from datetime import date, timedelta, datetime
 from Plugins.Extensions.archivCZSK.engine import client
 
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
-
-from telly import TellyCache
-import util
-from provider import ContentProvider
+from tools_xbmc.contentprovider.provider import ContentProvider
+from .telly import TellyCache
 
 try:
 	from urllib import quote
