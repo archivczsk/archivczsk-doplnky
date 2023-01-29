@@ -23,10 +23,12 @@ from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine.tools.util import toString
 from Plugins.Extensions.archivCZSK.engine import client
 
-import re,time,util,resolver,json,datetime
-from provider import ContentProvider
-from provider import ResolveException
-import xbmcprovider
+from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
+from tools_xbmc.contentprovider.provider import ContentProvider, ResolveException
+from tools_xbmc.tools import util
+from tools_xbmc.compat import XBMCCompatInterface
+
+import re, time, json, datetime
 
 try:
 	import cookielib
@@ -281,6 +283,12 @@ __scriptname__ = 'YouTube'
 __addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
 __language__ = __addon__.getLocalizedString
 addon_userdata_dir = __addon__.getAddonInfo('profile')+'/'
-settings = {'quality':__addon__.getSetting('quality')}
-provider = YTContentProvider(tmp_dir='/tmp')
-xbmcprovider.XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
+
+def yt_run(session, params):
+	settings = {'quality':__addon__.getSetting('quality')}
+	provider = YTContentProvider(tmp_dir='/tmp')
+	XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
+
+
+def main(addon):
+	return XBMCCompatInterface(yt_run)
