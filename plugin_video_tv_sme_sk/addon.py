@@ -25,11 +25,11 @@ from Plugins.Extensions.archivCZSK.engine import client
 
 import re
 import time
-import util,resolver
-from provider import ContentProvider
-from provider import ResolveException
-import xbmcprovider
-import util
+from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
+from tools_xbmc.contentprovider.provider import ContentProvider, ResolveException
+from tools_xbmc.tools import util
+from tools_xbmc.compat import XBMCCompatInterface
+
 from xml.etree import ElementTree as ET
 from email.utils import parsedate_tz, mktime_tz
 
@@ -45,10 +45,11 @@ except:
 
 class TVSMEContentProvider(ContentProvider):
 
-	def __init__(self, username=None, password=None, filter=None, tmp_dir='/tmp'):
+	def __init__(self, username=None, password=None, filter=None, tmp_dir='/tmp', session=None):
 		ContentProvider.__init__(self, 'TV SME.sk', 'https://video.sme.sk/', username, password, filter, tmp_dir)
 		self.cp = HTTPCookieProcessor(cookielib.LWPCookieJar())
 		self.init_urllib()
+		self.session = session
 
 	def init_urllib(self):
 		opener = build_opener(self.cp)
@@ -83,7 +84,7 @@ class TVSMEContentProvider(ContentProvider):
 
 		# hledat
 		if 'search?' in url:
-			query = client.getTextInput(session, "Hledat")
+			query = client.getTextInput(self.session, "Hledat")
 			if len(query) == 0:
 #				showError("Je potřeba zadat vyhledávaný řetězec")
 #				result.append(self.video_item('Je potřeba zadat vyhledávaný řetězec','#'))
@@ -199,8 +200,10 @@ __scriptname__ = 'TV SME.sk'
 __addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
 __language__ = __addon__.getLocalizedString
 
-settings = {'quality':__addon__.getSetting('quality')}
+def sme_run(session, params):
+	settings = {'quality':__addon__.getSetting('quality')}
+	provider = TVSMEContentProvider(tmp_dir='/tmp', session=session)
+	XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
 
-provider = TVSMEContentProvider(tmp_dir='/tmp')
-
-xbmcprovider.XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
+def main(addon):
+	return XBMCCompatInterface(sme_run)
