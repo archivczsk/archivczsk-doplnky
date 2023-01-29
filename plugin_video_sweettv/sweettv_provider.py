@@ -1,20 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import re,sys,os,time,requests,traceback,random
-try:
-	sys.path.append( os.path.dirname(__file__) )
-except:
-	pass
+import time, traceback
 
-import threading, json
 from datetime import date, timedelta, datetime
 from Plugins.Extensions.archivCZSK.engine import client
 
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
-
-from sweettv import SweetTvCache
-import util
-from provider import ContentProvider
+from tools_xbmc.contentprovider.provider import ContentProvider
+from .sweettv import SweetTvCache
 
 try:
 	from urllib import quote
@@ -532,7 +525,7 @@ class SweetTVContentProvider(ContentProvider):
 					self.sweettv.close_stream( stream_id )
 		except:
 			self.error("Stats processing failed")
-			util.error(traceback.format_exc())
+			client.log.error(traceback.format_exc())
 	
 	# #################################################################################################
 	
