@@ -22,6 +22,7 @@ from datetime import date, timedelta, datetime
 import time
 import json
 from hashlib import md5
+from .exception import LoginException
 
 try:
 	from Plugins.Extensions.archivCZSK.engine.client import log
@@ -70,6 +71,17 @@ class CommonContentProvider(object):
 		self.settings = settings
 		self.bgservice = bgservice if bgservice != None else DummyAddonBackgroundService()
 		self.data_dir = data_dir if data_dir else '/tmp'
+
+	# #################################################################################################
+	'''
+	This method is called after full provider initialisation and after login was called. It can be used to
+	start services or do wathever needed when login status is already known
+	'''
+
+	def initialised(self):
+		return
+
+	# #################################################################################################
 
 	def __str__(self):
 		return '[' + self.name +']'
@@ -125,6 +137,16 @@ class CommonContentProvider(object):
 			# fallback
 			if isinstance( self.settings, type({}) ):
 				self.settings[name] = value
+
+	# #################################################################################################
+
+	def add_setting_change_notifier(self, setting_names, cbk):
+		try:
+			# standard addon interface
+			self.settings.add_change_notifier(setting_names, cbk)
+		except:
+			# fallback
+			pass
 		
 	# #################################################################################################
 	
@@ -167,9 +189,15 @@ class CommonContentProvider(object):
 
 	# #################################################################################################
 
+	def login_error(self, msg=None):
+		raise LoginException(msg)
+
+	# #################################################################################################
+
 	def login(self):
 		"""
-		A login method returns True on successfull login, False otherwise
+		This method should login customer or check if login is needed.
+		A login method returns True on successfull login, False otherwise. It can also call login_error() to raise exception with message
 		"""
 		return True
 
@@ -429,5 +457,8 @@ class LiveTVContentProvider(CommonContentProvider):
 		# implement this function to list program for channel_id and archive day (0=today, 1=yesterday, ...)
 		# it should call self.add_archive_channel()
 		return
+
+	# #################################################################################################
+	# Bouquet generator
 	# #################################################################################################
 	

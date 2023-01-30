@@ -11,6 +11,25 @@ from datetime import datetime
 from xml.sax.saxutils import escape
 from hashlib import md5
 
+try:
+	basestring
+	is_py3 = False
+
+	def py2_encode_utf8(text):
+		return text.encode('utf-8', 'ignore')
+
+	def py2_decode_utf8(text):
+		return text.decode('utf-8', 'ignore')
+
+except NameError:
+	is_py3 = True
+
+	def py2_encode_utf8(text):
+		return text
+
+	def py2_decode_utf8(text):
+		return text
+
 EPGIMPORT_SOURCES_CONTENT = '''<?xml version="1.0" encoding="utf-8"?>
 <sources>
 	<mappings>
