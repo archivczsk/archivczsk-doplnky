@@ -869,5 +869,12 @@ def scc_run(session, params):
 	#	client.showInfo('Nic nenalezeno')
 
 
+def scc_search(session, keyword, search_id):
+	params = {'url': '?action=search&history=0&action_value=' + keyword}
+	scc_run(session, params)
+
 def main(addon):
-	return scc_run
+	return {
+		'run': scc_run,
+		'search': scc_search
+	}
