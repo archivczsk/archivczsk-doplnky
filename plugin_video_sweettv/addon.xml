@@ -4,7 +4,7 @@
 		<import addon="tools.xbmc" version="1.0" />
 	</requires>
 	<extension point="archivczsk.addon.video" preload="yes"/>
-	<extension point="xbmc.addon.metadata">
+	<extension point="archivczsk.addon.metadata">
 		<description>Plugin to play videos and live tv from sweet.tv</description>
 		<description lang="sk">Plugin pre prehrávanie videí a live tv zo sweet.tv</description>
 	</extension>

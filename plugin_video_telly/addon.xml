@@ -5,7 +5,7 @@
 		<import addon="tools.xbmc" version="1.0" />
 	</requires>
 	<extension point="archivczsk.addon.video" preload="yes"/>
-	<extension point="xbmc.addon.metadata">
+	<extension point="archivczsk.addon.metadata">
 		<description>Plugin to play Telly live TV</description>
 		<description lang="cs">Plugin pro přehrávání Telly live TV</description>
 		<description lang="sk">Plugin pre prehrávanie Telly live TVk</description>

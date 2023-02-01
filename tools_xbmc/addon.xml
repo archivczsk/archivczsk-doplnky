@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <addon id="tools.xbmc" name="xbmc addons helper" version="1.0">
 	<extension point="archivczsk.addon.tools" />
-	<extension point="xbmc.addon.metadata">
+	<extension point="archivczsk.addon.metadata">
 		<description>Helper module for easier porting of xbmc addons</description>
 	</extension>
 </addon>

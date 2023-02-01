@@ -5,7 +5,7 @@
 		<import addon="tools.xbmc" version="1.0" />
 	</requires>
 	<extension point="archivczsk.addon.video" preload="yes"/>
-	<extension point="xbmc.addon.metadata">
+	<extension point="archivczsk.addon.metadata">
 		<description lang="en">Umožnuje sledování O2TV, včetně základní práce s nahrávkami</description>
 		<description lang="cs">Umožnuje sledování O2TV, včetně základní práce s nahrávkami</description>
 	</extension>
