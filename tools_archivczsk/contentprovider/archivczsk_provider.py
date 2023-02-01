@@ -1,26 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# *		 Copyright (C) 2012 Libor Zoubek
-# *				modified by mx3L
-# *
-# *	 This Program is free software; you can redistribute it and/or modify
-# *	 it under the terms of the GNU General Public License as published by
-# *	 the Free Software Foundation; either version 2, or (at your option)
-# *	 any later version.
-# *
-# *	 This Program is distributed in the hope that it will be useful,
-# *	 but WITHOUT ANY WARRANTY; without even the implied warranty of
-# *	 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# *	 GNU General Public License for more details.
-# *
-# *	 You should have received a copy of the GNU General Public License
-# *	 along with this program; see the file COPYING.	 If not, write to
-# *	 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-# *	 http://www.gnu.org/copyleft/gpl.html
-# *
-# */
-
-import sys, os, re, traceback, time
+import sys, os, re, traceback, time, json
 from Plugins.Extensions.archivCZSK.engine import client
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from .exception import LoginException
@@ -65,7 +45,7 @@ class SearchProvider(object):
 				searches.pop()
 		
 		if remove > 0 or force_save:
-			_self.save_searches(searches, server)
+			self._save_searches(searches, server)
 			
 		return searches
 	
@@ -89,7 +69,7 @@ class SearchProvider(object):
 	# #################################################################################################
 	
 	def add_search(self, server, search, maximum=10):
-		searches = self._get_searchers(server, maximum)
+		searches = self._get_searches(server)
 		
 		if search in searches:
 			searches.remove(search)
@@ -100,14 +80,14 @@ class SearchProvider(object):
 	# #################################################################################################
 	
 	def remove_search(self, server, search):
-		searches = self._get_searchers(server)
+		searches = self._get_searches(server)
 		searches.remove(search)
 		self._save_searches(searches, server)
 
 	# #################################################################################################
 	
 	def edit_search(self, server, search, replacement):
-		searches = self._get_searchers(server)
+		searches = self._get_searches(server)
 		searches.remove(search)
 		searches.insert(0, replacement)
 		self._save_searches(searches, server)
@@ -118,7 +98,7 @@ class SearchProvider(object):
 class ArchivCZSKContentProvider(object):
 	"""
 	Provider should not have direct dependency to archivczsk. Instead of it uses "dummy" functions.
-	This is a interface, that "glues" archivczsk with provider
+	This is a interface, that "glues" archivczsk with provider based on CommmonContentProvider
 	"""
 	
 	def __init__(self, provider, addon):
@@ -126,9 +106,8 @@ class ArchivCZSKContentProvider(object):
 		self.addon = addon
 		self.addon_id = addon.id
 		self.session = None
-		self.search = SearchProvider(addon, self.provider.name)
+		self.searches = SearchProvider(addon, self.provider.name)
 		self.__playlist = []
-		self.playlist_autogen = True
 		self.logged_in = False
 		
 		# set/overwrite interface methods for provider
@@ -137,6 +116,7 @@ class ArchivCZSKContentProvider(object):
 		self.provider.add_next = self.add_next
 		self.provider.add_video = self.add_video
 		self.provider.add_play = self.add_play
+		self.provider.add_menu_item = self.add_menu_item
 		self.provider.show_info = self.show_info
 		self.provider.show_error = self.show_error
 		self.provider.show_warning = self.show_warning
@@ -167,13 +147,13 @@ class ArchivCZSKContentProvider(object):
 	# #################################################################################################
 	
 	def log_debug(self, msg):
-		log.debug('[%s] %s' % (self.provider.name, msg))
+		client.log.debug('[%s] %s' % (self.provider.name, msg))
 
 	def log_info(self, msg):
-		log.info('[%s] %s' % (self.provider.name, msg))
+		client.log.info('[%s] %s' % (self.provider.name, msg))
 
 	def log_error(self, msg):
-		log.error('[%s] %s' % (self.provider.name, msg))
+		client.log.error('[%s] %s' % (self.provider.name, msg))
 
 	# #################################################################################################
 
@@ -199,7 +179,7 @@ class ArchivCZSKContentProvider(object):
 		if not self.login_refresh_running:
 			self.log_debug("Login data changed - starting new login in background")
 			self.login_refresh_running = True
-			self.addon.bgservice.run_delayed(1, __login_refreshed, __process_login_refresh)
+			self.addon.bgservice.run_delayed('logindata_changed(refresh login)', 1, __login_refreshed, __process_login_refresh)
 		else:
 			self.log_debug("Background login already running")
 
@@ -250,10 +230,16 @@ class ArchivCZSKContentProvider(object):
 		login_msg = None
 		
 		if self.logged_in == False:
+			# this must be set to prevent calling login refresh when login config option changes during login phase
+			# for example when during login new device id is generated
+			self.login_refresh_running = True
+
 			try:
 				self.logged_in = self.provider.login()
 			except LoginException as e:
 				login_msg = str(e)
+
+			self.login_refresh_running = False
 
 		if self.logged_in == False:
 			if login_msg:
@@ -264,7 +250,7 @@ class ArchivCZSKContentProvider(object):
 
 		try:
 			if params == {}:
-				self.provider.categories()
+				self.provider.root()
 			elif 'CP_action' in params:
 				params['CP_action'](**params['CP_args'])
 				self.__process_playlist()
@@ -294,6 +280,11 @@ class ArchivCZSKContentProvider(object):
 	
 	# #################################################################################################
 	
+	def search(self, session, keyword, search_id):
+		self.do_search(search_id, keyword, False)
+
+	# #################################################################################################
+
 	def search_list(self, search_id=None, save_history=True):
 		client.add_dir(_tr(30004), self.action(self.do_search, search_id=search_id, save_history=save_history), image=_icon('search.png'), search_item=True)
 		
@@ -338,10 +329,15 @@ class ArchivCZSKContentProvider(object):
 				maximum = 10
 
 			if save_history:
-				self.search.add_search(search_id, what, maximum)
+				self.searches.add_search(search_id, what, maximum)
 				
 			self.provider.search(what, search_id)
 
+	# #################################################################################################
+	
+	def add_menu_item(self, menu, title, cmd=None, **cmd_args):
+		menu[title] = self.action(cmd, **cmd_args)
+		
 	# #################################################################################################
 	
 	def add_dir(self, title, img=None, info_labels={}, menu={}, data_item=None, trakt_item=None, cmd=None, **cmd_args):
@@ -401,9 +397,9 @@ class ArchivCZSKContentProvider(object):
 	
 	# #################################################################################################
 	
-	def add_play(self, title, url, info_labels={}, data_item=None, trakt_item=None, subs=None, settings=None, live=False):
+	def add_play(self, title, url, info_labels={}, data_item=None, trakt_item=None, subs=None, settings=None, live=False, playlist_autogen=True):
 		def __add_play(**kwargs):
-			if self.playlist_autogen:
+			if playlist_autogen:
 				self.__playlist.append(kwargs)
 			else:
 				client.add_video(**kwargs)

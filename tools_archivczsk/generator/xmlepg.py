@@ -216,31 +216,31 @@ class XmlEpgGeneratorTemplate:
 
 	# #################################################################################################
 
-	'''
-	Tou need to implement this to get list of channels included in XML-EPG file
-	Each channel is a map with these requiered fields:
-	{
-		'name': "channel name",
-		'id': 'unique numeric id of channel'
-		'id_content': 'unique string representation of channel - only letters, numbers and _ are allowed.' # optional - if not provided, it will be generated from name
-	}
-	'''
 	def get_channels(self):
+		'''
+		Tou need to implement this to get list of channels included in XML-EPG file
+		Each channel is a map with these requiered fields:
+		{
+			'name': "channel name",
+			'id': 'unique numeric id of channel'
+			'id_content': 'unique string representation of channel - only letters, numbers and _ are allowed.' # optional - if not provided, it will be generated from name
+		}
+		'''
 		return []
 
 	# #################################################################################################
 
-	'''
-	You need to implement this to get list of epg events for channel and time range
-	Each epg event is a map with these fields:
-	{
-		'start': timestamp of event start
-		'end': timestamp of event end
-		'title': 'event title as string'
-		'desc': 'description of event as string'
-	}
-	'''
 	def get_epg(self, channel, fromts, tots):
+		'''
+		You need to implement this to get list of epg events for channel and time range
+		Each epg event is a map with these fields:
+		{
+			'start': timestamp of event start
+			'end': timestamp of event end
+			'title': 'event title as string'
+			'desc': 'description of event as string'
+		}
+		'''
 		return []
 
 	# #################################################################################################

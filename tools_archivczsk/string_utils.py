@@ -67,3 +67,23 @@ def decode_html(data):
 		return data
 	
 # #################################################################################################
+
+def _C(color, str):
+	"""
+	Returns colored text
+	"""
+	return '[COLOR %s]%s[/COLOR]' % (color, str)
+
+def _B(str):
+	"""
+	Returns bold text
+	"""
+	return '[B]%s[/B]' % str
+
+def _I(str):
+	"""
+	Returns italic text
+	"""
+	return '[I]%s[/I]' % str
+
+# #################################################################################################

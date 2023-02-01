@@ -186,10 +186,19 @@ class BouquetGeneratorTemplate:
 
 	# #################################################################################################
 
-	'''
-	Implement this function to return list of channels
-	'''
 	def get_channels(self):
+		'''
+		Tou need to implement this to get list of channels included to bouquet
+		Each channel is a map with these requiered fields:
+		{
+			'name': "channel name",
+			'id': 'unique numeric id of channel the same as in function get_xmlepg_channels()'
+			'key': key used to get stream address - it will be encoded and forwarded to http handler
+			'adult': indicates if channel is for adults
+			'picon': url with picon for this channel
+			'is_separator': if true, then this item indicates separator in bouquets
+		}
+		'''
 		return []
 
 	# #################################################################################################

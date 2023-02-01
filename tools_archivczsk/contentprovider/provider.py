@@ -17,10 +17,10 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
-import sys,os,re,traceback
-from datetime import date, timedelta, datetime
-import time
+import os, traceback
+
 import json
+from datetime import datetime
 from hashlib import md5
 from .exception import LoginException
 
@@ -71,15 +71,27 @@ class CommonContentProvider(object):
 		self.settings = settings
 		self.bgservice = bgservice if bgservice != None else DummyAddonBackgroundService()
 		self.data_dir = data_dir if data_dir else '/tmp'
+		self.__initialised_cbks = []
 
 	# #################################################################################################
 	'''
 	This method is called after full provider initialisation and after login was called. It can be used to
 	start services or do wathever needed when login status is already known
+	If you override this function, then don't forget to call it from child class also, so that
+	__initialised_cbks gets called.
 	'''
 
 	def initialised(self):
-		return
+		for cbk, args, kwargs in self.__initialised_cbks:
+			cbk(*args, **kwargs)
+
+	# #################################################################################################
+
+	def add_initialised_callback(self, cbk, *args, **kwargs):
+		'''
+		Adds callback function that should be called after initialisation is finished
+		'''
+		self.__initialised_cbks.append((cbk, args, kwargs))
 
 	# #################################################################################################
 
@@ -88,26 +100,6 @@ class CommonContentProvider(object):
 
 	# #################################################################################################
 
-	def _C(self, color, str):
-		"""
-		Returns colored text
-		"""
-		return '[COLOR %s]%s[/COLOR]' % (color, str)
-
-	def _B(self, str):
-		"""
-		Returns bold text
-		"""
-		return '[B]%s[/B]' % str
-
-	def _I(self, str):
-		"""
-		Returns italic text
-		"""
-		return '[I]%s[/I]' % str
-	
-	# #################################################################################################
-		
 	def get_setting(self, name):
 		"""
 		Returns value of a setting with name
@@ -141,10 +133,12 @@ class CommonContentProvider(object):
 	# #################################################################################################
 
 	def add_setting_change_notifier(self, setting_names, cbk):
+		self.log_debug("Adding change notifier for settings: %s" % str(setting_names))
 		try:
 			# standard addon interface
 			self.settings.add_change_notifier(setting_names, cbk)
 		except:
+			self.log_exception()
 			# fallback
 			pass
 		
@@ -179,18 +173,24 @@ class CommonContentProvider(object):
 
 	# #################################################################################################
 	
-	def get_settings_checksum(self, names, extra=""):
+	def get_settings_checksum(self, names, extra=None):
 		if not isinstance(names, (type(()), type([]))):
 			names = [names]
 
 		values = '|'.join(map(lambda name: str(self.get_setting(name)), names))
-		values += extra
+		if extra:
+			values += extra
 		return md5(values.encode('utf-8')).hexdigest()
 
 	# #################################################################################################
 
 	def login_error(self, msg=None):
 		raise LoginException(msg)
+
+	# #################################################################################################
+	@staticmethod
+	def timestamp_to_str(ts, format='%H:%M'):
+		return datetime.fromtimestamp(ts).strftime(format)
 
 	# #################################################################################################
 
@@ -203,22 +203,12 @@ class CommonContentProvider(object):
 
 	def search(self, keyword, search_id):
 		"""
-		Search for a keyword on a site
-		Args:
-					keyword (str)
-
-		returns:
-			array of video or directory items
+		Search for a keyword. search_id is used to distinguish between multiple search types (eg. movie, artist, ...)
 		"""
 		return
 	
-	def categories(self):
-		"""
-		Lists categories on provided site - this will generate root menu
-
-		Returns:
-			array of video or directory items
-		"""
+	def root(self):
+		""" Lists/generates root menu - this is entry point for the user """
 		return
 	
 	def show_error(self, msg, noexit=False, timeout=0, can_close=True ):
@@ -248,9 +238,13 @@ class CommonContentProvider(object):
 	def log_error(self, msg):
 		log.error('[%s] %s' % (self.name, msg))
 
-#	def stats(self, data_item, action, duration=None, position=None, **extra_params):
+	def log_exception(self):
+		log.error('[%s] Exception caught:\n%s' % (self.name, traceback.format_exc()))
+
+	def stats(self, data_item, action, duration=None, position=None, **extra_params):
 		"""
 		Used for playback statistics
+		
 		Args:
 			item - set as data_item in video and dir
 			action - play, watching, end, seek, pause, unpause
@@ -258,6 +252,7 @@ class CommonContentProvider(object):
 			position - actual stream position (if known) 
 			extra_params - extra params for future usage
 		"""
+		return
 	
 #	def trakt(self, trakt_item, action, result):
 		"""
@@ -310,7 +305,7 @@ class CommonContentProvider(object):
 		"""
 		pass
 
-	def add_play(self, title, url, info_labels={}, data_item=None, trakt_item=None, subs=None, settings=None, live=False):
+	def add_play(self, title, url, info_labels={}, data_item=None, trakt_item=None, subs=None, settings=None, live=False, playlist_autogen=True):
 		"""
 		Set resolved stream, that can be played by player.
 		info_labels - stream info labels
@@ -333,6 +328,9 @@ class CommonContentProvider(object):
 		"""
 		pass
 
+	def add_menu_item(self, menu, title, cmd=None, **cmd_args):
+		pass
+
 	def get_yes_no_input(self, msg):
 		# just dummy one
 		return False
@@ -341,124 +339,3 @@ class CommonContentProvider(object):
 		# just dummy one
 		return 0
 				
-# #################################################################################################
-
-class LiveTVContentProvider(CommonContentProvider):
-	# modules: live_tv, archive
-	
-	def __init__(self, name='dummy', settings=None, data_dir=None, bgservice=None, modules=None):
-		CommonContentProvider.__init__(self, name, settings, data_dir, bgservice)
-		self.days_of_week = ['Pondelok', 'Utorok', 'Streda', 'Štvrtok', 'Piatok', 'Sobota', 'Nedeľa']
-
-		if modules:
-			self.modules = modules
-		else:
-			# default used		
-			self.modules = [
-				( 'Live TV', 'live_tv', { 'categories': False } ),
-				( 'Archív', 'archive', {} ),
-			]
-
-	# #################################################################################################
-	
-	def categories(self):
-		for module_name, module_id, kwargs in self.modules:
-			self.add_dir( module_name, cmd=getattr(self, 'module_' + module_id + '_root' ), **kwargs)
-
-	# #################################################################################################
-	
-	def module_live_tv_root(self, categories=False, **kwargs):
-		if categories:
-			self.get_live_tv_categories(**kwargs)
-		else:
-			self.get_live_tv_channels(**kwargs)
-	
-	# #################################################################################################
-	
-	def module_archive_root(self, **kwargs):
-		self.get_archive_channels(**kwargs)
-	
-	# #################################################################################################
-	
-	def add_live_tv_category(self, title, cat_id, img=None, info_labels={}):
-		self.add_dir( title, img, info_labels, cmd=self.get_live_tv_channels, cat_id=cat_id)
-	
-	# #################################################################################################
-
-	def add_archive_channel(self, title, channel_id, archive_hours, img=None, info_labels={}):
-		self.add_dir( title, img, info_labels, cmd=self.get_archive_days_for_channels, channel_id=channel_id, archive_hours=archive_hours)
-	
-	# #################################################################################################
-
-	def get_live_tv_categories(self):
-		# implement this function if you want to support categories for Live TV
-		# it should use add_live_tv_categoty() to add categories
-		return
-	
-	# #################################################################################################
-	
-	def get_live_tv_channels(self, cat_id = None):
-		# implement this function to get list of Live TV channels
-		# it should call self.add_video() or self.add_play() to add videos or resolved videos
-		return
-	
-	# #################################################################################################
-	
-	def get_archive_channels(self):
-		# implement this function to get list of Live TV channels
-		# it should call self.add_archive_channel()
-		return
-	
-	# #################################################################################################
-
-	def get_archive_days_for_channels(self, channel_id, archive_hours):
-		# implement this function to get list days for channel_id
-		# it should call self.add_archive_channel()
-		
-		for i in range(int(archive_hours//24)):
-			if i == 0:
-				day_name = "Dnes"
-			elif i == 1:
-				day_name = "Včera"
-			else:
-				day = date.today() - timedelta(days = i)
-				day_name = self.days_of_week[day.weekday()] + " " + day.strftime("%d.%m.%Y")
-
-			self.add_dir( day_name, cmd=self.get_archive_program, channel_id=channel_id, archive_day=i)
-	
-	# #################################################################################################
-	
-	def archive_day_to_datetime_range(self, archive_day, return_timestamp=False):
-		"""
-		Return datetime or timestamp range for archive day in form start, end
-		"""
-		
-		if archive_day > 30:
-			# archive day is in minutes
-			from_datetime = datetime.now() - timedelta(minutes = archive_day) 
-			to_datetime = datetime.now()
-		elif archive_day == 0:
-			from_datetime = datetime.combine(date.today(), datetime.min.time())
-			to_datetime = datetime.now()
-		else:
-			from_datetime = datetime.combine(date.today(), datetime.min.time()) - timedelta(days = archive_day)
-			to_datetime = datetime.combine(from_datetime, datetime.max.time())
-		
-		if return_timestamp:
-			from_ts = int(time.mktime(from_datetime.timetuple()))
-			to_ts = int(time.mktime(to_datetime.timetuple()))
-			return from_ts, to_ts
-		else:
-			return from_datetime, to_datetime
-
-	# #################################################################################################
-	
-	def get_archive_program(self, channel_id, archive_day):
-		# implement this function to list program for channel_id and archive day (0=today, 1=yesterday, ...)
-		# it should call self.add_archive_channel()
-		return
-
-	# #################################################################################################
-	# Bouquet generator
-	# #################################################################################################
-	
