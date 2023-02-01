@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-	<setting label="30000" id="orangetvuser" type="text" default="" />
-	<setting label="30001" id="orangetvpwd" type="text" default="" option="true" />
+	<setting label="Prihlasovacie meno" id="username" type="text" default="" />
+	<setting label="Prihlasovacie heslo" id="password" type="text" default="" option="true" />
+	<setting label="NOT USED - Meno" id="orangetvuser" type="text" default="" visible="false"/>
+	<setting label="NOT USED - Heslo" id="orangetvpwd" type="text" default="" option="true" visible="false"/>
 	<setting label="Ukázať EPG (spomalí načítanie živých programov)" id="showliveepg" type="bool" default="true" />
 	<setting label="Koľko hodín EPG ukladať do cache" id="epgcache" type="labelenum" values="6|12|24|48|72" default="24" />
 	<setting label="Preferovaná kvalita videa" id="quality" type="enum" lvalues="Opýtať sa|Najlepšia|Najhoršia|720p|576p" default="1"/>

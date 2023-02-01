@@ -2,10 +2,10 @@
 <addon id="plugin.video.orangetv" name="OrangeTV" provider-name="archivczsk" version="2.10">
 	<requires>
 		<import addon="enigma2.archivczsk" version="1.7.0"/>
-		<import addon="tools.xbmc" version="1.0" />
+		<import addon="tools.archivczsk" version="1.0" />
 	</requires>
 	<extension point="archivczsk.addon.video" preload="yes"/>
-	<extension point="xbmc.addon.metadata">
+	<extension point="archivczsk.addon.metadata">
 		<description>Plugin to play Live TV and archive from orange.sk</description>
 		<description lang="cs">Plugin pro přehrávání Live TV a archívu z orange.sk</description>
 		<description lang="sk">Plugin pre prehrávanie Live TV a archívu z orange.sk</description>
