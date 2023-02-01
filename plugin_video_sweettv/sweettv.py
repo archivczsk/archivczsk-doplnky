@@ -1,29 +1,10 @@
 # -*- coding: utf-8 -*-
 #
 import os, time, json, requests, re
-from datetime import datetime, timedelta 
-from datetime import date
+from datetime import datetime
 import traceback
-
+from tools_archivczsk.contentprovider.exception import LoginException
 from hashlib import md5
-
-try:
-	from urllib import quote
-	
-	def py2_encode_utf8( text ):
-		return text.encode('utf-8', 'ignore')
-	
-	def py2_decode_utf8( text ):
-		return text.decode('utf-8', 'ignore')
-
-except:
-	from urllib.parse import quote
-
-	def py2_encode_utf8( text ):
-		return text
-	
-	def py2_decode_utf8( text ):
-		return text
 
 __debug_nr = 1
 
@@ -48,24 +29,6 @@ def _log_dummy(message):
 	print('[SWEET.TV]: ' + message )
 	pass
 
-class SweetTvCache:
-	sweettv = None
-	sweettv_init_params = None
-
-	# #################################################################################################
-	
-	@staticmethod
-	def get(username=None, password=None, device_id=None, data_dir=None, log_function=_log_dummy):
-		if SweetTvCache.sweettv and SweetTvCache.sweettv_init_params == (username, password, device_id):
-#			log_function("sweettv already loaded")
-			pass
-		else:
-			SweetTvCache.sweettv = SweetTV(username, password, device_id, data_dir, log_function )
-			SweetTvCache.sweettv_init_params = (username, password, device_id )
-			log_function("New instance of sweet.tv initialised")
-		
-		return SweetTvCache.sweettv
-
 class SweetTV:
 	def __init__(self, username, password, device_id, data_dir=None, log_function=None ):
 		self.username = username
@@ -79,7 +42,7 @@ class SweetTV:
 		self.api_session = requests.Session()
 		
 		self.common_headers = {
-			"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0",
+			"User-Agent": SweetTV.get_user_agent(),
 			"Origin": "https://sweet.tv",
 			"Referer": "https://sweet.tv",
 			"Accept-encoding": "gzip",
@@ -89,7 +52,7 @@ class SweetTV:
 		}
 
 		self.common_headers_stream = {
-			"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0",
+			"User-Agent": SweetTV.get_user_agent(),
 			"Origin": "https://sweet.tv",
 			"Referer": "https://sweet.tv",
 			"Accept-encoding": "gzip",
@@ -101,7 +64,7 @@ class SweetTV:
 			"application": {
 				"type": "AT_SWEET_TV_Player"
 			},
-			"model": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0",
+			"model": SweetTV.get_user_agent(),
 			"firmware": {
 				"versionCode": 1,
 				"versionString": "3.2.80"
@@ -123,7 +86,13 @@ class SweetTV:
 		self.channels_next_load = 0
 		
 		self.check_login()
-		
+
+	# #################################################################################################
+	@staticmethod
+	def create_device_id():
+		import uuid
+		return str(uuid.uuid4())
+
 	# #################################################################################################
 
 	def get_chsum(self):
@@ -132,7 +101,12 @@ class SweetTV:
 
 		data = "{}|{}|{}".format(self.password, self.username, self.device_id)
 		return md5( data.encode('utf-8') ).hexdigest()
-	
+
+	# #################################################################################################
+	@staticmethod
+	def get_user_agent():
+		return 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0'
+
 	# #################################################################################################
 	
 	def load_login_data(self):
@@ -179,6 +153,10 @@ class SweetTV:
 	def showError(self, msg):
 		self.log_function("SWEET.TV API ERROR: %s" % msg )
 		raise Exception("SWEET.TV: %s" % msg)
+
+	def showLoginError(self, msg):
+		self.log_function("SWEET.TV API ERROR: %s" % msg)
+		raise LoginException(msg)
 
 	# #################################################################################################
 
@@ -267,7 +245,7 @@ class SweetTV:
 			self.access_token = None
 			self.refresh_token_token = None
 			self.save_login_data()
-			self.showError("Problém pri prihlásení: %s" % data.get('message',''))
+			self.showLoginError("Problém pri prihlásení: %s" % data.get('message', ''))
 			return False
 	
 		self.access_token = data.get('access_token')
@@ -295,7 +273,7 @@ class SweetTV:
 			self.access_token = None
 			self.refresh_token_token = None
 			self.save_login_data()
-			self.showError("Problém pri obnove prihlasovacieho tokenu: %s" % data.get('message',''))
+			self.showLoginError("Problém pri obnove prihlasovacieho tokenu: %s" % data.get('message', ''))
 			return False
 	
 		self.access_token = data.get('access_token')
@@ -420,56 +398,40 @@ class SweetTV:
 
 	# #################################################################################################
 	
-	def get_channels(self, refresh_channels_data=False):
-		if refresh_channels_data or not self.channels or self.channels_next_load < int(time.time()):
-			req_data = {
-				'need_epg': False,
-				'need_list': True,
-				'need_categories': True,
-				'need_offsets': False,
-				'need_hash': False,
-				'need_icons': False,
-				'need_big_icons': False
-			}
-   
-			data = self.call_api('TvService/GetChannels.json', data=req_data )
-			
-			if data.get('status') != 'OK':
-				self.showError("Problém s načítaním zoznamu programov: %s" % data.get('description',''))
-				return []
-			
-			channels = {}
-			
-			for channel in data.get('list',[]):
-				if not channel['available']:
-					continue
-				
-				channels[channel['id']] = {
-					'id': str(channel['id']),
-					'name': channel['name'],
-					'slug': channel['slug'],
-					'adult': 1 in channel['category'] or "1" in channel['category'],
-					'number': channel['number'],
-					'picon': channel['icon_url'],
-					'timeshift': channel['catchup_duration'] if channel.get('catchup') else 0
-				}
-			
-				self.channels = channels
-				self.channels_next_load = int(time.time()) + 3600
-			
-		return self.channels
+	def get_channels(self):
+		req_data = {
+			'need_epg': False,
+			'need_list': True,
+			'need_categories': True,
+			'need_offsets': False,
+			'need_hash': True,
+			'need_icons': False,
+			'need_big_icons': False
+		}
 
-	# #################################################################################################
+		data = self.call_api('TvService/GetChannels.json', data=req_data)
 
-	def get_channels_sorted(self, refresh_channels_data=False):
-		self.get_channels(refresh_channels_data)
-		
-		result = []
-		
-		for ch in self.channels.values():
-			result.append(ch)
-		
-		return sorted(result, key=lambda _channel: _channel['number'])
+		if data.get('status') != 'OK':
+			self.showError("Problém s načítaním zoznamu programov: %s" % data.get('description', ''))
+			return []
+
+		channels = []
+
+		for channel in data.get('list', []):
+			if not channel['available']:
+				continue
+
+			channels.append({
+				'id': str(channel['id']),
+				'name': channel['name'],
+				'slug': channel['slug'],
+				'adult': 1 in channel['category'] or "1" in channel['category'],
+				'number': channel['number'],
+				'picon': channel['icon_url'],
+				'timeshift': channel['catchup_duration'] * 24 if channel.get('catchup') else 0
+			})
+			
+		return sorted(channels, key=lambda ch: ch['number']), data.get('list_hash')
 
 	# #################################################################################################
 	
@@ -569,7 +531,7 @@ class SweetTV:
 	
 	def resolve_streams(self, url, stream_id=None ):
 		try:
-			req = requests.get(url, headers=self.common_headers_stream)
+			req = self.api_session.get(url, headers=self.common_headers_stream)
 		except:
 			self.log_function("%s" % traceback.format_exc())
 			self.showError("Nastal problém pri načítení videa.")
