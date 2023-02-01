@@ -39,4 +39,17 @@ class XBMCCompatInterface():
 		}
 		self.run(session, params)
 
+	# #################################################################################################
+
+	def search(self, session, keyword, search_id=None):
+		params = {
+			'search': keyword,
+			'search-no-history':True
+		}
+
+		if search_id:
+			params['cp'] = search_id
+
+		self.run(session, params)
+
 # #################################################################################################
