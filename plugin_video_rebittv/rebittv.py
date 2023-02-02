@@ -6,24 +6,7 @@ from datetime import date
 import traceback
 
 from hashlib import md5
-
-try:
-	from urllib import quote
-	
-	def py2_encode_utf8( text ):
-		return text.encode('utf-8', 'ignore')
-	
-	def py2_decode_utf8( text ):
-		return text.decode('utf-8', 'ignore')
-
-except:
-	from urllib.parse import quote
-
-	def py2_encode_utf8( text ):
-		return text
-	
-	def py2_decode_utf8( text ):
-		return text
+from tools_archivczsk.contentprovider.exception import LoginException
 
 __debug_nr = 1
 
@@ -48,24 +31,6 @@ def _log_dummy(message):
 	print('[REBIT.TV]: ' + message )
 	pass
 
-class RebitTvCache:
-	rebittv = None
-	rebittv_init_params = None
-
-	# #################################################################################################
-	
-	@staticmethod
-	def get(username=None, password=None, device_name=None, data_dir=None, log_function=_log_dummy):
-		if RebitTvCache.rebittv and RebitTvCache.rebittv_init_params == (username, password):
-#			log_function("rebittv already loaded")
-			pass
-		else:
-			RebitTvCache.rebittv = RebitTV(username, password, device_name, data_dir, log_function )
-			RebitTvCache.rebittv_init_params = (username, password)
-			log_function("New instance of rebit.tv initialised")
-		
-		return RebitTvCache.rebittv
-
 class RebitTV:
 	def __init__(self, username, password, device_name, data_dir=None, log_function=None ):
 		self.username = username
@@ -78,6 +43,7 @@ class RebitTV:
 		self.client_id = None
 		self.data_dir = data_dir
 		self.log_function = log_function if log_function else _log_dummy
+		self.api_session = requests.Session()
 		
 		self.common_headers = {
 			"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0",
@@ -87,10 +53,6 @@ class RebitTV:
 		}
 
 		self.load_login_data()
-		
-		self.channels = {}
-		self.channels_next_load = 0
-		
 		self.check_login()
 		
 	# #################################################################################################
@@ -158,6 +120,12 @@ class RebitTV:
 
 	# #################################################################################################
 
+	def showLoginError(self, msg):
+		self.log_function("REBIT.TV Login ERROR: %s" % msg)
+		raise LoginException(msg)
+
+	# #################################################################################################
+
 	def call_api(self, url, method='AUTO', params=None, data=None, enable_retry=True, auth_header=True, pin_header=False ):
 		err_msg = None
 		
@@ -194,14 +162,14 @@ class RebitTV:
 			headers["X-Television-Client-Id"] = self.client_id
 		
 		try:
-			resp = requests.request( method, url, params=params, data=req_data, headers=headers )
+			resp = self.api_session.request(method, url, params=params, data=req_data, headers=headers)
 			
 			try:
 				debug_resp_data = resp.json()
 			except:
 				debug_resp_data = {}
 				
-#			writeDebugRequest( url, data, params, debug_resp_data)
+#			writeDebugRequest(url, data, params, debug_resp_data)
 			
 			if resp.status_code >= 200 and resp.status_code <= 210:
 				try:
@@ -280,7 +248,7 @@ class RebitTV:
 			self.access_token_life = 0
 			self.user_id = None
 			self.save_login_data()
-			self.showError("Problém pri prihlásení: %s" % data.get('message',''))
+			self.showLoginError("Problém pri prihlásení: %s" % data.get('message', ''))
 			return False
 	
 		data = data['data']
@@ -308,7 +276,7 @@ class RebitTV:
 			self.access_token_life = 0
 			self.user_id = None
 			self.save_login_data()
-			self.showError("Problém pri obnove prihlasovacieho tokenu: %s" % data.get('message',''))
+			self.showLoginError("Problém pri obnove prihlasovacieho tokenu: %s" % data.get('message', ''))
 			return False
 	
 		data = data['data']
@@ -351,7 +319,7 @@ class RebitTV:
 		data = self.call_api('television/client', data=data)
 		
 		if 'data' not in data:
-			self.showError("Problém pri párovaní zariadenia: %s" % data.get('message',''))
+			self.showLoginError("Problém pri párovaní zariadenia: %s" % data.get('message', ''))
 			return False
 	
 		data = data['data']
@@ -419,51 +387,34 @@ class RebitTV:
 
 	# #################################################################################################
 	
-	def get_channels(self, refresh_channels_data=False):
-		if refresh_channels_data or not self.channels or self.channels_next_load < int(time.time()):
-			data = self.call_api('television/channels' )
-			
-			if 'data' not in data:
-				self.showError("Problém s načítaním zoznamu programov: %s" % data.get('message',''))
-				return []
-			
-			channels = {}
-			
-			for channel in data['data']:
-				
-				channels[channel['id']] = {
-					'id': str(channel['id']),
-					'name': channel['title'],
-					'slug': channel['slug'],
-					'has_epg': channel['guide'],
-					'adult': channel['protected'],
-					'number': channel['channel'],
-					'picon': channel.get('icon'),
-					'timeshift': channel['archive'] if channel.get('archive') else 0
-				}
-			
-				self.channels = channels
-				self.channels_next_load = int(time.time()) + 3600
-			
-		return self.channels
+	def get_channels(self):
+		data = self.call_api('television/channels')
+
+		if 'data' not in data:
+			self.showError("Problém s načítaním zoznamu programov: %s" % data.get('message', ''))
+			return []
+
+		channels = []
+
+		for channel in data['data']:
+			channels.append({
+				'id': str(channel['id']),
+				'name': channel['title'],
+				'slug': channel['slug'],
+				'has_epg': channel['guide'],
+				'adult': channel['protected'],
+				'number': channel['channel'],
+				'picon': channel.get('icon'),
+				'timeshift': channel['archive'] * 24 if channel.get('archive') else 0
+			})
+
+		return sorted(channels, key=lambda ch: ch['number'])
 
 	# #################################################################################################
 
-	def get_channels_sorted(self, refresh_channels_data=False):
-		self.get_channels(refresh_channels_data)
-		
-		result = []
-		
-		for ch in self.channels.values():
-			result.append(ch)
-		
-		return sorted(result, key=lambda _channel: _channel['number'])
-
-	# #################################################################################################
-	
 	def resolve_streams(self, url ):
 		try:
-			req = requests.get(url)
+			req = self.api_session.get(url)
 		except:
 			self.log_function("%s" % traceback.format_exc())
 			self.showError("Nastal problém pri načítení videa.")
