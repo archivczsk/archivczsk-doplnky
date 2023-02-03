@@ -53,15 +53,13 @@ class BouquetGeneratorTemplate:
 		if not os.path.exists( '/usr/share/enigma2/picon' ):
 			os.mkdir('/usr/share/enigma2/picon')
 			
-		for ref in picons:
-			urls = picons[ref]
-
+		for ref, urls in picons.items():
 			fileout = '/usr/share/enigma2/picon/' + ref + '.png'
 			
 			if isinstance(urls, (type(()), type([]))):
 				for url in urls:
 					download_picon( fileout, url)
-			else:
+			elif urls:
 				download_picon( fileout, urls)
 			
 	# #################################################################################################
@@ -250,11 +248,8 @@ class BouquetGeneratorTemplate:
 				f.write("#SERVICE " + service_ref + url + ":" + channel_name + "\n")
 				f.write("#DESCRIPTION " + channel_name + "\n")
 
-				try:
-					if enable_picons and service_ref.endswith(service_ref_uniq):
-						picons[ service_ref[:-1].replace(':', '_') ] = channel['picon']
-				except:
-					pass
+				if self.enable_picons and service_ref.endswith(service_ref_uniq) and 'picon' in channel:
+					picons[ service_ref[:-1].replace(':', '_') ] = channel['picon']
 
 		first_export = True
 		with open("/etc/enigma2/bouquets.tv", "r") as f:
