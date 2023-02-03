@@ -208,6 +208,7 @@ class SweetTVContentProvider(ModuleContentProvider):
 		self.channels_next_load_time = 0
 		self.checksum = None
 		self.http_endpoint = http_endpoint
+		self.last_stream_id = None
 
 		self.bxeg = SweetTVBouquetXmlEpgGenerator(self, http_endpoint, SweetTV.get_user_agent())
 
@@ -348,5 +349,15 @@ class SweetTVContentProvider(ModuleContentProvider):
 
 			if stream_id:
 				self.sweettv.close_stream(stream_id)
+
+	# #################################################################################################
+
+	def get_url_by_channel_key(self, channel_key):
+		if self.last_stream_id:
+			self.sweettv.close_stream(self.last_stream_id)
+
+		resp = self.sweettv.get_live_link(channel_key)[0]
+		self.last_stream_id = resp.get('stream_id')
+		return resp['url']
 
 	# #################################################################################################

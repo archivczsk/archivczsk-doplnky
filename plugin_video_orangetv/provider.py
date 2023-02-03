@@ -212,3 +212,8 @@ class OrangeTVContentProvider(ModuleContentProvider):
 		self.channels_next_load_time = act_time + 3600
 
 	# #################################################################################################
+
+	def get_url_by_channel_key(self, channel_key):
+		return self.orangetv.get_live_link(channel_key)[0]['url']
+
+	# #################################################################################################

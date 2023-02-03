@@ -202,3 +202,8 @@ class RebitTVContentProvider(ModuleContentProvider):
 
 	# #################################################################################################
 
+	def get_url_by_channel_key(self, channel_key):
+		return self.rebittv.get_live_link(channel_key)[0]['url']
+
+	# #################################################################################################
+
