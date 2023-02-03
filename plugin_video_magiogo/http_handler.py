@@ -3,26 +3,19 @@
 import traceback
 import base64
 import re
-from Plugins.Extensions.archivCZSK.version import version
-from Plugins.Extensions.archivCZSK.engine.client import log
 from Plugins.Extensions.archivCZSK.engine.httpserver import AddonHttpRequestHandler
 
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
-from .magiogo import MagioGoCache
 from time import time
 import xml.etree.ElementTree as ET
 import requests
 
 # #################################################################################################
 
-__scriptid__ = 'plugin.video.magiogo'
-addon = ArchivCZSK.get_addon(__scriptid__)
 
-# #################################################################################################
-
-class MagioGoTvHTTPRequestHandler( AddonHttpRequestHandler ):
-	def __init__(self):
-		AddonHttpRequestHandler.__init__(self, __scriptid__)
+class MagioGOHTTPRequestHandler(AddonHttpRequestHandler):
+	def __init__(self, content_provider, addon):
+		AddonHttpRequestHandler.__init__(self, addon.id)
+		self.cp = content_provider
 		self.live_cache = {}
 		self.magiogo_session = requests.session() 
 	
@@ -31,23 +24,13 @@ class MagioGoTvHTTPRequestHandler( AddonHttpRequestHandler ):
 	def get_stream_index_url(self, channel_id, service_type='LIVE' ):
 		try:
 			if channel_id in self.live_cache and self.live_cache[channel_id]['life'] > int(time()):
-#				log.debug("Returning result from cache" )
+#				self.cp.log_debug("Returning result from cache" )
 				index_url = self.live_cache[channel_id]['index_url']
 			else:
-				device_type = int(addon.get_setting('devicetype'))
-				region = addon.get_setting('region')
-
-				username=addon.get_setting('username')
-				password=addon.get_setting('password')
-				device_id = addon.get_setting( 'deviceid' )
-				data_dir=addon.get_info('profile')
-				
-				magiogo = MagioGoCache.get(region, username, password, device_id, device_type, data_dir, log.info )
-				
-				index_url = magiogo.get_stream_link(channel_id, service_type)
+				index_url = self.cp.magiogo.get_stream_link(channel_id, service_type)
 				self.live_cache[channel_id] = { 'life': int(time())+900, 'index_url': index_url }
 		except:
-			log.error(traceback.format_exc())
+			self.cp.log_error(traceback.format_exc())
 			index_url = None
 
 		return index_url
@@ -68,11 +51,11 @@ class MagioGoTvHTTPRequestHandler( AddonHttpRequestHandler ):
 	# #################################################################################################
 	
 	def handle_m3u8_master_playlist(self, request, channel_id, index_url ):
-		log.debug("Requesting channel id %s HLS master playlist: %s" % (channel_id, index_url) )
+		self.cp.log_debug("Requesting channel id %s HLS master playlist: %s" % (channel_id, index_url))
 		response = self.magiogo_session.get( index_url )
 	
 		if response.status_code != 200:
-			log.error("Server responsed with code %d for HLS master index request" % response.status_code )
+			self.cp.log_error("Server responsed with code %d for HLS master index request" % response.status_code)
 			return self.reply_error404( request )
 
 		# choose best quality stream and get variant playlist
@@ -91,14 +74,14 @@ class MagioGoTvHTTPRequestHandler( AddonHttpRequestHandler ):
 		index_url = self.live_cache.get(channel_id, {}).get('variant_url')
 		
 		if not index_url:
-			log.error("No cached variant index url found for channel ID %s" % channel_id )
+			self.cp.log_error("No cached variant index url found for channel ID %s" % channel_id)
 			return self.reply_error404( request )
 		
-		log.debug("Requesting channel id %s HLS variant playlist: %s" % (channel_id, index_url) )
+		self.cp.log_debug("Requesting channel id %s HLS variant playlist: %s" % (channel_id, index_url))
 		response = self.magiogo_session.get( index_url )
 
 		if response.status_code != 200:
-			log.error("Server responsed with code %d for HLS variant index request" % response.status_code )
+			self.cp.log_error("Server responsed with code %d for HLS variant index request" % response.status_code)
 			return self.reply_error404( request )
 
 		redirect_url = response.url
@@ -110,12 +93,12 @@ class MagioGoTvHTTPRequestHandler( AddonHttpRequestHandler ):
 	# #################################################################################################
 
 	def handle_mpd_manifest(self, request, channel_id, index_url ):
-		log.debug("Requesting channel id %s MPD manifest: %s" % (channel_id, index_url) )
+		self.cp.log_debug("Requesting channel id %s MPD manifest: %s" % (channel_id, index_url))
 		
 		response = self.magiogo_session.get( index_url )
 	
 		if response.status_code != 200:
-			log.error("Server responsed with code %d for MPD index request" % response.status_code )
+			self.cp.log_error("Server responsed with code %d for MPD index request" % response.status_code)
 			return self.reply_error404( request )
 		
 		redirect_url = response.url
@@ -156,12 +139,12 @@ class MagioGoTvHTTPRequestHandler( AddonHttpRequestHandler ):
 		base_url = self.live_cache[channel_id].get('base_url')
 		
 		if not base_url:
-			log.error("Channel id %s found in cache - but no base url for segment is set" % channel_id )
+			self.cp.log_error("Channel id %s found in cache - but no base url for segment is set" % channel_id)
 			return self.reply_error500( request )
 		
-		log.debug('Requesting segment: %s' % base_url + path )
+		self.cp.log_debug('Requesting segment: %s' % base_url + path)
 		response = self.magiogo_session.get( base_url + path )
-#		log.info("Response code: %d, headers: %s" % (response.status_code, response.headers))
+#		self.cp.log_info("Response code: %d, headers: %s" % (response.status_code, response.headers))
 		
 		return self.reply_ok( request, response.content, content_type = response.headers.get('content-type') )
 		
@@ -171,33 +154,38 @@ class MagioGoTvHTTPRequestHandler( AddonHttpRequestHandler ):
 		return self.P_playlive( request, path, 'ARCHIVE')
 
 	# #################################################################################################
+
+	def decode_channel_id(self, path):
+		return base64.b64decode(path.encode('utf-8')).decode("utf-8")
+
+	# #################################################################################################
 		
 	def P_playlive(self, request, path, service_type='LIVE'):
-		if b'/' not in path:
+		if '/' not in path:
 			return self.reply_error404( request )
 		
-		channel_id = path[:path.find(b'/')]
-		channel_id = base64.b64decode(channel_id).decode("utf-8")
-		path = path[path.find(b'/')+1:].decode("utf-8")
+		channel_id = path[:path.find('/')]
+		channel_id = self.decode_channel_id(channel_id)
+		path = path[path.find('/') + 1:]
 
-		log.debug("Playlive channel ID: %s, path: %s" % (channel_id, path) )
+		self.cp.log_debug("Playlive channel ID: %s, path: %s" % (channel_id, path))
 		
 		if path == 'index':
 			# handle playlist/index request
 			index_url = self.get_stream_index_url(channel_id, service_type)
 			
 			if 'index.mpd' in index_url:
-				if addon.get_setting('preprocess_mpd'):
+				if self.cp.get_setting('preprocess_mpd'):
 					return self.handle_mpd_manifest( request, channel_id, index_url )
 				else:
 					return self.reply_redirect( request, index_url.encode('utf-8'))
 			elif 'index.m3u8' in index_url:
-				if addon.get_setting('preprocess_hls'):
+				if self.cp.get_setting('preprocess_hls'):
 					return self.handle_m3u8_master_playlist( request, channel_id, index_url )
 				else:
 					return self.reply_redirect( request, index_url.encode('utf-8'))
 			else:
-				log.error("Unsupported index url: %s" % index_url )
+				self.cp.log_error("Unsupported index url: %s" % index_url)
 				
 		elif path == 'index_cached.m3u8':
 			return self.handle_m3u8_variant_playlist(request, channel_id )

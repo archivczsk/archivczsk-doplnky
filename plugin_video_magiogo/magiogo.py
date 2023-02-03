@@ -1,49 +1,27 @@
 # -*- coding: utf-8 -*-
-import re,sys,os,string,base64,datetime,json,requests,traceback
+import os, json, requests, traceback
 from time import time, mktime
 from datetime import datetime
-import uuid
-from hashlib import sha1, md5
+from hashlib import md5
 
-try:
-	from urllib import quote
-	from urlparse import urlparse, urlunparse, parse_qsl
-	is_py3 = False
-
-	def py2_encode_utf8( text ):
-		return text.encode('utf-8', 'ignore')
-
-except:
-	from urllib.parse import quote, urlparse, urlunparse, parse_qsl
-	is_py3 = True
-	
-	def py2_encode_utf8( text ):
-		return text
-
-def device_id():
-	mac_str = ':'.join(("%012X" % uuid.getnode())[i:i+2] for i in range(0, 12, 2))
-	return sha1( mac_str.encode("utf-8") ).hexdigest()
-
-def _to_string(text):
-	if type(text).__name__ == 'unicode':
-		output = text.encode('utf-8')
-	else:
-		output = str(text)
-	return output
+from tools_archivczsk.contentprovider.exception import LoginException
 
 # #################################################################################################
 
-class MagioGoChannel:
+
+class MagioGOChannel:
 	def __init__(self, channel_info):
 		self.id = str(channel_info['channelId'])
-		self.name = py2_encode_utf8(channel_info['name'])
+		self.name = channel_info['name']
 		self.type = channel_info['type']
-		self.timeshift = channel_info.get('archive', 0) // 1000 if channel_info.get('hasArchive', False) and channel_info.get('archiveSubscription', False) else 0
+		self.timeshift = channel_info.get('archive', 0) // (3600 * 1000) if channel_info.get('hasArchive', False) and channel_info.get('archiveSubscription', False) else 0
 		self.picon = channel_info['logoUrl'].replace('https', 'http')
 		self.adult = False
 		self.preview = None
 		self.epg_name = None
 		self.epg_desc = None
+		self.epg_start = 0
+		self.epg_stop = 0
 
 	# #################################################################################################
 	
@@ -59,21 +37,10 @@ class MagioGoChannel:
 	def set_current_epg(self, info):
 		self.epg_name = info.get('name')
 		self.epg_desc = info.get('longDescription')
+		self.epg_start = info.get('start') // 1000
+		self.epg_stop = info.get('end') // 1000
 
 # #################################################################################################
-
-class ChannelIsNotBroadcastingError(BaseException):
-	pass
-
-class AuthenticationError(BaseException):
-	pass
-
-class TooManyDevicesError(BaseException):
-	pass
-
-# JiRo - doplněna kontrola zaplacené služby
-class NoPurchasedServiceError(BaseException):
-	pass
 
 def _log_dummy(message):
 	print('[Magio GO]: ' + message )
@@ -100,27 +67,8 @@ def writeDebugRequest(url, params, data, response ):
 	
 # #################################################################################################
 
-class MagioGoCache:
-	magiogo = None
-	magiogo_init_params = None
 
-	# #################################################################################################
-	
-	@staticmethod
-	def get(region=None, username=None, password=None, device_id=None, device_type = None, data_dir=None, log_function=_log_dummy):
-		if MagioGoCache.magiogo and MagioGoCache.magiogo_init_params == (region, username, password, device_id, device_type):
-			log_function("Magio GO already loaded")
-			pass
-		else:
-			MagioGoCache.magiogo = MagioGo(region, username, password, device_id, device_type, data_dir, log_function )
-			MagioGoCache.magiogo_init_params = (region, username, password, device_id, device_type)
-			log_function("New instance of Magio GO initialised")
-		
-		return MagioGoCache.magiogo
-	
-# #################################################################################################
-
-class MagioGo:
+class MagioGO:
 	magiogo_device_types = [
 		("OTT_ANDROID", "Xiaomi Mi 11"),        # 0
 		("OTT_IPAD", "iPad Pro"),               # 1
@@ -135,12 +83,11 @@ class MagioGo:
 		self.username = username
 		self.password = password
 		self.device_id = device_id
-		self.channel_list = None
 		self.access_token = None
 		self.refresh_token = None
 		self.access_token_life = 0
 		self.log_function = log_function if log_function else _log_dummy
-		self.device = MagioGo.magiogo_device_types[device_type]
+		self.device = MagioGO.magiogo_device_types[device_type]
 		self.devices = None
 		self.settings = None
 		self.data_dir = data_dir
@@ -153,6 +100,12 @@ class MagioGo:
 
 		self.load_login_data()
 		self.refresh_login_data()
+
+	# #################################################################################################
+	@staticmethod
+	def create_device_id():
+		import uuid
+		return str(uuid.uuid4())
 
 	# #################################################################################################
 	
@@ -212,6 +165,12 @@ class MagioGo:
 	def showError(self, msg):
 		self.log_function("Magio GO API ERROR: %s" % msg )
 		raise Exception("Magio GO: %s" % msg)
+
+	# #################################################################################################
+
+	def showLoginError(self, msg):
+		self.log_function("Magio GO Login ERROR: %s" % msg)
+		raise LoginException(msg)
 	
 	# #################################################################################################
 
@@ -236,7 +195,7 @@ class MagioGo:
 				
 			resp = requests.request( method, url, data=data, params=params, headers=headers )
 			
-#			writeDebugRequest( url, params, data, resp.json())
+			writeDebugRequest(url, params, data, resp.json())
 			if resp.status_code == 200 or (resp.status_code > 400 and resp.status_code < 500):
 				try:
 					return resp.json()
@@ -259,7 +218,7 @@ class MagioGo:
 	
 	def login(self, force=False):
 		if not self.username or not self.password:
-			raise Exception("Magio GO: Nezadané prihlasovacie údaje")
+			raise LoginException("Magio GO: Nezadané prihlasovacie údaje")
 		
 		params = {
 			"dsid": self.device_id,
@@ -286,7 +245,7 @@ class MagioGo:
 			self.access_token_life = response["token"]["expiresIn"] // 1000
 			self.save_login_data()
 		else:
-			raise Exception("Magio GO: Prihlásenie zlyhalo: %s" % response.get('errorMessage', 'Neznáma chyba'))
+			raise LoginException("Magio GO: Prihlásenie zlyhalo: %s" % response.get('errorMessage', 'Neznáma chyba'))
 	
 	# #################################################################################################
 	
@@ -359,39 +318,28 @@ class MagioGo:
 	# #################################################################################################
 
 	def get_channel_list(self, fill_epg=False):
-		if fill_epg:
-			channel_cache_life = 60
-		else:
-			channel_cache_life = 3600
+		self.refresh_login_data()
 		
-		if not self.channel_list or (int(time()) - self.channel_list_load_time) > channel_cache_life: 
-			self.refresh_login_data()
-			
-			params = {
-				"list": "LIVE",
-				"queryScope": "LIVE"
-			}
-			ret = self.call_magiogo_api("v2/television/channels", method = "GET", params = params )
+		params = {
+			"list": "LIVE",
+			"queryScope": "LIVE"
+		}
+		ret = self.call_magiogo_api("v2/television/channels", method="GET", params=params)
 
-			if not ret or not ret.get('success'):
-				return None
+		if not ret or not ret.get('success'):
+			return None
+
+		channels = []
+		for ch in ret.get('items', []):
+			channel = MagioGOChannel(ch['channel'])
+			channel.set_aditional(ch.get('live', {}))
 			
-			channels = []
-			self.channels = {}
-			for ch in ret.get('items', []):
-				channel = MagioGoChannel(ch['channel'])
-				channel.set_aditional( ch.get('live',{}) )
+			if fill_epg:
+				channel.set_current_epg(ch.get('live', {}))
 				
-				if fill_epg:
-					channel.set_current_epg( ch.get('live',{}) )
-					
-				channels.append(channel)
-				self.channels[channel.id] = channel
-				
-			self.channel_list = channels
-			self.channel_list_load_time = int(time())
-		
-		return self.channel_list
+			channels.append(channel)
+
+		return channels
 
 	# #################################################################################################
 	
@@ -458,13 +406,9 @@ class MagioGo:
 		
 	# #################################################################################################
 	
-	def get_archiv_channel_programs(self, channel_id, day):
-		fromts = int(day)
-		tots = (int(day)+86400)
-		
+	def get_archiv_channel_programs(self, channel_id, fromts, tots):
 		epg_data = self.get_channels_epg( [int(channel_id)], fromts, tots)
 		
-		response = []
 		cur_time = int(time())
 
 		for epg_item in epg_data:
@@ -473,40 +417,25 @@ class MagioGo:
 					one_startts = self.magioformat_to_timestamp(one["startTime"])
 					
 					if cur_time > one_startts:
-						title = py2_encode_utf8(one['program']["title"]) + " - [COLOR yellow]" + one["startTime"][11:16] + "-" + one["endTime"][11:16] + "[/COLOR]"
+						title = one['program']["title"] + " - [COLOR yellow]" + one["startTime"][11:16] + "-" + one["endTime"][11:16] + "[/COLOR]"
 						one_endts = self.magioformat_to_timestamp(one["endTime"])
-						
-						p = {
-							'title': title,
+
+						img = one['program'].get('images')
+						if img != None and len(img) > 0:
+							img = img[0]
+						else:
+							img = None
+
+						yield {
+							'title': one['program']["title"],
 							'id': one['program']['programId'],
-							'image': one['program'].get('images', [None])[0],
-							'plot': one['program']["description"]
+							'image': img,
+							'plot': one['program']["description"],
+							'start': one_startts,
+							'stop': one_endts
 						}
 
-						response.append(p)
-					
 				break
-
-		return response
 	
 	# #################################################################################################
-	
-	def get_archive_video_link(self, ch, fromts, tots, enable_h265=False ):
-		if not self.device_token:
-			return None
-		
-		params = {
-			'device_token': self.device_token,
-			'channel_id': ch,
-			'start': fromts,
-			'end': tots
-		}
-		
-		ret = self.call_telly_api( 'contentd/api/device/getContent', params=params)
-		
-		if not ret or ret.get('success') != True:
-			return None
-		
-		return self.get_video_link( ret['stream_uri'], enable_h265)
 
-# #################################################################################################
