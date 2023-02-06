@@ -1,5 +1,5 @@
 [B]1.5.0:[/B] (28.01.2023)
-- convert to module for archivCZSK >=1.7.0
+- convert to module for archivCZSK >= 2.0.0
 [B]1.4.3:[/B] (xx.04.2022)
 - removed bezvadata
 [B]1.4.2:[/B] (07.04.2022)

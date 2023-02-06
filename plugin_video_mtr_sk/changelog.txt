@@ -1,5 +1,5 @@
 [B]1.2.0:[/B]
-Convert addon to module for archivCZSK >=1.7.0
+Convert addon to module for archivCZSK >= 2.0.0
 [B]1.1.0:[/B]
 Make addon python 3.x compatible
 [B]1.0.0:[/B]

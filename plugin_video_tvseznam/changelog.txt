@@ -1,5 +1,5 @@
 2023-01-29 [1.7]
-* convert to module for archivCZSK >=1.7.0
+* convert to module for archivCZSK >= 2.0.0
 
 2022-04-06 [1.6]
 * some minor fixes

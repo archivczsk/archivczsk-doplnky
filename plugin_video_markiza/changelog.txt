@@ -1,5 +1,5 @@
 [B]1.6.0:[/B]
-Convert to module for archivCZSK >=1.7.0
+Convert to module for archivCZSK >= 2.0.0
 
 [B]1.5.1:[/B]
 Fixed module loading addon dependencies

@@ -1,5 +1,5 @@
 v1.8.0 (2023-01-27)
-- konverzia doplnku na modul kompatibilný s archivCZSK >= 1.7.0
+- konverzia doplnku na modul kompatibilný s archivCZSK >= 2.0.0
 
 v1.7.5 (2022-12-15)
 - drobné opravy

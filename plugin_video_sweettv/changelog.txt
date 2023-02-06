@@ -1,5 +1,5 @@
 1.5 - 29.01.2023
-    - konverzia na modul pre archivCZSK >=1.7.0
+    - konverzia na modul pre archivCZSK >= 2.0.0
     
 1.4 - 27.12.2022
     - oprava prehrávania filmov a trailerov

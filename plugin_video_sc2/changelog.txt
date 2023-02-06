@@ -1,5 +1,5 @@
 2023-01-28 [2.3.0]
-* konverzia na modul pre archivCZSK >=1.7.0
+* konverzia na modul pre archivCZSK >= 2.0.0
 
 2023-01-21 [2.2.5]
 * zmena protokolu pre pripojenie k SCC z https na http

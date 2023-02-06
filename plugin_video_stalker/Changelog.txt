@@ -2,7 +2,7 @@
     - pridanie web rozhrania a možnosť vygenerovania playlisty pre vlc
     - nastavovanie správneho user agenta pre prehrávač
     - zvýšenie počtu záznamov na jednej stránke pre VOD
-    - konverzia na modul pre archivCZKS >=1.7.0
+    - konverzia na modul pre archivCZKS >= 2.0.0
 	
 1.2 - 15.12.2022
     - drobné opravy

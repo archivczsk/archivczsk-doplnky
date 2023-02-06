@@ -1,5 +1,5 @@
 [B]1.11.0:[/B]
-- convert to module for archivCZSK >=1.7.0
+- convert to module for archivCZSK >= 2.0.0
 [B]1.10.2:[/B]
 - fixed stream resoling
 [B]1.10.1:[/B]

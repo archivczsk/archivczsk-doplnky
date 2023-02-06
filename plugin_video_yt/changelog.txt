@@ -1,5 +1,5 @@
 [B]1.7:[/B] 29.01.2023
-- convert to module for archivCZSK >=1.7.0
+- convert to module for archivCZSK >= 2.0.0
 
 [B]1.6:[/B] 04.04.2022
 - make addon python 3.x compatible
