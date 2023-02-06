@@ -4,6 +4,7 @@
 		<import addon="enigma2.archivczsk" version="1.7.0"/>
 		<import addon="tools.xbmc" version="1.0" />
 	</requires>
+	<extension point="archivczsk.addon.seeker" name="Webshare.cz" id="webshare.cz"/>
 	<extension point="archivczsk.addon.video"/>
 	<extension point="archivczsk.addon.metadata">
 		<description lang="en">Get access to various czech filesharing services</description>

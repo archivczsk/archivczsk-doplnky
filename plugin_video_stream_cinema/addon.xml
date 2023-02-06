@@ -5,6 +5,8 @@
 		<import addon="tools.xbmc" version="1.0" />
 	</requires>
 	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.seeker" name="Stream Cinema - Movies" id="search-movie"/>
+	<extension point="archivczsk.addon.seeker" name="Stream Cinema - Series" id="search-series"/>
 	<extension point="archivczsk.addon.metadata">
         <description lang="en">Watch online movies from stream-cinema.online</description>
         <description lang="sk">Sledujte online filmy a seriály zo stream-cinema.online</description>

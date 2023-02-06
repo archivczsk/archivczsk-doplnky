@@ -41,6 +41,7 @@ from threading import Lock
 from tools_xbmc.contentprovider import xbmcprovider
 from tools_xbmc.contentprovider.provider import ResolveException
 from tools_xbmc.tools import util, search, xbmcutil
+from tools_xbmc.compat import XBMCCompatInterface
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 
 from .providers import hellspy, ulozto, fastshare, webshare
@@ -216,4 +217,4 @@ def online_files_run(session, params):
 		search.main(session, __addon__, 'search_history', params, search_cb)
 
 def main(addon):
-	return online_files_run
+	return XBMCCompatInterface(online_files_run)

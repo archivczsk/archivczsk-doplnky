@@ -39,7 +39,7 @@ class StreamCinemaXBMContentProvider( XBMContentProvider ):
 		elif 'csearch' in list(params.keys()):
 			return self.do_csearch(params['csearch'], params.get('action-id'))
 		elif 'search' in list(params.keys()):
-			return self.do_csearch(params['search'], 'search-movie')
+			return self.do_csearch(params['search'], params.get('cp', 'search-movie'))
 		elif 'csearch-remove' in list(params.keys()):
 			return self.csearch_remove(params['csearch-remove'], params.get('action-id'))
 		elif 'csearch-edit' in list(params.keys()):
