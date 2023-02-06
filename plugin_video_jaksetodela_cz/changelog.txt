@@ -1,8 +1,0 @@
-[B]1.2.0:[/B]
-addon not working anymore
-[B]1.1.0:[/B]
-make addon python 3.x compatible
-[B]1.0.1:[/B]
-Oprava na youtube
-[B]1.0.0:[/B]
-Prvni verze
