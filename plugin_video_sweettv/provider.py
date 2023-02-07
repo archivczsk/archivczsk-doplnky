@@ -210,6 +210,9 @@ class SweetTVContentProvider(ModuleContentProvider):
 		self.http_endpoint = http_endpoint
 		self.last_stream_id = None
 
+		if not self.get_setting('device_id'):
+			self.set_setting('device_id', SweetTV.create_device_id())
+
 		self.bxeg = SweetTVBouquetXmlEpgGenerator(self, http_endpoint, SweetTV.get_user_agent())
 
 		self.modules = [
@@ -225,16 +228,7 @@ class SweetTVContentProvider(ModuleContentProvider):
 	def login(self):
 		self.sweettv = None
 		self.channels = []
-		device_id = self.get_setting('device_id')
-
-		if not self.get_setting('username') or not self.get_setting('password'):
-			return False
-
-		if not device_id:
-			device_id = SweetTV.create_device_id()
-			self.set_setting('device_id', device_id)
-
-		sweettv = SweetTV(self.get_setting('username'), self.get_setting('password'), device_id, self.data_dir, self.log_info)
+		sweettv = SweetTV(self.get_setting('username'), self.get_setting('password'), self.get_setting('device_id'), self.data_dir, self.log_info)
 		self.sweettv = sweettv
 
 		return True

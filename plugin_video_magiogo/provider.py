@@ -149,6 +149,9 @@ class MagioGOContentProvider(ModuleContentProvider):
 		self.checksum = None
 		self.http_endpoint = http_endpoint
 
+		if not self.get_setting('deviceid'):
+			self.set_setting('deviceid', MagioGO.create_device_id())
+
 		self.bxeg = MagioGOBouquetXmlEpgGenerator(self, http_endpoint, None)
 
 		self.modules = [
@@ -162,16 +165,9 @@ class MagioGOContentProvider(ModuleContentProvider):
 	def login(self):
 		self.magiogo = None
 		self.channels = []
-		device_id = self.get_setting('deviceid')
 
-		if not self.get_setting('username') or not self.get_setting('password'):
-			return False
+		magiogo = MagioGO(self.get_setting('region'), self.get_setting('username'), self.get_setting('password'), self.get_setting('deviceid'), int(self.get_setting('devicetype')), self.data_dir, self.log_info)
 
-		if not device_id:
-			device_id = MagioGO.create_device_id()
-			self.set_setting('deviceid', device_id)
-
-		magiogo = MagioGO(self.get_setting('region'), self.get_setting('username'), self.get_setting('password'), device_id, int(self.get_setting('devicetype')), self.data_dir, self.log_info)
 		self.magiogo = magiogo
 
 		return True

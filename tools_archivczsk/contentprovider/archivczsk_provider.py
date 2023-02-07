@@ -3,7 +3,7 @@
 import sys, os, re, traceback, time, json
 from Plugins.Extensions.archivCZSK.engine import client
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
-from .exception import LoginException
+from .exception import LoginException, AddonErrorException, AddonInfoException, AddonWarningException
 
 __addon__ = ArchivCZSK.get_addon('tools.archivczsk')
 
@@ -108,7 +108,7 @@ class ArchivCZSKContentProvider(object):
 		self.session = None
 		self.searches = SearchProvider(addon, self.provider.name)
 		self.__playlist = []
-		self.logged_in = False
+		self.login_refresh_running = False
 		
 		# set/overwrite interface methods for provider
 		self.provider.add_dir = self.add_dir
@@ -123,18 +123,8 @@ class ArchivCZSKContentProvider(object):
 		self.provider.get_yes_no_input = self.get_yes_no_input
 		self.provider.get_list_input = self.get_list_input
 
-		if hasattr(self.provider, 'login'):
-			try:
-				self.logged_in = self.provider.login()
-			except Exception as e:
-				# suppress possible exception in login method
-				self.log_error("Login failed: %s" % str(e))
-				pass
-		else:
-			# provider don't have login capability, so mark it as logged in
-			self.logged_in = True
+		self.logged_in = self.process_login()
 
-		self.login_refresh_running = False
 		if hasattr(self.provider, 'login_settings_names'):
 			# if provider provided settings needed for login, then install notifier for autolog call
 			self.addon.add_setting_change_notifier(self.provider.login_settings_names, self.login_data_changed)
@@ -157,6 +147,39 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 
+	def process_login(self, silent=True):
+		if not hasattr(self.provider, 'login'):
+			# provider has no login method - handle this as login OK
+			return True
+
+		if hasattr(self.provider, 'login_settings_names'):
+			# provider has set setings needed for login - check if they are filled
+			for name in self.provider.login_settings_names:
+				value = self.addon.get_setting(name)
+				if value == "":
+					return False
+		
+		# pre-checks passed - process real login
+		logged_in = False
+		
+		try:
+			logged_in = self.provider.login()
+		except LoginException as e:
+			self.log_error("Login failed: %s" % str(e))
+
+			if not silent:
+				self.show_error(_tr('Login failed:\n{login_msg}\nPlease check addon settings.').format(login_msg=str(e)), True)
+		except Exception as e:
+			self.log_error("Login ended with error: %s" % str(e))
+			client.log.error(traceback.format_exc())
+
+			if not silent:
+				self.show_error(_tr(30011), True)
+		
+		return logged_in
+
+	# #################################################################################################
+
 	def login_data_changed(self, name, value):
 
 		def __login_refreshed(success, result):
@@ -168,13 +191,7 @@ class ArchivCZSKContentProvider(object):
 			self.login_refresh_running = False
 
 		def __process_login_refresh():
-			self.logged_in = False
-			try:
-				self.logged_in = self.provider.login()
-			except Exception as e:
-				# suppress possible exception in login method
-				self.log_error("Login failed: %s" % str(e))
-				pass
+			self.logged_in = self.process_login()
 
 		if not self.login_refresh_running:
 			self.log_debug("Login data changed - starting new login in background")
@@ -227,25 +244,15 @@ class ArchivCZSKContentProvider(object):
 
 	def __run(self, session, params, allow_retry=True):
 		self.session = session
-		login_msg = None
 		
 		if self.logged_in == False:
 			# this must be set to prevent calling login refresh when login config option changes during login phase
 			# for example when during login new device id is generated
 			self.login_refresh_running = True
-
-			try:
-				self.logged_in = self.provider.login()
-			except LoginException as e:
-				login_msg = str(e)
-
+			self.logged_in = self.process_login(False)
 			self.login_refresh_running = False
 
 		if self.logged_in == False:
-			if login_msg:
-				client.showError(_tr('Login failed:\n{login_msg}\nPlease check addon settings.').format(login_msg=login_msg))
-			else:
-				client.showError(_tr(30011))
 			return
 
 		try:
@@ -254,10 +261,23 @@ class ArchivCZSKContentProvider(object):
 			elif 'CP_action' in params:
 				params['CP_action'](**params['CP_args'])
 				self.__process_playlist()
-		except LoginException:
+		except LoginException as e:
 			# login exception handler - try once more with new login
 			self.logged_in = False
-			return self.__run(session, params, False)
+			if allow_retry:
+				return self.__run(session, params, False)
+			else:
+				# login method returned True, but run returned LoginException
+				client.showError('Login failed: ' + str(e))
+
+		except AddonErrorException as e:
+			client.showError(str(e))
+
+		except AddonInfoException as e:
+			client.showInfo(str(e))
+
+		except AddonWarningException as e:
+			client.showWarning(str(e))
 
 	# #################################################################################################
 

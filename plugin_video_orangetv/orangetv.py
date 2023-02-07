@@ -201,7 +201,7 @@ class OrangeTV:
 			self.save_login_data()
 			raise LoginException("No username and password provided")
 		
-		req_headers = _COMMON_HEADERS.copy()
+		headers = _COMMON_HEADERS.copy()
 		headers["Content-Type"] = "application/x-www-form-urlencoded;charset=UTF-8"
 
 		data = {
@@ -217,8 +217,6 @@ class OrangeTV:
 		}
 
 		response = self.req_session.post('https://oauth01.gtm.orange.sk/oauth/token', data=data, headers=headers, verify=False)
-
-		self.log_function('Access token response:\n%s' % req.text)
 
 		j = response.json()
 		if 'error' in j:

@@ -32,7 +32,7 @@ class RebitTVModuleLiveTV(CPModuleLiveTV):
 
 			if epgdata:
 				info_labels = {
-					'plot': '%s - %s' % (self.cp.timestamp_to_str(int(epgdata["start"])), self.cp.timestamp_to_str(int(epgdata["stop"])))
+					'plot': '%s - %s\n%s' % (self.cp.timestamp_to_str(int(epgdata["start"])), self.cp.timestamp_to_str(int(epgdata["stop"])), epgdata.get('description', ''))
 				}
 				epg_title = epgdata['title']
 

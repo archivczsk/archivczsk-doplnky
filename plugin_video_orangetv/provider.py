@@ -160,6 +160,9 @@ class OrangeTVContentProvider(ModuleContentProvider):
 		self.checksum = None
 		self.http_endpoint = http_endpoint
 
+		if not self.get_setting('deviceid'):
+			self.set_setting('deviceid', OrangeTV.create_device_id())
+
 		self.bxeg = OrangeTVBouquetXmlEpgGenerator(self, http_endpoint, None)
 
 		self.modules = [
@@ -172,16 +175,9 @@ class OrangeTVContentProvider(ModuleContentProvider):
 	
 	def login(self):
 		self.orangetv = None
-		device_id = self.get_setting('deviceid')
+		self.channels = []
 
-		if not self.get_setting('username') or not self.get_setting('password'):
-			return False
-
-		if not device_id:
-			device_id = OrangeTV.create_device_id()
-			self.set_setting('deviceid', device_id)
-
-		orangetv = OrangeTV(self.get_setting('username'), self.get_setting('password'), device_id, self.data_dir, self.log_info)
+		orangetv = OrangeTV(self.get_setting('username'), self.get_setting('password'), self.get_setting('deviceid'), self.data_dir, self.log_info)
 		orangetv.refresh_configuration()
 
 		self.orangetv = orangetv
