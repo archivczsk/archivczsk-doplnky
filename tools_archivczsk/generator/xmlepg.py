@@ -246,7 +246,7 @@ class XmlEpgGeneratorTemplate:
 	# #################################################################################################
 
 	def create_id_content(self, channel):
-		return strip_accents(channel['name']).replace(' ', '_').replace('"', '').replace("'", '').replace(':', '').replace('/', '').replace('.', '') + '_' + str(channel['id'])
+		return strip_accents(channel['name']).replace(' ', '_').replace('"', '').replace("'", '').replace(':', '').replace('/', '').replace('.', '').replace('&', '').replace('#', '').replace('@', '') + '_' + str(channel['id'])
 
 	# #################################################################################################
 

@@ -12,7 +12,7 @@ def _tr(id):
 
 
 def _icon(name):
-	return 'https://github.com/lzoubek/xbmc-doplnky/raw/dharma/icons/' + name
+	return os.path.join(__addon__.get_info('path'), 'resources', 'picture', name)
 
 # #################################################################################################
 
@@ -122,6 +122,7 @@ class ArchivCZSKContentProvider(object):
 		self.provider.show_warning = self.show_warning
 		self.provider.get_yes_no_input = self.get_yes_no_input
 		self.provider.get_list_input = self.get_list_input
+		self.provider.refresh_screen = self.refresh_screen
 
 		self.logged_in = self.process_login()
 
@@ -462,3 +463,7 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 	
+	def refresh_screen(self):
+		client.refresh_screen()
+
+	# #################################################################################################

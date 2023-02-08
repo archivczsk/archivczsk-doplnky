@@ -39,6 +39,10 @@ class PlayliveTVHTTPRequestHandler(AddonHttpRequestHandler):
 				result = self.live_cache[channel_key]['result']
 			else:
 				result = self.get_url_by_channel_key(channel_key)
+
+				if not result:
+					self.reply_error404(request)
+
 				if self.cache_life > 0:
 					self.live_cache[channel_key] = {
 						'life': int(time()) + self.cache_life,

@@ -338,4 +338,6 @@ class CommonContentProvider(object):
 	def get_list_input(self, lst, title=""):
 		# just dummy one
 		return 0
-				
+
+	def refresh_screen(self):
+		return
