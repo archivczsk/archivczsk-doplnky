@@ -1,33 +1,21 @@
 # -*- coding: utf-8 -*-
 #
-# addon by skyjet based on misanov's addon based on waladir plugin :-)
+# addon based on misanov's addon based on waladir plugin :-)
 #
 
-import sys, os, string, random, time, json, uuid, requests, re
-from datetime import datetime, timedelta 
-from datetime import date
-import threading, traceback
+import os, time, json, requests, re
+from datetime import datetime, date, timedelta
+import traceback
 
 import base64
 from hashlib import md5
 
 try:
 	from urllib import quote
-	
-	def py2_encode_utf8( text ):
-		return text.encode('utf-8', 'ignore')
-	
-	def py2_decode_utf8( text ):
-		return text.decode('utf-8', 'ignore')
-
 except:
 	from urllib.parse import quote
 
-	def py2_encode_utf8( text ):
-		return text
-	
-	def py2_decode_utf8( text ):
-		return text
+from tools_archivczsk.contentprovider.exception import LoginException
 
 ############### init ################
 
@@ -47,25 +35,27 @@ def _log_dummy(message):
 	print('[O2TV]: ' + message )
 	pass
 
-class O2tvCache:
-	o2tv = None
-	o2tv_init_params = None
 
-	# #################################################################################################
-	
-	@staticmethod
-	def get(username=None, password=None, device_id=None, devicename=None, data_dir=None, log_function=_log_dummy):
-		if O2tvCache.o2tv and O2tvCache.o2tv_init_params == (username, password, device_id, devicename):
-#			log_function("O2TV already loaded")
-			pass
-		else:
-			O2tvCache.o2tv = O2tv(username, password, device_id, devicename, data_dir, log_function )
-			O2tvCache.o2tv_init_params = (username, password, device_id, devicename)
-			log_function("New instance of O2TV initialised")
-		
-		return O2tvCache.o2tv
+__debug_nr = 1
 
-class O2tv:
+
+def writeDebugRequest(url, params, data, response):
+	global __debug_nr
+
+	name = "/tmp/%03d_request_%s" % (__debug_nr, url[8:].replace('/', '_'))
+
+	with open(name, "w") as f:
+		f.write(json.dumps({'params': params, 'data': data }))
+
+	name = "/tmp/%03d_response_%s" % (__debug_nr, url[8:].replace('/', '_'))
+
+	with open(name, "w") as f:
+		f.write(json.dumps(response))
+
+	__debug_nr += 1
+
+
+class O2TV:
 	def __init__(self, username, password, deviceid, devicename="tvbox", data_dir=None, log_function=None ):
 		self.username = username
 		self.password = password
@@ -82,7 +72,9 @@ class O2tv:
 		self.header = _HEADER
 		self.header["X-NanguTv-Device-Id"] = self.deviceid
 		self.header["X-NanguTv-Device-Name"] = self.devicename
-		self.channels = {}
+		self.epg_cache = {}
+		self.cache_need_save = False
+		self.cache_mtime = 0
 
 		self.load_login_data()
 		
@@ -132,6 +124,43 @@ class O2tv:
 			
 	# #################################################################################################
 	
+	def load_epg_cache(self):
+		try:
+			try:
+				cache_file_mtime = int(os.path.getmtime(self.data_dir + '/epg_cache.json'))
+			except:
+				cache_file_mtime = 0
+
+			if cache_file_mtime > self.cache_mtime:
+				with open(self.data_dir + '/epg_cache.json', "r") as file:
+					self.epg_cache = json.load(file)
+					self.log_function("EPG loaded from cache")
+
+				self.cache_mtime = cache_file_mtime
+				self.cache_need_save = False
+		except:
+			pass
+
+		return True if self.cache_mtime else False
+
+	# #################################################################################################
+
+	def save_epg_cache(self):
+		if self.data_dir and self.cache_need_save:
+			with open(self.data_dir + '/epg_cache.json', 'w') as f:
+				json.dump(self.epg_cache, f)
+				self.log_function("EPG saved to cache")
+				self.cache_need_save = False
+
+	# #################################################################################################
+
+	@staticmethod
+	def create_device_id():
+		import random, string
+		return ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(15))
+
+	# #################################################################################################
+
 	def get_chsum(self):
 		if not self.username or not self.password or len(self.username) == 0 or len( self.password) == 0:
 			return None
@@ -147,6 +176,12 @@ class O2tv:
 
 	# #################################################################################################
 
+	def showLoginError(self, msg):
+		self.log_function("O2TV Login ERROR: %s" % msg)
+		raise LoginException(msg)
+
+	# #################################################################################################
+
 	def call_o2_api(self, url, data=None, params=None, header=None):
 		err_msg = None
 		
@@ -156,8 +191,7 @@ class O2tv:
 			else:
 				resp = requests.get( url, params=data, headers=header )
 			
-#			self.log_function( "URL: %s (%s)" % (url, data or params or "none") )
-#			self.log_function( "RESPONSE: %s" % resp.text )
+#			writeDebugRequest(url, {}, data, resp.json())
 			
 			if resp.status_code == 200:
 				try:
@@ -219,12 +253,10 @@ class O2tv:
 			self.access_token_life = (int(time.time()) +  int(data["expires_in"] / 1000)) - 3600
 
 		self.save_login_data()
-		self.log_function('Token OK')
 
 	# #################################################################################################
 	
 	def refresh_configuration(self, force_refresh=False, iter=0):
-		err_msg = None
 		try:
 			if not self.access_token or self.access_token_life < int(time.time()):
 				self.get_access_token()
@@ -234,16 +266,13 @@ class O2tv:
 			if not self.tariff or force_refresh:
 				try:
 					data = self.call_o2_api(url = "https://app.o2tv.cz/sws/subscription/settings/subscription-configuration.json", header=self.header)
-				except Exception as e:
-					err_msg = str(e)
-					
-				if err_msg:
+				except:
 					if iter == 0:
-							# something failed - try once more with new access toknen
-							self.access_token = None
-							self.refresh_configuration(force_refresh, iter + 1)
+						# something failed - try once more with new access toknen
+						self.access_token = None
+						return self.refresh_configuration(force_refresh, iter + 1)
 					else:
-						raise Exception( err_msg )
+						raise
 					
 				if "isp" in data and len(data["isp"]) > 0 and "locality" in data and len(data["locality"]) > 0 and "billingParams" in data and len(data["billingParams"]) > 0 and "offers" in data["billingParams"] and len(data["billingParams"]["offers"]) > 0 and "tariff" in data["billingParams"] and len(data["billingParams"]["tariff"]) > 0:
 					self.subscription = data["subscription"]
@@ -254,13 +283,9 @@ class O2tv:
 					self.devices = data["pairedDevices"]
 				else:
 					raise Exception( "Získávaní konfigurace selhalo" )
-				
 		except Exception as e:
-			err_msg = str(e)
+			self.showLoginError(str(e))
 			
-		if err_msg:
-			self.showError( "Přihlášení selhalo: %s" % err_msg )
-
 	# #################################################################################################
 	
 	def device_remove(self,did):
@@ -290,11 +315,11 @@ class O2tv:
 
 		post = {
 			"channelKey": ch,
-			"fromTimestamp": fromts,
+			"fromTimestamp": fromts * 1000,
 			"imageSize": "LARGE",
 			"language": "ces",
 			"offer": self.offers,
-			"toTimestamp": tots
+			"toTimestamp": tots * 1000
 		}
 		
 		try:
@@ -306,77 +331,68 @@ class O2tv:
 
 	# #################################################################################################
 	
-	def get_channels(self, refresh_channels_data=False):
+	def get_channels(self):
 		self.refresh_configuration()
 		
-		if not self.channels:
-			channels = {}
+		channels = []
 			
-			post = {
-				"locality" : self.locality,
-				"tariff" : self.tariff,
-				"isp" : self.isp,
-				"language" : "ces",
-				"deviceType" : "STB",
-				"liveTvStreamingProtocol" : "HLS",
-				"offer" : self.offers
-			}
-			data = self.call_o2_api(url = "https://app.o2tv.cz/sws/server/tv/channels.json", data=post, header=self.header)
-	
-			purchased_channels = data['purchasedChannels']
-			
-			for channel_key, item in data["channels"].items():
-				if channel_key in purchased_channels:
-					if item['channelType'] != 'TV':
-						continue
-					
-					channels[ channel_key ] = {
-							'key' : channel_key, #item['channelKey'],
-							'id' : item['channelId'],
-							'number': item['channelNumber'],
-							'type': item['channelType'],
-							'name': item['channelName'],
-							'weight': item['weight'],
-							'adult' : 'audience' in item and item['audience'].upper() == 'INDECENT',
-							'picon': item['logo'].replace('https://', 'http://').replace('64x64','220x220'),
-							'timeshift': item['timeShiftDuration'] if item['timeShiftEnabled'] else 0,
-							'screenshot': item['screenshots'][0],
-						}
-		
-			self.channels = channels
-			refresh_channels_data = True
-			
-		if refresh_channels_data:
-			self.update_channels_data()
-		return self.channels
-	
-	# #################################################################################################
-	
-	def get_channels_sorted(self, refresh_channels_data=False):
-		self.get_channels(refresh_channels_data)
-		return sorted(list(self.channels.values()), key=lambda _channel: _channel['number'])
+		post = {
+			"locality": self.locality,
+			"tariff": self.tariff,
+			"isp": self.isp,
+			"language": "ces",
+			"deviceType": "STB",
+			"liveTvStreamingProtocol": "HLS",
+			"offer": self.offers
+		}
+		data = self.call_o2_api(url="https://app.o2tv.cz/sws/server/tv/channels.json", data=post, header=self.header)
 
+		purchased_channels = data['purchasedChannels']
+
+		self.update_channels_data(data['channels'])
+
+		for item in data["channels"].values():
+			if item['channelKey'] in purchased_channels:
+				if item['channelType'] != 'TV':
+					continue
+
+				picon = item['logo'].replace('https://', 'http://').replace('64x64', '220x220').replace('38x38', '220x220')
+				channels.append({
+						'key': item['channelKey'],
+						'id': item['channelId'],
+						'number': item['channelNumber'],
+						'name': item['channelName'],
+						'type': item['channelType'],
+						'weight': item['weight'],
+						'adult': 'audience' in item and item['audience'].upper() == 'INDECENT',
+						'picon': picon,
+						'timeshift': int(item['timeShiftDuration'] // 60) if item['timeShiftDuration'] else 0,
+						'screenshot': item['screenshots'][0] if len(item['screenshots']) > 0 else None,
+						'logo': item.get('logo_hi', picon),
+#						'live': item.get('live')
+					})
+	
+		return sorted(channels, key=lambda ch: ch['number'])
+	
 	# #################################################################################################
 	
-	def update_channels_data(self):
-		self.refresh_configuration()
-		
+	def update_channels_data(self, channels):
 		data = self.call_o2_api(url = "https://api.o2tv.cz/unity/api/v1/channels/", header=self.header_unity)
 		
 		if "result" in data and len(data["result"]) > 0:
 			for channel in data["result"]:
 				try:
-					ch = self.channels[ channel["channel"]['channelKey'] ]
+					ch = channels[ channel["channel"]['channelKey'] ]
 				except:
 					continue
 				
-				ch['logo'] = "https://www.o2tv.cz/" + channel["channel"]["images"]["color"]["url"]
-				if 'live' in channel: 
-					ch['live'] = channel['live']
-					ch['live']['start'] = int(ch['live']['start'] / 1000)
-					ch['live']['end'] = int(ch['live']['end'] / 1000)
-				else:
-					ch['live'] = None
+				ch['logo_hi'] = "https://www.o2tv.cz/" + channel["channel"]["images"]["color"]["url"]
+#				if 'live' in channel:
+#					ch['live'] = channel['live']
+#					ch['live']['start'] = int(ch['live']['start'] / 1000)
+#					ch['live']['end'] = int(ch['live']['end'] / 1000)
+#				else:
+#					ch['live'] = None
 	
 	# #################################################################################################
 	
@@ -552,3 +568,73 @@ class O2tv:
 		return self.resolve_streams(post)
 
 	# #################################################################################################
+
+	def timestamp_to_str(self, ts, format='%H:%M'):
+		return datetime.fromtimestamp(ts / 1000).strftime(format)
+
+	# #################################################################################################
+
+	def fill_channel_epg_cache(self, ch, epg, last_timestamp=0):
+		ch_epg = []
+
+		last_timestamp *= 1000
+
+		for one in epg:
+			ch_epg.append({
+				"start": one["startTimestamp"] / 1000,
+				"end": one["endTimestamp"] / 1000,
+				"title": str(one["name"]),
+				"desc": '%s - %s\n%s' % (self.timestamp_to_str(one["startTimestamp"]), self.timestamp_to_str(one["endTimestamp"]), one["shortDescription"]),
+				'img': one.get('picture')
+			})
+
+			if last_timestamp and one["startTimestamp"] > last_timestamp:
+				break
+
+		self.epg_cache[ch] = ch_epg
+		self.cache_need_save = True
+
+	# #################################################################################################
+
+	def get_channel_current_epg(self, ch, cache_hours=0):
+		fromts = int(time.time())
+		tots = fromts + (cache_hours * 3600) + 60
+		title = ""
+		desc = ""
+		img = None
+		del_count = 0
+
+		if ch in self.epg_cache:
+			for epg in self.epg_cache[ch]:
+				if epg["end"] < fromts:
+					# cleanup old events
+					del_count += 1
+
+				if epg["start"] < fromts and epg["end"] > fromts:
+					title = epg["title"]
+					desc = epg["desc"]
+					img = epg['img']
+					break
+
+		if del_count:
+			# save some memory - remove old events from cache
+			del self.epg_cache[ch][:del_count]
+			self.log_function("Deleted %d old events from EPG cache for channel %s" % (del_count, ch))
+
+		# if we haven't found event in cache and epg refresh is enabled (cache_hours > 0)
+		if title == "" and cache_hours > 0:
+			# event not found in cache, so request fresh info from server (can be slow)
+			self.log_function("Requesting EPG for channel %s from %d to %d" % (ch, fromts, tots))
+
+			j = self.get_channel_epg(ch, fromts, tots)
+			self.fill_channel_epg_cache(ch, j)
+
+			# cache already filled with fresh entries, so the first one is current event
+			title = self.epg_cache[ch][0]['title']
+			desc = self.epg_cache[ch][0]['desc']
+			img = self.epg_cache[ch][0]['img']
+
+		if title == "":
+			return None
+
+		return {"title": title, "desc": desc, 'img': img}
