@@ -122,6 +122,7 @@ class ArchivCZSKContentProvider(object):
 		self.provider.show_warning = self.show_warning
 		self.provider.get_yes_no_input = self.get_yes_no_input
 		self.provider.get_list_input = self.get_list_input
+		self.provider.get_text_input = self.get_text_input
 		self.provider.refresh_screen = self.refresh_screen
 
 		self.logged_in = self.process_login()
@@ -164,7 +165,7 @@ class ArchivCZSKContentProvider(object):
 		logged_in = False
 		
 		try:
-			logged_in = self.provider.login()
+			logged_in = self.provider.login(silent)
 		except LoginException as e:
 			self.log_error("Login failed: %s" % str(e))
 
@@ -460,6 +461,11 @@ class ArchivCZSKContentProvider(object):
 
 	def get_list_input(self, lst, title=""):
 		return client.getListInput(self.session, lst, title)
+
+	# #################################################################################################
+
+	def get_text_input(self, title, text=""):
+		return client.getTextInput(self.session, title, text)
 
 	# #################################################################################################
 	

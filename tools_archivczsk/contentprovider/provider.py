@@ -339,5 +339,8 @@ class CommonContentProvider(object):
 		# just dummy one
 		return 0
 
+	def get_text_input(self, title, text=""):
+		return ""
+
 	def refresh_screen(self):
 		return

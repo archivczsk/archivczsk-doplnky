@@ -228,7 +228,7 @@ class SweetTVContentProvider(ModuleContentProvider):
 
 	# #################################################################################################
 
-	def login(self):
+	def login(self, silent):
 		self.sweettv = None
 		self.channels = []
 		sweettv = SweetTV(self.get_setting('username'), self.get_setting('password'), self.get_setting('device_id'), self.data_dir, self.log_info)

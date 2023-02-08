@@ -172,7 +172,7 @@ class MagioGOContentProvider(ModuleContentProvider):
 
 	# #################################################################################################
 
-	def login(self):
+	def login(self, silent):
 		self.magiogo = None
 		self.channels = []
 

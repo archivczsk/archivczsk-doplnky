@@ -377,7 +377,7 @@ class O2TVContentProvider(ModuleContentProvider):
 
 	# #################################################################################################
 	
-	def login(self):
+	def login(self, silent):
 		self.o2tv = None
 		self.channels = []
 

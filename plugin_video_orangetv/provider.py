@@ -181,7 +181,7 @@ class OrangeTVContentProvider(ModuleContentProvider):
 
 	# #################################################################################################
 	
-	def login(self):
+	def login(self, silent):
 		self.orangetv = None
 		self.channels = []
 
