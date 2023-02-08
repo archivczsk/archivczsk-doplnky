@@ -46,7 +46,11 @@ class OrangeTVModuleLiveTV(CPModuleLiveTV):
 
 			if epg:
 				epg_str = '  ' + _I(epg["title"])
-				info_labels = {'plot': epg['desc'] }
+				info_labels = {
+					'plot':epg['desc'],
+					'title': epg["title"],
+					'img': epg['img']
+				}
 			else:
 				epg_str = ''
 				info_labels = {}
@@ -90,10 +94,14 @@ class OrangeTVModuleArchive(CPModuleArchive):
 	def get_archive_program(self, channel_id, archive_day):
 		ts_from, ts_to = self.archive_day_to_datetime_range(archive_day, True)
 
-		for ch in self.cp.orangetv.getArchivChannelPrograms(channel_id, ts_from, ts_to):
-			title = '%s - %s - %s' % (self.cp.timestamp_to_str(ch["start"]), self.cp.timestamp_to_str(ch["stop"]), _I(ch["title"]))
+		for epg in self.cp.orangetv.getArchivChannelPrograms(channel_id, ts_from, ts_to):
+			title = '%s - %s - %s' % (self.cp.timestamp_to_str(epg["start"]), self.cp.timestamp_to_str(epg["stop"]), _I(epg["title"]))
 			
-			self.cp.add_video(title, ch['img'], info_labels={'plot': ch['plot']}, cmd=self.get_archive_stream, archive_title=str(ch["title"]), channel_key=channel_id, epg_id=ch['epg_id'], ts_from=ch['start'], ts_to=ch['stop'])
+			info_labels = {
+				'plot': epg['plot'],
+				'title': epg["title"]
+			}
+			self.cp.add_video(title, epg['img'], info_labels, cmd=self.get_archive_stream, archive_title=str(epg["title"]), channel_key=channel_id, epg_id=epg['epg_id'], ts_from=epg['start'], ts_to=epg['stop'])
 
 	# #################################################################################################
 

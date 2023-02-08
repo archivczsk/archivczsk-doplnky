@@ -22,23 +22,36 @@ class MagioGOChannel:
 		self.epg_desc = None
 		self.epg_start = 0
 		self.epg_stop = 0
+		self.epg_year = None
+		self.epg_duration = None
 
 	# #################################################################################################
 	
 	def set_aditional(self, info):
 		preview_urls = info.get('images',[])
-		if preview_urls:
-			self.preview = preview_urls[0]
+		if preview_urls and len(preview_urls) > 0:
+			for url in preview_urls:
+				if 'VERT' in url:
+					self.preview = url
+					break
+			else:
+				self.preview = preview_urls[0]
 			
 		self.adult = info.get('adult', False)
 
 # #################################################################################################
 
 	def set_current_epg(self, info):
-		self.epg_name = info.get('name')
+		ep = info.get('episodeTitle')
+		if ep:
+			self.epg_name = info.get('name') + ': ' + ep
+		else:
+			self.epg_name = info.get('name')
 		self.epg_desc = info.get('longDescription')
 		self.epg_start = info.get('start') // 1000
 		self.epg_stop = info.get('end') // 1000
+		self.epg_year = info.get('creationYear')
+		self.epg_duration = int(info['runtimeMinutes']) * 60 if info.get('runtimeMinutes') else None
 
 # #################################################################################################
 
@@ -195,7 +208,7 @@ class MagioGO:
 				
 			resp = requests.request( method, url, data=data, params=params, headers=headers )
 			
-			writeDebugRequest(url, params, data, resp.json())
+#			writeDebugRequest(url, params, data, resp.json())
 			if resp.status_code == 200 or (resp.status_code > 400 and resp.status_code < 500):
 				try:
 					return resp.json()
@@ -417,22 +430,33 @@ class MagioGO:
 					one_startts = self.magioformat_to_timestamp(one["startTime"])
 					
 					if cur_time > one_startts:
-						title = one['program']["title"] + " - [COLOR yellow]" + one["startTime"][11:16] + "-" + one["endTime"][11:16] + "[/COLOR]"
 						one_endts = self.magioformat_to_timestamp(one["endTime"])
 
-						img = one['program'].get('images')
-						if img != None and len(img) > 0:
-							img = img[0]
+						imgages = one['program'].get('images')
+						if imgages != None and len(imgages) > 0:
+							for url in imgages:
+								if 'VERT' in url:
+									img = url
+									break
+							else:
+								img = images[0]
 						else:
 							img = None
 
+						if one['program'].get("episodeTitle"):
+							title = one['program']["title"] + ': ' + one['program']["episodeTitle"]
+						else:
+							title = one['program']["title"]
+
 						yield {
-							'title': one['program']["title"],
+							'title': title,
 							'id': one['program']['programId'],
 							'image': img,
 							'plot': one['program']["description"],
 							'start': one_startts,
-							'stop': one_endts
+							'stop': one_endts,
+							'duration': one['duration'],
+							'year': one['program'].get('programValue', {}).get('creationYear')
 						}
 
 				break

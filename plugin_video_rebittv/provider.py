@@ -31,15 +31,17 @@ class RebitTVModuleLiveTV(CPModuleLiveTV):
 			epgdata = epg.get(channel['id'])
 
 			if epgdata:
-				info_labels = {
-					'plot': '%s - %s\n%s' % (self.cp.timestamp_to_str(int(epgdata["start"])), self.cp.timestamp_to_str(int(epgdata["stop"])), epgdata.get('description', ''))
-				}
 				epg_title = epgdata['title']
 
 				if epgdata.get('subtitle'):
 					epg_title += ': ' + epgdata['subtitle']
 
 				epg_str = "  " + _I(epg_title)
+
+				info_labels = {
+					'plot': '%s - %s\n%s' % (self.cp.timestamp_to_str(int(epgdata["start"])), self.cp.timestamp_to_str(int(epgdata["stop"])), epgdata.get('description', '')),
+					'title': epg_title
+				}
 			else:
 				epg_str = ""
 				info_labels = {}
@@ -91,7 +93,12 @@ class RebitTVModuleArchive(CPModuleArchive):
 
 			title = '%s - %s - %s' % (self.cp.timestamp_to_str(event["start"]), self.cp.timestamp_to_str(event["stop"]), _I(event["title"]))
 
-			self.cp.add_video(title, None, info_labels={'plot': event.get('description')}, cmd=self.get_archive_stream, archive_title=str(event["title"]), channel_id=channel_id, event_id=event['id'])
+			info_labels = {
+				'plot': event.get('description'),
+				'title': event["title"]
+			}
+
+			self.cp.add_video(title, None, info_labels, cmd=self.get_archive_stream, archive_title=str(event["title"]), channel_id=channel_id, event_id=event['id'])
 
 	# #################################################################################################
 

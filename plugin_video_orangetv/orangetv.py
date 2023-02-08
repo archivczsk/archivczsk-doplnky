@@ -358,7 +358,8 @@ class OrangeTV:
 				"start": one["startTimestamp"] / 1000,
 				"end": one["endTimestamp"] / 1000,
 				"title": str(one["name"]),
-				"desc": '%s - %s\n%s' % (self.timestamp_to_str(one["startTimestamp"]), self.timestamp_to_str(one["endTimestamp"]), one["shortDescription"])
+				"desc": '%s - %s\n%s' % (self.timestamp_to_str(one["startTimestamp"]), self.timestamp_to_str(one["endTimestamp"]), one["shortDescription"]),
+				'img': one.get('picture')
 			})
 			
 			if last_timestamp and one["startTimestamp"] > last_timestamp:
@@ -374,6 +375,7 @@ class OrangeTV:
 		tots = (int(time()) + (cache_hours * 3600) + 60)
 		title = ""
 		desc = ""
+		img = None
 		del_count = 0
 		
 		if ch in self.epg_cache:
@@ -385,6 +387,7 @@ class OrangeTV:
 				if epg["start"] < fromts and epg["end"] > fromts:
 					title = epg["title"]
 					desc = epg["desc"]
+					img = epg.get("img")
 					break
 		
 		if del_count:
@@ -403,11 +406,12 @@ class OrangeTV:
 			# cache already filled with fresh entries, so the first one is current event
 			title = self.epg_cache[ch][0]['title']
 			desc = self.epg_cache[ch][0]['desc']
+			img = self.epg_cache[ch][0].get('img')
 		
 		if title == "":
 			return None
 		
-		return {"title": title, "desc": desc}
+		return {"title": title, "desc": desc, 'img': img}
 
 	# #################################################################################################
 
@@ -423,13 +427,11 @@ class OrangeTV:
 			"toTimestamp": ts_to * 1000
 		}
 
-		response = []
-
 		act_time = int(time())*1000
 
 		for program in self.call_api('server/tv/channel-programs.json', params=params):
 			if act_time > program["startTimestamp"]:
-				p = {
+				yield {
 					'title': str(program["name"]),
 					'epg_id': program["epgId"],
 					'img': program["picture"],
@@ -437,9 +439,6 @@ class OrangeTV:
 					'start': program["startTimestamp"] // 1000,
 					'stop': program["endTimestamp"] // 1000,
 				}
-				response.append(p)
-
-		return response
 
 	# #################################################################################################
 

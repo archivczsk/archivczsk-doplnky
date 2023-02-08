@@ -32,7 +32,8 @@ class SweetTVModuleLiveTV(CPModuleLiveTV):
 				epgdata = epgdata[0]
 
 				info_labels = {
-					'plot': '%s - %s' % (self.cp.timestamp_to_str(int(epgdata["time_start"])), self.cp.timestamp_to_str(int(epgdata["time_stop"])))
+					'plot': '%s - %s' % (self.cp.timestamp_to_str(int(epgdata["time_start"])), self.cp.timestamp_to_str(int(epgdata["time_stop"]))),
+					'title': epgdata["text"]
 				}
 				epg_str = "  " + _I(epgdata["text"])
 				img = epgdata.get('preview_url')
@@ -99,9 +100,11 @@ class SweetTVModuleArchive(CPModuleArchive):
 				break
 			
 			title = '%s - %s - %s' % (self.cp.timestamp_to_str(startts), self.cp.timestamp_to_str(endts), _I(event["text"]))
+			info_labels = {
+				'title': event["text"]
+			}
 
-			self.cp.add_video(title, event.get('preview_url'), cmd=self.cp.get_archive_stream, archive_title=str(event["text"]), channel_id=channel_id, epg_id=event['id'])
-
+			self.cp.add_video(title, event.get('preview_url'), info_labels, cmd=self.cp.get_archive_stream, archive_title=str(event["text"]), channel_id=channel_id, epg_id=event['id'])
 
 # #################################################################################################
 
@@ -280,6 +283,7 @@ class SweetTVContentProvider(ModuleContentProvider):
 				'duration': movie['duration'],
 				'year': movie['year'],
 				'rating': movie.get('rating'),
+				'title': movie['title']
 			}
 
 			menu = {}

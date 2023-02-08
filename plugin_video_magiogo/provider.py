@@ -32,7 +32,10 @@ class MagioGOModuleLiveTV(CPModuleLiveTV):
 				epg_str = '  ' + _I(channel.epg_name)
 
 				info_labels = {
-					'plot': '%s - %s\n%s' % (self.cp.timestamp_to_str(channel.epg_start), self.cp.timestamp_to_str(channel.epg_stop), channel.epg_desc)
+					'plot': '%s - %s\n%s' % (self.cp.timestamp_to_str(channel.epg_start), self.cp.timestamp_to_str(channel.epg_stop), channel.epg_desc),
+					'title': channel.epg_name,
+					'year': channel.epg_year,
+					'duration': channel.epg_duration,
 				}
 			else:
 				epg_str = ""
@@ -75,7 +78,14 @@ class MagioGOModuleArchive(CPModuleArchive):
 		for event in self.cp.magiogo.get_archiv_channel_programs(channel_id, ts_from, ts_to):
 			title = '%s - %s - %s' % (self.cp.timestamp_to_str(event["start"]), self.cp.timestamp_to_str(event["stop"]), _I(event["title"]))
 
-			self.cp.add_video(title, event['image'], info_labels={'plot': event.get('plot')}, cmd=self.get_archive_stream, archive_title=str(event["title"]), event_id=event['id'])
+			info_labels = {
+				'plot': event.get('plot'),
+				'title': event["title"],
+				'duration': event['duration'],
+				'year': event['year']
+			}
+
+			self.cp.add_video(title, event['image'], info_labels, cmd=self.get_archive_stream, archive_title=str(event["title"]), event_id=event['id'])
 
 	# #################################################################################################
 
