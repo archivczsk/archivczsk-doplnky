@@ -2,22 +2,13 @@
 import re, os, datetime, json, requests, traceback
 from time import time
 import uuid
-from hashlib import sha1
+from tools_archivczsk.contentprovider.exception import LoginException
 
 try:
-	from urllib import quote
 	from urlparse import urlparse, urlunparse, parse_qsl
-	is_py3 = False
-
-	def py2_encode_utf8( text ):
-		return text.encode('utf-8', 'ignore')
 
 except:
-	from urllib.parse import quote, urlparse, urlunparse, parse_qsl
-	is_py3 = True
-	
-	def py2_encode_utf8( text ):
-		return text
+	from urllib.parse import urlparse, urlunparse, parse_qsl
 
 _COMMON_HEADERS = {
 	'Accept': 'application/json, text/plain, */*',
@@ -30,28 +21,19 @@ _COMMON_HEADERS = {
 	'X-Requested-With': 'tv.fournetwork.android.box.digi',
 }
 
-def device_id():
-	mac_str = ':'.join(("%012X" % uuid.getnode())[i:i+2] for i in range(0, 12, 2))
-	return sha1( mac_str.encode("utf-8") ).hexdigest()
-
-def _to_string(text):
-	if type(text).__name__ == 'unicode':
-		output = text.encode('utf-8')
-	else:
-		output = str(text)
-	return output
-
 # #################################################################################################
 
 class TellyChannel:
 	def __init__(self, channel_info):
 		self.id = channel_info['id']
 		self.epg_id = channel_info['id_epg']
-		self.name = py2_encode_utf8(channel_info['name'])
+		self.name = channel_info['name']
 		self.type = channel_info['type']
 		self.pvr = channel_info['pvr']
-		self.timeshift = channel_info['catchup_length']
+		self.timeshift = int(channel_info['catchup_length']) if channel_info.get('catchup_length') else 0
 		self.adult = channel_info['parental_lock'].get('enabled', False)
+		self.picon = None
+		self.preview = None
 		
 		# get only first adaptive stream url
 		for cs in channel_info['content_sources']:
@@ -74,53 +56,36 @@ class TellyChannel:
 
 # #################################################################################################
 
-class ChannelIsNotBroadcastingError(BaseException):
-	pass
-
-class AuthenticationError(BaseException):
-	pass
-
-class TooManyDevicesError(BaseException):
-	pass
-
-# JiRo - doplněna kontrola zaplacené služby
-class NoPurchasedServiceError(BaseException):
-	pass
-
 def _log_dummy(message):
 	print('[TELLY]: ' + message )
 	pass
 
 # #################################################################################################
 
-class TellyCache:
-	telly = None
-	telly_init_params = None
+__debug_nr = 1
+def writeDebugRequest(url, params, data, response):
+	global __debug_nr
 
-	# #################################################################################################
-	
-	@staticmethod
-	def get(data_dir=None, log_function=_log_dummy):
-		if TellyCache.telly and TellyCache.telly_init_params == None:
-#			log_function("Telly already loaded")
-			pass
-		else:
-			TellyCache.telly = Telly(data_dir, log_function )
-			TellyCache.telly_init_params = None
-#			OrangeTVcache.orangetv.loadEpgCache()
-			log_function("New instance of Telly initialised")
-		
-		return TellyCache.telly
-	
+	name = "/tmp/%03d_request_%s" % (__debug_nr, url[8:].replace('/', '_'))
+
+	with open(name, "w") as f:
+		f.write(json.dumps({'params': params, 'data': data }))
+
+	name = "/tmp/%03d_response_%s" % (__debug_nr, url[8:].replace('/', '_'))
+
+	with open(name, "w") as f:
+		f.write(json.dumps(response))
+
+	__debug_nr += 1
+
 # #################################################################################################
+
 
 class Telly:
 
 	def __init__(self, data_dir=None, log_function=None ):
-		self.channel_list = None
 		self.device_token = None
 		self.log_function = log_function if log_function else _log_dummy
-		self.devices = None
 		self.settings = None
 		self.data_dir = data_dir
 		self.epg_cache = {}
@@ -138,9 +103,6 @@ class Telly:
 			except:
 				pass
 			
-			# check login data
-			self.token_is_valid()
-
 	# #################################################################################################
 
 	def save_login_data(self):
@@ -205,6 +167,7 @@ class Telly:
 			
 			if resp.status_code == 200:
 				try:
+#					writeDebugRequest(url, data, params, resp.json())
 					return resp.json()
 				except:
 					return {}
@@ -235,6 +198,12 @@ class Telly:
 		self.save_login_data()
 		self.log_function("Telly device token is invalid: %s" % str(ret))
 		return False
+
+	# #################################################################################################
+
+	def check_token(self):
+		if not self.token_is_valid():
+			raise LoginException("Prihlasovací token je neplatný - spárujte zariadenie znova")
 
 	# #################################################################################################
 
@@ -271,6 +240,7 @@ class Telly:
 		
 		ret = self.call_telly_api('api/device/getSettings/', data = { 'device_token': self.device_token })
 		if not ret or not ret.get('success'):
+			self.check_token()
 			return False
 		
 		s = ret.get('settings',{})
@@ -287,40 +257,22 @@ class Telly:
 		if not self.device_token:
 			return None
 		
-		if not self.channel_list or (int(time()) - self.channel_list_load_time) > 3600: 
-			self.refresh_settings()
-			
-			ret = self.call_telly_api('api/device/getSources/', data = { 'device_token': self.device_token })
-			if not ret or not ret.get('success'):
-				return None
-			
-			channels = []
-			self.channels = {}
-			for ch in ret.get('channels', []):
-				channel = TellyChannel(ch)
-				channel.set_picon(self.settings['channel_logo_url'])
-				channel.set_preview(self.settings['channel_preview_url'])
-				channels.append(channel)
-				self.channels[str(channel.id)] = channel
-				
-			self.channel_list = channels
-			self.channel_list_load_time = int(time())
-		
-		return self.channel_list
+		self.refresh_settings()
 
-	# #################################################################################################
-	
-	def get_video_link_by_id(self, channel_id, enable_h265=False):
-		if not self.get_channel_list():
+		ret = self.call_telly_api('api/device/getSources/', data={ 'device_token': self.device_token })
+		if not ret or not ret.get('success'):
+			self.check_token()
 			return None
+
+		channels = []
+		for ch in ret.get('channels', []):
+			channel = TellyChannel(ch)
+			channel.set_picon(self.settings['channel_logo_url'])
+			channel.set_preview(self.settings['channel_preview_url'])
+			channels.append(channel)
 		
-		channel = self.channels.get(str(channel_id))
-		
-		if not channel:
-			return None
-		
-		return self.get_video_link( channel.stream_url, enable_h265 )
-	
+		return channels
+
 	# #################################################################################################
 	
 	def get_channels_epg(self, epg_ids, fromts, tots ):
@@ -338,6 +290,7 @@ class Telly:
 		ret = self.call_telly_api( 'https://epg.tv.itself.cz/v2/epg', data=data )
 		
 		if ret.get('error', True) == True:
+			self.check_token()
 			return None
 		
 		return ret.get('broadcasts')
@@ -372,8 +325,15 @@ class Telly:
 				if one["name"].startswith('Vysílání od: '):
 					continue
 				
-				title = py2_encode_utf8(one["name"]) + " - " + datetime.datetime.fromtimestamp(one["timestamp_start"]).strftime('%H:%M') + "-" + datetime.datetime.fromtimestamp(one["timestamp_end"]).strftime('%H:%M')
-				ch_epg.append({"start": one["timestamp_start"], "end": one["timestamp_end"], "title": title, "desc": one["description_broadcast"]})
+				ch_epg.append({
+					"start": one["timestamp_start"],
+					"end": one["timestamp_end"],
+					"title": one["name"],
+					"desc": one["description_broadcast"] if one["description_broadcast"] else "",
+					'img': one.get("poster", {}).get('url', "").replace('{size}', 'stb-new-carousel'),
+					'year': one.get('year'),
+					'rating': float(one['rating']) / 10 if one.get('rating') else None
+				})
 				
 				if one["timestamp_start"] > tots:
 					break
@@ -381,14 +341,12 @@ class Telly:
 			self.epg_cache[str(epg_id)] = ch_epg
 			
 		self.cache_need_save = True
-		self.save_epg_cache()
 		
 	# #################################################################################################
 
 	def get_channel_current_epg(self, epg_id):
 		fromts = int(time())
 		title = ""
-		desc = ""
 		del_count = 0
 		
 		epg_id = str(epg_id)
@@ -400,7 +358,6 @@ class Telly:
 				
 				if epg["start"] < fromts and epg["end"] > fromts:
 					title = epg["title"]
-					desc = epg["desc"]
 					break
 		
 		if del_count:
@@ -411,41 +368,31 @@ class Telly:
 		if title == "":
 			return None
 		
-		return {"title": title, "desc": desc}
+		return epg
 
 	# #################################################################################################
 
-	def get_archiv_channel_programs(self, ch, epg_id, day):
+	def get_archiv_channel_programs(self, epg_id, fromts, tots):
 		if not self.device_token:
-			return []
-		
-		fromts = int(day)
-		tots = (int(day)+86400)
+			return
 		
 		epg_data = self.get_channels_epg( [int(epg_id)], fromts, tots)
 		
-		if not epg_id in epg_data:
-			return []
-		
-		response = []
-		for program in epg_data[epg_id]:
+		for program in epg_data.get(str(epg_id), []):
 			if int(time()) > program["timestamp_start"]:
-				title = py2_encode_utf8(program["name"]) + " - [COLOR yellow]" + datetime.datetime.fromtimestamp(program["timestamp_start"]).strftime('%H:%M') + "-" + datetime.datetime.fromtimestamp(program["timestamp_end"]).strftime('%H:%M') + "[/COLOR]"
-				
-				p = {
-					'title': title,
-					'url': '#archive_video_link#' + ch + "|" + str(program["timestamp_start"]) + "|" + str(program["timestamp_end"]),
-					'image': program.get("poster",{}).get('url',"").replace('{size}', 'stb-new-carousel'),
-					'plot': program["description_broadcast"]
+				yield {
+					'title': program["name"],
+					'start': program["timestamp_start"],
+					'end': program["timestamp_end"],
+					'img': program.get("poster", {}).get('url', "").replace('{size}', 'stb-new-carousel'),
+					'desc': program["description_broadcast"],
+					'year': program.get('year'),
+					'rating': float(program['rating']) / 10 if program.get('rating') else None
 				}
-				# (name, url, mode, image, page=None, kanal=None, infoLabels={}, menuItems={}):
-				response.append(p)
-
-		return response
 	
 	# #################################################################################################
 	
-	def get_video_link(self, url, enable_h265=False ):
+	def get_video_link(self, url, enable_h265=False, max_bitrate=None, force_http=False):
 		# extract params from url, to set our own request profiles
 		u = urlparse( url )
 		params = dict(parse_qsl( u.query ))
@@ -467,23 +414,36 @@ class Telly:
 		resp = requests.get( url, params=params, headers={'User-Agent': 'tv.fournetwork.android.box.digi/2.0.9 (Linux;Android 6.0) ExoPlayerLib/2.11.7'} )
 	
 		if resp.status_code != 200:
-			return None
-			
+			return []
+
+		if max_bitrate == None:
+			max_bitrate = 100000
+		elif ' Mbit' in max_bitrate:
+			max_bitrate = int(max_bitrate.split(' ')[0]) * 1000
+		else:
+			max_bitrate = 100000
+
 		video_urls = []
 		for m in re.finditer('#EXT-X-STREAM-INF:PROGRAM-ID=\d+,BANDWIDTH=(?P<bandwidth>\d+),RESOLUTION=(?P<resolution>[\dx]+)\s(?P<chunklist>[^\s]+)', resp.text, re.DOTALL):
 			bandwidth = int(m.group('bandwidth')) // 1000
+
+			if bandwidth > max_bitrate:
+				continue
+
 			video_url = m.group('chunklist')
+			if force_http:
+				video_url = video_url.replace('https://', 'http://')
 
 			video_codec = 'h265' if '=profile3' in video_url or '=profile4' in video_url else 'h264'
 			quality = m.group('resolution').split('x')[1] + 'p ' + video_codec
 			
 			video_urls.append( { 'url': video_url, 'quality': quality, 'bitrate': bandwidth })
 		
-		return video_urls
+		return sorted(video_urls, key=lambda u: u['bitrate'], reverse=True)
 			
 	# #################################################################################################
 	
-	def get_archive_video_link(self, ch, fromts, tots, enable_h265=False ):
+	def get_archive_video_link(self, ch, fromts, tots, enable_h265=False, max_bitrate=None, force_http=False):
 		if not self.device_token:
 			return None
 		
@@ -497,8 +457,9 @@ class Telly:
 		ret = self.call_telly_api( 'contentd/api/device/getContent', params=params)
 		
 		if not ret or ret.get('success') != True:
+			self.check_token()
 			return None
 		
-		return self.get_video_link( ret['stream_uri'], enable_h265)
+		return self.get_video_link(ret['stream_uri'], enable_h265, max_bitrate, force_http)
 
 # #################################################################################################

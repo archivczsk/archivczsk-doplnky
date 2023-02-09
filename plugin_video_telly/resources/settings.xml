@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-	<setting label="Preferovaná kvalita videa v doplnku" id="quality" type="enum" lvalues="Opýtať sa|Najlepšia|Najhoršia" default="1"/>
 	<setting label="Povoliť H.265 video kodek" id="enable_h265" type="bool" default="false" />
 	<setting label="Vynútiť http protokol pre streaming" id="use_http_for_stream" type="bool" default="true" />
 	<setting label="Maximálny dátový tok ponúkaného streamu" id="max_bitrate" type="labelenum" values="Bez obmedzenia|8 Mbit/s|6 Mbit/s|4 Mbit/s|3 Mbit/s|2 Mbit/s" default="Bez obmedzenia" />
 	<setting label="Povoliť programy pre dospelých" id="enable_adult" type="bool" default="true" />
 	<setting label="Koľko hodín EPG ukladať do cache" id="epgcache" type="labelenum" values="6|12|24|48|72" default="24" />
-	<setting label="Automaticky exportovať zoznam staníc ako userbouquet" id="enable_userbouquet" type="bool" default="false" />
-	<setting label="Generovať XML EPG pre epgimport plugin (ak je nainštalovaný)" id="enable_xmlepg" type="bool" default="false" />
-	<setting label="Adresár pre vygenerované XML EPG (aspoň 20MB voľného miesta)" id="xmlepg_dir" type="text" default="/media/hdd" />
-	<setting label="Pre koľko dní dopredu generovať XML EPG" id="xmlepg_days" type="enum" lvalues="1|2|3|4|5|6|7" default="4"/>
-	<setting label="Pri exportovaní userbouquetu automaticky stiahnuť picony" id="enable_picons" type="bool" default="false" />
-	<setting label="Prehrávač použitý pre userbouquet" id="player_name" type="enum" lvalues="Predvolený|gstplayer|exteplayer3|DMM|DVB (OE>=2.5)" default="0"/>
+	<category label="Userbouquet">
+		<setting label="Automaticky exportovať zoznam staníc ako userbouquet" id="enable_userbouquet" type="bool" default="false" />
+		<setting label="Generovať XML EPG pre epgimport plugin (ak je nainštalovaný)" id="enable_xmlepg" type="bool" default="false" />
+		<setting label="Adresár pre vygenerované XML EPG (aspoň 20MB voľného miesta)" id="xmlepg_dir" type="text" default="/media/hdd" />
+		<setting label="Pre koľko dní dopredu generovať XML EPG" id="xmlepg_days" type="enum" lvalues="1|2|3|4|5|6|7" default="4"/>
+		<setting label="Pri exportovaní userbouquetu automaticky stiahnuť picony" id="enable_picons" type="bool" default="false" />
+		<setting label="Prehrávač použitý pre userbouquet" id="player_name" type="enum" lvalues="Predvolený|gstplayer|exteplayer3|DMM|DVB (OE>=2.5)" default="0"/>
+	</category>
 </settings>
