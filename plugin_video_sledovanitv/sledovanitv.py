@@ -6,6 +6,7 @@ import traceback
 
 from hashlib import md5
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
+from tools_archivczsk.debug.http import dump_json_request
 
 ############### init ################
 
@@ -16,26 +17,6 @@ _HEADERS = {
 def _log_dummy(message):
 	print('[SLEDOVANI.TV]: ' + message )
 	pass
-
-
-__debug_nr = 1
-
-
-def writeDebugRequest(url, params, data, response):
-	global __debug_nr
-
-	name = "/tmp/%03d_request_%s" % (__debug_nr, url[8:].replace('/', '_'))
-
-	with open(name, "w") as f:
-		f.write(json.dumps({'params': params, 'data': data }))
-
-	name = "/tmp/%03d_response_%s" % (__debug_nr, url[8:].replace('/', '_'))
-
-	with open(name, "w") as f:
-		f.write(json.dumps(response))
-
-	__debug_nr += 1
-
 
 class SledovaniTV:
 	def __init__(self, username, password, pin, serialid, data_dir=None, log_function=None ):
@@ -129,12 +110,10 @@ class SledovaniTV:
 			else:
 				resp = requests.get( url, params=params, headers=self.headers )
 			
-#			self.log_function( "URL: %s (%s)" % (url, data or params or "none") )
-#			self.log_function( "RESPONSE: %s" % resp.text )
+#			dump_json_request(resp)
 			
 			if resp.status_code == 200:
 				ret = resp.json()
-#				writeDebugRequest(url, data, params, ret)
 
 				if "status" not in ret or ret['status'] == 0:
 					if ret['error'] == 'not logged' and enable_retry:

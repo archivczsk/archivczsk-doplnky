@@ -6,24 +6,8 @@ from datetime import date
 import traceback
 
 from hashlib import md5
-from tools_archivczsk.contentprovider.exception import LoginException
-
-__debug_nr = 1
-
-def writeDebugRequest(url, data, params, response ):
-	global __debug_nr
-	
-	name = "/tmp/%03d_request_%s" % (__debug_nr, url[8:].replace('/','_'))
-	
-	with open(name, "w") as f:
-		f.write( json.dumps({'data': data, 'params': params } ))
-
-	name = "/tmp/%03d_response_%s" % (__debug_nr, url[8:].replace('/','_'))
-	
-	with open(name, "w") as f:
-		f.write( json.dumps(response))
-		
-	__debug_nr += 1
+from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
+from tools_archivczsk.debug.http import dump_json_request
 
 ############### init ################
 
@@ -116,7 +100,7 @@ class RebitTV:
 	
 	def showError(self, msg):
 		self.log_function("REBIT.TV API ERROR: %s" % msg )
-		raise Exception("REBIT.TV: %s" % msg)
+		raise AddonErrorException(msg)
 
 	# #################################################################################################
 
@@ -163,14 +147,12 @@ class RebitTV:
 		
 		try:
 			resp = self.api_session.request(method, url, params=params, data=req_data, headers=headers)
-			
+#			dump_json_request(resp)
 			try:
 				debug_resp_data = resp.json()
 			except:
 				debug_resp_data = {}
 				
-#			writeDebugRequest(url, data, params, debug_resp_data)
-			
 			if resp.status_code >= 200 and resp.status_code <= 210:
 				try:
 					if resp.status_code == 204:

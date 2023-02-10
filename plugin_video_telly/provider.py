@@ -63,7 +63,8 @@ class TellyModuleLiveTV(CPModuleLiveTV):
 		for one in self.cp.telly.get_video_link(channel_url, self.cp.get_setting('enable_h265'), self.cp.get_setting('max_bitrate'), self.cp.get_setting('use_http_for_stream')):
 			info_labels = {
 				'quality': one['quality'],
-				'bandwidth': one['bitrate']
+				'bandwidth': one['bitrate'],
+				'vcodec': one['vcodec']
 			}
 			self.cp.add_play(channel_title, one['url'], info_labels, live=True)
 
@@ -110,7 +111,8 @@ class TellyModuleArchive(CPModuleArchive):
 		for one in self.cp.telly.get_archive_video_link(channel_id, ts_from, ts_to, self.cp.get_setting('enable_h265'), self.cp.get_setting('max_bitrate'), self.cp.get_setting('use_http_for_stream')):
 			info_labels = {
 				'quality': one['quality'],
-				'bandwidth': one['bitrate']
+				'bandwidth': one['bitrate'],
+				'vcodec': one['vcodec']
 			}
 			self.cp.add_play(archive_title, one['url'], info_labels, live=True)
 
@@ -158,7 +160,6 @@ class TellyContentProvider(ModuleContentProvider):
 					return False
 
 		self.telly = telly
-		self.load_channel_list()
 		return True
 
 	# #################################################################################################
@@ -198,6 +199,7 @@ class TellyContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def get_url_by_channel_key(self, channel_key):
+		self.load_channel_list()
 		channel = self.channels_by_id.get(int(channel_key))
 
 		if not channel:

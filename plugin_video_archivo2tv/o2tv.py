@@ -15,7 +15,8 @@ try:
 except:
 	from urllib.parse import quote
 
-from tools_archivczsk.contentprovider.exception import LoginException
+from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
+from tools_archivczsk.debug.http import dump_json_request
 
 ############### init ################
 
@@ -34,26 +35,6 @@ _HEADER = {
 def _log_dummy(message):
 	print('[O2TV]: ' + message )
 	pass
-
-
-__debug_nr = 1
-
-
-def writeDebugRequest(url, params, data, response):
-	global __debug_nr
-
-	name = "/tmp/%03d_request_%s" % (__debug_nr, url[8:].replace('/', '_'))
-
-	with open(name, "w") as f:
-		f.write(json.dumps({'params': params, 'data': data }))
-
-	name = "/tmp/%03d_response_%s" % (__debug_nr, url[8:].replace('/', '_'))
-
-	with open(name, "w") as f:
-		f.write(json.dumps(response))
-
-	__debug_nr += 1
-
 
 class O2TV:
 	def __init__(self, username, password, deviceid, devicename="tvbox", data_dir=None, log_function=None ):
@@ -172,7 +153,7 @@ class O2TV:
 	
 	def showError(self, msg):
 		self.log_function("O2TV API ERROR: %s" % msg )
-		raise Exception(msg)
+		raise AddonErrorException(msg)
 
 	# #################################################################################################
 
@@ -191,7 +172,7 @@ class O2TV:
 			else:
 				resp = requests.get( url, params=data, headers=header )
 			
-#			writeDebugRequest(url, {}, data, resp.json())
+#			dump_json_request(resp)
 			
 			if resp.status_code == 200:
 				try:
@@ -205,7 +186,7 @@ class O2TV:
 		
 		if err_msg:
 			self.log_function( "O2API error for URL %s: %s" % (url, traceback.format_exc()))
-			self.showError( "O2TVAPI: %s" % err_msg )
+			self.showError(err_msg)
 
 	# #################################################################################################
 

@@ -4,7 +4,8 @@ from time import time, mktime
 from datetime import datetime
 from hashlib import md5
 
-from tools_archivczsk.contentprovider.exception import LoginException
+from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
+from tools_archivczsk.debug.http import dump_json_request
 
 # #################################################################################################
 
@@ -59,25 +60,6 @@ def _log_dummy(message):
 	print('[Magio GO]: ' + message )
 	pass
 
-# #################################################################################################
-
-__debug_nr = 1
-
-def writeDebugRequest(url, params, data, response ):
-	global __debug_nr
-	
-	name = "/tmp/%03d_request_%s" % (__debug_nr, url[8:].replace('/','_'))
-	
-	with open(name, "w") as f:
-		f.write( json.dumps({'params': params, 'data': data } ))
-
-	name = "/tmp/%03d_response_%s" % (__debug_nr, url[8:].replace('/','_'))
-	
-	with open(name, "w") as f:
-		f.write( json.dumps(response))
-		
-	__debug_nr += 1
-	
 # #################################################################################################
 
 
@@ -177,7 +159,7 @@ class MagioGO:
 	
 	def showError(self, msg):
 		self.log_function("Magio GO API ERROR: %s" % msg )
-		raise Exception("Magio GO: %s" % msg)
+		raise AddonErrorException(msg)
 
 	# #################################################################################################
 
@@ -207,8 +189,8 @@ class MagioGO:
 				data = json.dumps(data, separators=(',', ':'))
 				
 			resp = requests.request( method, url, data=data, params=params, headers=headers )
-			
-#			writeDebugRequest(url, params, data, resp.json())
+#			dump_json_request(resp)
+
 			if resp.status_code == 200 or (resp.status_code > 400 and resp.status_code < 500):
 				try:
 					return resp.json()
@@ -223,7 +205,7 @@ class MagioGO:
 		if err_msg:
 			self.log_function( "Magio GO error for URL %s: %s" % (url, traceback.format_exc()))
 			self.log_function( "Magio GO: %s" % err_msg )
-			self.showError( "%s" % err_msg )
+			self.showError(err_msg)
 
 		return None
 	

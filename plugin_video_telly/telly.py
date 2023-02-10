@@ -2,7 +2,8 @@
 import re, os, datetime, json, requests, traceback
 from time import time
 import uuid
-from tools_archivczsk.contentprovider.exception import LoginException
+from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
+from tools_archivczsk.debug.http import dump_json_request
 
 try:
 	from urlparse import urlparse, urlunparse, parse_qsl
@@ -59,24 +60,6 @@ class TellyChannel:
 def _log_dummy(message):
 	print('[TELLY]: ' + message )
 	pass
-
-# #################################################################################################
-
-__debug_nr = 1
-def writeDebugRequest(url, params, data, response):
-	global __debug_nr
-
-	name = "/tmp/%03d_request_%s" % (__debug_nr, url[8:].replace('/', '_'))
-
-	with open(name, "w") as f:
-		f.write(json.dumps({'params': params, 'data': data }))
-
-	name = "/tmp/%03d_response_%s" % (__debug_nr, url[8:].replace('/', '_'))
-
-	with open(name, "w") as f:
-		f.write(json.dumps(response))
-
-	__debug_nr += 1
 
 # #################################################################################################
 
@@ -156,18 +139,15 @@ class Telly:
 			url = "https://backoffice0-vip.tv.itself.cz/" + endpoint
 		
 		try:
-#			self.log_function( "URL: %s (%s)" % (url, data or params or "none") )
-#			self.log_function( "DATA: %s" % json.dumps(data) )
 			if data:
 				resp = requests.post( url, data=json.dumps(data, separators=(',', ':')), headers=_COMMON_HEADERS )
 			else:
 				resp = requests.get( url, params=params, headers=_COMMON_HEADERS )
 			
-#			self.log_function( "RESPONSE (%d): %s" % (resp.status_code, resp.text) )
+#			dump_json_request(resp)
 			
 			if resp.status_code == 200:
 				try:
-#					writeDebugRequest(url, data, params, resp.json())
 					return resp.json()
 				except:
 					return {}
@@ -180,7 +160,7 @@ class Telly:
 		if err_msg:
 			self.log_function( "Telly error for URL %s: %s" % (url, traceback.format_exc()))
 			self.log_function( "Telly: %s" % err_msg )
-#			self.showError( "Telly: %s" % err_msg )
+#			raise AddonErrorException(err_msg)
 
 		return None
 	
@@ -204,6 +184,8 @@ class Telly:
 	def check_token(self):
 		if not self.token_is_valid():
 			raise LoginException("Prihlasovací token je neplatný - spárujte zariadenie znova")
+		else:
+			raise AddonErrorException('Neočakávaná odpoveď zo servera. Skúste operáciu zopakovať.')
 
 	# #################################################################################################
 
@@ -289,7 +271,7 @@ class Telly:
 		
 		ret = self.call_telly_api( 'https://epg.tv.itself.cz/v2/epg', data=data )
 		
-		if ret.get('error', True) == True:
+		if not ret or ret.get('error', True) == True:
 			self.check_token()
 			return None
 		
@@ -435,9 +417,14 @@ class Telly:
 				video_url = video_url.replace('https://', 'http://')
 
 			video_codec = 'h265' if '=profile3' in video_url or '=profile4' in video_url else 'h264'
-			quality = m.group('resolution').split('x')[1] + 'p ' + video_codec
+			quality = m.group('resolution').split('x')[1] + 'p'
 			
-			video_urls.append( { 'url': video_url, 'quality': quality, 'bitrate': bandwidth })
+			video_urls.append({
+				'url': video_url,
+				'quality': quality,
+				'bitrate': bandwidth,
+				'vcodec': video_codec
+			})
 		
 		return sorted(video_urls, key=lambda u: u['bitrate'], reverse=True)
 			

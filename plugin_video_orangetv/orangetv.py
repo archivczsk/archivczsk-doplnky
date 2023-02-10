@@ -4,14 +4,8 @@ from time import time
 from uuid import getnode as get_mac
 from hashlib import md5
 from datetime import datetime
-from tools_archivczsk.contentprovider.exception import LoginException
-
-try:
-	from urllib import quote
-	is_py3 = False
-except:
-	from urllib.parse import quote
-	is_py3 = True
+from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
+from tools_archivczsk.debug.http import dump_json_request
 
 _COMMON_HEADERS = {
 	"X-NanguTv-Platform-Id": "b0af5c7d6e17f24259a20cf60e069c22",
@@ -22,32 +16,9 @@ _COMMON_HEADERS = {
 	"User-Agent": "Dalvik/2.1.0 (Linux; U; Android 9; Nexus 7 Build/LMY47V)",
 }
 
-class ApiErrorException(Exception):
-	pass
-
-
 def _log_dummy(message):
 	print('[ORANGETV]: ' + message )
 	pass
-
-
-__debug_nr = 1
-
-
-def writeDebugRequest(url, params, response):
-	global __debug_nr
-
-	name = "/tmp/%03d_request_%s" % (__debug_nr, url.replace('/', '_'))
-
-	with open(name, "w") as f:
-		f.write(json.dumps({'params': params }))
-
-	name = "/tmp/%03d_response_%s" % (__debug_nr, url.replace('/', '_'))
-
-	with open(name, "w") as f:
-		f.write(json.dumps(response))
-
-	__debug_nr += 1
 
 # #################################################################################################
 
@@ -144,12 +115,12 @@ class OrangeTV:
 			cookies = None
 
 		response = self.req_session.get(url, params=params, headers=req_headers, cookies=cookies)
+#		dump_json_request(response)
 		
 		if response.status_code != 200:
 			self.log_function('HTTP response status code: %d\n%s' % (response.status_code, response.text))
-			raise ApiErrorException('HTTP response status code: %d' % req.status_code)
+			raise AddonErrorException('HTTP response status code: %d' % req.status_code)
 
-#		writeDebugRequest(endpoint, params, response.json())
 		return response.json()
 
 	# #################################################################################################

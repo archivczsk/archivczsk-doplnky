@@ -17,6 +17,7 @@ try:
 except:
 	from configparser import ConfigParser
 
+from tools_archivczsk.debug.http import dump_json_request
 
 # #################################################################################################
 
@@ -24,25 +25,6 @@ def _log_dummy(message):
 	print('[STALKER]: ' + message )
 	pass
 
-# #################################################################################################
-
-__debug_nr = 1
-
-def writeDebugRequest(url, params, response ):
-	global __debug_nr
-	
-	name = "/tmp/%03d_stalker_%s_%s_%s_request" % (__debug_nr, url[7:].replace('/','_'), params.get('type','unknwon_type'), params.get('action','unknwon_action'))
-	
-	with open(name, "w") as f:
-		f.write( json.dumps({'params': params } ))
-
-	name = name.replace('_request', '_response')
-	
-	with open(name, "w") as f:
-		f.write(response)
-		
-	__debug_nr += 1
-	
 # #################################################################################################
 
 def get_cache_key( portal_cfg ):
@@ -239,8 +221,8 @@ class Stalker:
 
 		try:
 			resp = requests.get( url, params=params, headers=headers )
-			
-#			writeDebugRequest( self.url, params, resp.text)
+#			dump_json_request(resp)
+
 			if resp.status_code == 200:
 				try:
 					return resp.json().get('js',{})

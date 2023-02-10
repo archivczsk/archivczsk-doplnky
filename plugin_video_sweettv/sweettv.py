@@ -3,25 +3,9 @@
 import os, time, json, requests, re
 from datetime import datetime
 import traceback
-from tools_archivczsk.contentprovider.exception import LoginException
+from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
+from tools_archivczsk.debug.http import dump_json_request
 from hashlib import md5
-
-__debug_nr = 1
-
-def writeDebugRequest(url, data, response ):
-	global __debug_nr
-	
-	name = "/tmp/%03d_request_%s" % (__debug_nr, url[8:].replace('/','_'))
-	
-	with open(name, "w") as f:
-		f.write( json.dumps({'data': data } ))
-
-	name = "/tmp/%03d_response_%s" % (__debug_nr, url[8:].replace('/','_'))
-	
-	with open(name, "w") as f:
-		f.write( json.dumps(response))
-		
-	__debug_nr += 1
 
 ############### init ################
 
@@ -152,7 +136,7 @@ class SweetTV:
 	
 	def showError(self, msg):
 		self.log_function("SWEET.TV API ERROR: %s" % msg )
-		raise Exception("SWEET.TV: %s" % msg)
+		raise AddonErrorException(msg)
 
 	def showLoginError(self, msg):
 		self.log_function("SWEET.TV API ERROR: %s" % msg)
@@ -178,8 +162,7 @@ class SweetTV:
 
 		try:
 			resp = self.api_session.post( url, data=json.dumps(data, separators=(',', ':')), headers=headers )
-			
-#			writeDebugRequest( url, data, resp.json())
+#			dump_json_request(resp)
 			
 			if resp.status_code == 200 or (resp.status_code >= 400 and resp.status_code < 500):
 				try:
@@ -209,7 +192,7 @@ class SweetTV:
 		
 		if err_msg:
 			self.log_function( "Sweet.tv error for URL %s: %s" % (url, traceback.format_exc()))
-			self.showError( "%s" % err_msg )
+			self.showError(err_msg)
 
 	# #################################################################################################
 

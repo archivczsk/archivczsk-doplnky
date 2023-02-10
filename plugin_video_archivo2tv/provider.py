@@ -11,7 +11,8 @@ from tools_archivczsk.string_utils import _I, _C, _B
 from .o2tv import O2TV
 from .bouquet import O2TVBouquetXmlEpgGenerator
 
-day_translation_short = {"Monday": "Po", "Tuesday": "Ut", "Wednesday": "St", "Thursday": "Čt", "Friday": "Pá", "Saturday": "So", "Sunday": "Ne"}
+DAY_NAME_SHORT = ("Po", "Ut", "St", "Čt", "Pá", "So", "Ne")
+
 
 class O2TVModuleLiveTV(CPModuleLiveTV):
 
@@ -288,10 +289,7 @@ class O2TVModuleRecordings(CPModuleTemplate):
 				end = datetime.fromtimestamp(endts / 1000)
 				epg_id = event['epgId']
 
-				if start.strftime("%A") in day_translation_short:
-					title = day_translation_short[start.strftime("%A")] + " " + start.strftime("%d.%m %H:%M") + " - " + end.strftime("%H:%M") + " | " + event["name"]
-				else:
-					title = start.strftime("%a") + " " + start.strftime("%d.%m %H:%M") + " - " + end.strftime("%H:%M") + " | " + event["name"]
+				title = DAY_NAME_SHORT[start.weekday()] + " " + start.strftime("%d.%m %H:%M") + " - " + end.strftime("%H:%M") + " | " + event["name"]
 
 				info_labels = {
 					'plot': event['shortDescription'] if 'shortDescription' in event else None,
@@ -380,6 +378,7 @@ class O2TVContentProvider(ModuleContentProvider):
 	def login(self, silent):
 		self.o2tv = None
 		self.channels = []
+		self.channels_by_key = {}
 
 		o2tv = O2TV(self.get_setting('username'), self.get_setting('password'), self.get_setting('deviceid'), self.get_setting('devicename'), self.data_dir, self.log_info)
 		o2tv.refresh_configuration()
@@ -426,6 +425,7 @@ class O2TVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def get_url_by_channel_key(self, channel_key):
+		self.load_channel_list()
 		return self.o2tv.get_live_link(channel_key)[0]['url']
 
 	# #################################################################################################
@@ -485,12 +485,7 @@ class O2TVContentProvider(ModuleContentProvider):
 			end = datetime.fromtimestamp(endts / 1000)
 			epg_id = programs["epgId"]
 
-			if start.strftime("%A") in day_translation_short:
-				day_name = day_translation_short[start.strftime("%A")]
-			else:
-				day_name = start.strftime("%a")
-
-			title = programs["name"] + " (" + programs["channelKey"] + " | " + day_name + " " + start.strftime("%d.%m %H:%M") + " - " + end.strftime("%H:%M") + ")"
+			title = programs["name"] + " (" + programs["channelKey"] + " | " + DAY_NAME_SHORT[start.weekday()] + " " + start.strftime("%d.%m %H:%M") + " - " + end.strftime("%H:%M") + ")"
 
 			img = 'https://www.o2tv.cz' + programs['picture'] if 'picture' in programs else None
 			info_labels = {
