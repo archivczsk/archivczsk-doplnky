@@ -14,7 +14,7 @@ import requests
 
 class MagioGOHTTPRequestHandler(AddonHttpRequestHandler):
 	def __init__(self, content_provider, addon):
-		AddonHttpRequestHandler.__init__(self, addon.id)
+		AddonHttpRequestHandler.__init__(self, addon)
 		self.cp = content_provider
 		self.live_cache = {}
 		self.magiogo_session = requests.session() 

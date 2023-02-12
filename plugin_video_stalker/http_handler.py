@@ -20,7 +20,7 @@ __addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
 
 class StalkerHTTPRequestHandler( AddonHttpRequestHandler ):
 	def __init__(self):
-		AddonHttpRequestHandler.__init__(self, __scriptid__)
+		AddonHttpRequestHandler.__init__(self, __addon__)
 		self.live_cache = {}
 #		self.user_agent = 'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG200 stbapp ver: 2 rev: 250 Safari/533.3'
 		self.user_agent = 'Mozilla/5.0'

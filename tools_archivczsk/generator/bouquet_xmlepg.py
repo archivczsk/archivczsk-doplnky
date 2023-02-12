@@ -188,11 +188,10 @@ class BouquetXmlEpgGenerator:
 	# #################################################################################################
 
 	def refresh_bouquet(self):
-		self.load_channel_list()
-
 		cks = self.cp.load_cached_data('bouquet')
 
 		if self.logged_in() and self.get_setting('enable_userbouquet'):
+			self.load_channel_list()
 			settings_cks = self.cp.get_settings_checksum(self.login_settings_names + self.bouquet_settings_names, self.user_agent)
 
 			if settings_cks != cks.get('settings'):
