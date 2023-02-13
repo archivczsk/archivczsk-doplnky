@@ -130,7 +130,7 @@ class TvcomContentProvider(ContentProvider):
 		result = []
 		headers = {"referer": self.base_url}
 		httpdata = util.request(self.base_url+item['url'], headers=headers)
-		items = re.compile("programDuration: (.*?),.*?programName: '(.*?)'.*?hls.*?src: '(.*?)\.m3u8'", re.DOTALL).findall(httpdata)
+		items = re.compile("programDuration: (.*?),.*?programName: '(.*?)'.*?hls.*?src: '(.*?)\.m3u8", re.DOTALL).findall(httpdata)
 		for dur,name,link in items:
 			item = self.video_item()
 			item['surl'] = name
