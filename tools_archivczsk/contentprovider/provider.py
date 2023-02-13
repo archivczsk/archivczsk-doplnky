@@ -62,8 +62,9 @@ class DummyAddonBackgroundService(object):
 
 class CommonContentProvider(object):
 	"""
-	ContentProvider class provides an internet content. It should NOT have any xbmc-related imports
-	and must be testable without XBMC runtime. This is a basic/dummy implementation.
+	CommonContentProvider class provides an internet content. It should NOT have any archivczsk imports
+	and must be testable without archivczsk runtime. This is a basic implementation. You should
+	create your own implementation on top of this class.
 	"""
 
 	def __init__(self, name='dummy', settings=None, data_dir=None, bgservice=None):
@@ -73,18 +74,87 @@ class CommonContentProvider(object):
 		self.data_dir = data_dir if data_dir else '/tmp'
 		self.__initialised_cbks = []
 
+		# If you set this property, then values of those settings names will be checked, if they are filled.
+		# If not, then login process will end as not logged and no login() method will be called. If some of those
+		# settings changes, then new login procedure will be automaticaly called.
+#		self.login_settings_names = ('username', 'password')
+
+		# Here you can set some optional settings. They don't need to be filled, but when they change,
+		# then new login procedure will be automaticaly called.
+#		self.login_optional_settings_names = ('pin')
+
 	# #################################################################################################
-	'''
-	This method is called after full provider initialisation and after login was called. It can be used to
-	start services or do wathever needed when login status is already known
-	If you override this function, then don't forget to call it from child class also, so that
-	__initialised_cbks gets called.
-	'''
+
+	def __str__(self):
+		return '[' + self.name + ']'
+
+	# #################################################################################################
 
 	def initialised(self):
+		'''
+		This method is called after full provider initialisation and after login was called. It can be used to
+		start services or do wathever needed when login status is already known
+		Don't override this function - add own callback with add_initialised_callback() if you need this functionality
+		'''
 		for cbk, args, kwargs in self.__initialised_cbks:
 			cbk(*args, **kwargs)
 
+	# #################################################################################################
+	# In your own content provider you should implement these functions (based on functionality)
+	# at least root() function needs to be implemented, because without it your provider will do nothing :-)
+	# #################################################################################################
+
+	def login(self, silent):
+		"""
+		This method should login customer or check if login is needed. If silent is True, then only silent login without user interaction is allowed.
+		If you set variable self.login_settings_names, then those settings will be checked, if they are filled before calling this method.
+		A login method returns True on successfull login, False otherwise. It can also call login_error() to raise exception with message
+		"""
+		return True
+
+	def search(self, keyword, search_id):
+		"""
+		Search for a keyword. search_id is used to distinguish between multiple search types (eg. movie, artist, ...)
+		"""
+		return
+
+	def root(self):
+		""" Lists/generates root menu - this is entry point for the user """
+		return
+
+	def stats(self, data_item, action, duration=None, position=None, **extra_params):
+		"""
+		Used to collect playback statistics or react on events from player
+		Args:
+			item - set as data_item in video and dir
+			action - play, watching, end, seek, pause, unpause
+			duration - stream duration (if known)
+			position - actual stream position (if known)
+			extra_params - extra params for future usage
+		"""
+		return
+
+#	def trakt(self, trakt_item, action, result):
+		"""
+		Addon must have setting (bool) trakt_enabled ... and must be enabled to show trakt menu
+		and must set 'trakt_item' key with 'ids' dictionary with imdb, tvdb, trakt keys (identify video item in trakt.tv) to dir or video item
+		trakt actions are handled directly by archivCZSK core - this callback is used as notification
+		to perform aditional operations related directly to addon
+
+		Possible actions:
+			- add		add item to watchlist
+			- remove	remove item from watchlist
+			- watched	add to watched collection
+			- unwatched remove from watched collection
+			- scrobble  automatic scrobble (add to watched) when >80% of movie was watched
+			- reload    reload local cache
+
+		result - result of operation from core as dictionary { 'success': True/False, 'msg': 'description of result' }
+		"""
+
+	# #################################################################################################
+	# Here is API that you can use to communicate with engine or do everything needed to provide content
+	# that will be displayed to user
 	# #################################################################################################
 
 	def add_initialised_callback(self, cbk, *args, **kwargs):
@@ -92,11 +162,6 @@ class CommonContentProvider(object):
 		Adds callback function that should be called after initialisation is finished
 		'''
 		self.__initialised_cbks.append((cbk, args, kwargs))
-
-	# #################################################################################################
-
-	def __str__(self):
-		return '[' + self.name +']'
 
 	# #################################################################################################
 
@@ -174,6 +239,10 @@ class CommonContentProvider(object):
 	# #################################################################################################
 	
 	def get_settings_checksum(self, names, extra=None):
+		'''
+		Creates checksum of values of settings with provided names + extra parameter. It is usefull when one needs to chceck if cached data (like session, access token, ...) was created
+		with settings that are already set.
+		'''
 		if not isinstance(names, (type(()), type([]))):
 			names = [names]
 
@@ -185,6 +254,9 @@ class CommonContentProvider(object):
 	# #################################################################################################
 
 	def login_error(self, msg=None):
+		'''
+		Raises login exception that will produce automatic re-login attempt (or will show message, if login fails).
+		'''
 		raise LoginException(msg)
 
 	# #################################################################################################
@@ -194,23 +266,6 @@ class CommonContentProvider(object):
 
 	# #################################################################################################
 
-	def login(self):
-		"""
-		This method should login customer or check if login is needed.
-		A login method returns True on successfull login, False otherwise. It can also call login_error() to raise exception with message
-		"""
-		return True
-
-	def search(self, keyword, search_id):
-		"""
-		Search for a keyword. search_id is used to distinguish between multiple search types (eg. movie, artist, ...)
-		"""
-		return
-	
-	def root(self):
-		""" Lists/generates root menu - this is entry point for the user """
-		return
-	
 	def show_error(self, msg, noexit=False, timeout=0, can_close=True ):
 		if noexit:
 			self.log_error(msg)
@@ -241,37 +296,6 @@ class CommonContentProvider(object):
 	def log_exception(self):
 		log.error('[%s] Exception caught:\n%s' % (self.name, traceback.format_exc()))
 
-	def stats(self, data_item, action, duration=None, position=None, **extra_params):
-		"""
-		Used for playback statistics
-		
-		Args:
-			item - set as data_item in video and dir
-			action - play, watching, end, seek, pause, unpause
-			duration - stream duration (if known)
-			position - actual stream position (if known) 
-			extra_params - extra params for future usage
-		"""
-		return
-	
-#	def trakt(self, trakt_item, action, result):
-		"""
-		Addon must have setting (bool) trakt_enabled ... and must be enabled to show trakt menu 
-		and must set 'trakt_item' key with 'ids' dictionary with imdb, tvdb, trakt keys (identify video item in trakt.tv) to dir or video item
-		trakt actions are handled directly by archivCZSK core - this callback is used as notification
-		to perform aditional operations related directly to addon 
-
-		Possible actions:
-			- add		add item to watchlist
-			- remove	remove item from watchlist
-			- watched	add to watched collection
-			- unwatched remove from watched collection
-			- scrobble  automatic scrobble (add to watched) when >80% of movie was watched
-			- reload    reload local cache
-		
-		result - result of operation from core as dictionary { 'success': True/False, 'msg': 'description of result' }
-		"""
-
 	def add_dir(self, title, img=None, info_labels={}, menu={}, data_item=None, trakt_item=None, cmd=None, **cmd_args):
 		"""
 		info_labels = {
@@ -285,6 +309,9 @@ class CommonContentProvider(object):
 		pass
 
 	def add_next(self, cmd, **cmd_args):
+		'''
+		Adds shortcut to next page
+		'''
 		pass
 
 	def add_search_dir(self, title, search_id='', img=None, info_labels={}):
@@ -301,7 +328,7 @@ class CommonContentProvider(object):
 
 	def add_video(self, title, img=None, info_labels={}, menu={}, data_item=None, trakt_item=None, cmd=None, **cmd_args):
 		"""
-		Not yet resolved video - should produce resolved video items using add_resolved_video_item()
+		Not yet resolved video - should produce resolved video items using add_play()
 		"""
 		pass
 
@@ -322,25 +349,39 @@ class CommonContentProvider(object):
 			'resume_time_sec': resume time
 			'user-agent': user agent to use by player
 			'extra-headers': aditional extra HTTP headers
-			'process_hls_master' : True/False - Enable disable of processing hls mater playlist and extracting streams from it
 			'forced_player': service reference used for player (4097, 5001, 5001, ...)
 		}
 		"""
 		pass
 
 	def add_menu_item(self, menu, title, cmd=None, **cmd_args):
+		'''
+		Used to add item to context menu.
+		'''
 		pass
 
 	def get_yes_no_input(self, msg):
+		'''
+		Asks user a yes/no question
+		'''
 		# just dummy one
 		return False
 
 	def get_list_input(self, lst, title=""):
+		'''
+		Asks user to choose from list items. It returns index of selected item or None if user hits cancel.
+		'''
 		# just dummy one
 		return 0
 
 	def get_text_input(self, title, text=""):
+		'''
+		Asks user to enter some text
+		'''
 		return ""
 
 	def refresh_screen(self):
+		'''
+		Refreshes/reloads the actual screen. Usefull when something changes on actual screen.
+		'''
 		return

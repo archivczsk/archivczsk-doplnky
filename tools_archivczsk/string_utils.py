@@ -22,6 +22,11 @@
 # */
 import os, re, sys, traceback
 
+try:
+	from htmlentitydefs import name2codepoint as n2cp
+except:
+	from html.entities import name2codepoint as n2cp
+
 if sys.version[0] == 2:
 	is_py3 = False
 	
@@ -40,6 +45,9 @@ else:
 	def py2_encode_utf8( text ):
 		return text
 
+	unicode = str
+	unichr = chr
+
 # #################################################################################################
 
 def decode_html(data):
@@ -56,8 +64,10 @@ def decode_html(data):
 		else:
 			# they were using a name
 			cp = n2cp.get(ent)
-			if cp: return unichr(cp)
-			else: return match.group()
+			if cp:
+				return unichr(cp)
+			else:
+				return match.group()
 	try:
 		if is_py3 == False and not isinstance(data, unicode):
 			data = unicode(data, 'utf-8', errors='ignore')

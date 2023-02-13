@@ -335,7 +335,6 @@ class SweetTVContentProvider(ModuleContentProvider):
 
 			settings = {
 				'user-agent': self.sweettv.get_user_agent(),
-				'resolve_hls_master': False
 			}
 			self.add_play(archive_title, one['url'], info_labels, data_item=data_item, settings=settings, live=True)
 

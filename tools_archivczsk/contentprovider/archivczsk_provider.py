@@ -131,6 +131,10 @@ class ArchivCZSKContentProvider(object):
 			# if provider provided settings needed for login, then install notifier for autolog call
 			self.addon.add_setting_change_notifier(self.provider.login_settings_names, self.login_data_changed)
 
+		if hasattr(self.provider, 'login_optional_settings_names'):
+			# if provider provided settings needed for login, then install notifier for autolog call
+			self.addon.add_setting_change_notifier(self.provider.login_optional_settings_names, self.login_data_changed)
+
 		try:
 			self.provider.initialised()
 		except:
