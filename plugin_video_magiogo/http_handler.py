@@ -37,16 +37,37 @@ class MagioGOHTTPRequestHandler(AddonHttpRequestHandler):
 
 	# #################################################################################################
 	
+	def get_max_bitrate(self):
+		max_bitrate = self.cp.get_setting('max_bitrate')
+		if max_bitrate and int(max_bitrate) > 0:
+			max_bitrate = int(max_bitrate) * 1000000
+		else:
+			max_bitrate = 100000000
+
+		return max_bitrate
+
+	# #################################################################################################
+
 	def get_best_stream_from_m3u8(self, m3u8_data ):
 		result = []
+
+		max_bitrate = self.get_max_bitrate()
+
 		# EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=2400000,CODECS="mp4a.40.2,avc1.64001f",RESOLUTION=1280x720,AUDIO="AACL"
 		for m in re.finditer('#EXT-X-STREAM-INF:.*?BANDWIDTH=(?P<bandwidth>\d+),.*?\s(?P<chunklist>[^\s]+)', m3u8_data, re.DOTALL):
 			bandwidth = int(m.group('bandwidth'))
+
+			if bandwidth > max_bitrate:
+				continue
+
 			url = m.group('chunklist')
 			result.append( (url, bandwidth ) )
 		
 		result.sort( key=lambda r: r[1], reverse=True )
-		return result[0][0]
+		if len(result) > 0:
+			return result[0][0]
+		else:
+			return None
 
 	# #################################################################################################
 	
@@ -60,6 +81,9 @@ class MagioGOHTTPRequestHandler(AddonHttpRequestHandler):
 
 		# choose best quality stream and get variant playlist
 		variant_url = self.get_best_stream_from_m3u8( response.text )
+
+		if not variant_url:
+			return self.reply_error404(request)
 
 		redirect_url = response.url
 		index_url = redirect_url[:redirect_url.rfind('/')] + '/' + variant_url
@@ -94,7 +118,7 @@ class MagioGOHTTPRequestHandler(AddonHttpRequestHandler):
 
 	def handle_mpd_manifest(self, request, channel_id, index_url ):
 		self.cp.log_debug("Requesting channel id %s MPD manifest: %s" % (channel_id, index_url))
-		
+
 		response = self.magiogo_session.get( index_url )
 	
 		if response.status_code != 200:
@@ -108,6 +132,7 @@ class MagioGOHTTPRequestHandler(AddonHttpRequestHandler):
 		
 		# extract namespace of root element and set it as global namespace
 		ET.register_namespace('', root.tag[1:root.tag.index('}')])
+		max_bitrate = self.get_max_bitrate()
 		
 		# search for video representations and keep only highest resolution/bandwidth
 		for root_child in root:
@@ -122,7 +147,14 @@ class MagioGOHTTPRequestHandler(AddonHttpRequestHandler):
 		
 							rep_childs.sort(key=lambda x: int(x.get('bandwidth',0)), reverse=True)
 		
-							# remove Representations with lower resolutions because some players play only first one (lowest) 
+							# remove Representations with higher bitrate then max_bitrate
+							for child2 in rep_childs:
+								if int(child2.get('bandwidth', 0)) > max_bitrate:
+									child.remove(child2)
+								else:
+									break
+
+							# remove Representations with lower resolutions because some players play only first one (lowest)
 							for child2 in rep_childs[1:]:
 								child.remove(child2)
 		

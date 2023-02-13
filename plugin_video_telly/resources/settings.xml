@@ -2,7 +2,7 @@
 <settings>
 	<setting label="Povoliť H.265 video kodek" id="enable_h265" type="bool" default="false" />
 	<setting label="Vynútiť http protokol pre streaming" id="use_http_for_stream" type="bool" default="true" />
-	<setting label="Maximálny dátový tok ponúkaného streamu" id="max_bitrate" type="labelenum" values="Bez obmedzenia|8 Mbit/s|6 Mbit/s|4 Mbit/s|3 Mbit/s|2 Mbit/s" default="Bez obmedzenia" />
+	<setting label="Maximálny dátový tok ponúkaného streamu" id="max_bitrate" type="keyenum" values="0;Bez obmedzenia|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
 	<setting label="Povoliť programy pre dospelých" id="enable_adult" type="bool" default="true" />
 	<setting label="Koľko hodín EPG ukladať do cache" id="epgcache" type="labelenum" values="6|12|24|48|72" default="24" />
 	<category label="Userbouquet">

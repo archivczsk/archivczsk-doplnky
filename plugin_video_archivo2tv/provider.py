@@ -104,7 +104,7 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 	# #################################################################################################
 
 	def get_livetv_stream(self, channel_title, channel_key):
-		for one in self.cp.o2tv.get_live_link(channel_key):
+		for one in self.cp.o2tv.get_live_link(channel_key, self.cp.get_setting('max_bitrate')):
 			info_labels = {
 				'quality': one['quality'],
 				'bandwidth': one['bandwidth']
@@ -244,7 +244,7 @@ class O2TVModuleRecordings(CPModuleTemplate):
 	# #################################################################################################
 
 	def play_recording(self, pvr_title, pvr_id):
-		for one in self.cp.o2tv.get_recording_link(pvr_id):
+		for one in self.cp.o2tv.get_recording_link(pvr_id, self.cp.get_setting('max_bitrate')):
 			info_labels = {
 				'quality': one['quality'],
 				'bandwidth': one['bandwidth']
@@ -426,7 +426,12 @@ class O2TVContentProvider(ModuleContentProvider):
 
 	def get_url_by_channel_key(self, channel_key):
 		self.load_channel_list()
-		return self.o2tv.get_live_link(channel_key)[0]['url']
+		streams = self.o2tv.get_live_link(channel_key, self.get_setting('max_bitrate'))
+
+		if len(streams) > 0:
+			return streams[0]['url']
+		else:
+			return None
 
 	# #################################################################################################
 
@@ -455,7 +460,7 @@ class O2TVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def get_video_stream(self, video_title, channel_key, epg_id, ts_from, ts_to):
-		for one in self.o2tv.get_video_link(channel_key, ts_from, ts_to + (int(self.get_setting("offset")) * 60 * 1000), epg_id):
+		for one in self.o2tv.get_video_link(channel_key, ts_from, ts_to + (int(self.get_setting("offset")) * 60 * 1000), epg_id, self.get_setting('max_bitrate')):
 			info_labels = {
 				'quality': one['quality'],
 				'bandwidth': one['bandwidth']

@@ -3,7 +3,7 @@
     <setting label="Meno" id="username" type="text" default="" />
     <setting label="Heslo" id="password" type="text" default="" option="true" />
     <setting label="ID zariadenia" id="device_id" type="text" default="" visible="false" />
-   	<setting label="Preferovaná kvalita videa" id="quality" type="enum" lvalues="Zeptat se|Nejlepší|Nejhorší" default="1"/>
+   	<setting label="Maximálny dátový tok ponúkaného streamu" id="max_bitrate" type="keyenum" values="0;Bez obmedzenia|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
 	<setting label="Povolit programy pre dospelých" id="enable_adult" type="bool" default="true" />
 	<setting label="Zobraziť platené filmy" id="show_paid_movies" type="bool" default="true" />
 	<category label="Špeciálne">

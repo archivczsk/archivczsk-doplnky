@@ -488,7 +488,7 @@ class SledovaniTV:
 
 	# #################################################################################################
 	
-	def resolve_streams(self, url ):
+	def resolve_streams(self, url, max_bitrate=None ):
 		try:
 			req = requests.get(url)
 		except:
@@ -499,26 +499,42 @@ class SledovaniTV:
 			self.showError("Problém při načtení videa")
 			return
 
-		res = []
+		streams = []
 
-		for m in re.finditer('#EXT-X-STREAM-INF:.*?,RESOLUTION=(?P<resolution>[^\s]+)\s(?P<chunklist>[^\s]+)', req.text, re.DOTALL):
-			itm = {}
-			itm['quality'] = m.group('resolution')
-			itm['url'] = m.group('chunklist')
-			res.append(itm)
+		if max_bitrate and int(max_bitrate) > 0:
+			max_bitrate = int(max_bitrate) * 1000000
+		else:
+			max_bitrate = 100000000
+
+		for m in re.finditer(r'^#EXT-X-STREAM-INF:(?P<info>.+)\n(?P<chunk>.+)', req.text, re.MULTILINE):
+			stream_info = {}
+			for info in re.split(r''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', m.group('info')):
+				key, val = info.split('=', 1)
+				stream_info[key.lower()] = val
 			
-		res = sorted(res,key=lambda i:(len(i['quality']),i['quality']), reverse = True)
+			stream_url = m.group('chunk')
+			
+			if not stream_url.startswith('http'):
+				if stream_url.startswith('/'):
+					stream_url = url[:url[9:].find('/') + 9] + stream_url
+				else:
+					stream_url = url[:url.rfind('/') + 1] + stream_url
+				
+			stream_info['url'] = stream_url
+			stream_info['quality'] = stream_info.get('resolution', 'x720').split('x')[1] + 'p'
+			if int(stream_info['bandwidth']) <= max_bitrate:
+				streams.append(stream_info)
 		
-		return res
+		return sorted(streams, key=lambda i: int(i['bandwidth']), reverse=True)
 	
 	# #################################################################################################
 	
-	def get_live_link(self, url):
-		return self.resolve_streams(url)
+	def get_live_link(self, url, max_bitrate=None):
+		return self.resolve_streams(url, max_bitrate)
 
 	# #################################################################################################
 
-	def get_event_link(self, eventid ):
+	def get_event_link(self, eventid, max_bitrate=None):
 		params = {
 			'format': 'm3u8',
 			'eventId': eventid,
@@ -530,11 +546,11 @@ class SledovaniTV:
 			self.showError("Problém s načtením nahrávky: %s" % data['error'])
 			return None
 		
-		return self.resolve_streams(data['url'])
+		return self.resolve_streams(data['url'], max_bitrate)
 
 	# #################################################################################################
 
-	def get_recording_link(self, recordid ):
+	def get_recording_link(self, recordid, max_bitrate=None):
 		params = {
 			'format': 'm3u8',
 			'recordId': recordid,
@@ -546,6 +562,6 @@ class SledovaniTV:
 			self.showError("Problém s načtením nahrávky: %s" % data['error'])
 			return None
 		
-		return self.resolve_streams(data['url'])
+		return self.resolve_streams(data['url'], max_bitrate)
 
 	# #################################################################################################

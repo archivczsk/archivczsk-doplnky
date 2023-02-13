@@ -101,9 +101,10 @@ class SledovaniTVModuleLiveTV(CPModuleLiveTV):
 	# #################################################################################################
 
 	def get_livetv_stream(self, channel_title, channel_url):
-		for one in self.cp.sledovanitv.get_live_link(channel_url):
+		for one in self.cp.sledovanitv.get_live_link(channel_url, self.cp.get_setting('max_bitrate')):
 			info_labels = {
 				'quality': one['quality'],
+				'bandwidth': one['bandwidth']
 			}
 			self.cp.add_play(channel_title, one['url'], info_labels, live=True)
 
@@ -256,9 +257,10 @@ class SledovaniTVModuleRecordings(CPModuleTemplate):
 	# #################################################################################################
 
 	def play_recording(self, pvr_title, pvr_id):
-		for one in self.cp.sledovanitv.get_recording_link(pvr_id):
+		for one in self.cp.sledovanitv.get_recording_link(pvr_id, self.cp.get_setting('max_bitrate')):
 			info_labels = {
 				'quality': one['quality'],
+				'bandwidth': one['bandwidth']
 			}
 			self.cp.add_play(pvr_title, one['url'], info_labels)
 
@@ -377,7 +379,8 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 		ModuleContentProvider.__init__(self, name='SledovaniTV', settings=settings, data_dir=data_dir, bgservice=bgservice)
 
 		# list of settings used for login - used to auto call login when they change
-		self.login_settings_names = ('username', 'password', 'pin', 'serialid')
+		self.login_settings_names = ('username', 'password', 'serialid')
+		self.login_optional_settings_names = ('pin')
 
 		self.sledovanitv = None
 		self.channels = []
@@ -458,7 +461,7 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 		channel = self.channels_by_id.get(channel_key)
 
 		if channel:
-			streams = self.sledovanitv.get_live_link(channel['url'])
+			streams = self.sledovanitv.get_live_link(channel['url'], self.get_setting('max_bitrate'))
 			if len(streams) > 0:
 				return streams[0]['url']
 
@@ -467,9 +470,10 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def get_event_stream(self, video_title, event_id):
-		for one in self.sledovanitv.get_event_link(event_id):
+		for one in self.sledovanitv.get_event_link(event_id, self.get_setting('max_bitrate')):
 			info_labels = {
 				'quality': one['quality'],
+				'bandwidth': one['bandwidth']
 			}
 			self.add_play(video_title, one['url'], info_labels, live=True)
 

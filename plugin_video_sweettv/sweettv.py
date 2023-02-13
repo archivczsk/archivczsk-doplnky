@@ -512,7 +512,7 @@ class SweetTV:
 
 	# #################################################################################################
 	
-	def resolve_streams(self, url, stream_id=None ):
+	def resolve_streams(self, url, stream_id=None, max_bitrate=None):
 		try:
 			req = self.api_session.get(url, headers=self.common_headers_stream)
 		except:
@@ -524,8 +524,12 @@ class SweetTV:
 			self.showError("Nastal problém pri načítení videa: http response code: %d" % req.status_code)
 			return None
 
-		res = []
 		streams = []
+
+		if max_bitrate and int(max_bitrate) > 0:
+			max_bitrate = int(max_bitrate) * 1000000
+		else:
+			max_bitrate = 100000000
 
 		for m in re.finditer(r'^#EXT-X-STREAM-INF:(?P<info>.+)\n(?P<chunk>.+)', req.text, re.MULTILINE):
 			stream_info = {}
@@ -545,8 +549,12 @@ class SweetTV:
 			if stream_id:
 				stream_info['stream_id'] = stream_id
 
-			streams.append( stream_info )
+			if int(stream_info['bandwidth']) <= max_bitrate:
+				streams.append(stream_info)
 		
+		if len(streams) == 0 and stream_id:
+			self.close_stream(stream_id)
+
 		return sorted(streams,key=lambda i: int(i['bandwidth']), reverse = True)
 	
 	# #################################################################################################
@@ -561,7 +569,7 @@ class SweetTV:
 		
 	# #################################################################################################
 	
-	def get_live_link(self, channel_key, event_id=None ):
+	def get_live_link(self, channel_key, event_id=None, max_bitrate=None):
 		req_data = {
 			'without_auth': True,
 			'channel_id': channel_key,
@@ -580,7 +588,7 @@ class SweetTV:
 		
 		hs = data['http_stream']
 		url = 'http://%s:%d%s' % (hs['host']['address'], hs['host']['port'], hs['url']) 
-		return self.resolve_streams(url, data.get('stream_id'))
+		return self.resolve_streams(url, data.get('stream_id'), max_bitrate)
 
 	# #################################################################################################
 	
@@ -606,6 +614,6 @@ class SweetTV:
 			self.showError("Nepodporovaný typ streamu: %s" % data.get('link_type',''))
 			return None
 		
-		return [ { 'url': data['url'], 'bandwidth': 1, 'name': '???' } ]
+		return [ { 'url': data['url'], 'bandwidth': 1, 'name': '720p' } ]
 
 	# #################################################################################################

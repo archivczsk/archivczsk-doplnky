@@ -47,7 +47,7 @@ class SweetTVModuleLiveTV(CPModuleLiveTV):
 	# #################################################################################################
 
 	def get_livetv_stream(self, channel_title, channel_id):
-		for one in self.cp.sweettv.get_live_link(channel_id):
+		for one in self.cp.sweettv.get_live_link(channel_id, max_bitrate=self.cp.get_setting('max_bitrate')):
 			info_labels = {
 				'quality': one.get('name', '???').replace('"', ''),
 				'bandwidth': one['bandwidth']
@@ -323,7 +323,7 @@ class SweetTVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def get_archive_stream(self, archive_title, channel_id, epg_id):
-		for one in self.sweettv.get_live_link(channel_id, epg_id):
+		for one in self.sweettv.get_live_link(channel_id, epg_id, max_bitrate=self.get_setting('max_bitrate')):
 			info_labels = {
 				'quality': one.get('name', '???').replace('"', ''),
 				'bandwidth': one['bandwidth']
@@ -353,8 +353,13 @@ class SweetTVContentProvider(ModuleContentProvider):
 		if self.last_stream_id:
 			self.sweettv.close_stream(self.last_stream_id)
 
-		resp = self.sweettv.get_live_link(channel_key)[0]
-		self.last_stream_id = resp.get('stream_id')
-		return resp['url']
+		resp = self.sweettv.get_live_link(channel_key, max_bitrate=self.get_setting('max_bitrate'))
+
+		if len(resp) > 0:
+			self.last_stream_id = resp[0].get('stream_id')
+			return resp[0]['url']
+		else:
+			self.last_stream_id = None
+			return None
 
 	# #################################################################################################

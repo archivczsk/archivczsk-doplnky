@@ -62,7 +62,7 @@ class OrangeTVModuleLiveTV(CPModuleLiveTV):
 	# #################################################################################################
 
 	def get_livetv_stream(self, channel_title, channel_key):
-		for one in self.cp.orangetv.get_live_link(channel_key):
+		for one in self.cp.orangetv.get_live_link(channel_key, self.cp.get_setting('max_bitrate')):
 			info_labels = {
 				'quality': one['quality'],
 				'bandwidth': one['bandwidth']
@@ -106,7 +106,7 @@ class OrangeTVModuleArchive(CPModuleArchive):
 	# #################################################################################################
 
 	def get_archive_stream(self, archive_title, channel_key, epg_id, ts_from, ts_to):
-		for one in self.cp.orangetv.get_archive_link(channel_key, epg_id, ts_from, ts_to):
+		for one in self.cp.orangetv.get_archive_link(channel_key, epg_id, ts_from, ts_to, self.cp.get_setting('max_bitrate')):
 			info_labels = {
 				'quality': one['quality'],
 				'bandwidth': one['bandwidth']
@@ -218,6 +218,11 @@ class OrangeTVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def get_url_by_channel_key(self, channel_key):
-		return self.orangetv.get_live_link(channel_key)[0]['url']
+		streams = self.orangetv.get_live_link(channel_key, self.get_setting('max_bitrate'))
+
+		if len(streams) > 0:
+			return streams[0]['url']
+		else:
+			return None
 
 	# #################################################################################################

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-    <setting label="Jméno" id="username" type="text" default="" />
-    <setting label="Heslo" id="password" type="text" default="" option="true" />
-    <setting label="PIN" id="pin" type="text" default="" />
-    <setting label="SerialId" id="serialid" type="text" default="" visible="false" />
-   	<setting label="Preferovaná kvalita videa" id="quality" type="enum" lvalues="Zeptat se|Nejlepší|Nejhorší|720p|480p|360p" default="1"/>
+	<setting label="Jméno" id="username" type="text" default="" />
+	<setting label="Heslo" id="password" type="text" default="" option="true" />
+	<setting label="PIN" id="pin" type="text" default="" />
+	<setting label="SerialId" id="serialid" type="text" default="" visible="false" />
+	<setting label="Maximálni tok streamu" id="max_bitrate" type="keyenum" values="0;Bez omezení|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
 	<setting label="Povolit programy pro dospělé" id="enable_adult" type="bool" default="true" />
 	<category label="Speciální">
 		<setting label="Povolit speciální sekci v hlavním menu" id="enable_extra" type="bool" default="false" />

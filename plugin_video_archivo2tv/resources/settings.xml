@@ -4,7 +4,7 @@
 	<setting label="Přihlašovací heslo" type="text" id="password" option="true" default=""/>
 	<setting label="ID zařízení" type="text" id="deviceid" default="" visible="false"/>
 	<setting label="Jméno zařízení" type="text" id="devicename" default="tvbox"/>
-	<setting label="Preferovaná kvalita videa" id="quality" type="enum" lvalues="Zeptat se|Nejlepší|Nejhorší|720p|480p|360p" default="1"/>
+	<setting label="Maximálni tok streamu" id="max_bitrate" type="keyenum" values="0;Bez obmezení|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
 	<setting label="Povolit programy pro dospělé" id="enable_adult" type="bool" default="true" />
 	<setting label="Ukázat EPG (spomalí načtení Live TV)" id="showliveepg" type="bool" default="true" />
 	<setting label="Kolik hodin EPG ukládat do cache" id="epgcache" type="labelenum" values="6|12|24|48|72" default="24" />

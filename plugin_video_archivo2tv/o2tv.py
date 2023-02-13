@@ -460,7 +460,7 @@ class O2TV:
 
 	# #################################################################################################
 	
-	def resolve_streams(self, post ):
+	def resolve_streams(self, post, max_bitrate=None):
 		data = self.call_o2_api(url = "https://app.o2tv.cz/sws/server/streaming/uris.json", data=post, header=self.header)
 	
 		playlist = None
@@ -475,18 +475,27 @@ class O2TV:
 			if playlist == "":
 				playlist = data["uris"][0]["uri"]
 
+		if max_bitrate and int(max_bitrate) > 0:
+			max_bitrate = int(max_bitrate) * 1000000
+		else:
+			max_bitrate = 100000000
+
 		result = []
 		if playlist:
 			r = requests.get(playlist, headers=_HEADER).text
 			for m in re.finditer('#EXT-X-STREAM-INF:PROGRAM-ID=\d+,BANDWIDTH=(?P<bandwidth>\d+)\s(?P<chunklist>[^\s]+)', r, re.DOTALL):
 				bandwidth = int(m.group('bandwidth'))
+
+				if bandwidth > max_bitrate:
+					continue
+
 				quality = ""
 				if bandwidth < 1400000:
 					quality = "180p"
 				elif bandwidth < 2450000:
 					quality = "360p"
 				elif bandwidth < 4100000:
-					quality = "480p"
+					quality = "540p"
 				elif bandwidth < 6000000:
 					quality = "720p"
 				else:
@@ -499,7 +508,7 @@ class O2TV:
 	
 	# #################################################################################################
 	
-	def get_video_link(self, channel_key, start, end, epg_id ):
+	def get_video_link(self, channel_key, start, end, epg_id, max_bitrate=None):
 		self.refresh_configuration()
 		
 		post = {
@@ -514,11 +523,11 @@ class O2TV:
 			"encryptionType" : "NONE"
 		}
 		
-		return self.resolve_streams(post)
+		return self.resolve_streams(post, max_bitrate)
 	
 	# #################################################################################################
 	
-	def get_live_link(self, channel_key ):
+	def get_live_link(self, channel_key, max_bitrate=None):
 		self.refresh_configuration()
 		
 		post = {
@@ -530,11 +539,11 @@ class O2TV:
 			"encryptionType" : "NONE"
 		}
 
-		return self.resolve_streams(post)
+		return self.resolve_streams(post, max_bitrate)
 
 	# #################################################################################################
 
-	def get_recording_link(self, pvrProgramId):
+	def get_recording_link(self, pvrProgramId, max_bitrate=None):
 		self.refresh_configuration()
 		
 		post = {
@@ -546,7 +555,7 @@ class O2TV:
 			"encryptionType" : "NONE"
 		}
 		
-		return self.resolve_streams(post)
+		return self.resolve_streams(post, max_bitrate)
 
 	# #################################################################################################
 

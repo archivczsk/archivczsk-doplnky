@@ -51,7 +51,7 @@ class RebitTVModuleLiveTV(CPModuleLiveTV):
 	# #################################################################################################
 
 	def get_livetv_stream(self, channel_title, channel_key):
-		for one in self.cp.rebittv.get_live_link(channel_key):
+		for one in self.cp.rebittv.get_live_link(channel_key, max_bitrate=self.cp.get_setting('max_bitrate')):
 			info_labels = {
 				'quality': one['resolution'],
 				'bandwidth': one['bandwidth']
@@ -103,7 +103,7 @@ class RebitTVModuleArchive(CPModuleArchive):
 	# #################################################################################################
 
 	def get_archive_stream(self, archive_title, channel_id, event_id):
-		for one in self.cp.rebittv.get_live_link(channel_id, event_id):
+		for one in self.cp.rebittv.get_live_link(channel_id, event_id, max_bitrate=self.cp.get_setting('max_bitrate')):
 			info_labels = {
 				'quality': one['resolution'],
 				'bandwidth': one['bandwidth']
@@ -210,7 +210,12 @@ class RebitTVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def get_url_by_channel_key(self, channel_key):
-		return self.rebittv.get_live_link(channel_key)[0]['url']
+		streams = self.rebittv.get_live_link(channel_key, max_bitrate=self.get_setting('max_bitrate'))
+
+		if len(streams) > 0:
+			return streams[0]['url']
+		else:
+			return None
 
 	# #################################################################################################
 

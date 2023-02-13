@@ -398,16 +398,14 @@ class Telly:
 		if resp.status_code != 200:
 			return []
 
-		if max_bitrate == None:
-			max_bitrate = 100000
-		elif ' Mbit' in max_bitrate:
-			max_bitrate = int(max_bitrate.split(' ')[0]) * 1000
+		if max_bitrate and int(max_bitrate) > 0:
+			max_bitrate = int(max_bitrate) * 1000000
 		else:
-			max_bitrate = 100000
+			max_bitrate = 100000000
 
 		video_urls = []
 		for m in re.finditer('#EXT-X-STREAM-INF:PROGRAM-ID=\d+,BANDWIDTH=(?P<bandwidth>\d+),RESOLUTION=(?P<resolution>[\dx]+)\s(?P<chunklist>[^\s]+)', resp.text, re.DOTALL):
-			bandwidth = int(m.group('bandwidth')) // 1000
+			bandwidth = int(m.group('bandwidth'))
 
 			if bandwidth > max_bitrate:
 				continue

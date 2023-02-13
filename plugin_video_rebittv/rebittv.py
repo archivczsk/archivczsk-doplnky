@@ -394,7 +394,7 @@ class RebitTV:
 
 	# #################################################################################################
 
-	def resolve_streams(self, url ):
+	def resolve_streams(self, url, max_bitrate=None):
 		try:
 			req = self.api_session.get(url)
 		except:
@@ -408,6 +408,11 @@ class RebitTV:
 
 		res = []
 		streams = []
+
+		if max_bitrate and int(max_bitrate) > 0:
+			max_bitrate = int(max_bitrate) * 1000000
+		else:
+			max_bitrate = 100000000
 
 		for m in re.finditer(r'^#EXT-X-STREAM-INF:(?P<info>.+)\n(?P<chunk>.+)', req.text, re.MULTILINE):
 			stream_info = {}
@@ -424,13 +429,14 @@ class RebitTV:
 					stream_url = url[:url.rfind('/') + 1] + stream_url
 				
 			stream_info['url'] = stream_url
-			streams.append( stream_info )
+			if int(stream_info['bandwidth']) <= max_bitrate:
+				streams.append(stream_info)
 		
 		return sorted(streams,key=lambda i: int(i['bandwidth']), reverse = True)
 	
 	# #################################################################################################
 
-	def get_live_link(self, channel_key, event_id=None ):
+	def get_live_link(self, channel_key, event_id=None, max_bitrate=None):
 		req_url = 'television/channels/' + channel_key + '/play'
 		if event_id:
 			req_url += '/' + event_id
@@ -448,7 +454,7 @@ class RebitTV:
 			return None
 		
 		if 'quality' in data and data['quality'] == 'adaptive':
-			return self.resolve_streams(data['link'].replace('https://', 'http://'))
+			return self.resolve_streams(data['link'].replace('https://', 'http://'), max_bitrate)
 		
 		return [{ 'url': data['link'], 'resolution': '1280x720', 'bandwidth': 1}]
 

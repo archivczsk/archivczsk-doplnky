@@ -18,5 +18,6 @@
 		<setting label="Povoliť špeciálnu sekciu hlavnej ponuke" id="enable_extra" type="bool" default="false" />
 		<setting label="Použiť preprocessing pre HLS streamy" id="preprocess_hls" type="bool" default="false" />
 		<setting label="Použiť preprocessing pre MPEG-DASH streamy" id="preprocess_mpd" type="bool" default="true" />
+		<setting label="Maximálny dátový tok ponúkaného streamu" id="max_bitrate" type="keyenum" values="0;Bez obmedzenia|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
 	</category>
 </settings>
