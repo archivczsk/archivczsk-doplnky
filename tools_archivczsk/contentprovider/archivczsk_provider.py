@@ -234,9 +234,14 @@ class ArchivCZSKContentProvider(object):
 				# create nice names for streams
 				prefix = '[%d] ' % i
 				
-				for key in ('quality', 'vcodec', 'acodec', 'lang'):
+				for key in ('quality', 'bandwidth', 'vcodec', 'acodec', 'lang'):
 					if key in pl_item['infoLabels']:
-						prefix += '[%s] ' % pl_item['infoLabels'][key] 
+						if key == 'bandwidth':
+							if int(pl_item['infoLabels'][key]) > 100:
+								# filter out garbage
+								prefix += '[%.1f MBit/s] ' % (float(pl_item['infoLabels'][key]) / 1000000)
+						else:
+							prefix += '[%s] ' % pl_item['infoLabels'][key]
 				
 				pl_item['name'] = prefix + pl_item['name']
 				playlist.append(client.create_video_it(**pl_item))
