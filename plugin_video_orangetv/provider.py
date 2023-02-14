@@ -55,7 +55,7 @@ class OrangeTVModuleLiveTV(CPModuleLiveTV):
 				epg_str = ''
 				info_labels = {}
 
-			self.cp.add_video(channel['name'] + epg_str, img=channel['snapshot'], info_labels=info_labels, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_key=channel['key'])
+			self.cp.add_video(channel['name'] + epg_str, img=channel['snapshot'], info_labels=info_labels, download=False, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_key=channel['key'])
 
 		self.cp.orangetv.saveEpgCache()
 
@@ -111,7 +111,7 @@ class OrangeTVModuleArchive(CPModuleArchive):
 				'quality': one['quality'],
 				'bandwidth': one['bandwidth']
 			}
-			self.cp.add_play(archive_title, one['url'], info_labels, live=True)
+			self.cp.add_play(archive_title, one['url'], info_labels)
 
 # #################################################################################################
 
@@ -144,13 +144,13 @@ class OrangeTVModuleExtra(CPModuleTemplate):
 
 			menu = {}
 			self.cp.add_menu_item(menu, 'Zmazať zariadenie!', self.delete_device, device_id=pdev["deviceId"])
-			self.cp.add_video(title, info_labels=info_labels, menu=menu)
+			self.cp.add_video(title, info_labels=info_labels, menu=menu, download=False)
 
 	# #################################################################################################
 	
 	def delete_device(self, device_id):
 		self.cp.orangetv.device_remove(device_id)
-		self.cp.add_video(_C('red', 'Zariadenie %s bolo vymazané!' % device_id))
+		self.cp.add_video(_C('red', 'Zariadenie %s bolo vymazané!' % device_id), download=False)
 
 # #################################################################################################
 

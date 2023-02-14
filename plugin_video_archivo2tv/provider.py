@@ -97,7 +97,7 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 			else:
 				self.cp.add_menu_item(menu, "Přidat do favoritních", cmd=self.add_fav, key=channel['key'])
 
-			self.cp.add_video(channel['name'] + epg_str, img=channel['screenshot'], info_labels=info_labels, menu=menu, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_key=channel['key'])
+			self.cp.add_video(channel['name'] + epg_str, img=channel['screenshot'], info_labels=info_labels, menu=menu, download=False, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_key=channel['key'])
 
 		self.cp.o2tv.save_epg_cache()
 
@@ -332,13 +332,13 @@ class O2TVModuleExtra(CPModuleTemplate):
 
 			menu = {}
 			self.cp.add_menu_item(menu, 'Smazat zařízení!', self.delete_device, device_id=pdev["deviceId"])
-			self.cp.add_video(title, info_labels=info_labels, menu=menu)
+			self.cp.add_video(title, info_labels=info_labels, menu=menu, download=False)
 
 	# #################################################################################################
 	
 	def delete_device(self, device_id):
 		self.cp.o2tv.device_remove(device_id)
-		self.cp.add_video(_C('red', 'Zařízení %s bylo vymazáno!' % device_id))
+		self.cp.add_video(_C('red', 'Zařízení %s bylo vymazáno!' % device_id), download=False)
 
 # #################################################################################################
 
@@ -465,7 +465,7 @@ class O2TVContentProvider(ModuleContentProvider):
 				'quality': one['quality'],
 				'bandwidth': one['bandwidth']
 			}
-			self.add_play(video_title, one['url'], info_labels, live=True)
+			self.add_play(video_title, one['url'], info_labels)
 
 	# #################################################################################################
 

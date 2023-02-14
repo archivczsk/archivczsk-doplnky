@@ -96,7 +96,7 @@ class SledovaniTVModuleLiveTV(CPModuleLiveTV):
 				info_labels = {}
 				img = None
 
-			self.cp.add_video(title + epg_str, img, info_labels, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_url=channel['url'])
+			self.cp.add_video(title + epg_str, img, info_labels, download=False, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_url=channel['url'])
 
 	# #################################################################################################
 
@@ -152,7 +152,7 @@ class SledovaniTVModuleRadio(CPModuleLiveTV):
 				info_labels = {}
 				img = None
 
-			self.cp.add_video(channel['name'] + epg_str, img, info_labels, cmd=channel['url'])
+			self.cp.add_video(channel['name'] + epg_str, img, info_labels, download=False, cmd=channel['url'])
 
 # #################################################################################################
 
@@ -362,14 +362,14 @@ class SledovaniTVModuleExtra(CPModuleTemplate):
 			else:
 				self.cp.add_menu_item(menu, 'Smazat zařízení!', self.delete_device, device_id=pdev["deviceId"])
 
-			self.cp.add_video(title, info_labels=info_labels, menu=menu)
+			self.cp.add_video(title, info_labels=info_labels, menu=menu, download=False)
 
 	# #################################################################################################
 	
 	def delete_device(self, device_id):
 		self.cp.sledovanitv.device_remove(device_id)
-#		self.cp.add_video(_C('red', 'Zařízení %s bylo vymazáno!' % device_id))
-		self.cp.add_video(_C('red', 'Tato operace zatím není implementována'))
+#		self.cp.add_video(_C('red', 'Zařízení %s bylo vymazáno!' % device_id), download=False)
+		self.cp.add_video(_C('red', 'Tato operace zatím není implementována'), download=False)
 
 # #################################################################################################
 
@@ -475,7 +475,7 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 				'quality': one['quality'],
 				'bandwidth': one['bandwidth']
 			}
-			self.add_play(video_title, one['url'], info_labels, live=True)
+			self.add_play(video_title, one['url'], info_labels)
 
 	# #################################################################################################
 

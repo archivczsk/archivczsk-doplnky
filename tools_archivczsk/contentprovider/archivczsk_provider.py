@@ -395,7 +395,7 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 	
-	def __auto_play_video(self, title, urls, info_labels, data_item, trakt_item, **cmd_args ):
+	def __auto_play_video(self, title, urls, info_labels, data_item, trakt_item, **cmd_args):
 		if not isinstance(urls, type([])):
 			urls = [urls]
 		
@@ -412,7 +412,7 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 	
-	def add_video(self, title, img=None, info_labels={}, menu={}, data_item=None, trakt_item=None, cmd=None, **cmd_args):
+	def add_video(self, title, img=None, info_labels={}, menu={}, data_item=None, trakt_item=None, download=True, cmd=None, **cmd_args):
 		"""
 		Actually the same as directory, but with different icon - should produce resolved video items using add_play()
 		
@@ -422,9 +422,9 @@ class ArchivCZSKContentProvider(object):
 		More items can be passed as list (without callable type)
 		"""
 		if cmd == None or callable(cmd):
-			client.add_dir(title, self.action(cmd, **cmd_args), image=img, infoLabels=info_labels, menuItems=menu, video_item=True, dataItem=data_item, traktItem=trakt_item)
+			client.add_dir(title, self.action(cmd, **cmd_args), image=img, infoLabels=info_labels, menuItems=menu, video_item=True, dataItem=data_item, traktItem=trakt_item, download=download)
 		else:
-			client.add_dir(title, self.action(self.__auto_play_video, title=title, urls=cmd, info_labels=info_labels, data_item=data_item, trakt_item=trakt_item, **cmd_args), image=img, infoLabels=info_labels, menuItems=menu, video_item=True, dataItem=data_item, traktItem=trakt_item)
+			client.add_dir(title, self.action(self.__auto_play_video, title=title, urls=cmd, info_labels=info_labels, data_item=data_item, trakt_item=trakt_item, **cmd_args), image=img, infoLabels=info_labels, menuItems=menu, video_item=True, dataItem=data_item, traktItem=trakt_item, download=download)
 	
 	# #################################################################################################
 	

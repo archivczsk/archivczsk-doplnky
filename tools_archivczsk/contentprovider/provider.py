@@ -326,7 +326,7 @@ class CommonContentProvider(object):
 		"""
 		pass
 
-	def add_video(self, title, img=None, info_labels={}, menu={}, data_item=None, trakt_item=None, cmd=None, **cmd_args):
+	def add_video(self, title, img=None, info_labels={}, menu={}, data_item=None, trakt_item=None, download=True, cmd=None, **cmd_args):
 		"""
 		Not yet resolved video - should produce resolved video items using add_play()
 		"""

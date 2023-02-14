@@ -41,7 +41,7 @@ class MagioGOModuleLiveTV(CPModuleLiveTV):
 				epg_str = ""
 				info_labels = {}
 
-			self.cp.add_video(channel.name + epg_str, img=channel.preview, info_labels=info_labels, cmd=self.get_livetv_stream, channel_title=channel.name, channel_id=channel.id)
+			self.cp.add_video(channel.name + epg_str, img=channel.preview, info_labels=info_labels, download=False, cmd=self.get_livetv_stream, channel_title=channel.name, channel_id=channel.id)
 
 	# #################################################################################################
 
@@ -91,7 +91,7 @@ class MagioGOModuleArchive(CPModuleArchive):
 
 	def get_archive_stream(self, archive_title, event_id):
 		url = self.cp.http_endpoint + '/playarchive/' + base64.b64encode(str(event_id).encode("utf-8")).decode("utf-8") + '/index'
-		self.cp.add_play(archive_title, url, live=True, playlist_autogen=False)
+		self.cp.add_play(archive_title, url, playlist_autogen=False)
 
 	# #################################################################################################
 
@@ -129,7 +129,7 @@ class MagioGOModuleExtra(CPModuleTemplate):
 				self.cp.add_menu_item(menu, 'Zmazať zariadenie!', self.delete_device, device_name=pdev["name"], device_id=pdev["id"])
 				info_labels = { 'plot': 'V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!'}
 
-			self.cp.add_video(title, info_labels=info_labels, menu=menu)
+			self.cp.add_video(title, info_labels=info_labels, menu=menu, download=False)
 
 	# #################################################################################################
 
@@ -137,9 +137,9 @@ class MagioGOModuleExtra(CPModuleTemplate):
 		ret, msg = self.cp.magiogo.remove_device(device_id)
 
 		if ret:
-			self.cp.add_video(_C('red', 'Zariadenie %s bolo vymazané!' % device_name))
+			self.cp.add_video(_C('red', 'Zariadenie %s bolo vymazané!' % device_name), download=False)
 		else:
-			self.cp.add_video(_C('red', 'Chyba: %s' % msg))
+			self.cp.add_video(_C('red', 'Chyba: %s' % msg), download=False)
 
 # #################################################################################################
 

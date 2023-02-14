@@ -55,7 +55,7 @@ class TellyModuleLiveTV(CPModuleLiveTV):
 				epg_str = ''
 				info_labels = {}
 
-			self.cp.add_video(channel.name + epg_str, img=channel.preview, info_labels=info_labels, cmd=self.get_livetv_stream, channel_title=channel.name, channel_url=channel.stream_url)
+			self.cp.add_video(channel.name + epg_str, img=channel.preview, info_labels=info_labels, download=False, cmd=self.get_livetv_stream, channel_title=channel.name, channel_url=channel.stream_url)
 
 	# #################################################################################################
 
@@ -114,7 +114,7 @@ class TellyModuleArchive(CPModuleArchive):
 				'bandwidth': one['bitrate'],
 				'vcodec': one['vcodec']
 			}
-			self.cp.add_play(archive_title, one['url'], info_labels, live=True)
+			self.cp.add_play(archive_title, one['url'], info_labels)
 
 # #################################################################################################
 

@@ -42,7 +42,7 @@ class SweetTVModuleLiveTV(CPModuleLiveTV):
 				info_labels = {}
 				img = None
 
-			self.cp.add_video(channel['name'] + epg_str, img=img, info_labels=info_labels, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_id=channel['id'])
+			self.cp.add_video(channel['name'] + epg_str, img=img, info_labels=info_labels, download=False, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_id=channel['id'])
 
 	# #################################################################################################
 
@@ -176,7 +176,7 @@ class SweetTVModuleExtra(CPModuleTemplate):
 	def logout(self):
 		self.cp.sweettv.logout()
 		self.cp.sweettv = None
-		self.cp.add_video(_C('red', 'Boli ste odhlásený!'))
+		self.cp.add_video(_C('red', 'Boli ste odhlásený!'), download=False)
 
 	# #################################################################################################
 
@@ -188,13 +188,13 @@ class SweetTVModuleExtra(CPModuleTemplate):
 
 			menu = {}
 			self.cp.add_menu_item(menu, 'Zmazať zariadenie!', self.delete_device, token_id=pdev["token_id"])
-			self.cp.add_video(title, info_labels=info_labels, menu=menu)
+			self.cp.add_video(title, info_labels=info_labels, menu=menu, download=False)
 
 	# #################################################################################################
 
 	def delete_device(self, token_id):
 		self.cp.sweettv.device_remove(token_id)
-		self.cp.add_video(_C('red', 'Zariadenie %s bolo vymazané!' % token_id))
+		self.cp.add_video(_C('red', 'Zariadenie %s bolo vymazané!' % token_id), download=False)
 
 # #################################################################################################
 
@@ -336,7 +336,7 @@ class SweetTVContentProvider(ModuleContentProvider):
 			settings = {
 				'user-agent': self.sweettv.get_user_agent(),
 			}
-			self.add_play(archive_title, one['url'], info_labels, data_item=data_item, settings=settings, live=True)
+			self.add_play(archive_title, one['url'], info_labels, data_item=data_item, settings=settings)
 
 	# #################################################################################################
 
