@@ -106,7 +106,7 @@ class SledovaniTVModuleLiveTV(CPModuleLiveTV):
 				'quality': one['quality'],
 				'bandwidth': one['bandwidth']
 			}
-			self.cp.add_play(channel_title, one['url'], info_labels, live=True)
+			self.cp.add_play(channel_title, one['url'], info_labels, download=False)
 
 # #################################################################################################
 

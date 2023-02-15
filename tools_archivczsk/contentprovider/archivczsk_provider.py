@@ -242,7 +242,8 @@ class ArchivCZSKContentProvider(object):
 								prefix += '[%.1f MBit/s] ' % (float(pl_item['infoLabels'][key]) / 1000000)
 						else:
 							prefix += '[%s] ' % pl_item['infoLabels'][key]
-				
+
+				pl_item['infoLabels']['title'] = pl_item['infoLabels'].get('title', pl_item['name'])
 				pl_item['name'] = prefix + pl_item['name']
 				playlist.append(client.create_video_it(**pl_item))
 				i += 1
@@ -395,7 +396,7 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 	
-	def __auto_play_video(self, title, urls, info_labels, data_item, trakt_item, **cmd_args):
+	def __auto_play_video(self, title, urls, info_labels, data_item, trakt_item, download, **cmd_args):
 		if not isinstance(urls, type([])):
 			urls = [urls]
 		
@@ -406,9 +407,9 @@ class ArchivCZSKContentProvider(object):
 					if key in url:
 						info[key] = url[key]
 
-				self.add_play(title, url['url'], info_labels=info, data_item=data_item, trakt_item=trakt_item, **cmd_args)
+				self.add_play(title, url['url'], info_labels=info, data_item=data_item, trakt_item=trakt_item, download=download, **cmd_args)
 			else:
-				self.add_play(title, url, info_labels=info_labels, data_item=data_item, trakt_item=trakt_item, **cmd_args)
+				self.add_play(title, url, info_labels=info_labels, data_item=data_item, trakt_item=trakt_item, download=download, **cmd_args)
 
 	# #################################################################################################
 	
@@ -424,18 +425,18 @@ class ArchivCZSKContentProvider(object):
 		if cmd == None or callable(cmd):
 			client.add_dir(title, self.action(cmd, **cmd_args), image=img, infoLabels=info_labels, menuItems=menu, video_item=True, dataItem=data_item, traktItem=trakt_item, download=download)
 		else:
-			client.add_dir(title, self.action(self.__auto_play_video, title=title, urls=cmd, info_labels=info_labels, data_item=data_item, trakt_item=trakt_item, **cmd_args), image=img, infoLabels=info_labels, menuItems=menu, video_item=True, dataItem=data_item, traktItem=trakt_item, download=download)
+			client.add_dir(title, self.action(self.__auto_play_video, title=title, urls=cmd, info_labels=info_labels, data_item=data_item, trakt_item=trakt_item, download=download, **cmd_args), image=img, infoLabels=info_labels, menuItems=menu, video_item=True, dataItem=data_item, traktItem=trakt_item, download=download)
 	
 	# #################################################################################################
 	
-	def add_play(self, title, url, info_labels={}, data_item=None, trakt_item=None, subs=None, settings=None, live=False, playlist_autogen=True):
+	def add_play(self, title, url, info_labels={}, data_item=None, trakt_item=None, subs=None, settings=None, live=False, download=True, playlist_autogen=True):
 		def __add_play(**kwargs):
 			if playlist_autogen:
 				self.__playlist.append(kwargs)
 			else:
 				client.add_video(**kwargs)
 		
-		__add_play(name=title, url=url, subs=subs, infoLabels=info_labels, live=live, settings=settings, dataItem=data_item, traktItem=trakt_item)
+		__add_play(name=title, url=url, subs=subs, infoLabels=info_labels, live=live, settings=settings, dataItem=data_item, traktItem=trakt_item, download=download)
 				
 	# #################################################################################################
 	

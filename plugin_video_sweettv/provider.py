@@ -61,7 +61,7 @@ class SweetTVModuleLiveTV(CPModuleLiveTV):
 				'user-agent' : self.cp.sweettv.get_user_agent(),
 				'resolve_hls_master' : False
 			}
-			self.cp.add_play(channel_title, one['url'], info_labels, data_item=data_item, settings=settings, live=True)
+			self.cp.add_play(channel_title, one['url'], info_labels, data_item=data_item, settings=settings, download=False)
 
 # #################################################################################################
 

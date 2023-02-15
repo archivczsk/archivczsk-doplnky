@@ -332,7 +332,7 @@ class CommonContentProvider(object):
 		"""
 		pass
 
-	def add_play(self, title, url, info_labels={}, data_item=None, trakt_item=None, subs=None, settings=None, live=False, playlist_autogen=True):
+	def add_play(self, title, url, info_labels={}, data_item=None, trakt_item=None, subs=None, settings=None, live=False, download=True, playlist_autogen=True):
 		"""
 		Set resolved stream, that can be played by player.
 		info_labels - stream info labels

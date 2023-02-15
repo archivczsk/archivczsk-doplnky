@@ -66,7 +66,7 @@ class TellyModuleLiveTV(CPModuleLiveTV):
 				'bandwidth': one['bitrate'],
 				'vcodec': one['vcodec']
 			}
-			self.cp.add_play(channel_title, one['url'], info_labels, live=True)
+			self.cp.add_play(channel_title, one['url'], info_labels, download=False)
 
 # #################################################################################################
 

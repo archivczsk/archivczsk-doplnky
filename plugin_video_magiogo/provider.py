@@ -47,7 +47,7 @@ class MagioGOModuleLiveTV(CPModuleLiveTV):
 
 	def get_livetv_stream(self, channel_title, channel_id):
 		url = self.cp.http_endpoint + '/playlive/' + base64.b64encode(str(channel_id).encode("utf-8")).decode("utf-8") + '/index'
-		self.cp.add_play(channel_title, url, live=True, playlist_autogen=False)
+		self.cp.add_play(channel_title, url, download=False, playlist_autogen=False)
 
 # #################################################################################################
 
