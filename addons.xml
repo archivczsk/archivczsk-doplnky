@@ -1,757 +1,416 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
-<addon id="plugin.video.stream-cinema" name="Stream Cinema" provider-name="archivczsk" version="2.0.4">
-  <requires>
-        <import addon="xbmc.python" version="2.1.0" />
-        <import addon="script.module.stream.resolver" version="1.9.7" />
-    </requires>
-    <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
-        <provides>video</provides>
+<addon id="plugin.video.yt" name="YouTube" provider-name="Michal Novotny" version="1.7">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to search and play YouTube videos</description>
+		<description lang="cs">Plugin pro vyhledávání a přehrávání videí z YouTube</description>
+		<description lang="sk">Plugin pre vyhľadavanie a prehrávanie videí z YouTube</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.ivysilani" name="iVysílání — Česká televize" provider-name="Michal Novotny, Štěpán Ort" version="1.5.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to play videos and live TV from Czech Television's iVysilani</description>
+		<description lang="cs">Plugin nabízí přístup do archivu České televize iVysílání i přehrávání kanálů živě.</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.sc2" name="Stream Cinema Community" provider-name="hotshot.sk" version="2.3.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.seeker"/>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to play video archive.</description>
+		<description lang="cs">Plugin pro přehrávání videí.</description>
+		<description lang="sk">Plugin pre prehravanie videí.</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.sktonline" name="SkTonline" provider-name="archivczsk" version="2.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.archivczsk" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.seeker"/>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to search and play SkTonline videos</description>
+		<description lang="cs">Plugin pro vyhledávání a přehrávání videí z SkTonline</description>
+		<description lang="sk">Plugin pre vyhľadavanie a prehrávanie videí z SkTonline</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.aktualne" name="Aktuálně (DVTV)" provider-name="Michal Novotný" version="1.3">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to play video archive from video.aktualne.cz</description>
+		<description lang="cs">Plugin pro přehrávání videí z video.aktualne.cz</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.orangetv" name="OrangeTV" provider-name="archivczsk" version="2.10">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.archivczsk" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video" preload="yes"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to play Live TV and archive from orange.sk</description>
+		<description lang="cs">Plugin pro přehrávání Live TV a archívu z orange.sk</description>
+		<description lang="sk">Plugin pre prehrávanie Live TV a archívu z orange.sk</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.mall.tv" name="Mall.tv" provider-name="Michal Novotný" version="1.8">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to play video archive from mall.tv</description>
+		<description lang="cs">Plugin pro přehrávání videí z mall.tv</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.rebittv" name="Rebit.tv" provider-name="archivczsk" version="1.1">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.archivczsk" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video" preload="yes"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to play videos and live tv from rebit.tv</description>
+		<description lang="sk">Plugin pre prehrávanie live tv z rebit.tv</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.telly" name="Telly" provider-name="archivczsk" version="1.1.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.archivczsk" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video" preload="yes"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to play Telly live TV</description>
+		<description lang="cs">Plugin pro přehrávání Telly live TV</description>
+		<description lang="sk">Plugin pre prehrávanie Telly live TVk</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.rtvs.sk" name="rtvs.sk" provider-name="misanov, Maros Ondrasek" version="1.11.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description lang="en">Watch online TV archive from rtvs.sk</description>
+		<description lang="cs">Sledujte TV archiv zo serveru rtvs.sk</description>
+		<description lang="sk">Sledujte TV archív zo serveru rtvs.sk</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.tvcom.cz" name="tvcom.cz" provider-name="misanov" version="1.2">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description lang="en">Watch online TV archive from tvcom.cz</description>
+		<description lang="cs">Sledujte TV archiv zo serveru tvcom.cz</description>
+		<description lang="sk">Sledujte TV archív zo serveru tvcom.cz</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.sledovanitv" name="Sledovani.tv" provider-name="archivczsk" version="2.5">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.archivczsk" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video" preload="yes"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to play from sledovani.tv</description>
+		<description lang="cs">Plugin pro přehrávání videí ze sledovani.tv</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.mtr.sk" name="Mestská TV Ružomberok" provider-name="Libor Zoubek" version="1.2.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description lang="en">Watch online mtr.sk</description>
+		<description lang="cs">Sledujte online mtr.sk</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.joj.sk" name="joj.sk" provider-name="Maros Ondrasek" version="1.5.1">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description lang="en">Watch online TV archive from joj.sk</description>
+		<description lang="cs">Sledujte online TV archiv zo serveru joj.sk</description>
+		<description lang="sk">Sledujte online TV archív zo serveru joj.sk</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.idnestv" name="iDNES.tv" provider-name="Michal Novotný" version="1.2">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to play video archive from video.idnes.cz</description>
+		<description lang="cs">Plugin pro přehrávání videí z video.idnes.cz</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.sweettv" name="Sweet.tv" provider-name="archivczsk" version="1.5">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.archivczsk" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video" preload="yes"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to play videos and live tv from sweet.tv</description>
+		<description lang="sk">Plugin pre prehrávanie videí a live tv zo sweet.tv</description>
+	</extension>
+</addon>
+
+<addon id="tools.archivczsk" name="addons helper" version="1.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+	</requires>
+	<extension point="archivczsk.addon.tools" />
+	<extension point="archivczsk.addon.metadata">
+		<description>Helper module for easy addon creating</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.online-files" name="Soubory Online" provider-name="Libor Zoubek" version="1.5.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.seeker" name="Webshare.cz" id="webshare.cz"/>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description lang="en">Get access to various czech filesharing services</description>
+		<description lang="cs">Získejte přístup k různým file-sharingovým službám</description>
+		<description lang="sk">Získajte prístup k rôznym file-sharingovým službám</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.magiogo" name="Magio GO" provider-name="archivczsk" version="1.6">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.archivczsk" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video" preload="yes"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to play Magio GO live TV</description>
+		<description lang="cs">Plugin pro přehrávání Magio Go</description>
+		<description lang="sk">Plugin pre prehrávanie Magio GO</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.tv.sme.sk" name="TV SME.sk" provider-name="Michal Novotny" version="1.4">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to play TV video archive tv.sme.sk</description>
+		<description lang="cs">Plugin pro přehrávání videí z archivu tv.sme.sk</description>
+		<description lang="sk">Plugin pre prehrávanie videí z archívu tv.sme.sk</description>
+	</extension>
+</addon>
+
+<addon id="tools.xbmc" name="xbmc addons helper" version="1.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+	</requires>
+	<extension point="archivczsk.addon.tools" />
+	<extension point="archivczsk.addon.metadata">
+		<description>Helper module for easier porting of xbmc addons</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.videacesky.cz" name="videacesky.cz" provider-name="Libor Zoubek" version="1.2.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description lang="en">Watch content from videacesky.cz</description>
+		<description lang="cs">Sledujte videa, reklamy, seriály, články a návody ze servru videacesky.cz</description>
+		<description lang="sk">Sledujte videá, reklamy, seriály, články a návody zo serveru videacesky.cz</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.ta3.com" name="ta3.com" provider-name="Maros Ondrasek, misanov" version="1.4.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description lang="en">Watch online TV archive from ta3.com</description>
+		<description lang="cs">Sledujte online TV archiv zo serveru ta3.com</description>
+		<description lang="sk">Sledujte online TV archív zo serveru ta3.com</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.dokumenty.tv" name="Dokumenty.tv" provider-name="misanov" version="1.4">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to play videos from dokumenty.tv</description>
+		<description lang="cs">Plugin pro přehrávání videí z dokumenty.tv</description>
+		<description lang="sk">Plugin pre prehrávanie videí z dokumenty.tv</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.stalker" name="Stalker" provider-name="archivczsk" version="1.3">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+		<import addon="tools.archivczsk" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video" preload="yes"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Simple MGA25x emulator with multiple accounts support</description>
+		<description lang="cs">Jednoduchej MGA25x emulátor podpořujíci vícero uživatelských účtů </description>
+		<description lang="sk">Jednoduchý MGA25x emulátor podporujúci viacero uživateľských účtov </description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.sosac.ph" name="Sosáč" provider-name="L. Zoubek + jondas" version="1.4.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.seeker"/>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description lang="en">Watch online movies and tv shows from www.sosac.ph.</description>
+		<description lang="cs">Sledujte online videa a serialy z www.sosac.ph.</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.autosalontv" name="Autosalon" provider-name="archivczsk" version="1.3">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to play video archive from autosalon.cz and auto-salon.sk</description>
+		<description lang="cs">Archiv pořadů ze serveru AutosalonTV.cz a Auto-salon.sk</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.archivo2tv" name="Sledování O2TV" provider-name="archivczsk" version="1.8.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.archivczsk" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video" preload="yes"/>
+	<extension point="archivczsk.addon.metadata">
+		<description lang="cs">Umožnuje sledování O2TV, včetně základní práce s nahrávkami</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.pohadkar.cz" name="Pohádkář.cz" provider-name="Libor Zoubek" version="1.3.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description lang="en">Watch online tales mostly in czech language on pohadkar.cz</description>
+		<description lang="cs">Sledujte online pohádky ze servru pohádkář.cz. Ideální pro zabavení dětí.</description>
+	</extension>
+</addon>
+
+<addon id="plugin.video.stream-cinema" name="Stream Cinema" provider-name="archivczsk" version="2.1.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.seeker" name="Stream Cinema - Movies" id="search-movie"/>
+	<extension point="archivczsk.addon.seeker" name="Stream Cinema - Series" id="search-series"/>
+	<extension point="archivczsk.addon.metadata">
+        <description lang="en">Watch online movies from stream-cinema.online</description>
+        <description lang="sk">Sledujte online filmy a seriály zo stream-cinema.online</description>
+        <description lang="cs">Sledujte online filmy a seriály ze stream-cinema.online</description>
     </extension>
-    <extension point="xbmc.addon.metadata">
-        <summary lang="en">stream-cinema.online</summary>
-        <summary lang="cs">stream-cinema.online</summary>
-        <summary lang="sk">stream-cinema.online</summary>
-        <disclaimer lang="en">Watch online movies from stream-cinema.online</disclaimer>
-        <disclaimer lang="sk">Watch online movies from stream-cinema.online</disclaimer>
-        <disclaimer lang="cz">Watch online movies from stream-cinema.online</disclaimer>
-        <platform>all</platform>
-        <license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
-        <assets>
-            <icon>icon.png</icon>
-            <fanart></fanart>
-            <screenshot></screenshot>
-        </assets>
-    </extension>
 </addon>
 
-<addon id="plugin.video.pohadkar.cz"
-       name="Pohádkář.cz"
-       version="1.2.1"
-       provider-name="Libor Zoubek">
-  <requires>
-    <import addon="xbmc.python" version="2.0" />
-    <import addon="script.module.stream.resolver" version="1.6.5" />
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="en">pohadkar.cz</summary>
-    <summary lang="cs">pohadkar.cz</summary>
-    <description lang="en">Watch online tales mostly in czech language on pohadkar.cz</description>
-    <description lang="cs">Sledujte online pohádky ze servru pohádkář.cz. Ideální pro zabavení dětí.</description>
-    <platform>all</platform>
-  </extension>
+<addon id="plugin.video.tvseznam" name="Televize Seznam" provider-name="Michal Novotný" version="1.7">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to play videos from televizeseznam.cz</description>
+		<description lang="cs">Plugin pro přehrávání videí z televizeseznam.cz</description>
+	</extension>
 </addon>
 
-<addon id="plugin.video.telly"
-       name="Telly"
-       version="1.0.3"
-       provider-name="archivczsk">
-  <requires>
-    <import addon="enigma2.archivczsk" version="1.6.0"/>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.stream.resolver" version="1.6.22" />
-  </requires>
-  <extension point="xbmc.service" library="telly_service.py"/>
-  <extension point="xbmc.autostart" library="telly_autostart.py"/>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Telly live plugin</summary>
-    <description>Plugin to play Telly live TV</description>
-    <description lang="cs">Plugin pro přehrávání Telly live TV</description>
-    <description lang="sk">Plugin pre prehrávanie Telly live TVk</description>
-  </extension>
+<addon id="plugin.video.eurosport" name="Eurosport Player" provider-name="Michal Novotny" version="1.8">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Plugin to play videos from eurosportplayer.com</description>
+		<description lang="cs">Plugin pro přehrávání videí z eurosportplayer.com</description>
+		<description lang="sk">Plugin pre prehrávanie videí z eurosportplayer.com</description>
+	</extension>
 </addon>
 
-<addon id="plugin.video.sweettv"
-       name="Sweet.tv"
-       version="1.4"
-       provider-name="archivczsk">
-  <requires>
-    <import addon="enigma2.archivczsk" version="1.6.3"/>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.stream.resolver" version="1.6.25" />
-  </requires>
-  <extension point="xbmc.service" library="sweettv_service.py"/>
-  <extension point="xbmc.autostart" library="sweettv_autostart.py"/>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Sweet.tv</summary>
-    <description>Plugin to play videos and live tv from sweet.tv</description>
-    <description lang="sk">Plugin pre prehrávanie videí a live tv zo sweet.tv</description>
-  </extension>
-</addon>
-
-<addon id="plugin.video.tvcom.cz" name="tvcom.cz" provider-name="misanov" version="1.1">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-    <import addon="script.module.stream.resolver" version="1.6.13" />
-  </requires>
-  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="en">tvcom.cz</summary>
-    <summary lang="cs">tvcom.cz</summary>
-    <summary lang="sk">tvcom.cz</summary>
-    <description lang="en">Watch online TV archive from tvcom.cz</description>
-    <description lang="cs">Sledujte TV archiv zo serveru tvcom.cz</description>
-    <description lang="sk">Sledujte TV archív zo serveru tvcom.cz</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.novaplus"
-       name="TV Nova"
-       version="3.0"
-       provider-name="archivczsk">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.stream.resolver" version="1.6.22" />
-    <import addon="script.module.dmd-czech.common" version="1.6.1" />
-  </requires>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Nova Plus TV video-archive plugin</summary>
-    <summary lang="cs">Nova Plus TV - archiv</summary>
-    <description>
-        Plugin to play TV video archive tv.nova.cz
-    </description>
-    <description lang="cs">
-        Plugin pro přehrávání videí z archivu tv.nova.cz
-    </description>
-  </extension>
-</addon>
-
-<addon id="plugin.video.tvseznam"
-       name="Televize Seznam"
-       version="1.6"
-       provider-name="Michal Novotný">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.dmd-czech.common" version="1.5.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Televizeseznam.cz video plugin</summary>
-    <description>Plugin to play videos from televizeseznam.cz</description>
-    <description lang="cs">Plugin pro přehrávání videí z televizeseznam.cz</description>
-  </extension>
-</addon>
-
-<addon id="script.module.dmd-czech.common" name="dmd-czech common python modules" version="1.6.1" provider-name="Jiri Vyhnalek">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-  </requires>
-  <extension point="xbmc.python.module" library="lib" />
-  <extension point="xbmc.addon.metadata">
-    <summary>dmd-czech plugins common python modules</summary>
-    <description>Common python modules pack that is used by dmd-czech plugins</description>
-    <license>GNU GPL</license>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.ta3.com" name="ta3.com" provider-name="Maros Ondrasek, misanov" version="1.3.0">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-    <import addon="script.module.stream.resolver" version="1.6.22" />
-  </requires>
-  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="en">ta3.com</summary>
-    <summary lang="cs">ta3.com</summary>
-    <summary lang="sk">ta3.com</summary>
-    <description lang="en">Watch online TV archive from ta3.com</description>
-    <description lang="cs">Sledujte online TV archiv zo serveru ta3.com</description>
-    <description lang="sk">Sledujte online TV archív zo serveru ta3.com</description>
-    <platform>all</platform>
-    <source>https://github.com/kodi-czsk/plugin.video.ta3.com</source>
-  </extension>
-</addon>
-
-<addon id="plugin.video.dokumenty.tv" name="Dokumenty.tv" provider-name="misanov" version="1.3">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-    <import addon="script.module.stream.resolver" version="1.6.22" />
-  </requires>
-  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Dokumenty.tv plugin</summary>
-    <description>Plugin to play videos from dokumenty.tv</description>
-    <description lang="cs">Plugin pro přehrávání videí z dokumenty.tv</description>
-    <description lang="sk">Plugin pre prehrávanie videí z dokumenty.tv</description>
-  </extension>
-</addon>
-
-<addon id="plugin.video.rtvs.sk" name="rtvs.sk" provider-name="misanov, Maros Ondrasek" version="1.10.2">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-    <import addon="script.module.stream.resolver" version="1.6.13" />
-  </requires>
-  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="en">rtvs.sk</summary>
-    <summary lang="cs">rtvs.sk</summary>
-    <summary lang="sk">rtvs.sk</summary>
-    <description lang="en">Watch online TV archive from rtvs.sk</description>
-    <description lang="cs">Sledujte TV archiv zo serveru rtvs.sk</description>
-    <description lang="sk">Sledujte TV archív zo serveru rtvs.sk</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.eurosport" name="Eurosport Player" provider-name="Michal Novotny" version="1.7">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-    <import addon="script.module.stream.resolver" version="1.6.22" />
-  </requires>
-  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Eurosport Player plugin</summary>
-    <description>Plugin to play videos from eurosportplayer.com</description>
-    <description lang="cs">Plugin pro přehrávání videí z eurosportplayer.com</description>
-    <description lang="sk">Plugin pre prehrávanie videí z eurosportplayer.com</description>
-  </extension>
-</addon>
-
-<addon id="plugin.video.yt" name="YouTube" provider-name="Michal Novotny" version="1.6">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-    <import addon="script.module.stream.resolver" version="1.6.22" />
-  </requires>
-  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>YouTube video plugin</summary>
-    <description>Plugin to search and play YouTube videos</description>
-    <description lang="cs">Plugin pro vyhledávání a přehrávání videí z YouTube</description>
-    <description lang="sk">Plugin pre vyhľadavanie a prehrávanie videí z YouTube</description>
-  </extension>
-</addon>
-
-<addon id="plugin.video.archivo2tv" name="Sledování O2TV" provider-name="misanov,waladir" version="1.7.5">
-  <requires>
-    <import addon="enigma2.archivczsk" version="1.6.0"/>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.stream.resolver" version="1.6.25" />
-  </requires>
-  <extension point="xbmc.service" library="o2tv_service.py"/>
-  <extension point="xbmc.autostart" library="o2tv_autostart.py"/>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="en_GB">Sledovaní O2TV</summary>
-    <summary lang="cs_CZ">Sledovaní O2TV</summary>
-    <description lang="en_GB">Umožnuje sledování O2TV, včetně základní práce s nahrávkami</description>
-    <description lang="cs_CZ">Umožnuje sledování O2TV, včetně základní práce s nahrávkami</description>
-  </extension>
-</addon>
-
-<addon id="plugin.video.sc2"
-       name="Stream Cinema Community"
-       version="2.2.5"
-       provider-name="hotshot.sk">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.stream.resolver" version="1.6.25" />
-  </requires>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Stream Cinema 2.0 CZ/SK</summary>
-    <description>Plugin to play video archive.</description>
-    <description lang="cs">Plugin pro přehrávání videí.</description>
-    <description lang="sk">Plugin pre prehravanie videí.</description>
-  </extension>
-</addon>
-
-<addon id="plugin.video.mall.tv"
-       name="Mall.tv"
-       version="1.7"
-       provider-name="Michal Novotný">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Mall.tv video-archive plugin</summary>
-    <description>Plugin to play video archive from mall.tv</description>
-    <description lang="cs">Plugin pro přehrávání videí z mall.tv</description>
-  </extension>
-</addon>
-
-<addon id="plugin.video.videacesky.cz" name="videacesky.cz" provider-name="Libor Zoubek" version="1.1.1">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-    <import addon="script.module.stream.resolver" version="1.6.17" />
-  </requires>
-  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="en">videacesky.cz</summary>
-    <summary lang="cs">videacesky.cz</summary>
-    <description lang="en">Watch content from videacesky.cz</description>
-    <description lang="cs">Sledujte videa, reklamy, seriály, články a návody ze servru videacesky.cz</description>
-    <description lang="sk">Sledujte videá, reklamy, seriály, články a návody zo serveru videacesky.cz</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.rebittv"
-       name="Rebit.tv"
-       version="1.0"
-       provider-name="archivczsk">
-  <requires>
-    <import addon="enigma2.archivczsk" version="1.6.0"/>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.stream.resolver" version="1.6.25" />
-  </requires>
-  <extension point="xbmc.service" library="rebittv_service.py"/>
-  <extension point="xbmc.autostart" library="rebittv_autostart.py"/>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Rebit.tv</summary>
-    <description>Plugin to play videos and live tv from rebit.tv</description>
-    <description lang="sk">Plugin pre prehrávanie live tv z rebit.tv</description>
-  </extension>
-</addon>
-
-<addon id="plugin.video.sledovanitv"
-       name="Sledovani.tv"
-       version="2.4"
-       provider-name="archivczsk">
-  <requires>
-    <import addon="enigma2.archivczsk" version="1.6.0"/>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.stream.resolver" version="1.6.25" />
-  </requires>
-  <extension point="xbmc.service" library="sledovanitv_service.py"/>
-  <extension point="xbmc.autostart" library="sledovanitv_autostart.py"/>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Sledovani.tv</summary>
-    <description>Plugin to play from sledovani.tv</description>
-    <description lang="cs">Plugin pro přehrávání videí ze sledovani.tv</description>
-  </extension>
-</addon>
-
-<addon id="script.module.stream.resolver" name="stream resolver" provider-name="Libor Zoubek" version="1.9.7">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-
-  </requires>
-  <extension library="lib" point="xbmc.python.module" />
-  <extension point="xbmc.addon.metadata">
-    <summary>xbmc-doplnky plugins common python modules mainly for resolving stream URLs</summary>
-    <description>Common python modules pack that is used by xbmc-doplnky plugins</description>
-    <license>GNU GPL</license>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="script.module.archivczsk.common"
-	name="XBMC to archivczsk bridge"
-	version="1.1.0"
-	provider-name="Maros Ondrasek">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-  </requires>
-  <extension point="xbmc.python.module" library="lib" />
-  <extension point="xbmc.addon.metadata">
-    <summary>Contains archivczsk methods to port XBMC plugins</summary>
-    <description></description>
-    <license>GNU GPL</license>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.sosac.ph" name="Sosáč" provider-name="L. Zoubek + jondas" version="1.3.1">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-    <import addon="script.module.stream.resolver" version="1.6.25" />
-  </requires>
-  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="en">sosac.ph</summary>
-    <summary lang="cs">sosac.ph</summary>
-    <description lang="en">Watch online movies and tv shows from www.sosac.ph.</description>
-    <description lang="cs">Sledujte online videa a serialy z www.sosac.ph.</description>
-    <platform>all</platform>
-    <source>https://github.com/kodi-czsk/plugin.video.sosac.ph</source>
-  </extension>
-</addon>
-
-<addon id="plugin.video.joj.sk" name="joj.sk" provider-name="Maros Ondrasek" version="1.4.0">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-    <import addon="script.module.stream.resolver" version="1.6.24" />
-  </requires>
-  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="en">joj.sk</summary>
-    <summary lang="cs">joj.sk</summary>
-    <summary lang="sk">joj.sk</summary>
-    <description lang="en">Watch online TV archive from joj.sk</description>
-    <description lang="cs">Sledujte online TV archiv zo serveru joj.sk</description>
-    <description lang="sk">Sledujte online TV archív zo serveru joj.sk</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.markiza" name="markiza.sk" provider-name="misanov,rywko" version="1.5.1">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-    <import addon="script.module.stream.resolver" version="1.6.22" />
-  </requires>
-  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="en">markiza.sk</summary>
-    <summary lang="cs">markiza.sk</summary>
-    <summary lang="sk">markiza.sk</summary>
-    <description lang="en">Watch online TV archive from videoarchiv.markiza.sk</description>
-    <description lang="cs">Sledujte online TV archiv ze serveru videoarchiv.markiza.sk</description>
-    <description lang="sk">Sledujte online TV archív zo serveru videoarchiv.markiza.sk</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.befun.cz" name="befun.cz" provider-name="Libor Zoubek" version="1.1.0">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-    <import addon="script.module.stream.resolver" version="1.6.23" />
-  </requires>
-  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="en">befun.cz</summary>
-    <summary lang="cs">befun.cz</summary>
-    <description lang="en">Watch online HD movies and series from befun.cz</description>
-    <description lang="cs">Sledujte online HD filmy seriály se servru befun.cz</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.magiogo"
-       name="Magio GO"
-       version="1.5"
-       provider-name="archivczsk">
-  <requires>
-    <import addon="enigma2.archivczsk" version="1.6.0"/>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.stream.resolver" version="1.6.22" />
-  </requires>
-  <extension point="xbmc.service" library="magiogo_service.py"/>
-  <extension point="xbmc.autostart" library="magiogo_autostart.py"/>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Magio GO/TV Go live plugin</summary>
-    <description>Plugin to play Magio GO live TV</description>
-    <description lang="cs">Plugin pro přehrávání Magio Go</description>
-    <description lang="sk">Plugin pre prehrávanie Magio GO</description>
-  </extension>
-</addon>
-
-<addon id="plugin.video.orangetv"
-       name="OrangeTV"
-       version="2.9"
-       provider-name="Michal Novotný, Štěpán Ort">
-  <requires>
-    <import addon="enigma2.archivczsk" version="1.6.0"/>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.stream.resolver" version="1.6.22" />
-  </requires>
-  <extension point="xbmc.service" library="orangetv_service.py"/>
-  <extension point="xbmc.autostart" library="orangetv_autostart.py"/>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>OrangeTV live plugin</summary>
-    <description>Plugin to play live videos from orange.sk</description>
-    <description lang="cs">Plugin pro přehrávání živých videí z orange.sk</description>
-    <description lang="sk">Plugin pre prehrávanie živých videí z orange.sk</description>
-  </extension>
-</addon>
-
-<addon id="plugin.video.autosalontv"
-       name="Autosalon"
-       version="1.2"
-       provider-name="archivczsk">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.stream.resolver" version="1.6.22" />
-  </requires>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Autosalon.TV + Auto-salon.sk</summary>
-    <summary lang="cs">Autosalon.TV + Auto-salon.sk</summary>
-    <description>
-        Plugin to play video archive from autosalon.cz and auto-salon.sk
-    </description>
-    <description lang="cs">
-        Archiv pořadů ze serveru AutosalonTV.cz a Autosalón.sk
-    </description>
-  </extension>
-</addon>
-
-<addon id="plugin.video.mtr.sk"
-       name="Mestská TV Ružomberok"
-       version="1.1.0"
-       provider-name="Libor Zoubek">
-  <requires>
-    <import addon="xbmc.python" version="2.0" />
-    <import addon="script.module.stream.resolver" version="1.6.7" />
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="en">mtr.sk</summary>
-    <summary lang="cs">mtr.sk</summary>
-    <description lang="en">Watch online mtr.sk</description>
-    <description lang="cs">Sledujte online mtr.sk</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.stalker"
-       name="Stalker"
-       version="1.2"
-       provider-name="archivczsk">
-  <requires>
-    <import addon="enigma2.archivczsk" version="1.5.7"/>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.stream.resolver" version="1.6.22" />
-  </requires>
-  <extension point="xbmc.autostart" library="stalker_autostart.py"/>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Stalker client addon</summary>
-    <description>Stalker client addon</description>
-    <description lang="cs">Stalker client addon</description>
-    <description lang="sk">Stalker client addon</description>
-  </extension>
-</addon>
-
-<addon id="plugin.video.aktualne"
-       name="Aktuálně (DVTV)"
-       version="1.2"
-       provider-name="Michal Novotný">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.dmd-czech.common" version="1.5.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Aktualne.cz video-archive plugin</summary>
-    <description>Plugin to play video archive from video.aktualne.cz</description>
-    <description lang="cs">Plugin pro přehrávání videí z video.aktualne.cz</description>
-  </extension>
-</addon>
-
-<addon id="plugin.video.ivysilani" name="iVysílání — Česká televize" version="1.4.1" provider-name="Michal Novotny, Štěpán Ort">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.stream.resolver" version="1.6.22" />
-  </requires>
-  <extension point="xbmc.python.pluginsource" library="addon.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>iVysílání — Česká televize</summary>
-	<description>Plugin to play videos and live TV from Czech Television's iVysilani</description>
-    <description lang="cs">Plugin nabízí přístup do archivu České televize iVysílání i přehrávání kanálů živě.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.iprima" version="1.7" name="iPrima.cz" provider-name="Michal Novotný, Roman Smolka">
-<requires>
-	<import addon="xbmc.python" version="2.25.0"/>
-</requires>
-<extension point="xbmc.python.pluginsource" library="default.py">
-	<provides>video</provides>
-</extension>
-<extension point="xbmc.addon.metadata">
-	<summary>iPrima.cz</summary>
-	<description>Doplněk pro zobrazování obsahu z archivu iPrima. Registrace nutná na webu iprima.cz.</description>
-	<platform>all</platform>
-</extension>
-</addon>
-
-<addon id="plugin.video.online-files" name="Soubory Online" provider-name="Libor Zoubek" version="1.4.2">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-    <import addon="script.module.stream.resolver" version="1.6.16" />
-  </requires>
-  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="en">Files Online</summary>
-    <summary lang="cs">Soubory Online</summary>
-    <summary lang="sk">Súbory Online</summary>
-    <description lang="en">Get access to various czech filesharing services</description>
-    <description lang="cs">Získejte přístup k různým file-sharingovým službám</description>
-    <description lang="sk">Získajte prístup k rôznym file-sharingovým službám</description>
-    <platform>all</platform>
-    <source>https://github.com/kodi-czsk/plugin.video.online-files</source>
-  </extension>
-</addon>
-
-<addon id="plugin.video.sktonline" name="SkTonline" provider-name="misanov" version="1.3">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-    <import addon="script.module.stream.resolver" version="1.6.22" />
-  </requires>
-  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>SkTonline video plugin</summary>
-    <description>Plugin to search and play SkTonline videos</description>
-    <description lang="cs">Plugin pro vyhledávání a přehrávání videí z SkTonline</description>
-    <description lang="sk">Plugin pre vyhľadavanie a prehrávanie videí z SkTonline</description>
-  </extension>
-</addon>
-
-<addon id="plugin.video.tv.sme.sk" name="TV SME.sk" provider-name="Michal Novotny" version="1.3">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-    <import addon="script.module.stream.resolver" version="1.6.22" />
-  </requires>
-  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>TV SME.sk video-archive plugin</summary>
-    <summary lang="sk">Internetová televízia SME.sk</summary>
-    <summary lang="cs">Internetová televize SME.sk</summary>
-    <description>Plugin to play TV video archive tv.sme.sk</description>
-    <description lang="cs">Plugin pro přehrávání videí z archivu tv.sme.sk</description>
-    <description lang="sk">Plugin pre prehrávanie videí z archívu tv.sme.sk</description>
-  </extension>
-</addon>
-
-<addon id="plugin.video.idnestv"
-       name="iDNES.tv"
-       version="1.1"
-       provider-name="Michal Novotný">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.dmd-czech.common" version="1.5.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>iDnes.cz video-archive plugin</summary>
-    <description>Plugin to play video archive from video.idnes.cz</description>
-    <description lang="cs">Plugin pro přehrávání videí z video.idnes.cz</description>
-  </extension>
-</addon>
-
-<addon id="plugin.video.gordon.ura.cz" name="Gordon Ramsay CZ" provider-name="Maros Ondrasek" version="1.1.1">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-    <import addon="script.module.stream.resolver" version="1.6.31" />
-  </requires>
-  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="en">Gordon Ramsay CZ</summary>
-    <summary lang="cs">Gordon Ramsay CZ</summary>
-    <summary lang="sk">Gordon Ramsay CZ</summary>
-    <description lang="en">Watch online archive from http://gordon.ura.cz</description>
-    <description lang="cs">Gordon Ramsay a jeho hustokrutý pořady ze serveru http://gordon.ura.cz</description>
-    <description lang="sk">Gordon Ramsay a jeho hustokrutý pořady ze serveru http://gordon.ura.cz</description>
-    <platform>all</platform>
-    <source>https://github.com/kodi-czsk/plugin.video.gordon.ura.cz</source>
-  </extension>
-</addon>
-
-<addon id="plugin.video.jaksetodela.cz" name="Jak se to dela" provider-name="Ivo Brhel" version="1.1.0">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0" />
-    <import addon="script.module.stream.resolver" version="1.6.17" />
-  </requires>
-  <extension library="default.py" point="xbmc.python.pluginsource" provides="video">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="en">jaksetodela.cz</summary>
-    <summary lang="cs">jaksetodela.cz</summary>
-    <description lang="en">Watch online www.jaksetodela.cz</description>
-    <description lang="cs">Sledujte online www.jaksetodela.cz</description>
-    <platform>all</platform>
-  </extension>
+<addon id="plugin.video.novaplus" name="TV Nova" provider-name="archivczsk" version="3.1">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="tools.xbmc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+		<description lang="en">Plugin to play TV video archive tv.nova.cz</description>
+		<description lang="cs">Plugin pro přehrávání videí z archivu tv.nova.cz</description>
+	</extension>
 </addon>
 </addons>

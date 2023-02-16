@@ -1,0 +1,14 @@
+v1.4
+- konverzia na module pre archivCZSK >= 2.0.0
+
+v1.3
+- drobné opravy
+
+v1.2
+- fixed module loading addon dependencies
+
+v1.1
+- make addon python 3.x compatible
+
+v1.0
+- initial release
