@@ -92,7 +92,7 @@ class SkTContentProvider(CommonContentProvider):
 		else:
 			response = self.req_session.get(url, params=params, headers=headers)
 
-		dump_json_request(response)
+#		dump_json_request(response)
 
 		if raw_response:
 			return response
