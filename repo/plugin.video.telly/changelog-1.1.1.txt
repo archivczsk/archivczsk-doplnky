@@ -1,0 +1,18 @@
+1.1.1 - 21.02.2023
+    - pridanie timeoutov a spoločnej session pre API volania
+
+1.1.0 - 29.01.2023
+    - konverzia na modul pre archivCZSK >= 2.0.0
+
+1.0.3 - 01.12.2022
+    - podpora pre zapínanie/vypínanie podpornej služby podľa potreby
+    
+1.0.2 - 26.07.2022
+    - pridaná možnosť vynútiť streamovanie cez http namiesto https
+
+1.0.1 - 22.07.2022
+    - oprava behu na python3 a DreamOS
+    
+1.0.0 - 18.07.2022
+    - úvodná verejná verzia
+	- podpora pre Live TV, archív a userbouquet
