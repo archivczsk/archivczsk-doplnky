@@ -17,7 +17,7 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
-import os, traceback
+import sys, os, traceback
 
 import json
 from datetime import datetime
@@ -98,6 +98,43 @@ class CommonContentProvider(object):
 		'''
 		for cbk, args, kwargs in self.__initialised_cbks:
 			cbk(*args, **kwargs)
+
+	# #################################################################################################
+
+	def run_shortcut(self, action, kwargs):
+		'''
+		Tries to run shortcut created by engine. Engine simply serialises all data in params to strings, so when it finds
+		pointer to function it runs str() on it and serialises its data. The same will happen with all action arguments.
+		This function parses string with action name, tries to check, if action should be run on instance of this provider
+		and if everything passes, then it will search for right method and will run it. Everything here is not safe and it's
+		more or less a hack. Not all shortcuts will work, but when only method is callable and all other arguments are serializable,
+		then it should work.
+		'''
+		self.log_info("Trying to run shortcut: %s" % action)
+		qualname = None
+
+		if action.startswith('<bound method '):
+			qualname = action.split(' ')[2]
+			modulename = action.split(' ')[4][1:]
+
+		if not qualname or not modulename:
+			self.log_debug("Can't get qualname of action - givig up")
+			return
+
+		self.log_debug("Full qualname of action: %s" % qualname)
+		self.log_debug("Full module name of action: %s" % modulename)
+
+		# extract class name and method
+		modulename, class_name = modulename.rsplit('.', 1)
+		method = qualname.split('.')[1]
+
+		# check if class is child of this provider
+		if not isinstance(self, getattr(sys.modules[modulename], class_name)):
+			self.log_error("Class name %s is not child of %s - giving up" % (class_name, self.__class__.__name__))
+			return
+
+		# run the action
+		getattr(self, method)(**eval(kwargs))
 
 	# #################################################################################################
 	# In your own content provider you should implement these functions (based on functionality)

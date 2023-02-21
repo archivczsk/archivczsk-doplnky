@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys
 from datetime import date, timedelta, datetime
 import time
 from .provider import CommonContentProvider
@@ -238,3 +239,46 @@ class ModuleContentProvider(CommonContentProvider):
 	def root(self):
 		for module in self.modules:
 			module.add()
+
+	# #################################################################################################
+
+	def run_shortcut(self, action, kwargs):
+		'''
+		Tries to search for right module to run shortcut.
+		'''
+		self.log_info("Trying to run shortcut: %s" % action)
+		qualname = None
+
+		if action.startswith('<bound method '):
+			qualname = action.split(' ')[2]
+			modulename = action.split(' ')[4][1:]
+
+		if not qualname or not modulename:
+			self.log_debug("Can't get qualname of action - givig up")
+			return
+
+		self.log_debug("Full qualname of action: %s" % qualname)
+		self.log_debug("Full module name of action: %s" % modulename)
+
+		# extract class name and method
+		modulename, class_name = modulename.rsplit('.', 1)
+		method = qualname.split('.')[1]
+
+		# check if class is child of this provider
+		if isinstance(self, getattr(sys.modules[modulename], class_name)):
+			# run the action
+			getattr(self, method)(**eval(kwargs))
+			return
+
+		shortcut_class = getattr(sys.modules[modulename], class_name)
+
+		# search for right class in registered modules
+		for module in [self] + self.modules:
+			if isinstance(module, shortcut_class):
+				self.log_debug("Running shortcut action on class %s" % module.__class__.__name__)
+				# run the action
+				getattr(module, method)(**eval(kwargs))
+				break
+		else:
+			self.log_error("Class name %s is not child of any registered modules - giving up" % class_name)
+

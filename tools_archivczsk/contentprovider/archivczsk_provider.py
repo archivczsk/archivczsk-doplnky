@@ -271,7 +271,18 @@ class ArchivCZSKContentProvider(object):
 			if params == {}:
 				self.provider.root()
 			elif 'CP_action' in params:
-				params['CP_action'](**params['CP_args'])
+				cp_action = params['CP_action']
+
+				if callable(cp_action):
+					cp_action(**params['CP_args'])
+				else:
+					# cp_action is not callable - probably shortcut, so handle this with care
+					if hasattr(self.provider, "run_shortcut"):
+						try:
+							self.provider.run_shortcut(cp_action, params['CP_args'])
+						except:
+							self.log_error("Failed to run shortcut for action: %s\n%s" % (cp_action, traceback.format_exc()))
+
 				self.__process_playlist()
 		except LoginException as e:
 			# login exception handler - try once more with new login
