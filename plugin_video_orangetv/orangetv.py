@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re, sys, os, string, base64, json, requests
+import functools
 from time import time
 from uuid import getnode as get_mac
 from hashlib import md5
@@ -44,6 +45,7 @@ class OrangeTV:
 		
 		self.load_login_data()
 		self.req_session = requests.Session()
+		self.req_session.request = functools.partial(self.req_session.request, timeout=10) # set timeout for all session calls
 
 	# #################################################################################################
 	@staticmethod

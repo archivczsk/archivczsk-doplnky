@@ -4,6 +4,7 @@ import time, json, requests, re
 from datetime import datetime, timedelta 
 from datetime import date
 import traceback
+import functools
 
 from hashlib import md5
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
@@ -28,6 +29,7 @@ class RebitTV:
 		self.data_dir = data_dir
 		self.log_function = log_function if log_function else _log_dummy
 		self.api_session = requests.Session()
+		self.api_session.request = functools.partial(self.api_session.request, timeout=10) # set timeout for all session calls
 		
 		self.common_headers = {
 			"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0",

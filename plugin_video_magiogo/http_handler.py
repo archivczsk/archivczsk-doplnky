@@ -3,6 +3,7 @@
 import traceback
 import base64
 import re
+import functools
 from Plugins.Extensions.archivCZSK.engine.httpserver import AddonHttpRequestHandler
 
 from time import time
@@ -17,7 +18,8 @@ class MagioGOHTTPRequestHandler(AddonHttpRequestHandler):
 		AddonHttpRequestHandler.__init__(self, addon)
 		self.cp = content_provider
 		self.live_cache = {}
-		self.magiogo_session = requests.session() 
+		self.magiogo_session = requests.session()
+		self.magiogo_session.request = functools.partial(self.magiogo_session.request, timeout=5) # set timeout for all session calls
 	
 	# #################################################################################################
 	

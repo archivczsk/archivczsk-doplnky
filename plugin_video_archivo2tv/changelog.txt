@@ -1,3 +1,7 @@
+v1.8.1 (2023-02-08)
+- nastavenie timeoutu pre API volania
+- spoločná session pre API volania - urýchli https komunikáciu
+
 v1.8.0 (2023-02-08)
 - konverzia doplnku na modul kompatibilný s archivCZSK >= 2.0.0
 

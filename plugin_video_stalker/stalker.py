@@ -4,6 +4,7 @@ from time import time, mktime
 from datetime import datetime
 import threading
 import uuid
+import functools
 from hashlib import sha1, md5
 from collections import OrderedDict
 
@@ -114,6 +115,8 @@ class Stalker:
 #		self.lang = "en"
 		self.time_zone = "Europe/Berlin"
 		self.user_agent = 'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG200 stbapp ver: 2 rev: 250 Safari/533.3'
+		self.req_session = requests.Session()
+		self.req_session.request = functools.partial(self.req_session.request, timeout=10) # set timeout for all session calls
 		self.load_login_data()
 		
 	# #################################################################################################
@@ -220,7 +223,7 @@ class Stalker:
 			headers['Authorization'] = "Bearer " + self.access_token
 
 		try:
-			resp = requests.get( url, params=params, headers=headers )
+			resp = self.req_session.get(url, params=params, headers=headers)
 #			dump_json_request(resp)
 
 			if resp.status_code == 200:

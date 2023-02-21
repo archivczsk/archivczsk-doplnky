@@ -2,6 +2,7 @@
 import re, os, datetime, json, requests, traceback
 from time import time
 import uuid
+import functools
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
 from tools_archivczsk.debug.http import dump_json_request
 
@@ -74,6 +75,8 @@ class Telly:
 		self.epg_cache = {}
 		self.cache_need_save = False
 		self.cache_mtime = 0
+		self.req_session = requests.Session()
+		self.req_session.request = functools.partial(self.req_session.request, timeout=10) # set timeout for all session calls
 
 		if self.data_dir:
 			try:
@@ -140,9 +143,9 @@ class Telly:
 		
 		try:
 			if data:
-				resp = requests.post( url, data=json.dumps(data, separators=(',', ':')), headers=_COMMON_HEADERS )
+				resp = self.req_session.post(url, data=json.dumps(data, separators=(',', ':')), headers=_COMMON_HEADERS)
 			else:
-				resp = requests.get( url, params=params, headers=_COMMON_HEADERS )
+				resp = self.req_session.get(url, params=params, headers=_COMMON_HEADERS)
 			
 #			dump_json_request(resp)
 			
@@ -393,7 +396,7 @@ class Telly:
 			params['stream_profiles'] = ','.join(profiles_h265) + ',' + params['stream_profiles']
 		
 		# get master playlist
-		resp = requests.get( url, params=params, headers={'User-Agent': 'tv.fournetwork.android.box.digi/2.0.9 (Linux;Android 6.0) ExoPlayerLib/2.11.7'} )
+		resp = self.req_session.get(url, params=params, headers={'User-Agent': 'tv.fournetwork.android.box.digi/2.0.9 (Linux;Android 6.0) ExoPlayerLib/2.11.7'})
 	
 		if resp.status_code != 200:
 			return []

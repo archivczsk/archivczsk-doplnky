@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, json, requests, traceback
+import functools
 from time import time, mktime
 from datetime import datetime
 from hashlib import md5
@@ -92,6 +93,8 @@ class MagioGO:
 			"Host": self.region + "go.magio.tv",
 			"User-Agent": "okhttp/3.12.12",
 		}
+		self.req_session = requests.Session()
+		self.req_session.request = functools.partial(self.req_session.request, timeout=10) # set timeout for all session calls
 
 		self.load_login_data()
 		self.refresh_login_data()
@@ -188,7 +191,7 @@ class MagioGO:
 			if data:
 				data = json.dumps(data, separators=(',', ':'))
 				
-			resp = requests.request( method, url, data=data, params=params, headers=headers )
+			resp = self.req_session.request(method, url, data=data, params=params, headers=headers)
 #			dump_json_request(resp)
 
 			if resp.status_code == 200 or (resp.status_code > 400 and resp.status_code < 500):

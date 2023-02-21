@@ -3,6 +3,7 @@
 import time, json, requests, re
 from datetime import datetime
 import traceback
+import functools
 
 from hashlib import md5
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
@@ -30,6 +31,8 @@ class SledovaniTV:
 		self.headers = _HEADERS
 	
 		self.load_login_data()
+		self.req_session = requests.Session()
+		self.req_session.request = functools.partial(self.req_session.request, timeout=10) # set timeout for all session calls
 
 	# #################################################################################################
 	@staticmethod
@@ -106,9 +109,9 @@ class SledovaniTV:
 		
 		try:
 			if data:
-				resp = requests.post( url, data=data, params=params, headers=self.headers )
+				resp = self.req_session.post(url, data=data, params=params, headers=self.headers)
 			else:
-				resp = requests.get( url, params=params, headers=self.headers )
+				resp = self.req_session.get(url, params=params, headers=self.headers)
 			
 #			dump_json_request(resp)
 			
@@ -490,7 +493,7 @@ class SledovaniTV:
 	
 	def resolve_streams(self, url, max_bitrate=None ):
 		try:
-			req = requests.get(url)
+			req = self.req_session.get(url)
 		except:
 			self.showError("Problém při načtení videa. Pokud je červené, zadejte v nastavení správný PIN!")
 			return

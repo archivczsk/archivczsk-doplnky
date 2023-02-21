@@ -1,3 +1,6 @@
+1.6 - 21.02.2023
+    - pridanie timeoutov a spoločnej session pre API volania
+
 1.5 - 29.01.2023
     - konverzia na modul pre archivCZSK >= 2.0.0
     

@@ -6,6 +6,7 @@
 import os, time, json, requests, re
 from datetime import datetime, date, timedelta
 import traceback
+import functools
 
 import base64
 from hashlib import md5
@@ -56,6 +57,8 @@ class O2TV:
 		self.epg_cache = {}
 		self.cache_need_save = False
 		self.cache_mtime = 0
+		self.req_session = requests.Session()
+		self.req_session.request = functools.partial(self.req_session.request, timeout=10) # set timeout for all session calls
 
 		self.load_login_data()
 		
@@ -168,9 +171,9 @@ class O2TV:
 		
 		try:
 			if data:
-				resp = requests.post( url, data=data, headers=header )
+				resp = self.req_session.post(url, data=data, headers=header)
 			else:
-				resp = requests.get( url, params=data, headers=header )
+				resp = self.req_session.get(url, params=data, headers=header)
 			
 #			dump_json_request(resp)
 			
@@ -482,7 +485,7 @@ class O2TV:
 
 		result = []
 		if playlist:
-			r = requests.get(playlist, headers=_HEADER).text
+			r = self.req_session.get(playlist, headers=_HEADER).text
 			for m in re.finditer('#EXT-X-STREAM-INF:PROGRAM-ID=\d+,BANDWIDTH=(?P<bandwidth>\d+)\s(?P<chunklist>[^\s]+)', r, re.DOTALL):
 				bandwidth = int(m.group('bandwidth'))
 
