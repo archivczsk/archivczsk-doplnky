@@ -35,7 +35,7 @@ __addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
 __language__ = __addon__.getLocalizedString
 __settings__ = __addon__.getSetting
 
-import rtvs
+from . import rtvs
 settings = {'quality':__addon__.getSetting('quality')}
 
 
