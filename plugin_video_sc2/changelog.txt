@@ -1,3 +1,7 @@
+2023-02-23 [2.3.1]
+* oprava pádu pri konverzii názvu pre python3
+* oprava stránkovania
+
 2023-01-28 [2.3.0]
 * konverzia na modul pre archivCZSK >= 2.0.0
 

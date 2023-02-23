@@ -22,6 +22,7 @@ except:
 	from urllib.parse import unquote_plus, parse_qsl, parse_qs, urlencode, urlparse
 	is_py3 = True
 
+PAGE_SIZE = 100
 
 def scc_run(session, params):
 	addon = ArchivCZSK.get_xbmc_addon('plugin.video.sc2')
@@ -62,9 +63,10 @@ def scc_run(session, params):
 		try:
 			if is_py3 == False:
 				s = s.decode('utf-8')
+
+			return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
 		except:
 			return ''
-		return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
 
 	def ws_api_request(url, data):
 		return requests.post(ws_api + url, data=data, headers={'User-Agent': UA2, 'X-Uuid': xuuid}, timeout=loading_timeout)
@@ -121,6 +123,7 @@ def scc_run(session, params):
 		else: url = url + '?access_token=' + TK
 		try:
 			data = requests.get(url=url, data=post_data, headers={'User-Agent': UA2, 'Authorization': AU2, 'X-Uuid': xuuid, 'Content-Type': 'application/json'}, timeout=loading_timeout)
+#			client.log.debug("API Request: %s" % data.url)
 			if data.status_code != 200:
 				client.add_operation("SHOW_MSG", {'msg': addon.getLocalizedString(30501), 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
 				return {'data': "" }
@@ -249,7 +252,9 @@ def scc_run(session, params):
 		if 'play_count' in media: plot += "{" + str(media['play_count']) + "}"
 		return {'title': title, 'plot': plot + dadded, 'rating': rating, 'duration': duration, 'poster': poster, 'year': year, 'genres': genres, 'langs': langs, 'parent': parent, 'fulltitle': fulltitle}
 
-	def add_paging(page, pageCount):
+	def add_paging(page, total):
+		pageCount = (total // PAGE_SIZE) + 1
+		page += 1
 		if page <= pageCount:
 			addDir(add_translations(addon.getLocalizedString(30203) + ' (' + str(page) + '/' + str(pageCount) + ') '), build_plugin_url({ 'action': action[0], 'action_value': action_value[0], 'page': page }), 1, None)
 
@@ -450,6 +455,8 @@ def scc_run(session, params):
 	def process_az(mediaList):
 		(m, v) = action_value[0].split(',')
 		for az in mediaList:
+			if not az['key']:
+				continue
 			if az['doc_count'] < 50:
 				addDir(az['key'] + ' (' + str(az['doc_count']) + ')', build_plugin_url({ 'action': m, 'action_value': 'a-z,' + az['key'] }), 1, None, None, None)
 			else:
@@ -669,7 +676,7 @@ def scc_run(session, params):
 	except:
 		pass
 	try:
-		page = parse_qs(urlparse(url).query)['page'][0]
+		page = int(parse_qs(urlparse(url).query)['page'][0])
 	except:
 		pass
 	try:
@@ -774,67 +781,76 @@ def scc_run(session, params):
 	elif action[0] == 'csfdtops':
 		get_csfd_tops(action_value[0])
 	elif action[0] == 'vanoce':
-		data = get_media_data('/api/media/filter/v2/service?query=DYSwtiAuC8CsAMAySBPADgU2gUgEwEFEA3AQ2AFcswB7IkDbAZn1kYDZHizLoa6HmuAIwBOACy4RXClVr0m+NmJFDpPPvOZDYogByrSM3nIH4hY2GI5rZ-BeZG7cN43eZixAdjEuNpkRysviYKuLhijCKwwW74AfDeMZpmIoy6np5JpkIcKln2qVGchuohzIxhysXctsmiuPDWJbXZViLwSM2uyWyNIpldfgpsQuzVRkPllmIGNd2mjLC4nrr55WwN0YNl+Oy9W3OTZmwIA4c7sGxXUtuxuvD9a-gWnjfnsTOLPrfJsLobqx+pksKzOEx2vRW41KsV6bCiTz+6Se5k8QmcQOG5ieIwO4NijAS0JaCh0jie4legPeyRE4VgeJhyUYkQaFP+LKe7Ak3xppjhnk6fIUjC89wpG0SmOYG1wlhRJ3gjJJzFgGTE1PxzNYuGJ8wUKngixRUXl0t2rwkXLYGTeWuBIzZ5v6I1m9oN7U8GOFWisfz1RwC7DdTIWngqIZVZgjFieuF0rDtoZFvV0SajSPCOPgukiTxWjjBya0Om0muLZgkLPT+plCScKKsug1T3uVkR6WWFK8vPdzAynOdubEQr70Zykdrlai5Od7Tz5shDMb7HF5u0QnMAZ2AQQvYr5jVI7j4QeyqnuCuwnLUblvRzceb8e79zY3ai+9vp-EcbY-yuv6ypORyiGknhvuuEQZDeF6XB056BicDbmpU8Cxihf7wjBRxhLq6E+vgl6ytusSgTmJHJGEHQPCeI7tHGpyXLRjQUdkEYrMx4HMbo2E7Je-wiDWOFXKMo4VmEiwVI2sABLxsQSawrGhH+gpiVGkIcShuqsJ+U6jDJoommkSxGXScmUaeaa0YwngIXx37emOQg5toQk7KIMxCOZDp5EOFi6SBGoyW5BIjAuBGOModmkakCbRXUsXOY2zk2hS2jwI5B5WI0al6bFUoEQOyhxp5m5PF4JytkWUYjrlgbtBs5WLPFCyEiFyTge1CxKsBEKLHVFwPL18mLA0A2kWh409KkKIPAEXJqlx66bhEU38jZa2khsXWhOY8beQoFXwMNyT6F6HZOCdphppVzqjTito7cwzYmeaKw6Pm6QBXxGSjE9Zi5jam1aCtToRTxmVfuihKIuGHQoqwCafSMrY5P9dIfVpLyQ3p+zA2YaGSMxHgUjmaqAaM1VTgOLWkvO+PmDxP4YY6B3MIJzn468uoI5u5OQUGtOquIVnmhIa4EZCs4EaBaZXfYTbzZBOi9HG4ZRFTgaivLWiTWzhHfvrsu2VyjA5AqCD-doV5cvo+vLGiqXmosGxC3EKn216ltchYy7O8sx1xqN-1m5Y9tOET5o6JYEEy-GxXOycYNjiM+g4zhXo2Tirma+5pZeCiubaK2Szm+u8JSeX5go87po62YcHfSNaplYuRo0eulpu5uLJKiV5j1zkGQFU5yiXvjYRekoJojrm1o2Vb+gJIignNhS7RMeaCbD4+aJKVovQts6Iwzcf7D-TJ4b7yw-SvIikn-WP18rNPb3OU3p1zZ9JtveksdOc5Ok3YhC51IlcI+cdwJu0vDZeuygkZvUJKAz+P8ZbGVGCaNUCJ1zNhFsTdO7kr7hhXMiRc7QCFgKcDxZGDNJSDklgkDKTV7iDzRCxE8c1-7iRHPCFELIIyIisMg0wwhLhGwsPoFE3gbRcKjBOTehVwIwUgEQAAzgAC2oAAd3sOwI0KJtCCgVDkBm-xS4LXEKwsCFJBSq2dksY0KE4LLy3iyNeUcjT-ERB0dGTgrQeOOrI6m+hu5m0jgREElcZYJDaOyFkQSQJRB4sIgoYEKF1AsGbCe8JrYUyiU5I0KT2ZfXSf4NU8N-aEmTuJcIuoimVlWgk+ydFr7-GWE0j4KsQ6XkFG7JY8YQ6Eg2B-VqtlmYEXPtQt6PiraxRJv7cIXj1wIExgRIi6IQ4yRcRFNUEsxziCUNfSocoRmpP0IPcQOgGaK3qaiaxLNRgdISjZJoMtYpzznGEJ5IjdSLHqf0eMbtHAslKQaQ+RyryiC5AEDIqNLxckqErCZiL9YVEWdfNFGp66Yt8mskSXYFlBQReBCICLCSvTWZYIkeS3a91dmSjKGL2nzORSS+pFQSVuyEZcLlY8pmFTGKc9wf4sW0TVN8w6aIRxCueFKvuYs5USvcOBJUXKbQMkfiKj5BEvDmAfAqnu+smxErFuqv45U5WavAn+cqjQJK2uOjDZ2rIQHlXVa-ZFVToEiXoWOXVQ0LUrTgVKpKBqiLlT2q3CZqRWDBpWlylWoadV7xkm62yjUDUbNNnapVzxjpUsDZEI1ZqZW6vREavegkLVoUMgq18oLlV6rjSOBtsqVr411SODFC92BqxAQnCZEgRW0SuOy8QMa00bDgSK1BfqQm9tNc2JaybwG5uNcQ016aO3nMkYuns5UExXDXWwqtYtAb+J1TIjdOrzmwq6CojR2iFadlbeu19IS0RuqXXA-4EgrW5C-V4DtMjU11sJNfLw4Eo1+pFbwvdNqxYMnCPU7lCHk1QeA82ACZ7pUodgyhpwGVS3qqMThyQEGbQCUA7dG9zlzWIZKZgh2aa-jbqGmu2DEG5QZGA6CCjWHS3CH6Fy39fsb0MjQ2OF2GpW0VCqDKy0MrJDwg7oVDkXIfEVLjsk19HQrAysiI4BRRgH2aJ0SWKCnsRzYpOcZisNkxi5t7kqDtOgVUIxON3DGy6-XW3ozqicmkJmrncQFqw4UpOCXEB2h4Kkv1oSc4JNC7KKjwm6UDXNywXn1wdjmepyxyM5anhglCaJJBKfDNlE0p5W2XgZHetZ4QlBKYypCIyLtC5XAQW8kBNGxyVH0Lm0QlhQNvKLdfUQbCZWiEeU5yIm58uAJHgeUUGppsRDMslBwBjGjXoKREJZMtAYZreRqPbFZUgRGvh+Fl+zGZAocFbTxvqsq2WfMfI0MqlDkWtE4LzYTptpnhW3Ayn1SWLhAdLJy-SC4oVzMIRsHhUUZTs3Iyx2q-XhGg-ZiQONTNPv7BI2TFh9UTJyj5i7g3MuiFxX61g+XakLrWaueVAW9FqweLdmpbDWzWYlEqabqRnITcu680elzPZ6Ke3KI2hQTtjiWAEVt1clT1Ojk6t5upZM6Ax-Z+nRtjrYjeg0IBUcMh9Yu+U-5GwmEoRSgOpy836JRy8vy0e4Ywj32mOvZy+t0iXGV+Fil-XUhZ3XNpMuMs0TgUD2mC9KdLiw7G2naSrkTyRE-Xb1SnFps6EqEZbevN0rQvvNaGYBmpUyokxA6Hm47FvI1f9Y5QQtKilPWsh4tkZVJbE05NEiZswPHtpZXNYUa4TJt0V4XE9cy4IRdcJvtT4-2YG1bUso2pPtLNGsr0yxunhGdzvyQJXWVKBDiYhr-W5TXi5JuHLyHxn9Z9YMjgXOowgqNJln19+PBpGYrTmpQFWrQUYQL-EYY8FmKiPJJTM6JnKTdEQ+bNDYbtP+WTMIBAbFWBV1Z1TOEOQSS8Azf3YHaNRwMXFfRZdlIgsdQsWlf3CAkg-4OBPTU3Bg+vSLIzag0PaFIzEOf3fJezfA-g9-f3KHCsWqLNMWR1bBEglQJvSaVnKTNxIQi8XMAIAzRFWTDmF7d-fAp2Bg3vAQwSPQ9ggIPAlQYgkw7fJyCOd7NZVIcMHLNQ0hRrL4IrBIR-cScMJQWrLHQOJxPWNWXCBnenTLQUcQWTCoP4ObSIPw4LNzFLZQNg+zSIDPU2BkWIxQ1cAzRYQsH2HICw5I9oVTJyS5DIi7bwOUR8Y6WwqTJdXNF0CbGYfLNEXXGqHqCLcSRYZwqTWyYMW1YeOBP4KVA9f3YfNIfRMWU8GvcSWQmonHS4DXRQzcRoAvRYisUEEOE4cHMnbbCHHibuLwArA9cwB3CsJeUWNZdET3TuCIdse9NRMzBQcCM2Ro-oWtGWbKMPSWK7fGQ5M2BFY6VFauCkCoXdCJJdPpcMVoqcbaDfPXAtN6Z425G0dgVtVOQ7FObQBHRcK7PHB4gnRQAeabR1LMdcKIZTaFLwf6EYIjCNP8bAmWfpUnUeTcUQmqJ8OEuRJwYdLeP8FvcGDA2aF2JvfqI5fqBTIHA3P5QHGYa474lKa0cMWlLyU0H2erbpRwbFS4P8ZXT7U49SVVaIVRDAAAJzoAAGMsBIATSSAABrSAAAfS0SgHUQdNQEwCAA&page=' + str(page), '')
-		if 'hits' in data: process_movies_series(data['hits']['hits'])
-		if 'pagination' in data and 'pageCount' in data['pagination'] and 'page' in data['pagination'] and data['pagination']['pageCount'] > 1:
-			add_paging(int(data['pagination']['page']) + 1, data['pagination']['pageCount'])
+		data = get_media_data('/api/media/filter/v2/service?query=DYSwtiAuC8CsAMAySBPADgU2gUgEwEFEA3AQ2AFcswB7IkDbAZn1kYDZHizLoa6HmuAIwBOACy4RXClVr0m+NmJFDpPPvOZDYogByrSM3nIH4hY2GI5rZ-BeZG7cN43eZixAdjEuNpkRysviYKuLhijCKwwW74AfDeMZpmIoy6np5JpkIcKln2qVGchuohzIxhysXctsmiuPDWJbXZViLwSM2uyWyNIpldfgpsQuzVRkPllmIGNd2mjLC4nrr55WwN0YNl+Oy9W3OTZmwIA4c7sGxXUtuxuvD9a-gWnjfnsTOLPrfJsLobqx+pksKzOEx2vRW41KsV6bCiTz+6Se5k8QmcQOG5ieIwO4NijAS0JaCh0jie4legPeyRE4VgeJhyUYkQaFP+LKe7Ak3xppjhnk6fIUjC89wpG0SmOYG1wlhRJ3gjJJzFgGTE1PxzNYuGJ8wUKngixRUXl0t2rwkXLYGTeWuBIzZ5v6I1m9oN7U8GOFWisfz1RwC7DdTIWngqIZVZgjFieuF0rDtoZFvV0SajSPCOPgukiTxWjjBya0Om0muLZgkLPT+plCScKKsug1T3uVkR6WWFK8vPdzAynOdubEQr70Zykdrlai5Od7Tz5shDMb7HF5u0QnMAZ2AQQvYr5jVI7j4QeyqnuCuwnLUblvRzceb8e79zY3ai+9vp-EcbY-yuv6ypORyiGknhvuuEQZDeF6XB056BicDbmpU8Cxihf7wjBRxhLq6E+vgl6ytusSgTmJHJGEHQPCeI7tHGpyXLRjQUdkEYrMx4HMbo2E7Je-wiDWOFXKMo4VmEiwVI2sABLxsQSawrGhH+gpiVGkIcShuqsJ+U6jDJoommkSxGXScmUaeaa0YwngIXx37emOQg5toQk7KIMxCOZDp5EOFi6SBGoyW5BIjAuBGOModmkakCbRXUsXOY2zk2hS2jwI5B5WI0al6bFUoEQOyhxp5m5PF4JytkWUYjrlgbtBs5WLPFCyEiFyTge1CxKsBEKLHVFwPL18mLA0A2kWh409KkKIPAEXJqlx66bhEU38jZa2khsXWhOY8beQoFXwMNyT6F6HZOCdphppVzqjTito7cwzYmeaKw6Pm6QBXxGSjE9Zi5jam1aCtToRTxmVfuihKIuGHQoqwCafSMrY5P9dIfVpLyQ3p+zA2YaGSMxHgUjmaqAaM1VTgOLWkvO+PmDxP4YY6B3MIJzn468uoI5u5OQUGtOquIVnmhIa4EZCs4EaBaZXfYTbzZBOi9HG4ZRFTgaivLWiTWzhHfvrsu2VyjA5AqCD-doV5cvo+vLGiqXmosGxC3EKn216ltchYy7O8sx1xqN-1m5Y9tOET5o6JYEEy-GxXOycYNjiM+g4zhXo2Tirma+5pZeCiubaK2Szm+u8JSeX5go87po62YcHfSNaplYuRo0eulpu5uLJKiV5j1zkGQFU5yiXvjYRekoJojrm1o2Vb+gJIignNhS7RMeaCbD4+aJKVovQts6Iwzcf7D-TJ4b7yw-SvIikn-WP18rNPb3OU3p1zZ9JtveksdOc5Ok3YhC51IlcI+cdwJu0vDZeuygkZvUJKAz+P8ZbGVGCaNUCJ1zNhFsTdO7kr7hhXMiRc7QCFgKcDxZGDNJSDklgkDKTV7iDzRCxE8c1-7iRHPCFELIIyIisMg0wwhLhGwsPoFE3gbRcKjBOTehVwIwUgEQAAzgAC2oAAd3sOwI0KJtCCgVDkBm-xS4LXEKwsCFJBSq2dksY0KE4LLy3iyNeUcjT-ERB0dGTgrQeOOrI6m+hu5m0jgREElcZYJDaOyFkQSQJRB4sIgoYEKF1AsGbCe8JrYUyiU5I0KT2ZfXSf4NU8N-aEmTuJcIuoimVlWgk+ydFr7-GWE0j4KsQ6XkFG7JY8YQ6Eg2B-VqtlmYEXPtQt6PiraxRJv7cIXj1wIExgRIi6IQ4yRcRFNUEsxziCUNfSocoRmpP0IPcQOgGaK3qaiaxLNRgdISjZJoMtYpzznGEJ5IjdSLHqf0eMbtHAslKQaQ+RyryiC5AEDIqNLxckqErCZiL9YVEWdfNFGp66Yt8mskSXYFlBQReBCICLCSvTWZYIkeS3a91dmSjKGL2nzORSS+pFQSVuyEZcLlY8pmFTGKc9wf4sW0TVN8w6aIRxCueFKvuYs5USvcOBJUXKbQMkfiKj5BEvDmAfAqnu+smxErFuqv45U5WavAn+cqjQJK2uOjDZ2rIQHlXVa-ZFVToEiXoWOXVQ0LUrTgVKpKBqiLlT2q3CZqRWDBpWlylWoadV7xkm62yjUDUbNNnapVzxjpUsDZEI1ZqZW6vREavegkLVoUMgq18oLlV6rjSOBtsqVr411SODFC92BqxAQnCZEgRW0SuOy8QMa00bDgSK1BfqQm9tNc2JaybwG5uNcQ016aO3nMkYuns5UExXDXWwqtYtAb+J1TIjdOrzmwq6CojR2iFadlbeu19IS0RuqXXA-4EgrW5C-V4DtMjU11sJNfLw4Eo1+pFbwvdNqxYMnCPU7lCHk1QeA82ACZ7pUodgyhpwGVS3qqMThyQEGbQCUA7dG9zlzWIZKZgh2aa-jbqGmu2DEG5QZGA6CCjWHS3CH6Fy39fsb0MjQ2OF2GpW0VCqDKy0MrJDwg7oVDkXIfEVLjsk19HQrAysiI4BRRgH2aJ0SWKCnsRzYpOcZisNkxi5t7kqDtOgVUIxON3DGy6-XW3ozqicmkJmrncQFqw4UpOCXEB2h4Kkv1oSc4JNC7KKjwm6UDXNywXn1wdjmepyxyM5anhglCaJJBKfDNlE0p5W2XgZHetZ4QlBKYypCIyLtC5XAQW8kBNGxyVH0Lm0QlhQNvKLdfUQbCZWiEeU5yIm58uAJHgeUUGppsRDMslBwBjGjXoKREJZMtAYZreRqPbFZUgRGvh+Fl+zGZAocFbTxvqsq2WfMfI0MqlDkWtE4LzYTptpnhW3Ayn1SWLhAdLJy-SC4oVzMIRsHhUUZTs3Iyx2q-XhGg-ZiQONTNPv7BI2TFh9UTJyj5i7g3MuiFxX61g+XakLrWaueVAW9FqweLdmpbDWzWYlEqabqRnITcu680elzPZ6Ke3KI2hQTtjiWAEVt1clT1Ojk6t5upZM6Ax-Z+nRtjrYjeg0IBUcMh9Yu+U-5GwmEoRSgOpy836JRy8vy0e4Ywj32mOvZy+t0iXGV+Fil-XUhZ3XNpMuMs0TgUD2mC9KdLiw7G2naSrkTyRE-Xb1SnFps6EqEZbevN0rQvvNaGYBmpUyokxA6Hm47FvI1f9Y5QQtKilPWsh4tkZVJbE05NEiZswPHtpZXNYUa4TJt0V4XE9cy4IRdcJvtT4-2YG1bUso2pPtLNGsr0yxunhGdzvyQJXWVKBDiYhr-W5TXi5JuHLyHxn9Z9YMjgXOowgqNJln19+PBpGYrTmpQFWrQUYQL-EYY8FmKiPJJTM6JnKTdEQ+bNDYbtP+WTMIBAbFWBV1Z1TOEOQSS8Azf3YHaNRwMXFfRZdlIgsdQsWlf3CAkg-4OBPTU3Bg+vSLIzag0PaFIzEOf3fJezfA-g9-f3KHCsWqLNMWR1bBEglQJvSaVnKTNxIQi8XMAIAzRFWTDmF7d-fAp2Bg3vAQwSPQ9ggIPAlQYgkw7fJyCOd7NZVIcMHLNQ0hRrL4IrBIR-cScMJQWrLHQOJxPWNWXCBnenTLQUcQWTCoP4ObSIPw4LNzFLZQNg+zSIDPU2BkWIxQ1cAzRYQsH2HICw5I9oVTJyS5DIi7bwOUR8Y6WwqTJdXNF0CbGYfLNEXXGqHqCLcSRYZwqTWyYMW1YeOBP4KVA9f3YfNIfRMWU8GvcSWQmonHS4DXRQzcRoAvRYisUEEOE4cHMnbbCHHibuLwArA9cwB3CsJeUWNZdET3TuCIdse9NRMzBQcCM2Ro-oWtGWbKMPSWK7fGQ5M2BFY6VFauCkCoXdCJJdPpcMVoqcbaDfPXAtN6Z425G0dgVtVOQ7FObQBHRcK7PHB4gnRQAeabR1LMdcKIZTaFLwf6EYIjCNP8bAmWfpUnUeTcUQmqJ8OEuRJwYdLeP8FvcGDA2aF2JvfqI5fqBTIHA3P5QHGYa474lKa0cMWlLyU0H2erbpRwbFS4P8ZXT7U49SVVaIVRDAAAJzoAAGMsBIATSSAABrSAAAfS0SgHUQdNQEwCAA&from=' + str((page - 1) * PAGE_SIZE) + '&size=' + str(PAGE_SIZE) , '')
+		if 'hits' in data:
+			process_movies_series(data['hits']['hits'])
+#			if 'pagination' in data and 'pageCount' in data['pagination'] and 'page' in data['pagination'] and data['pagination']['pageCount'] > 1:
+			if 'total' in data['hits']:
+				add_paging(page, data['hits']['total']['value'])
 	elif action[0] == 'vanocecr':
-		data = get_media_data('/api/media/filter/v2/service?limit=50&type=%2A&value=movie%3A4280&value=movie%3A9341&value=movie%3A35625&value=movie%3A272509&value=movie%3A34555&value=movie%3A32701&value=movie%3A23529&value=movie%3A31548&value=movie%3A36520&value=movie%3A27237&value=movie%3A85216&value=movie%3A167774&value=movie%3A227264&value=movie%3A149260&value=movie%3A280128&value=movie%3A38476&value=movie%3A23587&value=movie%3A424048&value=movie%3A345630&value=movie%3A61885&value=movie%3A81089&value=movie%3A174346&value=movie%3A146037&value=movie%3A64330&value=movie%3A64331&value=movie%3A3146&value=movie%3A32018&value=movie%3A93281&value=movie%3A58475&value=movie%3A57383&value=movie%3A62959&value=movie%3A35540&value=movie%3A77637&value=movie%3A167362&value=movie%3A61886&value=movie%3A61521&value=movie%3A32981&value=movie%3A345579&value=movie%3A318955&value=movie%3A36735&value=movie%3A64106&value=movie%3A184122&value=movie%3A103574&value=movie%3A23504&value=movie%3A23503&value=movie%3A103569&value=movie%3A98501&value=movie%3A86853&value=movie%3A182684&value=movie%3A484259&value=movie%3A152208&value=movie%3A141198&value=movie%3A416817&value=movie%3A61024&value=movie%3A39479&value=movie%3A195296&value=movie%3A101324&value=tvshow%3A61414&value=movie%3A64332&value=movie%3A291928&value=movie%3A356682&value=movie%3A224571&value=movie%3A490792&value=movie%3A203450&value=movie%3A58442&value=movie%3A599569&value=movie%3A12849&service=trakt_with_type&page=' + str(page), '')
-		if 'hits' in data: process_movies_series(data['hits']['hits'])
-		if 'pagination' in data and 'pageCount' in data['pagination'] and 'page' in data['pagination'] and data['pagination']['pageCount'] > 1:
-			add_paging(int(data['pagination']['page']) + 1, data['pagination']['pageCount'])
+		data = get_media_data('/api/media/filter/v2/service?limit=50&type=%2A&value=movie%3A4280&value=movie%3A9341&value=movie%3A35625&value=movie%3A272509&value=movie%3A34555&value=movie%3A32701&value=movie%3A23529&value=movie%3A31548&value=movie%3A36520&value=movie%3A27237&value=movie%3A85216&value=movie%3A167774&value=movie%3A227264&value=movie%3A149260&value=movie%3A280128&value=movie%3A38476&value=movie%3A23587&value=movie%3A424048&value=movie%3A345630&value=movie%3A61885&value=movie%3A81089&value=movie%3A174346&value=movie%3A146037&value=movie%3A64330&value=movie%3A64331&value=movie%3A3146&value=movie%3A32018&value=movie%3A93281&value=movie%3A58475&value=movie%3A57383&value=movie%3A62959&value=movie%3A35540&value=movie%3A77637&value=movie%3A167362&value=movie%3A61886&value=movie%3A61521&value=movie%3A32981&value=movie%3A345579&value=movie%3A318955&value=movie%3A36735&value=movie%3A64106&value=movie%3A184122&value=movie%3A103574&value=movie%3A23504&value=movie%3A23503&value=movie%3A103569&value=movie%3A98501&value=movie%3A86853&value=movie%3A182684&value=movie%3A484259&value=movie%3A152208&value=movie%3A141198&value=movie%3A416817&value=movie%3A61024&value=movie%3A39479&value=movie%3A195296&value=movie%3A101324&value=tvshow%3A61414&value=movie%3A64332&value=movie%3A291928&value=movie%3A356682&value=movie%3A224571&value=movie%3A490792&value=movie%3A203450&value=movie%3A58442&value=movie%3A599569&value=movie%3A12849&service=trakt_with_type&from=' + str((page - 1) * PAGE_SIZE) + '&size=' + str(PAGE_SIZE), '')
+		if 'hits' in data:
+			process_movies_series(data['hits']['hits'])
+#			if 'pagination' in data and 'pageCount' in data['pagination'] and 'page' in data['pagination'] and data['pagination']['pageCount'] > 1:
+#				add_paging(int(data['pagination']['page']) + 1, data['pagination']['pageCount'])
+			if 'total' in data['hits']:
+				add_paging(page, data['hits']['total']['value'])
+
 	elif action[0] == 'folder':
 		if action_value[0] in menu:
 			for c in menu[action_value[0]]:
 				render_item(c)
 	elif action[0] == 'movies' or action[0] == 'series' or action[0] == 'concerts':
 		if action_value[0] == 'popular':
-			data = get_media_data('/api/media/filter/v2/all?sort=playCount&type=%s&order=desc&page=%s' % (moses.get(action[0], 'movie'), page), '')
+			data = get_media_data('/api/media/filter/v2/all?sort=playCount&type=%s&order=desc&from=%d&size=%d' % (moses.get(action[0], 'movie'), (page - 1) * PAGE_SIZE, PAGE_SIZE), '')
 		elif action_value[0] == 'popularity':
-			data = get_media_data('/api/media/filter/v2/all?sort=popularity&type=%s&order=desc&page=%s' % (moses.get(action[0], 'movie'), page), '')
+			data = get_media_data('/api/media/filter/v2/all?sort=popularity&type=%s&order=desc&from=%d&size=%d' % (moses.get(action[0], 'movie'), (page - 1) * PAGE_SIZE, PAGE_SIZE), '')
 		elif action_value[0] == 'trending':
-			data = get_media_data('/api/media/filter/v2/all?sort=trending&type=%s&order=desc&page=%s' % (moses.get(action[0], 'movie'), page), '')
+			data = get_media_data('/api/media/filter/v2/all?sort=trending&type=%s&order=desc&from=%d&size=%d' % (moses.get(action[0], 'movie'), (page - 1) * PAGE_SIZE, PAGE_SIZE), '')
 		elif action_value[0] == 'aired':
-			data = get_media_data('/api/media/filter/v2/news?sort=dateAdded&type=%s&order=desc&days=365&page=%s' % (moses.get(action[0], 'movie'), page), '')
+			data = get_media_data('/api/media/filter/v2/news?sort=dateAdded&type=%s&order=desc&days=365&from=%d&size=%d' % (moses.get(action[0], 'movie'), (page - 1) * PAGE_SIZE, PAGE_SIZE), '')
 		elif action_value[0] == 'dateadded':
-			data = get_media_data('/api/media/filter/v2/all?sort=dateAdded&type=%s&order=desc&page=%s' % (moses.get(action[0], 'movie'), page), '')
+			data = get_media_data('/api/media/filter/v2/all?sort=dateAdded&type=%s&order=desc&from=%d&size=%d' % (moses.get(action[0], 'movie'), (page - 1) * PAGE_SIZE, PAGE_SIZE), '')
 		elif action_value[0] == 'dubbed':
-			data = get_media_data('/api/media/filter/v2/newsDubbed?lang=cs&lang=sk&sort=dateAdded&type=%s&order=desc&days=365&page=%s' % (moses.get(action[0], 'movie'), page), '')
+			data = get_media_data('/api/media/filter/v2/newsDubbed?lang=cs&lang=sk&sort=dateAdded&type=%s&order=desc&days=365&from=%d&size=%d' % (moses.get(action[0], 'movie'), (page - 1) * PAGE_SIZE, PAGE_SIZE), '')
 		elif 'genre' in action_value[0]:
 			(t, g) = action_value[0].split(',')
-			data = get_media_data('/api/media/filter/v2/genre?sort=year&type=%s&order=desc&value=%s&page=%s' % (moses.get(action[0], 'movie'), g, page), '')
+			data = get_media_data('/api/media/filter/v2/genre?sort=year&type=%s&order=desc&value=%s&from=%d&size=%d' % (moses.get(action[0], 'movie'), g, (page - 1) * PAGE_SIZE, PAGE_SIZE), '')
 		elif 'studio' in action_value[0]:
 			(t, g) = action_value[0].split(',')
-			data = get_media_data('/api/media/filter/v2/studio?sort=year&type=%s&order=desc&value=%s&page=%s' % (moses.get(action[0], 'movie'), g, page), '')
+			data = get_media_data('/api/media/filter/v2/studio?sort=year&type=%s&order=desc&value=%s&from=%d&size=%d' % (moses.get(action[0], 'movie'), g, (page - 1) * PAGE_SIZE, PAGE_SIZE), '')
 		elif 'year' in action_value[0]:
 			(t, g) = action_value[0].split(',')
-			data = get_media_data('/api/media/filter/v2/year?sort=year&type=%s&order=desc&value=%s&page=%s' % (moses.get(action[0], 'movie'), g, page), '')
+			data = get_media_data('/api/media/filter/v2/year?sort=year&type=%s&order=desc&value=%s&from=%d&size=%d' % (moses.get(action[0], 'movie'), g, (page - 1) * PAGE_SIZE, PAGE_SIZE), '')
 		elif 'country' in action_value[0]:
 			(t, g) = action_value[0].split(',')
-			data = get_media_data('/api/media/filter/v2/country?sort=year&type=%s&order=desc&value=%s&page=%s' % (moses.get(action[0], 'movie'), g, page), '')
+			data = get_media_data('/api/media/filter/v2/country?sort=year&type=%s&order=desc&value=%s&from=%d&size=%d' % (moses.get(action[0], 'movie'), g, (page - 1) * PAGE_SIZE, PAGE_SIZE), '')
 		elif 'language' in action_value[0]:
 			(t, g) = action_value[0].split(',')
-			data = get_media_data('/api/media/filter/v2/language?sort=year&type=%s&order=desc&value=%s&page=%s' % (moses.get(action[0], 'movie'), g, page), '')
+			data = get_media_data('/api/media/filter/v2/language?sort=year&type=%s&order=desc&value=%s&from=%d&size=%d' % (moses.get(action[0], 'movie'), g, (page - 1) * PAGE_SIZE, PAGE_SIZE), '')
 		elif 'a-z' in action_value[0]:
 			(m, v) = action_value[0].split(',')
 			data = get_media_data('/api/media/filter/v2/startsWithSimple?type=%s&value=%s' % (moses.get(action[0], 'movie'), v), '')
 			abc = True
 		else:
-			data = get_media_data('/api/media/filter/v2/startsWithSimple?type=%s&value=%s&page=%s' % (moses.get(action[0], 'movie'), action_value[0], page), '')
+			data = get_media_data('/api/media/filter/v2/startsWithSimple?type=%s&value=%s&from=%d&size=%d' % (moses.get(action[0], 'movie'), action_value[0], (page - 1) * PAGE_SIZE, PAGE_SIZE), '')
 			abc = True
-		if 'hits' in data: process_movies_series(data['hits']['hits'])
-		if 'pagination' in data and 'pageCount' in data['pagination'] and 'page' in data['pagination'] and data['pagination']['pageCount'] > 1:
-			add_paging(int(data['pagination']['page']) + 1, data['pagination']['pageCount'])
+		if 'hits' in data:
+			process_movies_series(data['hits']['hits'])
+			if 'total' in data['hits']:
+				add_paging(page, data['hits']['total']['value'])
+
 	elif action[0] == 'movies.streams':
 		show_stream_dialog(action_value[0])
 	elif action[0] == 'series.streams':
 		show_stream_dialog(action_value[0])
 	elif action[0] == 'episodes':
-		addpage = '&page=' + nparams['page'] if 'page' in nparams else ''
+		addpage = '&from=%d&size=%d' % ((int(nparams['page']) - 1) * PAGE_SIZE, PAGE_SIZE) if 'page' in nparams else ''
 		media = get_media_data('/api/media/filter/v2/parent?sort=episode&value=' + action_value[0] + addpage, '')
-		if 'hits' in media: process_episodes(media['hits']['hits'])
-		if 'pagination' in media and 'pageCount' in media['pagination'] and 'page' in media['pagination'] and media['pagination']['pageCount'] > 1:
-			add_paging(int(media['pagination']['page']) + 1, media['pagination']['pageCount'])
+		if 'hits' in media:
+			process_episodes(media['hits']['hits'])
+			if 'total' in media['hits']:
+				add_paging(page, media['hits']['total']['value'])
 	elif action[0] == 'seasons':
 		media = get_media_data('/api/media/filter/v2/parent?sort=episode&value=' + action_value[0], '')
 		if 'hits' in media: process_seasons(media['hits']['hits'])
