@@ -155,7 +155,7 @@ class MarkizaContentProvider(CommonContentProvider):
 			return
 
 		if self.login_ok:
-			self.add_video('Markíza Live', cmd=self.resolve_video, video_title="Markíza Live", url="live/1-markiza")
+			self.add_video('Markíza Live', cmd=self.resolve_video, video_title="Markíza Live", url="live/1-markiza", download=False)
 
 		self.add_dir("Posledné epizódy", cmd=self.list_recent_episodes)
 		self.add_dir("TOP programy", cmd=self.list_shows_menu)
@@ -195,7 +195,7 @@ class MarkizaContentProvider(CommonContentProvider):
 				'duration': get_duration(re.sub(r"[a-z]", ':', (dur.replace(" ", "")))[:-1]) if dur else None
 			}
 
-			self.add_video(video_title, img, info_labels, cmd=self.resolve_video, video_title=title, url=video)
+			self.add_video(video_title, img, info_labels, cmd=self.resolve_video, video_title=video_title, url=video)
 
 		articles = soup.find("div",
 			{
@@ -220,7 +220,7 @@ class MarkizaContentProvider(CommonContentProvider):
 
 			menu = {}
 			self.add_menu_item(menu, 'Prejsť na reláciu', cmd=self.list_episodes, url=show_url, category=True)
-			self.add_video(video_title, img, info_labels, menu=menu, cmd=self.resolve_video, video_title=title, url=article.find("a", {"class": "img"})["href"])
+			self.add_video(video_title, img, info_labels, menu=menu, cmd=self.resolve_video, video_title=video_title, url=article.find("a", {"class": "img"})["href"])
 
 	# ##################################################################################################################
 
@@ -276,7 +276,7 @@ class MarkizaContentProvider(CommonContentProvider):
 				if list_voyo:
 					self.add_video(_I('* ') + video_title, img, info_labels)
 			else:
-				self.add_video(video_title, img, info_labels, cmd=self.resolve_video, video_title=title, url=article.find("a", {"class": "img"})["href"])
+				self.add_video(video_title, img, info_labels, cmd=self.resolve_video, video_title=video_title, url=article.find("a", {"class": "img"})["href"])
 
 			count += 1
 
