@@ -1,0 +1,5 @@
+2.1: 20.02.2023
+- vylepšenie názvov pri sťahovaní programu
+
+2.0: 20.02.2023
+- initial version
