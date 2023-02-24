@@ -58,6 +58,7 @@ class MarkizaContentProvider(CommonContentProvider):
 
 	def login(self, silent):
 		self.login_ok = False
+		self.req_session.cookies.clear()
 
 		if not self.get_setting('username') or not self.get_setting('password'):
 			# no username/password provided - continue with free account

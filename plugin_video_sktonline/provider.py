@@ -24,8 +24,11 @@ class SkTContentProvider(CommonContentProvider):
 		self.login_optional_settings_names = ('username', 'password')
 		self.req_session = requests.Session()
 		self.req_session.headers.update(COMMON_HEADERS)
+		self.free_login = True
 
 	def login(self, silent):
+		self.free_login = True
+		self.req_session.cookies.clear()
 		if not self.get_setting('username') or not self.get_setting('password'):
 			# no username/password provided - continue with free account
 			self.log_debug("No username or password provided - continuing with free account")
@@ -41,6 +44,7 @@ class SkTContentProvider(CommonContentProvider):
 			self.req_session.cookies.set('AVS', data['session'], domain='online.sktorrent.eu')
 			if self.check_login():
 				self.log_debug("Login check OK - continuing with loaded session")
+				self.free_login = False
 				return True
 
 		self.log_debug("Don't have login session - trying fresh login")
@@ -68,6 +72,7 @@ class SkTContentProvider(CommonContentProvider):
 		data['checksum'] = cks
 		self.save_cached_data('login', data)
 		self.log_debug("Login session authorized and stored")
+		self.free_login = False
 		return True
 
 	def check_login(self):
@@ -106,7 +111,7 @@ class SkTContentProvider(CommonContentProvider):
 		return self.list_videos('search/videos?t=a&o=mr&type=public&search_query=' + quote(keyword))
 
 	def root(self):
-		self.add_search_dir('Vyhľadať')
+		self.add_search_dir()
 		httpdata = self.call_api('categories')
 
 		for link, img, name, count in re.compile('col-sm-6.*?href="(.*?)".*?class="thumb-overlay.*?img src="(.*?)".*?title="(.*?)".*?pull-right.*?span.*?>([0-9]*?)<', re.DOTALL).findall(httpdata):
@@ -132,6 +137,10 @@ class SkTContentProvider(CommonContentProvider):
 		links = []
 		for link, res in re.compile('source src="(.*?)".*?res=\'(.*?)\'', re.DOTALL).findall(httpdata):
 			links.append((link, res,))
+
+		if len(links) == 0 and self.free_login:
+			self.show_info("Pre spustenie prehrávania je nutné v nastaveniach zadať prihlasovacie meno a heslo")
+			return
 
 		settings = {
 			'user-agent': COMMON_HEADERS['User-Agent'],
