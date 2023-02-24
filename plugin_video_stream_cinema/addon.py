@@ -39,7 +39,7 @@ class StreamCinemaXBMContentProvider( XBMContentProvider ):
 		elif 'csearch' in list(params.keys()):
 			return self.do_csearch(params['csearch'], params.get('action-id'))
 		elif 'search' in list(params.keys()):
-			return self.do_csearch(params['search'], params.get('cp', 'search-movie'))
+			return self.do_csearch(params['search'], params.get('cp', 'search-movie'), params.get('search-no-history', False) == False)
 		elif 'csearch-remove' in list(params.keys()):
 			return self.csearch_remove(params['csearch-remove'], params.get('action-id'))
 		elif 'csearch-edit' in list(params.keys()):
@@ -89,7 +89,7 @@ class StreamCinemaXBMContentProvider( XBMContentProvider ):
 
 	# #################################################################################################
 
-	def do_csearch(self, what, action_id):
+	def do_csearch(self, what, action_id, save_history=True):
 		if what == '':
 			what = client.getTextInput(self.session, xbmcutil.__lang__(30003))
 		if not what == '':
@@ -98,7 +98,10 @@ class StreamCinemaXBMContentProvider( XBMContentProvider ):
 				maximum = int(self.settings['keep-searches'])
 			except:
 				pass
-			xbmcutil.add_search(self.addon, self.provider.name + action_id, what, maximum)
+
+			if save_history:
+				xbmcutil.add_search(self.addon, self.provider.name + action_id, what, maximum)
+
 			self.csearch(what, action_id)
 	
 	# #################################################################################################
