@@ -417,9 +417,9 @@ class MagioGO:
 					if cur_time > one_startts:
 						one_endts = self.magioformat_to_timestamp(one["endTime"])
 
-						imgages = one['program'].get('images')
-						if imgages != None and len(imgages) > 0:
-							for url in imgages:
+						images = one['program'].get('images')
+						if images != None and len(images) > 0:
+							for url in images:
 								if 'VERT' in url:
 									img = url
 									break
