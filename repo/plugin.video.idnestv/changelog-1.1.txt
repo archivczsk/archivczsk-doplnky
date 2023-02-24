@@ -1,5 +1,0 @@
-v1.1 (2022-04-04)
-* make addon python 3.x compatible
-
-v1.0 (2020-04-23)
- * iDNEStv - first release

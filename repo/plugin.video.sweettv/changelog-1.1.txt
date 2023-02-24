@@ -1,6 +1,0 @@
-1.1 - 21.12.2022
-    - opravené zobrazenie programov v archíve
-
-1.0 - 15.12.2022
-    - úvodná verejná verzia
-	- podpora pre Live TV, archív, Filmy a userbouquet
