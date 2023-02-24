@@ -6,6 +6,12 @@ import time
 from .provider import CommonContentProvider
 from ..string_utils import _I, _B, _C
 
+try:
+	from .archivczsk_provider import _tr
+except:
+	def _tr(string_id):
+		return string_id
+
 # #################################################################################################
 
 class CPModuleTemplate():
@@ -50,11 +56,11 @@ class CPModuleLiveTV(CPModuleTemplate):
 	Content provider module that implements Live TV base
 	'''
 
-	def __init__(self, content_provider, name='Live TV', categories=False, plot=None, img=None):
+	def __init__(self, content_provider, name=None, categories=False, plot=None, img=None):
 		if not plot:
-			plot = 'Tu nájdete zoznam kanálov ponúkajúcich živé vysielanie'
+			plot = _tr('Here you will find list of Live TV channels')
 
-		CPModuleTemplate.__init__(self, content_provider, name, plot, img)
+		CPModuleTemplate.__init__(self, content_provider, name if name else _tr('Live TV'), plot, img)
 		self.categories = categories
 
 	# #################################################################################################
@@ -96,14 +102,14 @@ class CPModuleArchive(CPModuleTemplate):
 	Content provider module that implements archive base
 	'''
 
-	def __init__(self, content_provider, name='Archív', plot=None, img=None):
+	def __init__(self, content_provider, name=None, plot=None, img=None):
 		if not plot:
-			plot = 'Tu nájdete spätné prehrávanie vašich kanálov'
+			plot = _tr('Here you will find your channels archive')
 
-		CPModuleTemplate.__init__(self, content_provider, name, plot, img)
-		self.days_of_week = ('Pondelok', 'Utorok', 'Streda', 'Štvrtok', 'Piatok', 'Sobota', 'Nedeľa')
-		self.day_str = ('deň', 'dni', 'dní')
-		self.hour_str = ('hodina', 'hodiny', 'hodín')
+		CPModuleTemplate.__init__(self, content_provider, name if name else _tr("Archive"), plot, img)
+		self.days_of_week = (_tr('Monday'), _tr('Tuesday'), _tr('Wednesday'), _tr('Thursday'), 	_tr('Friday'), _tr('Saturday'), _tr('Sunday'))
+		self.day_str = (_tr('day'), _tr('days2-4'), _tr('days5+'))
+		self.hour_str = (_tr('hour'), _tr('hours2-4'), _tr('hours5+'))
 
 	# #################################################################################################
 
@@ -127,7 +133,7 @@ class CPModuleArchive(CPModuleTemplate):
 		else:
 			dtext = tr_map[2]
 
-		self.cp.add_dir(title + _C('green', ' [%d %s]' % (tsd, dtext)), img, info_labels, cmd=self.get_archive_days_for_channels, channel_id=channel_id, archive_hours=archive_hours)
+		self.cp.add_dir(title + _C('green', '  [%d %s]' % (tsd, dtext)), img, info_labels, cmd=self.get_archive_days_for_channels, channel_id=channel_id, archive_hours=archive_hours)
 
 	# #################################################################################################
 
@@ -149,9 +155,9 @@ class CPModuleArchive(CPModuleTemplate):
 
 		for i in range(int(archive_hours // 24)):
 			if i == 0:
-				day_name = "Dnes"
+				day_name = _tr("Today")
 			elif i == 1:
-				day_name = "Včera"
+				day_name = _tr("Yesterday")
 			else:
 				day = date.today() - timedelta(days=i)
 				day_name = self.days_of_week[day.weekday()] + " " + day.strftime("%d.%m.%Y")
@@ -202,8 +208,8 @@ class CPModuleSearch(CPModuleTemplate):
 	Content provider module that implements search base
 	'''
 
-	def __init__(self, content_provider, name='Vyhľadať', search_id='', plot=None, img=None):
-		CPModuleTemplate.__init__(self, content_provider, name, plot, img)
+	def __init__(self, content_provider, name=None, search_id='', plot=None, img=None):
+		CPModuleTemplate.__init__(self, content_provider, name if name else _tr("Search"), plot, img)
 		self.search_id = search_id
 
 	# #################################################################################################

@@ -85,6 +85,14 @@ class CommonContentProvider(object):
 
 	# #################################################################################################
 
+	def _(self, s):
+		'''
+		Returns localised string if localisations service is available
+		'''
+		return s
+
+	# #################################################################################################
+
 	def __str__(self):
 		return '[' + self.name + ']'
 
@@ -351,7 +359,7 @@ class CommonContentProvider(object):
 		'''
 		pass
 
-	def add_search_dir(self, title, search_id='', img=None, info_labels={}):
+	def add_search_dir(self, title=None, search_id='', img=None, info_labels={}):
 		"""
 		info_labels = {
 			'plot': 'Obsah, popis',

@@ -1,17 +1,28 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <strings>
-	<string id="200">Je vyžadováno opsání kódu obrázku</string>
-	<string id="201">Vyčkejte...</string>
-	<string id="30003">[B]Vyhledat[/B]</string>
-	<string id="30004">[B]Nové hledání[/B]</string>
-	<string id="30005">Vyberte zdroj</string>
-	<string id="30006">[B]Stažené soubory[/B]</string>
-	<string id="30007">[B]Další[/B]</string>
-	<string id="30008">[B]Předchozí[/B]</string>
-	<string id="30009">Nastavte prosím složku pro stahování</string>
-	<string id="30010">Chcete pro získání souboru použít VIP úcet?</string>
-	<string id="30011">Přihlášení selhalo, zkontrolujte nastavení</string>
-	<string id="30012">[B]Nejnovější videa[/B]</string>
-	<string id="30013">[B]Nejsledovanější videa[/B]</string>
-	<string id="30014">Čekání na soubor %ss</string>
+  <string id="Login failed">Přihlášní selhalo</string>
+  <string id="Login ended with error">Přihlášní skončilo chybou</string>
+  <string id="New search">Nové hledání</string>
+  <string id="Search">Vyhledat</string>
+  <string id="Next">Další</string>
+  <string id="Edit">Upravit</string>
+  <string id="Remove">Odstranit</string>
+  <string id="Archive">Archiv</string>
+  <string id="Here you will find your channels archive">Zde najdede zpětné přehrávání vašich kanálů</string>
+  <string id="Here you will find list of Live TV channels">Zde najdete seznam kanálů s živým vysíláním</string>
+  <string id="Monday">Pondelí</string>
+  <string id="Tuesday">Úterí</string>
+  <string id="Wednesday">Středa</string>
+  <string id="Thursday">Čtvrtek</string>
+  <string id="Friday">Pátek</string>
+  <string id="Saturday">Sobota</string>
+  <string id="Sunday">Nedele</string>
+  <string id="day">den</string>
+  <string id="days2-4">dny</string>
+  <string id="days5+">dní</string>
+  <string id="hour">hodina</string>
+  <string id="hours2-4">hodiny</string>
+  <string id="hours5+">hodin</string>
+  <string id="Today">Dnes</string>
+  <string id="Yesterday">Včera</string>
 </strings>

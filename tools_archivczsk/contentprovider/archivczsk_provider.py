@@ -4,6 +4,7 @@ import sys, os, re, traceback, time, json
 from Plugins.Extensions.archivCZSK.engine import client
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from .exception import LoginException, AddonErrorException, AddonInfoException, AddonWarningException
+from ..string_utils import _B
 
 __addon__ = ArchivCZSK.get_addon('tools.archivczsk')
 
@@ -124,6 +125,7 @@ class ArchivCZSKContentProvider(object):
 		self.provider.get_list_input = self.get_list_input
 		self.provider.get_text_input = self.get_text_input
 		self.provider.refresh_screen = self.refresh_screen
+		self.provider._ = addon.get_localized_string
 
 		self.logged_in = self.process_login()
 
@@ -174,13 +176,13 @@ class ArchivCZSKContentProvider(object):
 			self.log_error("Login failed: %s" % str(e))
 
 			if not silent:
-				self.show_error(_tr('Login failed:\n{login_msg}\nPlease check addon settings.').format(login_msg=str(e)), True)
+				self.show_error(_tr('Login failed') + ':\n' + str(e), True)
 		except Exception as e:
 			self.log_error("Login ended with error: %s" % str(e))
 			client.log.error(traceback.format_exc())
 
 			if not silent:
-				self.show_error(_tr(30011), True)
+				self.show_error(_tr('Login ended with error') + ':\n' + str(e), True)
 		
 		return logged_in
 
@@ -329,7 +331,7 @@ class ArchivCZSKContentProvider(object):
 	# #################################################################################################
 
 	def search_list(self, search_id=None, save_history=True):
-		client.add_dir(_tr(30004), self.action(self.do_search, search_id=search_id, save_history=save_history), image=_icon('search.png'), search_item=True)
+		client.add_dir(_B(_tr('New search')), self.action(self.do_search, search_id=search_id, save_history=save_history), image=_icon('search.png'), search_item=True)
 		
 		try:
 			maximum = int(self.provider.get_setting('keep-searches'))
@@ -338,8 +340,8 @@ class ArchivCZSKContentProvider(object):
 		
 		for what in self.searches.get_searches(search_id, maximum):
 			menu_items = {
-				u'Remove': self.action(self.search_remove, search_id=search_id, what=what),
-				u'Edit': self.action(self.search_edit, search_id=search_id, what=what)
+				_tr('Remove'): self.action(self.search_remove, search_id=search_id, what=what),
+				_tr('Edit'): self.action(self.search_edit, search_id=search_id, what=what)
 			}
 			client.add_dir(what, self.action(self.do_search, search_id=search_id, what=what, save_history=save_history ), menuItems=menu_items )
 
@@ -352,7 +354,7 @@ class ArchivCZSKContentProvider(object):
 	# #################################################################################################
 	
 	def search_edit(self, search_id=None, what=''):
-		replacement = client.getTextInput(self.session, _tr(30003), what)
+		replacement = client.getTextInput(self.session, _tr('Search'), what)
 
 		if replacement != '':
 			self.searches.edit_search(search_id, what, replacement)
@@ -362,7 +364,7 @@ class ArchivCZSKContentProvider(object):
 	
 	def do_search(self, search_id=None, what='', save_history=True):
 		if what == '':
-			what = client.getTextInput(self.session, _tr(30003))
+			what = client.getTextInput(self.session, _tr('Search'))
 			
 		if not what == '':
 			
@@ -397,13 +399,13 @@ class ArchivCZSKContentProvider(object):
 		
 	# #################################################################################################
 	
-	def add_search_dir(self, title, search_id=None, img=None, info_labels={}, save_history=True ):
-		client.add_dir(title, self.action(self.search_list, search_id=search_id, save_history=save_history), image=img if img else _icon('search.png'), search_folder=True)
+	def add_search_dir(self, title=None, search_id=None, img=None, info_labels={}, save_history=True):
+		client.add_dir(title if title else _B(_tr('Search')), self.action(self.search_list, search_id=search_id, save_history=save_history), image=img if img else _icon('search.png'), search_folder=True)
 		
 	# #################################################################################################
 	
 	def add_next(self, cmd, **cmd_args):
-		self.add_dir(_tr(30007), _icon('next.png'), cmd=cmd, **cmd_args)
+		self.add_dir(_B(_tr('Next')), _icon('next.png'), cmd=cmd, **cmd_args)
 
 	# #################################################################################################
 	
