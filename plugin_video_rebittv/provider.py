@@ -147,7 +147,7 @@ class RebitTVModuleExtra(CPModuleTemplate):
 	# #################################################################################################
 
 	def delete_device(self, device_id):
-		self.rebittv.device_remove(device_id)
+		self.cp.rebittv.device_remove(device_id)
 		self.cp.add_video(_C('red', 'Zariadenie %s bolo vymazané!' % device_id), download=False)
 
 # #################################################################################################
