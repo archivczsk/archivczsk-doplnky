@@ -101,7 +101,6 @@ def login(email, password, device_id):
 	}, cookies=cookies, verify=False)
 
 	# Search for profile id and set it
-	profile_id = addon.getSetting('profileId')
 	profile_id_search = re.search('data-edit-url="/user/profile-edit/(.*)"', do_login.text)
 
 	if profile_id_search:

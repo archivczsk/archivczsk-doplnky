@@ -93,9 +93,11 @@ def iprima_run(session, params):
 			bonuses = helpers.requestResource('bonus', postOptions={'programId': nid, 'count': 1})
 			if len(bonuses) > 0:
 				addDir('Bonusy', '/sublisting/{0}/bonus/'.format(nid), 1, None)
-		renderItems(programDetail['episodes'])
-		if len(programDetail['episodes']) == lookups.shared['pagination']:
-			addDir('>> Další strana', '/program/{0}/?page={1}'.format(nid, page + 1), 1, None)
+		episodes = programDetail.get('episodes')
+		if episodes:
+			renderItems(episodes)
+			if len(episodes) == lookups.shared['pagination']:
+				addDir('>> Další strana', '/program/{0}/?page={1}'.format(nid, page + 1), 1, None)
 
 	def sublisting(programId, season):
 		if season == 'bonus':
@@ -121,36 +123,75 @@ def iprima_run(session, params):
 		renderItems(items, 'Bonusy: ')
 
 	def renderItems(items, mtitle=None):
-		for item in items:
-			if not item: continue
-			if 'admittanceType' in item and item['admittanceType'] not in lookups.free_admittance_types: continue
-			label = item.get('name', item.get('title'))
-			label = label + ' - ' + item.get('episodeTitle') if 'episodeTitle' in item and item['episodeTitle'] else label
-			if mtitle: label = mtitle + label
-			infoLabels = {
-				'genre': ', '.join(item.get('genres', []) or ''),
-				'plot': item.get('teaser', '') or ''
-			}
-			if 'premiereDate' in item and item['premiereDate']: #2021-01-26T19:15:00+00:00
-				infoLabels['plot'] = datetime.strptime(item['premiereDate'], "%Y-%m-%dT%H:%M:%S+00:00").strftime("%d.%m.%Y") + " - " + infoLabels['plot']
-				infoLabels['year'] = datetime.strptime(item['premiereDate'], "%Y-%m-%dT%H:%M:%S+00:00").strftime("%Y")
-			if 'length' in item:
-				infoLabels['duration'] = item['length']
-			if 'thumbnailData' in item and item['thumbnailData']:
-				thumb = item['thumbnailData'].get('url', None)
-			else:
-	#			thumb = item.get('logo',None)
-				thumb = None
-			if item.get('id', 0) in chlive:
-				label = label + chlive[item['id']]
-				thumb = chlivethm[item['id']]
-			isPlayable = helpers.isPlayable(item.get('type', 'video'))
-			if isPlayable:
-				url = '/play/{0}'.format(item['playId'])
-				add_dir(label, { 'url': url }, thumb, infoLabels=infoLabels, video_item=True)
-			else:
-				url = '/program/{0}/'.format(item['nid'])
-				addDir(label, url, 1, thumb, infoLabels=infoLabels)
+		if items:
+			for item in items:
+				if not item: continue
+				if 'admittanceType' in item and item['admittanceType'] not in lookups.free_admittance_types: continue
+				label = item.get('name', item.get('title'))
+				label = label + ' - ' + item.get('episodeTitle') if 'episodeTitle' in item and item['episodeTitle'] else label
+				if mtitle: label = mtitle + label
+				infoLabels = {
+					'genre': ', '.join(item.get('genres', []) or ''),
+					'plot': item.get('teaser', '') or ''
+				}
+				if 'premiereDate' in item and item['premiereDate']: #2021-01-26T19:15:00+00:00
+					infoLabels['plot'] = datetime.strptime(item['premiereDate'], "%Y-%m-%dT%H:%M:%S+00:00").strftime("%d.%m.%Y") + " - " + infoLabels['plot']
+					infoLabels['year'] = datetime.strptime(item['premiereDate'], "%Y-%m-%dT%H:%M:%S+00:00").strftime("%Y")
+				if 'length' in item:
+					infoLabels['duration'] = item['length']
+				if 'thumbnailData' in item and item['thumbnailData']:
+					thumb = item['thumbnailData'].get('url', None)
+				else:
+		#			thumb = item.get('logo',None)
+					thumb = None
+				if item.get('id', 0) in chlive:
+					label = label + chlive[item['id']]
+					thumb = chlivethm[item['id']]
+				isPlayable = helpers.isPlayable(item.get('type', 'video'))
+				if isPlayable:
+					url = '/play/{0}'.format(item['playId'])
+					add_dir(label, { 'url': url }, thumb, infoLabels=infoLabels, video_item=True)
+				else:
+					url = '/program/{0}/'.format(item['nid'])
+					addDir(label, url, 1, thumb, infoLabels=infoLabels)
+
+	def resolve_streams(url, max_bitrate=None):
+		try:
+			req = requests.get(url, verify=False)
+		except:
+			client.showError("Problém při načítaním videa - URL neexistuje")
+			return None
+
+		if req.status_code != 200:
+			client.showError("Problém při načtení videa - neočekávaný návratový kód %d" % req.status_code)
+			return None
+
+		if max_bitrate and int(max_bitrate) > 0:
+			max_bitrate = int(max_bitrate) * 1000000
+		else:
+			max_bitrate = 100000000
+
+		streams = []
+
+		for m in re.finditer(r'^#EXT-X-STREAM-INF:(?P<info>.+)\n(?P<chunk>.+)', req.text, re.MULTILINE):
+			stream_info = {}
+			for info in re.split(r''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', m.group('info')):
+				key, val = info.split('=', 1)
+				stream_info[key.lower()] = val
+
+			stream_url = m.group('chunk')
+
+			if not stream_url.startswith('http'):
+				if stream_url.startswith('/'):
+					stream_url = url[:url[9:].find('/') + 9] + stream_url
+				else:
+					stream_url = url[:url.rfind('/') + 1] + stream_url
+
+			stream_info['url'] = stream_url
+			if int(stream_info['bandwidth']) <= max_bitrate:
+				streams.append(stream_info)
+
+		return sorted(streams, key=lambda i: int(i['bandwidth']), reverse=True)
 
 	def play(name):
 		videoId = adr[1]
@@ -170,7 +211,11 @@ def iprima_run(session, params):
 			title = videoDetail['productDetail'].get('localTitle')
 		if "thumbnailInfo" in videoDetail:
 			thumb = videoDetail['thumbnailInfo'].get('url', None)
-		add_video(title, url, None, thumb, filename=title, infoLabels={'title': title})
+
+		for s in resolve_streams(url):
+			add_video('[' + s.get('resolution', 'x???').split('x')[1] + 'p] ' + title, s['url'], None, thumb, filename=title, infoLabels={'title': title})
+			if addon.getSetting("useBestQuality") == 'true':
+				break
 
 	def router(paramstring):
 		if adr[0] == "section":

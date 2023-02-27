@@ -1,5 +1,6 @@
-2023-01-27 [1.8]
+2023-02-27 [1.8]
 - konverzia doplnku na modul pre achrivCZSK >= 2.0.0
+- oprava prihlásenia po zmenách na služby na Prima+
 
 2022-04-06 [1.7]
 - some minor fixes

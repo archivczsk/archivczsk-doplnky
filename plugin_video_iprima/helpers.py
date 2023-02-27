@@ -66,7 +66,7 @@ def requestResource(resource, count=0, page=0, replace={}, postOptions={}, retry
 		return getJSONPath(request.json(), contentPath) if method == 'POST' else request.json()
 	elif request.status_code in {401, 403}:
 		if retrying: 
-			client.showError('Chyba autorizace')
+			client.showError('K tomuto obsahu nemáte přístup')
 			sys.exit(1)
 		return requestResource(resource, count, page, replace, postOptions, retrying=True)
 	client.showError('Server neodpovídá správně')
