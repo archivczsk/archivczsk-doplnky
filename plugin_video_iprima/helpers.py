@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import requests
-import lookups
-import auth
+from . import lookups
+from . import auth
 import json
 import sys
 from string import Template

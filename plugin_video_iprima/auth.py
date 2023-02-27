@@ -3,7 +3,7 @@
 import re
 #from ssl import VerifyFlags
 import requests
-import helpers
+from . import helpers
 import sys
 import time
 import datetime
