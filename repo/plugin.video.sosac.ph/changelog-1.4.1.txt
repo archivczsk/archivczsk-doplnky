@@ -1,0 +1,40 @@
+1.4.1: 28.01.2023
+- fixed setting configuration options
+
+1.4.0: 28.01.2023
+- convert to module for archivCZSK >= 2.0.0
+
+1.3.1: 07.04.2022
+- fixed login on python 3.x
+
+1.3.0: 04.04.2022
+- make addon python 3.x compatible
+
+1.2.9: 03.12.2020 (misanov)
+- oprava vypisu epizod
+
+1.2.8: 7.11.2017
+- vymazane nepotrebne subory v ZIP
+
+1.2.2: 06. 07. 2015
+- přidána možnost hledání filmů
+
+1.2.1: 04. 07. 2015
+- oprava .strm lze nyní ukládat i na jiné datové stroje (samba)
+
+1.2.0: 02. 07. 2015
+- .strm soubory se nyní přegenerovávají pravidelně. (Zatím 1 za hod)
+
+1.1.0: 30. 05. 2015
+- možnost v kontextovém menu vytvářet .strm soubory (bbaronSVK)
+- nové kategorie (Naposled přidané...) (bbaronSVK)
+- názvy filmů/seriálů se listují v angličtině (dle lokalizace)
+
+1.0.3:
+- nová adresa serveru
+
+1.0.1:
+- oprava chyby při listování většiny seriálů
+
+1.0.0:
+Initial version - migration from plugin.video.tv.sosac.ph
