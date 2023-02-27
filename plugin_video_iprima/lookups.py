@@ -147,4 +147,4 @@ item_types = {
 	}
 }
 
-free_admittance_types = ['free', 'basic', 'registered']
+free_admittance_types = ['free', 'basic', 'registered', None, 'catchup']
