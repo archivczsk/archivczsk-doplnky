@@ -37,14 +37,6 @@ __addon__	   = ArchivCZSK.get_xbmc_addon(__scriptid__)
 __language__   = __addon__.getLocalizedString
 __set__		  = __addon__.getSetting
 
-settings = {'quality':__addon__.getSetting('quality'), 'subs':__set__('subs') == 'true'}
-reverse_eps = __set__('order-episodes') == '0'
-
-sosac = SosacContentProvider(reverse_eps=reverse_eps)
-sosac.streamujtv_user = __set__('streamujtv_user')
-sosac.streamujtv_pass = __set__('streamujtv_pass')
-sosac.streamujtv_location = __set__('streamujtv_location')
-
 class SosacProvider(xbmcprovider.XBMContentProvider):
 
 	def __init__(self, provider, settings, addon, session):
@@ -72,6 +64,14 @@ class SosacProvider(xbmcprovider.XBMContentProvider):
 
 
 def sosac_run(session, params):
+	settings = {'quality':__addon__.getSetting('quality'), 'subs':__set__('subs') == 'true'}
+	reverse_eps = __set__('order-episodes') == '0'
+
+	sosac = SosacContentProvider(reverse_eps=reverse_eps)
+	sosac.streamujtv_user = __set__('streamujtv_user')
+	sosac.streamujtv_pass = __set__('streamujtv_pass')
+	sosac.streamujtv_location = __set__('streamujtv_location')
+
 	SosacProvider(sosac, settings, __addon__, session).run(params)
 
 def main(addon):
