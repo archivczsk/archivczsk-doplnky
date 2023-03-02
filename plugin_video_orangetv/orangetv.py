@@ -25,7 +25,7 @@ def _log_dummy(message):
 
 class OrangeTV:
 
-	def __init__(self, username, password, device_id='Nexus7', data_dir=None, log_function=None ):
+	def __init__(self, username, password, device_id='Nexus7', data_dir=None, log_function=None, tr_function=None):
 		self.username = username
 		self.password = password
 		self._live_channels = {}
@@ -37,6 +37,7 @@ class OrangeTV:
 		self.device_id = device_id
 		self.quality = 'MOBILE'
 		self.log_function = log_function if log_function else _log_dummy
+		self._ = tr_function if tr_function else lambda s: s
 		self.devices = None
 		self.epg_cache = {}
 		self.data_dir = data_dir
@@ -121,7 +122,7 @@ class OrangeTV:
 		
 		if response.status_code != 200:
 			self.log_function('HTTP response status code: %d\n%s' % (response.status_code, response.text))
-			raise AddonErrorException('HTTP response status code: %d' % req.status_code)
+			raise AddonErrorException(self._('Unexpected return code from server') + ': %d' % req.status_code)
 
 		return response.json()
 
@@ -172,7 +173,7 @@ class OrangeTV:
 		if not self.username or not self.password:
 			self.log_function('No username or password provided...')
 			self.save_login_data()
-			raise LoginException("No username and password provided")
+			raise LoginException(self._("Login data not set"))
 		
 		headers = _COMMON_HEADERS.copy()
 		headers["Content-Type"] = "application/x-www-form-urlencoded;charset=UTF-8"
@@ -198,7 +199,7 @@ class OrangeTV:
 			if error == 'authentication-failed':
 				self.log_function('Authentication Error')
 
-			raise LoginException("Failed to autentificate - probably wrong username/password")
+			raise LoginException(self._("Failed to autentificate - probably wrong username/password"))
 			
 		self.access_token = j["access_token"]
 		self.refresh_token = j["refresh_token"]
@@ -450,7 +451,7 @@ class OrangeTV:
 					self.access_token = None
 					self.refresh_access_token()
 				else:
-					raise Exception("Err: "+status)
+					raise Exception("Error: " + status)
 			else:
 				playlist = ""
 				for uris in json_data["uris"]:

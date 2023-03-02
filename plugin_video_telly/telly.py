@@ -67,9 +67,10 @@ def _log_dummy(message):
 
 class Telly:
 
-	def __init__(self, data_dir=None, log_function=None ):
+	def __init__(self, data_dir=None, log_function=None, tr_function=None):
 		self.device_token = None
 		self.log_function = log_function if log_function else _log_dummy
+		self._ = tr_function if tr_function else lambda s: s
 		self.settings = None
 		self.data_dir = data_dir
 		self.epg_cache = {}
@@ -155,7 +156,7 @@ class Telly:
 				except:
 					return {}
 			else:
-				err_msg = "Neočekávaný návratový kód zo servera: %d" % resp.status_code
+				err_msg = "Server returned unexpected status code: %d" % resp.status_code
 		except Exception as e:
 			self.log_function("TELLY ERROR:\n"+traceback.format_exc())
 			err_msg = str(e)
@@ -186,9 +187,9 @@ class Telly:
 
 	def check_token(self):
 		if not self.token_is_valid():
-			raise LoginException("Prihlasovací token je neplatný - spárujte zariadenie znova")
+			raise LoginException(self._("Login token is invalid. Pair device again."))
 		else:
-			raise AddonErrorException('Neočakávaná odpoveď zo servera. Skúste operáciu zopakovať.')
+			raise AddonErrorException(self._('Unexpected answer from server. Try to repeat operation again.'))
 
 	# #################################################################################################
 

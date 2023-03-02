@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-	<setting label="Přihlašovací jméno" type="text" id="username" default=""/>
-	<setting label="Přihlašovací heslo" type="text" id="password" option="true" default=""/>
-	<setting label="ID zařízení" type="text" id="deviceid" default="" visible="false"/>
-	<setting label="Jméno zařízení" type="text" id="devicename" default="tvbox"/>
-	<setting label="Maximálni tok streamu" id="max_bitrate" type="keyenum" values="0;Bez obmezení|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
-	<setting label="Povolit programy pro dospělé" id="enable_adult" type="bool" default="true" />
-	<setting label="Ukázat EPG (spomalí načtení Live TV)" id="showliveepg" type="bool" default="true" />
-	<setting label="Kolik hodin EPG ukládat do cache" id="epgcache" type="labelenum" values="6|12|24|48|72" default="24" />
-	<setting label="Přehrávat i po konci pořadu (minut)" type="text" id="offset" default="0"/>
-	<setting label="Historie vyhledávání" type="text" id="keep-searches" default="20"/>
-	<category label="Speciální">
-		<setting label="Povolit speciální sekci v hlavním menu" id="enable_extra" type="bool" default="false" />
-		<setting label="Automaticky exportovat seznam stanic jako userbouquet" id="enable_userbouquet" type="bool" default="false" />
-		<setting label="Generovat XML EPG pre epgimport plugin (pokud je nainstalovaný)" id="enable_xmlepg" type="bool" default="false" />
-		<setting label="Adresář pro vygenerované XML EPG (aspoň 30MB volného místa)" id="xmlepg_dir" type="text" default="/media/hdd" />
-		<setting label="Pro kolik dní dopředu generovať EPG" id="xmlepg_days" type="enum" lvalues="1|2|3|4|5|6|7" default="4"/>
-		<setting label="Při exportu userbouquetu automaticky stáhnout picony" id="enable_picons" type="bool" default="false" />
-		<setting label="Přehrávač použitý pro userbouquet" id="player_name" type="enum" lvalues="Předvolený|gstplayer|exteplayer3|DMM|DVB (OE>=2.5)" default="0"/>
+	<setting label="Login name" type="text" id="username" default=""/>
+	<setting label="Login password" type="password" id="password" default=""/>
+	<setting label="Device ID" type="text" id="deviceid" default="" visible="false"/>
+	<setting label="Device name" type="text" id="devicename" default="tvbox"/>
+	<setting label="Maximum bandwidth of the offered stream" id="max_bitrate" type="keyenum" values="0;Unlimited|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
+	<setting label="Enable adult channels" id="enable_adult" type="bool" default="true" />
+	<setting label="Show EPG (slows down loading of Live TV)" id="showliveepg" type="bool" default="true" />
+	<setting label="How many hours cache EPG data" id="epgcache" type="labelenum" values="6|12|24|48|72" default="24" />
+	<setting label="How many minutes to play after event ends" type="number" id="offset" default="0"/>
+	<setting label="Number of search history items" type="number" id="keep-searches" default="20"/>
+	<setting label="Enable special section in main menu" id="enable_extra" type="bool" default="false" />
+	<category label="Userbouquet">
+		<setting label="Automatically export channel list as userbouquet" id="enable_userbouquet" type="bool" default="false" />
+		<setting label="Generate XML EPG for epgimport plugin (if installed)" id="enable_xmlepg" type="bool" default="false" />
+		<setting label="Directory for XML EPG data (need at least 20MB of free space)" id="xmlepg_dir" type="text" default="/media/hdd" />
+		<setting label="For how many days to generate XML EPG" id="xmlepg_days" type="enum" lvalues="1|2|3|4|5|6|7" default="4"/>
+		<setting label="Automatically download picons when exporting userbouquet" id="enable_picons" type="bool" default="false" />
+		<setting label="Player used for userbouquet" id="player_name" type="enum" lvalues="Default|gstplayer|exteplayer3|DMM|DVB (OE>=2.5)" default="0"/>
 	</category>
 </settings>

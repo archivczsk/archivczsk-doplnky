@@ -101,7 +101,7 @@ class MagioGOModuleArchive(CPModuleArchive):
 class MagioGOModuleExtra(CPModuleTemplate):
 
 	def __init__(self, content_provider):
-		CPModuleTemplate.__init__(self, content_provider, "Špeciálna sekcia")
+		CPModuleTemplate.__init__(self, content_provider, content_provider._("Special section"))
 
 	# #################################################################################################
 
@@ -112,8 +112,8 @@ class MagioGOModuleExtra(CPModuleTemplate):
 	# #################################################################################################
 
 	def root(self, section=None):
-		info_labels = {'plot': "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočná zariadenia, aby ste sa mohli znova inde prihlásiť." }
-		self.cp.add_dir('Zaregistrované zariadenia', info_labels=info_labels, cmd=self.list_devices)
+		info_labels = {'plot': self._("Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one.") }
+		self.cp.add_dir(self._('Registered devices'), info_labels=info_labels, cmd=self.list_devices)
 
 	# #################################################################################################
 
@@ -126,8 +126,8 @@ class MagioGOModuleExtra(CPModuleTemplate):
 				title += ' *'
 				info_labels = {}
 			else:
-				self.cp.add_menu_item(menu, 'Zmazať zariadenie!', self.delete_device, device_name=pdev["name"], device_id=pdev["id"])
-				info_labels = { 'plot': 'V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!'}
+				self.cp.add_menu_item(menu, self._('Remove device!'), self.delete_device, device_name=pdev["name"], device_id=pdev["id"])
+				info_labels = { 'plot': self._('In menu you can remove device using Remove device!') }
 
 			self.cp.add_video(title, info_labels=info_labels, menu=menu, download=False)
 
@@ -137,9 +137,9 @@ class MagioGOModuleExtra(CPModuleTemplate):
 		ret, msg = self.cp.magiogo.remove_device(device_id)
 
 		if ret:
-			self.cp.add_video(_C('red', 'Zariadenie %s bolo vymazané!' % device_name), download=False)
+			self.cp.add_video(_C('red', self._('Device {device} was removed!').format(device=device_name)), download=False)
 		else:
-			self.cp.add_video(_C('red', 'Chyba: %s' % msg), download=False)
+			self.cp.add_video(_C('red', self._('Error') + ': %s' % msg), download=False)
 
 # #################################################################################################
 
@@ -176,7 +176,7 @@ class MagioGOContentProvider(ModuleContentProvider):
 		self.magiogo = None
 		self.channels = []
 
-		magiogo = MagioGO(self.get_setting('region'), self.get_setting('username'), self.get_setting('password'), self.get_setting('deviceid'), int(self.get_setting('devicetype')), self.data_dir, self.log_info)
+		magiogo = MagioGO(self.get_setting('region'), self.get_setting('username'), self.get_setting('password'), self.get_setting('deviceid'), int(self.get_setting('devicetype')), self.data_dir, self.log_info, self._)
 
 		self.magiogo = magiogo
 

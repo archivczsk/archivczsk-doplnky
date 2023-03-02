@@ -11,16 +11,13 @@ from tools_archivczsk.string_utils import _I, _C, _B
 from .sledovanitv import SledovaniTV
 from .bouquet import SledovaniTVBouquetXmlEpgGenerator
 
-DAY_NAME_SHORT = ("Po", "Ut", "St", "Čt", "Pá", "So", "Ne")
-DAY_NAME = ('Pondelí', 'Úterý', 'Středa', 'Čtvrtek', 'Pátek', 'Sobota', 'Nedele')
-
 # #################################################################################################
 
 
 class SledovaniTVModuleHome(CPModuleTemplate):
 
 	def __init__(self, content_provider):
-		CPModuleTemplate.__init__(self, content_provider, "Úvodní stránka")
+		CPModuleTemplate.__init__(self, content_provider, content_provider._("Main page"))
 
 	# #################################################################################################
 
@@ -33,7 +30,7 @@ class SledovaniTVModuleHome(CPModuleTemplate):
 				'title': event['title'],
 			}
 			
-			day_name = DAY_NAME_SHORT[datetime.fromtimestamp(event['start']).weekday()]
+			day_name = self.cp.day_nane_short[datetime.fromtimestamp(event['start']).weekday()]
 			title = day_name + ' ' + self.cp.timestamp_to_str(event['start'], format='%d.%m. %H:%M') + ' - ' + self.cp.timestamp_to_str(event['end'], format='%H:%M') + ' ' + _I(event['title']) + ' '
 
 			if event['start'] > int(time.time()):
@@ -114,7 +111,7 @@ class SledovaniTVModuleLiveTV(CPModuleLiveTV):
 class SledovaniTVModuleRadio(CPModuleLiveTV):
 
 	def __init__(self, content_provider):
-		CPModuleLiveTV.__init__(self, content_provider, 'Radia', plot='Obsahuje seznam rádií dostupných s vašim předplatným')
+		CPModuleLiveTV.__init__(self, content_provider, content_provider._('Radios'), plot=content_provider._('Here you will find the list of radios available in your subscription'))
 
 	# #################################################################################################
 
@@ -191,7 +188,7 @@ class SledovaniTVModuleArchive(CPModuleArchive):
 			}
 
 			menu = {}
-			self.cp.add_menu_item(menu, 'Nahrát pořad', cmd=self.cp.add_recording, event_id=epg['eventId'])
+			self.cp.add_menu_item(menu, self._('Add recording'), cmd=self.cp.add_recording, event_id=epg['eventId'])
 			self.cp.add_video(title, epg.get('poster'), info_labels, menu, cmd=self.cp.get_event_stream, video_title=str(epg["title"]), event_id=epg['eventId'])
 
 # #################################################################################################
@@ -200,14 +197,15 @@ class SledovaniTVModuleArchive(CPModuleArchive):
 class SledovaniTVModuleRecordings(CPModuleTemplate):
 
 	def __init__(self, content_provider):
-		CPModuleTemplate.__init__(self, content_provider, "Nahrávky", 'Tu najdete nahrávky vašich programů')
+		CPModuleTemplate.__init__(self, content_provider, content_provider._("Recordings"), content_provider._('Here you will find recordings of your programs'))
+		self.day_name = (_('Monday'), _('Tuesday'), _('Wednesday'), _('Thursday'), 	_('Friday'), _('Saturday'), _('Sunday'))
 
 	# #################################################################################################
 
 	def root(self):
-		self.cp.add_dir("Naplánovat nahrávání", cmd=self.plan_recordings)
-		self.cp.add_dir("Budoucí - plánováne", cmd=self.show_recordings, only_finished=False)
-		self.cp.add_dir("Existujíci", cmd=self.show_recordings, only_finished=True)
+		self.cp.add_dir(self._("Plan recording"), cmd=self.plan_recordings)
+		self.cp.add_dir(self._("Futures - planed"), cmd=self.show_recordings, only_finished=False)
+		self.cp.add_dir(self._("Existing"), cmd=self.show_recordings, only_finished=True)
 	
 	# #################################################################################################
 
@@ -234,7 +232,7 @@ class SledovaniTVModuleRecordings(CPModuleTemplate):
 				desc = event.get("title", '')
 
 				if 'expires' in record:
-					desc += ' [expiruje ' + datetime.strptime(record["expires"], "%Y-%m-%d").strftime("%d.%m.%Y") + ']'
+					desc += ' [' + self._('expires') + ' ' + datetime.strptime(record["expires"], "%Y-%m-%d").strftime("%d.%m.%Y") + ']'
 
 				title = convert_time(event["startTime"]) + " - " + event["endTime"][11:16] + " [" + record["channelName"] + "] " + _I(record["title"])
 
@@ -246,7 +244,7 @@ class SledovaniTVModuleRecordings(CPModuleTemplate):
 				}
 				
 				menu = {}
-				self.cp.add_menu_item(menu, 'Smazat nahrávku', cmd=self.del_recording, pvr_id=record["id"])
+				self.cp.add_menu_item(menu, self._('Delete recording'), cmd=self.del_recording, pvr_id=record["id"])
 				
 				if record["enabled"] != 1:
 					self.cp.add_video(title, event.get("poster"), info_labels, menu)
@@ -287,13 +285,13 @@ class SledovaniTVModuleRecordings(CPModuleTemplate):
 	def show_future_days(self, channel_id):
 		for i in range(7):
 			if i == 0:
-				day_name = "Dnes"
+				day_name = self._("Today")
 			elif i == 1:
 				day = date.today() + timedelta(days=i)
-				day_name = "Zítra " + day.strftime("%d.%m.%Y")
+				day_name = self._("Tomorrow") + ' ' + day.strftime("%d.%m.%Y")
 			else:
 				day = date.today() + timedelta(days=i)
-				day_name = DAY_NAME[day.weekday()] + " " + day.strftime("%d.%m.%Y")
+				day_name = self.cp.day_name[day.weekday()] + " " + day.strftime("%d.%m.%Y")
 
 			self.cp.add_dir(day_name, cmd=self.plan_recordings_for_channel, channel_id=channel_id, day=i)
 	
@@ -326,7 +324,7 @@ class SledovaniTVModuleRecordings(CPModuleTemplate):
 			img = event.get('poster')
 
 			menu = {}
-			self.cp.add_menu_item(menu, 'Nahrát pořad', cmd=self.cp.add_recording, event_id=event_id)
+			self.cp.add_menu_item(menu, self._('Record the event'), cmd=self.cp.add_recording, event_id=event_id)
 			self.cp.add_video(title, img, info_labels, menu, cmd=self.cp.add_recording, event_id=event_id)
 		
 # #################################################################################################
@@ -335,7 +333,7 @@ class SledovaniTVModuleRecordings(CPModuleTemplate):
 class SledovaniTVModuleExtra(CPModuleTemplate):
 
 	def __init__(self, content_provider):
-		CPModuleTemplate.__init__(self, content_provider, "Speciálni sekce")
+		CPModuleTemplate.__init__(self, content_provider, content_provider._("Special section"))
 
 	# #################################################################################################
 
@@ -346,21 +344,21 @@ class SledovaniTVModuleExtra(CPModuleTemplate):
 	# #################################################################################################
 
 	def root(self):
-		info_labels = {'plot': "Tu si můžete zobrazit a případně vymazat/odregistrovat zbytečná zařízení, aby ste se mohli znova jinde přihlásit." }
-		self.cp.add_dir('Zaregistrovaná zařízení', info_labels=info_labels, cmd=self.list_devices)
+		info_labels = {'plot': self._("Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one.") }
+		self.cp.add_dir(self._('Registered devices'), info_labels=info_labels, cmd=self.list_devices)
 
 	# #################################################################################################
 
 	def list_devices(self):
 		for pdev in self.cp.sledovanitv.get_devices():
 			title = 'ID: %d, %s: %s' % (pdev['deviceId'], pdev["typeName"], pdev['title'])
-			info_labels = { 'plot': 'V menu můžete zařízení vymazat pomocí Smazat zařízení!'}
+			info_labels = { 'plot': self._('In menu you can remove device using Remove device!')}
 
 			menu = {}
 			if pdev['self']:
 				title += _C('yellow', ' *')
 			else:
-				self.cp.add_menu_item(menu, 'Smazat zařízení!', self.delete_device, device_id=pdev["deviceId"])
+				self.cp.add_menu_item(menu, self._('Remove device!'), self.delete_device, device_id=pdev["deviceId"])
 
 			self.cp.add_video(title, info_labels=info_labels, menu=menu, download=False)
 
@@ -368,8 +366,8 @@ class SledovaniTVModuleExtra(CPModuleTemplate):
 	
 	def delete_device(self, device_id):
 		self.cp.sledovanitv.device_remove(device_id)
-#		self.cp.add_video(_C('red', 'Zařízení %s bylo vymazáno!' % device_id), download=False)
-		self.cp.add_video(_C('red', 'Tato operace zatím není implementována'), download=False)
+#		self.cp.add_video(_C('red', self._('Device {device} was removed!').format(device=device_id)), download=False)
+		self.cp.add_video(_C('red', self._('This operation is not supported yet')), download=False)
 
 # #################################################################################################
 
@@ -388,6 +386,7 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 		self.channels_next_load_time = 0
 		self.checksum = None
 		self.http_endpoint = http_endpoint
+		self.day_name_short = (self._("Mo"), self._("Tu"), self._("We"), self._("Th"), self._("Fr"), self._("Sa"), self._("Su"))
 
 		if not self.get_setting('serialid'):
 			self.set_setting('serialid', SledovaniTV.create_serialid())
@@ -411,9 +410,9 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 		self.channels = []
 		self.channels_by_id = {}
 
-		sledovanitv = SledovaniTV(self.get_setting('username'), self.get_setting('password'), self.get_setting('pin'), self.get_setting('serialid'), self.data_dir, self.log_info)
+		sledovanitv = SledovaniTV(self.get_setting('username'), self.get_setting('password'), self.get_setting('pin'), self.get_setting('serialid'), self.data_dir, self.log_info, self._)
 		if not sledovanitv.check_pairing():
-			raise LoginException('Přihlášení selhalo')
+			raise LoginException(self._('Login failed'))
 
 		self.sledovanitv = sledovanitv
 
@@ -481,7 +480,7 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 
 	def add_recording(self, event_id):
 		ret = self.sledovanitv.add_recording(event_id)
-		self.show_info("Nahrávka přidána" if ret else "Při přidávaní nahrávky nastala chyba")
+		self.show_info(self._("Recording added") if ret else self._("There was an error by adding recording"))
 
 	# #################################################################################################
 
@@ -496,7 +495,7 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 			start = self.sledovanitv.convert_time(event["startTime"])
 			end = self.sledovanitv.convert_time(event["endTime"])
 
-			day_name = DAY_NAME_SHORT[datetime.fromtimestamp(start).weekday()]
+			day_name = self.day_name_short[datetime.fromtimestamp(start).weekday()]
 			title = day_name + ' ' + self.timestamp_to_str(start, format='%d.%m. %H:%M') + ' - ' + self.timestamp_to_str(end, format='%H:%M') + ' ' + _I(event['title']) + ' ' + _C('grey', '[' + event['channel'].upper() + ']')
 
 			info_labels = {
@@ -506,7 +505,7 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 			}
 
 			menu = {}
-			self.add_menu_item(menu, 'Nahrát pořad', self.add_recording, event_id=event['eventId'])
+			self.add_menu_item(menu, self._('Record the event'), self.add_recording, event_id=event['eventId'])
 			self.add_video(title, event.get("poster"), info_labels, menu, cmd=self.get_event_stream, video_title=event["title"], event_id=event['eventId'])
 
 	# #################################################################################################

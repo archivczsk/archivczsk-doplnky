@@ -20,7 +20,7 @@ def _log_dummy(message):
 	pass
 
 class SledovaniTV:
-	def __init__(self, username, password, pin, serialid, data_dir=None, log_function=None ):
+	def __init__(self, username, password, pin, serialid, data_dir=None, log_function=None, tr_function=None):
 		self.username = username
 		self.password = password
 		self.pin = pin
@@ -28,6 +28,7 @@ class SledovaniTV:
 		self.sessionid = None
 		self.data_dir = data_dir
 		self.log_function = log_function if log_function else _log_dummy
+		self._ = tr_function if tr_function else lambda s: s
 		self.headers = _HEADERS
 	
 		self.load_login_data()
@@ -134,7 +135,7 @@ class SledovaniTV:
 
 				return ret
 			else:
-				err_msg = "Neočekávaný návratový kód ze serveru: %d" % resp.status_code
+				err_msg = self._('Unexpected return code from server') + ': %d' % resp.status_code
 		except Exception as e:
 			err_msg = str(e)
 		
@@ -176,7 +177,7 @@ class SledovaniTV:
 			data = self.call_api( "pin-unlock", params = params )
 			
 			if data.get('error'):
-				self.showLoginError("Špatný PIN")
+				self.showLoginError(self._("Wrong PIN code"))
 				return False
 			
 		return True
@@ -199,7 +200,7 @@ class SledovaniTV:
 		if "status" not in data or data['status'] == 0:
 			self.sessionid = None
 			self.save_login_data()
-			self.showLoginError("Problém při přihlášení: %s" % data['error'])
+			self.showLoginError(self._("Login failed") + ": %s" % data['error'])
 			return False
 	
 		if 'deviceId' in data and 'password' in data:
@@ -215,7 +216,7 @@ class SledovaniTV:
 			if "status" not in data or data['status'] == 0:
 				self.sessionid = None
 				self.save_login_data()
-				self.showLoginError("Problém při přihlášení: %s" % data['error'])
+				self.showLoginError(self._("Login failed") + ": %s" % data['error'])
 				return False
 	
 			if "PHPSESSID" in data:
@@ -230,12 +231,12 @@ class SledovaniTV:
 			else:
 				self.sessionid = None
 				self.save_login_data()
-				self.showLoginError("Problém s příhlášením: no session")
+				self.showLoginError(self._("Login failed") + ": no session")
 				return False
 		else:
 			self.sessionid = None
 			self.save_login_data()
-			self.showLoginError("Problém s příhlášením: no deviceid")
+			self.showLoginError(self._("Login failed") + ": no deviceid")
 
 			return False
 		
@@ -251,7 +252,7 @@ class SledovaniTV:
 		data = self.call_api('get-devices', params = params )
 		
 		if "status" not in data or data['status'] == 0:
-			self.showError("Problém s načtením seznamu zařízení: %s" % data['error'])
+			self.showError(self._("Error by loading list of devices") + ": %s" % data['error'])
 			return []
 		
 		return data.get('devices', [])
@@ -295,7 +296,7 @@ class SledovaniTV:
 		data = self.call_api("show-category", params = params )
 		
 		if "status" not in data or data['status'] == 0:
-			self.showError("Problém s načtením kanálů: %s" % data['error'])
+			self.showError(self._("Error by loading channel list") + ": %s" % data['error'])
 			return False
 		
 		channels = []
@@ -370,7 +371,7 @@ class SledovaniTV:
 		epgdata = self.call_api("epg-search", params=params)
 		
 		if "status" not in epgdata or epgdata['status'] == 0:
-			self.showError("Problém s načtením EPG: %s"%epgdata['error'])
+			self.showError(self._("Error by loading EPG") + ": %s" % epgdata['error'])
 			epgdata = []
 
 		return epgdata.get('events', [])
@@ -403,7 +404,7 @@ class SledovaniTV:
 		epgdata = self.call_api("epg", params=params)
 		
 		if "status" not in epgdata or epgdata['status'] == 0:
-			self.showError("Problém s načtením EPG: %s"%epgdata['error'])
+			self.showError(self._("Error by loading EPG") + ": %s" % epgdata['error'])
 			epgdata = {}
 		
 		return epgdata.get('channels',{})
@@ -424,7 +425,7 @@ class SledovaniTV:
 		data = self.call_api("playlist", params=params)
 
 		if "status" not in data or data['status'] == 0:
-			self.showError("Problém s načtením kanálů: %s" % data['error'])
+			self.showError(self._("Error by loading channel list") + ": %s" % data['error'])
 			return []
 
 		channels = []
@@ -454,7 +455,7 @@ class SledovaniTV:
 
 		data = self.call_api('get-pvr', params = params )
 		if "status" not in data or data['status'] == 0:
-			self.showError("Problém s načtením nahrávek: %s" % data['error'])
+			self.showError(self._("Error by loading recordings") + ": %s" % data['error'])
 			return None
 
 		return data.get('records', [])
@@ -470,7 +471,7 @@ class SledovaniTV:
 
 		data = self.call_api('delete-record', params = params )
 		if "status" not in data or data['status'] == 0:
-			self.showError("Problém s smazáním nahrávky: %s" % data['error'])
+			self.showError(self._("Error by deleting recording") + ": %s" % data['error'])
 			return False
 		
 		return True
@@ -484,7 +485,7 @@ class SledovaniTV:
 
 		data = self.call_api('record-event', params = params )
 		if "status" not in data or data['status'] == 0:
-			self.showError("Problém s nastavením nahrávky: %s" % data['error'])
+			self.showError(self._("Error by setting recording") + ": %s" % data['error'])
 			return False
 		
 		return True
@@ -495,11 +496,11 @@ class SledovaniTV:
 		try:
 			req = self.req_session.get(url)
 		except:
-			self.showError("Problém při načtení videa. Pokud je červené, zadejte v nastavení správný PIN!")
+			self.showError(self._("Error by loading video. If it's red, the check PIN code."))
 			return
 		
 		if req.status_code != 200:
-			self.showError("Problém při načtení videa")
+			self.showError(self._("Error by loading video"))
 			return
 
 		streams = []
@@ -546,7 +547,7 @@ class SledovaniTV:
 
 		data = self.call_api('event-timeshift', params = params )
 		if "status" not in data or data['status'] == 0:
-			self.showError("Problém s načtením nahrávky: %s" % data['error'])
+			self.showError(self._("Error by loading event") + ": %s" % data['error'])
 			return None
 		
 		return self.resolve_streams(data['url'], max_bitrate)
@@ -562,7 +563,7 @@ class SledovaniTV:
 
 		data = self.call_api('record-timeshift', params = params )
 		if "status" not in data or data['status'] == 0:
-			self.showError("Problém s načtením nahrávky: %s" % data['error'])
+			self.showError(self._("Error by loading recording") + "%s" % data['error'])
 			return None
 		
 		return self.resolve_streams(data['url'], max_bitrate)

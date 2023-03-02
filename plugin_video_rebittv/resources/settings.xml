@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-    <setting label="Meno" id="username" type="text" default="" />
-    <setting label="Heslo" id="password" type="text" default="" option="true" />
-    <setting label="Meno zariadenia" id="device_name" type="text" default="E2-archivCZSK" />
-   	<setting label="Maximálny dátový tok ponúkaného streamu" id="max_bitrate" type="keyenum" values="0;Bez obmedzenia|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
-	<setting label="Povolit programy pre dospelých" id="enable_adult" type="bool" default="true" />
-	<category label="Špeciálne">
-		<setting label="Povoliť špeciálnu sekciu v hlavnom menu" id="enable_extra" type="bool" default="false" />
-		<setting label="Automaticky exportovať zoznam stanic ako userbouquet" id="enable_userbouquet" type="bool" default="false" />
-		<setting label="Generovať XML EPG pre epgimport plugin (ak je nainštalovaný)" id="enable_xmlepg" type="bool" default="false" />
-		<setting label="Adresár pre vygenerované XML EPG (aspoň 30MB volného miesta)" id="xmlepg_dir" type="text" default="/media/hdd" />
-		<setting label="Pre koľko dní dopredu generovať EPG" id="xmlepg_days" type="enum" lvalues="1|2|3|4|5|6|7" default="4"/>
-		<setting label="Pri exporte userbouquetu automaticky stiahnouť picony" id="enable_picons" type="bool" default="false" />
-		<setting label="Prehrávač použitý pro userbouquet" id="player_name" type="enum" lvalues="Předvolený|gstplayer|exteplayer3|DMM|DVB (OE>=2.5)" default="0"/>
+    <setting label="Login name" id="username" type="text" default="" />
+    <setting label="Login password" id="password" type="password" default="" />
+    <setting label="Device name" id="device_name" type="text" default="E2-archivCZSK" />
+	<setting label="Maximum bandwidth of the offered stream" id="max_bitrate" type="keyenum" values="0;Unlimited|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
+	<setting label="Enable adult channels" id="enable_adult" type="bool" default="true" />
+	<setting label="Enable special section in main menu" id="enable_extra" type="bool" default="false" />
+	<category label="Userbouquet">
+		<setting label="Automatically export channel list as userbouquet" id="enable_userbouquet" type="bool" default="false" />
+		<setting label="Generate XML EPG for epgimport plugin (if installed)" id="enable_xmlepg" type="bool" default="false" />
+		<setting label="Directory for XML EPG data (need at least 20MB of free space)" id="xmlepg_dir" type="text" default="/media/hdd" />
+		<setting label="For how many days to generate XML EPG" id="xmlepg_days" type="enum" lvalues="1|2|3|4|5|6|7" default="4"/>
+		<setting label="Automatically download picons when exporting userbouquet" id="enable_picons" type="bool" default="false" />
+		<setting label="Player used for userbouquet" id="player_name" type="enum" lvalues="Default|gstplayer|exteplayer3|DMM|DVB (OE>=2.5)" default="0"/>
 	</category>
 </settings>

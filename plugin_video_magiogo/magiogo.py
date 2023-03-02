@@ -75,7 +75,7 @@ class MagioGO:
 		("OTT_WIN", "Web Browser"),             # 6
 	]
 
-	def __init__(self, region=None, username=None, password=None, device_id=None, device_type=None, data_dir=None, log_function=None ):
+	def __init__(self, region=None, username=None, password=None, device_id=None, device_type=None, data_dir=None, log_function=None, tr_function=None):
 		self.username = username
 		self.password = password
 		self.device_id = device_id
@@ -83,6 +83,7 @@ class MagioGO:
 		self.refresh_token = None
 		self.access_token_life = 0
 		self.log_function = log_function if log_function else _log_dummy
+		self._ = tr_function if tr_function else lambda s: s
 		self.device = MagioGO.magiogo_device_types[device_type]
 		self.devices = None
 		self.settings = None
@@ -200,7 +201,7 @@ class MagioGO:
 				except:
 					return {}
 			else:
-				err_msg = "Neočekávaný návratový kód zo servera: %d" % resp.status_code
+				err_msg = self._("Unexpected return code from server") + ": %d" % resp.status_code
 		except Exception as e:
 			self.log_function("Magio GO ERROR:\n"+traceback.format_exc())
 			err_msg = str(e)
@@ -216,7 +217,7 @@ class MagioGO:
 	
 	def login(self, force=False):
 		if not self.username or not self.password:
-			raise LoginException("Magio GO: Nezadané prihlasovacie údaje")
+			raise LoginException(self._("Login data not set"))
 		
 		params = {
 			"dsid": self.device_id,
@@ -243,7 +244,7 @@ class MagioGO:
 			self.access_token_life = response["token"]["expiresIn"] // 1000
 			self.save_login_data()
 		else:
-			raise LoginException("Magio GO: Prihlásenie zlyhalo: %s" % response.get('errorMessage', 'Neznáma chyba'))
+			raise LoginException(response.get('errorMessage', self._('Unknown error')))
 	
 	# #################################################################################################
 	

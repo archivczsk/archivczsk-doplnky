@@ -1,0 +1,158 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_rebittv\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-03-09 17:42+0100\n"
+"PO-Revision-Date: 2023-03-09 17:44+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: plugin_video_rebittv/provider.py:121
+msgid "Special section"
+msgstr "Speciální sekce"
+
+#: plugin_video_rebittv/provider.py:132
+msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
+msgstr "Tu si můžete zobrazit a případně vymazat/odregistrovat zbytečná zařízení, aby jste se mohli znova jinde přihlásit."
+
+#: plugin_video_rebittv/provider.py:133
+msgid "Registered devices"
+msgstr "Zaregistrovaná zařízení"
+
+#: plugin_video_rebittv/provider.py:140
+msgid "Added"
+msgstr "Přidané"
+
+#: plugin_video_rebittv/provider.py:141
+msgid "In menu you can remove device using Remove device!"
+msgstr "V menu můžete zařízení vymazat pomocí Smazat zařízení!"
+
+#: plugin_video_rebittv/provider.py:144
+msgid "Remove device!"
+msgstr "Smazat zařízení!"
+
+#: plugin_video_rebittv/provider.py:151
+#, python-brace-format
+msgid "Device {device} was removed!"
+msgstr "Zařízení {device} bylo vymazáno!"
+
+#: plugin_video_rebittv/rebittv.py:187
+msgid "Unexpected return code from server"
+msgstr "Neočekávaný návratový kód ze serveru"
+
+#: plugin_video_rebittv/rebittv.py:236
+msgid "Login failed"
+msgstr "Přihlášení selhalo"
+
+#: plugin_video_rebittv/rebittv.py:264
+msgid "Error by login token refresh"
+msgstr "Chyba při obnově přihlašovacího tokenu"
+
+#: plugin_video_rebittv/rebittv.py:307
+msgid "Error by device pairing"
+msgstr "Chyba při párovaní zařízení"
+
+#: plugin_video_rebittv/rebittv.py:368
+msgid "Error by loading EPG"
+msgstr "Chyba při načítání EPG"
+
+#: plugin_video_rebittv/rebittv.py:379
+msgid "Error by loading channel list"
+msgstr "Chyba při načítání seznamu kanálů"
+
+#: plugin_video_rebittv/rebittv.py:405
+msgid "Error by loading video"
+msgstr "Chyba při načítání videa"
+
+#: plugin_video_rebittv/rebittv.py:409
+msgid "Error by loading video. HTTP response code"
+msgstr "Chyba při načítaní videa. HTTP návratový kód"
+
+#: plugin_video_rebittv/rebittv.py:450
+msgid "Error by getting stream address"
+msgstr "Chyba při načítání adresy streamu"
+
+#: plugin_video_rebittv/rebittv.py:456
+msgid "Unsupported stream type"
+msgstr "Nepodporovaný typ streamu"
+
+msgid "Login name"
+msgstr "Přihlašovací jméno"
+
+msgid "Login password"
+msgstr "Přihlašovací heslo"
+
+msgid "Device name"
+msgstr "Jméno zařízení"
+
+msgid "Maximum bandwidth of the offered stream"
+msgstr "Maximální datový tok nabízeného streamu"
+
+msgid "Unlimited"
+msgstr "Bez omezení"
+
+msgid "8 Mbit/s"
+msgstr ""
+
+msgid "6 Mbit/s"
+msgstr ""
+
+msgid "4 Mbit/s"
+msgstr ""
+
+msgid "3 Mbit/s"
+msgstr ""
+
+msgid "2 Mbit/s"
+msgstr ""
+
+msgid "Enable adult channels"
+msgstr "Povolit programy pro dospělé"
+
+msgid "Enable special section in main menu"
+msgstr "Povolit speciální sekci v hlavním menu"
+
+msgid "Userbouquet"
+msgstr "Userbouquet"
+
+msgid "Automatically export channel list as userbouquet"
+msgstr "Automaticky exportovat seznam stanic jako userbouquet"
+
+msgid "Generate XML EPG for epgimport plugin (if installed)"
+msgstr "Generovat XML EPG pro epgimport plugin (pokud je nainstalován)"
+
+msgid "Directory for XML EPG data (need at least 20MB of free space)"
+msgstr "Adresář pro XML EPG data (potřebujete alespoň 20MB volného místa)"
+
+msgid "For how many days to generate XML EPG"
+msgstr "Pro kolik dni dopředu generovat XML EPG"
+
+msgid "Automatically download picons when exporting userbouquet"
+msgstr "Při exportování userbouquetu automaticky stáhnout picony"
+
+msgid "Player used for userbouquet"
+msgstr "Přehrávač použitý pro userbouquet"
+
+msgid "Default"
+msgstr "Předvolený"
+
+msgid "gstplayer"
+msgstr ""
+
+msgid "exteplayer3"
+msgstr ""
+
+msgid "DMM"
+msgstr ""
+
+msgid "DVB (OE>=2.5)"
+msgstr ""

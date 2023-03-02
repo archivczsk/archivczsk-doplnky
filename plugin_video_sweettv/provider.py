@@ -59,7 +59,6 @@ class SweetTVModuleLiveTV(CPModuleLiveTV):
 			
 			settings = {
 				'user-agent' : self.cp.sweettv.get_user_agent(),
-				'resolve_hls_master' : False
 			}
 			self.cp.add_play(channel_title, one['url'], info_labels, data_item=data_item, settings=settings, download=False)
 
@@ -117,8 +116,8 @@ class SweetTVModuleVOD(CPModuleTemplate):
 
 	def root(self, cat=None):
 		if cat == None:
-			self.cp.add_dir('Podľa žánru', cmd=self.root, cat='genres')
-			self.cp.add_dir('Podľa kolekcie', cmd=self.root, cat='collections')
+			self.cp.add_dir(self._('By genre'), cmd=self.root, cat='genres')
+			self.cp.add_dir(self._('By collection'), cmd=self.root, cat='collections')
 			return
 
 		data = self.cp.sweettv.get_movie_configuration()
@@ -155,7 +154,7 @@ class SweetTVModuleVOD(CPModuleTemplate):
 class SweetTVModuleExtra(CPModuleTemplate):
 
 	def __init__(self, content_provider):
-		CPModuleTemplate.__init__(self, content_provider, "Špeciálna sekcia")
+		CPModuleTemplate.__init__(self, content_provider, content_provider._("Special section"))
 
 	# #################################################################################################
 
@@ -166,17 +165,17 @@ class SweetTVModuleExtra(CPModuleTemplate):
 	# #################################################################################################
 
 	def root(self, section=None):
-		info_labels = {'plot': "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočná zariadenia, aby ste sa mohli znova inde prihlásiť." }
-		self.cp.add_dir('Zaregistrované zariadenia', info_labels=info_labels, cmd=self.list_devices)
-		info_labels = {'plot': "Vynúti odhlásenie z tohto zariadenia a vykoná nové prihlásenie. Použite to v prípade problémov s prehrávaním. Po spustení tejto voľby je nutné doplnok opustiť a vrátiť sa späť pre opätovné prihlásenie." }
-		self.cp.add_dir('Odhlásiť sa z tohto zariadenia', info_labels=info_labels, cmd=self.logout)
+		info_labels = {'plot': self._("Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one.") }
+		self.cp.add_dir(self._('Registered devices'), info_labels=info_labels, cmd=self.list_devices)
+		info_labels = {'plot': self._("Forces logout from this devices and does new login. Use if you have problem with playback. After running this option it's necessary to go out of this addon to force new automatic login.") }
+		self.cp.add_dir(self._('Logout from this device'), info_labels=info_labels, cmd=self.logout)
 
 	# #################################################################################################
 
 	def logout(self):
 		self.cp.sweettv.logout()
 		self.cp.sweettv = None
-		self.cp.add_video(_C('red', 'Boli ste odhlásený!'), download=False)
+		self.cp.add_video(_C('red', self._('You have been logged out!')), download=False)
 
 	# #################################################################################################
 
@@ -184,17 +183,17 @@ class SweetTVModuleExtra(CPModuleTemplate):
 		for pdev in self.cp.sweettv.get_devices():
 			dev_added = self.cp.timestamp_to_str(int(pdev["date_added"]), format='%d.%m.%Y %H:%M')
 			title = 'Model: %s, Typ: %s, Pridané: %s' % (pdev['model'], pdev["type"], dev_added)
-			info_labels = { 'plot': 'V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!'}
+			info_labels = { 'plot': self._('In menu you can remove device using Remove device!')}
 
 			menu = {}
-			self.cp.add_menu_item(menu, 'Zmazať zariadenie!', self.delete_device, token_id=pdev["token_id"])
+			self.cp.add_menu_item(menu, self._('Remove device!'), self.delete_device, token_id=pdev["token_id"])
 			self.cp.add_video(title, info_labels=info_labels, menu=menu, download=False)
 
 	# #################################################################################################
 
 	def delete_device(self, token_id):
 		self.cp.sweettv.device_remove(token_id)
-		self.cp.add_video(_C('red', 'Zariadenie %s bolo vymazané!' % token_id), download=False)
+		self.cp.add_video(_C('red', self._('Device {device} was removed!').format(device=token_id)), download=False)
 
 # #################################################################################################
 
@@ -231,7 +230,7 @@ class SweetTVContentProvider(ModuleContentProvider):
 	def login(self, silent):
 		self.sweettv = None
 		self.channels = []
-		sweettv = SweetTV(self.get_setting('username'), self.get_setting('password'), self.get_setting('device_id'), self.data_dir, self.log_info)
+		sweettv = SweetTV(self.get_setting('username'), self.get_setting('password'), self.get_setting('device_id'), self.data_dir, self.log_info, self._)
 		self.sweettv = sweettv
 
 		return True
@@ -288,7 +287,7 @@ class SweetTVContentProvider(ModuleContentProvider):
 
 			menu = {}
 			if movie['trailer'] and movie['available']:
-				self.add_menu_item(menu, "Prehrať trailer", cmd=self.get_raw_stream, stream_title='Trailer: ' + movie['title'], url=movie['trailer'])
+				self.add_menu_item(menu, self._("Play trailer"), cmd=self.get_raw_stream, stream_title='Trailer: ' + movie['title'], url=movie['trailer'])
 
 			if movie_id and owner_id:
 				self.add_video(title, movie.get('poster'), info_labels=info_labels, menu=menu, cmd=self.get_movie_stream, movie_name=movie['title'], movie_id=movie_id, owner_id=owner_id)
@@ -310,7 +309,6 @@ class SweetTVContentProvider(ModuleContentProvider):
 
 			settings = {
 				'user-agent': self.sweettv.get_user_agent(),
-				'resolve_hls_master': False
 			}
 			self.add_play(movie_name, one['url'], info_labels, data_item=data_item, settings=settings)
 

@@ -11,9 +11,6 @@ from tools_archivczsk.string_utils import _I, _C, _B
 from .o2tv import O2TV
 from .bouquet import O2TVBouquetXmlEpgGenerator
 
-DAY_NAME_SHORT = ("Po", "Ut", "St", "Čt", "Pá", "So", "Ne")
-
-
 class O2TVModuleLiveTV(CPModuleLiveTV):
 
 	def __init__(self, content_provider):
@@ -23,9 +20,9 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 	
 	def get_live_tv_categories(self, section=None):
 		if section == None:
-			self.add_live_tv_category('Všechny kanály', None)
-			self.cp.add_dir('Favoritní', cmd=self.get_live_tv_categories, section='fav')
-			self.cp.add_dir('Moje seznamy kanálů', cmd=self.get_live_tv_categories, section='my_lists')
+			self.add_live_tv_category(self._('All channels'), None)
+			self.cp.add_dir(self._('Favourites'), cmd=self.get_live_tv_categories, section='fav')
+			self.cp.add_dir(self._('My channles lists'), cmd=self.get_live_tv_categories, section='my_lists')
 		elif section == 'fav':
 			self.cp.load_favourites()
 			self.show_my_list(self.cp.favourites, fav=True)
@@ -93,9 +90,9 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 
 			menu = {}
 			if fav:
-				self.cp.add_menu_item(menu, "Odstranit z favoritních", cmd=self.del_fav, key=channel['key'])
+				self.cp.add_menu_item(menu, self._("Remove from favourites"), cmd=self.del_fav, key=channel['key'])
 			else:
-				self.cp.add_menu_item(menu, "Přidat do favoritních", cmd=self.add_fav, key=channel['key'])
+				self.cp.add_menu_item(menu, self._("Add to favourites"), cmd=self.add_fav, key=channel['key'])
 
 			self.cp.add_video(channel['name'] + epg_str, img=channel['screenshot'], info_labels=info_labels, menu=menu, download=False, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_key=channel['key'])
 
@@ -117,9 +114,9 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 		if key not in self.cp.favourites:
 			self.cp.favourites.append(key)
 			self.cp.save_favourites()
-			self.cp.show_info('Přidáno do favoritních')
+			self.cp.show_info(self._('Added to favourites'))
 		else:
-			self.cp.show_info('Kanál už je ve favoritních')
+			self.cp.show_info(self._('Channel is already in favourites'))
 
 	# #################################################################################################
 
@@ -164,7 +161,7 @@ class O2TVModuleArchive(CPModuleArchive):
 			}
 
 			menu = {}
-			self.cp.add_menu_item(menu, 'Nahrát pořad', cmd=self.cp.add_recording, epg_id=epg['epgId'])
+			self.cp.add_menu_item(menu, self._('Record the event'), cmd=self.cp.add_recording, epg_id=epg['epgId'])
 			self.cp.add_video(title, epg.get('picture'), info_labels, menu, cmd=self.cp.get_video_stream, video_title=str(epg["name"]), channel_key=channel_id, epg_id=epg['epgId'], ts_from=epg['startTimestamp'], ts_to=epg['endTimestamp'])
 
 	# #################################################################################################
@@ -175,14 +172,14 @@ class O2TVModuleArchive(CPModuleArchive):
 class O2TVModuleRecordings(CPModuleTemplate):
 
 	def __init__(self, content_provider):
-		CPModuleTemplate.__init__(self, content_provider, "Nahrávky", 'Tu najdete nahrávky vašich programů')
+		CPModuleTemplate.__init__(self, content_provider, content_provider._("Recordings"), content_provider._('Here you will find recordings of your programs'))
 
 	# #################################################################################################
 
 	def root(self):
-		self.cp.add_dir("Naplánovat nahrávání", cmd=self.plan_recordings)
-		self.cp.add_dir("Budoucí - plánováne", cmd=self.show_recordings, only_finished=False)
-		self.cp.add_dir("Existujíci", cmd=self.show_recordings, only_finished=True)
+		self.cp.add_dir(self._("Plan recording"), cmd=self.plan_recordings)
+		self.cp.add_dir(self._("Futures - planed"), cmd=self.show_recordings, only_finished=False)
+		self.cp.add_dir(self._("Existing"), cmd=self.show_recordings, only_finished=True)
 	
 	# #################################################################################################
 
@@ -234,7 +231,7 @@ class O2TVModuleRecordings(CPModuleTemplate):
 				}
 
 				menu = {}
-				self.cp.add_menu_item(menu, 'Smazat nahrávku', cmd=self.del_recording, pvr_id=recordings[recording]["pvrProgramId"])
+				self.cp.add_menu_item(menu, self._('Delete recording'), cmd=self.del_recording, pvr_id=recordings[recording]["pvrProgramId"])
 
 				if only_finished:
 					self.cp.add_video(title, thumb, info_labels, menu, cmd=self.play_recording, pvr_title=title, pvr_id=recordings[recording]["pvrProgramId"])
@@ -289,7 +286,7 @@ class O2TVModuleRecordings(CPModuleTemplate):
 				end = datetime.fromtimestamp(endts / 1000)
 				epg_id = event['epgId']
 
-				title = DAY_NAME_SHORT[start.weekday()] + " " + start.strftime("%d.%m %H:%M") + " - " + end.strftime("%H:%M") + " | " + event["name"]
+				title = self.cp.day_name_short[start.weekday()] + " " + start.strftime("%d.%m %H:%M") + " - " + end.strftime("%H:%M") + " | " + event["name"]
 
 				info_labels = {
 					'plot': event['shortDescription'] if 'shortDescription' in event else None,
@@ -298,7 +295,7 @@ class O2TVModuleRecordings(CPModuleTemplate):
 				img = event['picture'] if 'picture' in event else None
 
 				menu = {}
-				self.cp.add_menu_item(menu, 'Nahrát pořad', cmd=self.cp.add_recording, epg_id=epg_id)
+				self.cp.add_menu_item(menu, self._('Record the event'), cmd=self.cp.add_recording, epg_id=epg_id)
 				self.cp.add_video(title, img, info_labels, menu, cmd=self.cp.add_recording, epg_id=epg_id)
 		
 # #################################################################################################
@@ -307,7 +304,7 @@ class O2TVModuleRecordings(CPModuleTemplate):
 class O2TVModuleExtra(CPModuleTemplate):
 
 	def __init__(self, content_provider):
-		CPModuleTemplate.__init__(self, content_provider, "Speciálni sekce")
+		CPModuleTemplate.__init__(self, content_provider, content_provider._("Special section"))
 
 	# #################################################################################################
 
@@ -318,8 +315,8 @@ class O2TVModuleExtra(CPModuleTemplate):
 	# #################################################################################################
 
 	def root(self, section=None):
-		info_labels = {'plot': "Tu si můžete zobrazit a případně vymazat/odregistrovat zbytečná zařízení, aby ste se mohli znova jinde přihlásit." }
-		self.cp.add_dir('Zaregistrovaná zařízení', info_labels=info_labels, cmd=self.list_devices)
+		info_labels = {'plot': self._("Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one.") }
+		self.cp.add_dir(self._('Registered devices'), info_labels=info_labels, cmd=self.list_devices)
 
 	# #################################################################################################
 
@@ -328,17 +325,17 @@ class O2TVModuleExtra(CPModuleTemplate):
 
 		for pdev in self.cp.o2tv.devices:
 			title = pdev["deviceName"] + " - " + self.cp.timestamp_to_str(pdev["lastLoginTimestamp"] / 1000, format='%d.%m.%Y %H:%M') + " - " + pdev["lastLoginIpAddress"] + " - " + pdev["deviceId"]
-			info_labels = { 'plot': 'V menu můžete zařízení vymazat pomocí Smazat zařízení!'}
+			info_labels = { 'plot': self._('In menu you can remove device using Remove device!')}
 
 			menu = {}
-			self.cp.add_menu_item(menu, 'Smazat zařízení!', self.delete_device, device_id=pdev["deviceId"])
+			self.cp.add_menu_item(menu, self._('Remove device!'), self.delete_device, device_id=pdev["deviceId"])
 			self.cp.add_video(title, info_labels=info_labels, menu=menu, download=False)
 
 	# #################################################################################################
 	
 	def delete_device(self, device_id):
 		self.cp.o2tv.device_remove(device_id)
-		self.cp.add_video(_C('red', 'Zařízení %s bylo vymazáno!' % device_id), download=False)
+		self.cp.add_video(_C('red', self._('Device {device} was removed!').format(device=device_id)), download=False)
 
 # #################################################################################################
 
@@ -357,6 +354,7 @@ class O2TVContentProvider(ModuleContentProvider):
 		self.checksum = None
 		self.http_endpoint = http_endpoint
 		self.favourites = None
+		self.day_name_short = (self._("Mo"), self._("Tu"), self._("We"), self._("Th"), self._("Fr"), self._("Sa"), self._("Su"))
 
 		if not self.get_setting('deviceid'):
 			self.set_setting('deviceid', O2TV.create_device_id())
@@ -364,7 +362,7 @@ class O2TVContentProvider(ModuleContentProvider):
 		self.bxeg = O2TVBouquetXmlEpgGenerator(self, http_endpoint, None)
 
 		self.modules = [
-			CPModuleSearch(self, 'Vyhledat'),
+			CPModuleSearch(self, self._('Search')),
 			O2TVModuleLiveTV(self),
 			O2TVModuleArchive(self),
 			O2TVModuleRecordings(self),
@@ -380,7 +378,7 @@ class O2TVContentProvider(ModuleContentProvider):
 		self.channels = []
 		self.channels_by_key = {}
 
-		o2tv = O2TV(self.get_setting('username'), self.get_setting('password'), self.get_setting('deviceid'), self.get_setting('devicename'), self.data_dir, self.log_info)
+		o2tv = O2TV(self.get_setting('username'), self.get_setting('password'), self.get_setting('deviceid'), self.get_setting('devicename'), self.data_dir, self.log_info, self._)
 		o2tv.refresh_configuration()
 
 		self.o2tv = o2tv
@@ -471,7 +469,7 @@ class O2TVContentProvider(ModuleContentProvider):
 
 	def add_recording(self, epg_id):
 		ret = self.o2tv.add_recording(epg_id)
-		self.show_info("Nahrávka přidána" if ret else "Při přidávaní nahrávky nastala chyba")
+		self.show_info(self._("Recording added") if ret else self._("There was an error by adding recording"))
 
 	# #################################################################################################
 
@@ -490,7 +488,7 @@ class O2TVContentProvider(ModuleContentProvider):
 			end = datetime.fromtimestamp(endts / 1000)
 			epg_id = programs["epgId"]
 
-			title = programs["name"] + " (" + programs["channelKey"] + " | " + DAY_NAME_SHORT[start.weekday()] + " " + start.strftime("%d.%m %H:%M") + " - " + end.strftime("%H:%M") + ")"
+			title = programs["name"] + " (" + programs["channelKey"] + " | " + self.day_name_short[start.weekday()] + " " + start.strftime("%d.%m %H:%M") + " - " + end.strftime("%H:%M") + ")"
 
 			img = 'https://www.o2tv.cz' + programs['picture'] if 'picture' in programs else None
 			info_labels = {
@@ -499,7 +497,7 @@ class O2TVContentProvider(ModuleContentProvider):
 			}
 
 			menu = {}
-			self.add_menu_item(menu, 'Nahrát pořad', self.add_recording, epg_id=epg_id)
+			self.add_menu_item(menu, self._('Record the event'), self.add_recording, epg_id=epg_id)
 			self.add_video(title, img, info_labels, menu, cmd=self.get_video_stream, video_title=programs["name"], channel_key=programs["channelKey"], epg_id=epg_id, ts_from=startts, ts_to=endts)
 
 	# #################################################################################################

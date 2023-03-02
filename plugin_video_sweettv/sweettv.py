@@ -15,7 +15,8 @@ def _log_dummy(message):
 	pass
 
 class SweetTV:
-	def __init__(self, username, password, device_id, data_dir=None, log_function=None ):
+
+	def __init__(self, username, password, device_id, data_dir=None, log_function=None, tr_function=None):
 		self.username = username
 		self.password = password
 		self.device_id = device_id
@@ -24,6 +25,7 @@ class SweetTV:
 		self.login_ver = 0
 		self.data_dir = data_dir
 		self.log_function = log_function if log_function else _log_dummy
+		self._ = tr_function if tr_function else lambda s: s
 		self.api_session = requests.Session()
 		self.api_session.request = functools.partial(self.api_session.request, timeout=10) # set timeout for all session calls
 		
@@ -188,7 +190,7 @@ class SweetTV:
 					self.log_function(traceback.format_exc())
 					return {}
 			else:
-				err_msg = "Neočekávaný návratový kód zo servera: %d" % resp.status_code
+				err_msg = self._("Unexpected return code from server") + ": %d" % resp.status_code
 		except Exception as e:
 			err_msg = str(e)
 		
@@ -230,7 +232,7 @@ class SweetTV:
 			self.access_token = None
 			self.refresh_token_token = None
 			self.save_login_data()
-			self.showLoginError("Problém pri prihlásení: %s" % data.get('message', ''))
+			self.showLoginError(self._("Error by login") + ": %s" % data.get('message', ''))
 			return False
 	
 		self.access_token = data.get('access_token')
@@ -258,7 +260,7 @@ class SweetTV:
 			self.access_token = None
 			self.refresh_token_token = None
 			self.save_login_data()
-			self.showLoginError("Problém pri obnove prihlasovacieho tokenu: %s" % data.get('message', ''))
+			self.showLoginError(self._("Error by refresing login token") + ": %s" % data.get('message', ''))
 			return False
 	
 		self.access_token = data.get('access_token')
@@ -370,7 +372,7 @@ class SweetTV:
 		data = self.call_api('TvService/GetChannels.json', data=req_data )
 		
 		if data.get('status') != 'OK':
-			self.showError("Problém s načítaním EPG: %s" % data.get('description',''))
+			self.showError(self._("Error by loading EPG") + ": %s" % data.get('description', ''))
 			return []
 
 		epgdata = {}
@@ -397,7 +399,7 @@ class SweetTV:
 		data = self.call_api('TvService/GetChannels.json', data=req_data)
 
 		if data.get('status') != 'OK':
-			self.showError("Problém s načítaním zoznamu programov: %s" % data.get('description', ''))
+			self.showError(self._("Error by loading channnel list") + ": %s" % data.get('description', ''))
 			return []
 
 		channels = []
@@ -424,7 +426,7 @@ class SweetTV:
 		data = self.call_api('MovieService/GetConfiguration.json', data={} )
 		
 		if data.get('result') != 'OK':
-			self.showError("Problém s načítaním konfigurácie filmov: %s" % data.get('message',''))
+			self.showError(self._("Error by loading movie configuration") + ": %s" % data.get('message', ''))
 			return None
 		
 		return data
@@ -435,7 +437,7 @@ class SweetTV:
 		data = self.call_api('MovieService/GetCollections.json', data={ 'type': 1 } )
 		
 		if data.get('result') != 'OK':
-			self.showError("Problém s načítaním konfigurácie filmov: %s" % data.get('message',''))
+			self.showError(self._("Error by loading list of collections") + ": %s" % data.get('message', ''))
 			return []
 		
 		result = []
@@ -451,7 +453,7 @@ class SweetTV:
 		data = self.call_api('MovieService/GetCollectionMovies.json', data={ 'collection_id': int(collection_id) } )
 		
 		if data.get('result') != 'OK':
-			self.showError("Problém s načítaním zoznamu filmov: %s" % data.get('message',''))
+			self.showError(self._("Error by loading collections of movies") + ": %s" % data.get('message', ''))
 			return None
 		
 		movie_ids = data['movies']
@@ -467,7 +469,7 @@ class SweetTV:
 		data = self.call_api('MovieService/GetGenreMovies.json', data={ 'genre_id': int(genre_id) } )
 		
 		if data.get('result') != 'OK':
-			self.showError("Problém s načítaním zoznamu filmov: %s" % data.get('message',''))
+			self.showError(self._("Error by loading movie genres") + ": %s" % data.get('message', ''))
 			return None
 		
 		movie_ids = data['movies']
@@ -491,7 +493,7 @@ class SweetTV:
 		data = self.call_api('MovieService/GetMovieInfo.json', data=req_data )
 		
 		if data.get('result') != 'OK':
-			self.showError("Problém s načítaním zoznamu filmov: %s" % data.get('description',''))
+			self.showError(self._("Error by loading movie informations") + ": %s" % data.get('message', ''))
 			return []
 		
 		movies = []
@@ -523,7 +525,7 @@ class SweetTV:
 			return None
 		
 		if req.status_code != 200:
-			self.showError("Nastal problém pri načítení videa: http response code: %d" % req.status_code)
+			self.showError(self._("Error by loading video") + ": http %d" % req.status_code)
 			return None
 
 		streams = []
@@ -585,7 +587,7 @@ class SweetTV:
 		data = self.call_api('TvService/OpenStream.json', data=req_data )
 		
 		if data.get('result') != 'OK':
-			self.showError("Nastal problém so získaním adresy streamu: %s" % data.get('message',''))
+			self.showError(self._("Error by loading stream address") + ": %s" % data.get('message', ''))
 			return None
 		
 		hs = data['http_stream']
@@ -609,11 +611,11 @@ class SweetTV:
 		data = self.call_api('MovieService/GetLink.json', data=req_data )
 		
 		if data.get('status') != 'OK':
-			self.showError("Nastal problém zo získaním adresy filmu: %s" % data['message'] if 'message' in data else data.get('status', ''))
+			self.showError(self._("Error by loading movie stream address") + ": %s" % data['message'] if 'message' in data else data.get('status', ''))
 			return None
 
 		if data.get('link_type') != 'HLS':
-			self.showError("Nepodporovaný typ streamu: %s" % data.get('link_type',''))
+			self.showError(self._("Unsupported stream type") + ": %s" % data.get('link_type', ''))
 			return None
 		
 		return [ { 'url': data['url'], 'bandwidth': 1, 'name': '720p' } ]

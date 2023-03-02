@@ -1,0 +1,106 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_telly\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-03-03 13:48+0100\n"
+"PO-Revision-Date: 2023-03-03 14:03+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: plugin_video_telly/provider.py:154
+msgid "Enter pairing code from site"
+msgstr "Zadejte párovací kód ze stránky"
+
+#: plugin_video_telly/provider.py:157
+msgid ""
+"Device pairing with your Telly account failed.\n"
+"Check pairing code validity and try again."
+msgstr ""
+"Párování zařízení s vaším Telly účtem selhalo.\n"
+"Zkontrolujte správnost párovacího kódu a zkuste to znova."
+
+#: plugin_video_telly/telly.py:190
+msgid "Login token is invalid. Pair device again."
+msgstr "Přihlašovací token je neplatný. Spárujte zařízení znovu."
+
+#: plugin_video_telly/telly.py:192
+msgid "Unexpected answer from server. Try to repeat operation again."
+msgstr "Neočekávaná odpověď ze serveru. Zkuste operaci zopakovat."
+
+msgid "Enable H.265 video codec"
+msgstr "Povolit H.265 video kodek"
+
+msgid "Force http protocol for streaming"
+msgstr "Vynutit http protokol pro streaming"
+
+msgid "Maximum bandwidth of the offered stream"
+msgstr "Maximální datový tok nabízeného streamu"
+
+msgid "Unlimited"
+msgstr "Bez omezení"
+
+msgid "8 Mbit/s"
+msgstr ""
+
+msgid "6 Mbit/s"
+msgstr ""
+
+msgid "4 Mbit/s"
+msgstr ""
+
+msgid "3 Mbit/s"
+msgstr ""
+
+msgid "2 Mbit/s"
+msgstr ""
+
+msgid "Enable adult channels"
+msgstr "Povolit programy pro dospělé"
+
+msgid "How many hours cache EPG data"
+msgstr "Kolik hodin EPG ukládat do cache"
+
+msgid "Userbouquet"
+msgstr "Userbouquet"
+
+msgid "Automatically export channel list as userbouquet"
+msgstr "Automaticky exportovat seznam stanic jako userbouquet"
+
+msgid "Generate XML EPG for epgimport plugin (if installed)"
+msgstr "Generovat XML EPG pro epgimport plugin (pokud je nainstalován)"
+
+msgid "Directory for XML EPG data (need at least 20MB of free space)"
+msgstr "Adresář pro XML EPG data (potřebujete alespoň 20MB volného místa)"
+
+msgid "For how many days to generate XML EPG"
+msgstr "Pro kolik dni dopředu generovat XML EPG"
+
+msgid "Automatically download picons when exporting userbouquet"
+msgstr "Při exportování userbouquetu automaticky stáhnout picony"
+
+msgid "Player used for userbouquet"
+msgstr "Přehrávač použitý pro userbouquet"
+
+msgid "Default"
+msgstr "Předvolený"
+
+msgid "gstplayer"
+msgstr ""
+
+msgid "exteplayer3"
+msgstr ""
+
+msgid "DMM"
+msgstr ""
+
+msgid "DVB (OE>=2.5)"
+msgstr ""

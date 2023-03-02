@@ -1,0 +1,172 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_magiogo\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-03-09 14:54+0100\n"
+"PO-Revision-Date: 2023-03-09 14:54+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: sk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: plugin_video_magiogo/provider.py:104
+msgid "Special section"
+msgstr "Špeciálna sekcia"
+
+#: plugin_video_magiogo/provider.py:115
+msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
+msgstr "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočné zariadenia, aby ste sa mohli znova inde prihlásiť."
+
+#: plugin_video_magiogo/provider.py:116
+msgid "Registered devices"
+msgstr "Zaregistrované zariadenia"
+
+#: plugin_video_magiogo/provider.py:129
+msgid "Remove device!"
+msgstr "Zmazať zariadenie!"
+
+#: plugin_video_magiogo/provider.py:130
+msgid "In menu you can remove device using Remove device!"
+msgstr "V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!"
+
+#: plugin_video_magiogo/provider.py:140
+#, python-brace-format
+msgid "Device {device} was removed!"
+msgstr "Zariadenie {device} bolo vymazané!"
+
+#: plugin_video_magiogo/provider.py:142
+msgid "Error"
+msgstr "Chyba"
+
+#: plugin_video_magiogo/magiogo.py:204
+msgid "Unexpected return code from server"
+msgstr "Neočakávaný návratový kód zo servera"
+
+#: plugin_video_magiogo/magiogo.py:220
+msgid "Login data not set"
+msgstr "Nezadané prihlasovacie údaje"
+
+#: plugin_video_magiogo/magiogo.py:247
+msgid "Unknown error"
+msgstr "Neznáma chyba"
+
+msgid "Region"
+msgstr "Región"
+
+msgid "SK"
+msgstr "SK"
+
+msgid "CZ"
+msgstr "CZ"
+
+msgid "Login name"
+msgstr "Prihlasovacie meno"
+
+msgid "Login password"
+msgstr "Prihlasovacie heslo"
+
+msgid "Device identification"
+msgstr "Identifikácia zariadenia"
+
+msgid "Android Mobil"
+msgstr ""
+
+msgid "iPad"
+msgstr ""
+
+msgid "KSTB6077 STB"
+msgstr ""
+
+msgid "Android TV"
+msgstr ""
+
+msgid "Skyworth STB"
+msgstr ""
+
+msgid "Linux Web Browser"
+msgstr ""
+
+msgid "Win Web Browser"
+msgstr ""
+
+msgid "Device ID"
+msgstr "ID zariadenia"
+
+msgid "Enable adult channels"
+msgstr "Povoliť programy pre dospelých"
+
+msgid "Userbouquet"
+msgstr "Userbouquet"
+
+msgid "Automatically export channel list as userbouquet"
+msgstr "Automaticky exportovať zoznam staníc ako userbouquet"
+
+msgid "Generate XML EPG for epgimport plugin (if installed)"
+msgstr "Generovať XML EPG pre epgimport plugin (ak je nainštalovaný)"
+
+msgid "Directory for XML EPG data (need at least 20MB of free space)"
+msgstr "Adresár pre vygenerované XML EPG (aspoň 20MB volného miesta)"
+
+msgid "For how many days to generate XML EPG"
+msgstr "Pre koľko dní dopredu generovať EPG"
+
+msgid "Automatically download picons when exporting userbouquet"
+msgstr "Pri exporte userbouquetu automaticky stiahnuť picony"
+
+msgid "Player used for userbouquet"
+msgstr "Prehrávač použitý pre userbouquet"
+
+msgid "Default"
+msgstr "Predvolený"
+
+msgid "gstplayer"
+msgstr ""
+
+msgid "exteplayer3"
+msgstr ""
+
+msgid "DMM"
+msgstr ""
+
+msgid "DVB (OE>=2.5)"
+msgstr ""
+
+msgid "Advanced"
+msgstr "Pre pokročilých"
+
+msgid "Enable special section in main menu"
+msgstr "Povoliť špeciálnu sekciu v hlavnom menu"
+
+msgid "Use preprocessing for HLS streams"
+msgstr "Použiť predspracovanie HLS streamov"
+
+msgid "Use preprocessing for MPEG-DASH streams"
+msgstr "Použiť predspracovanie MPEG-DASH streamov"
+
+msgid "Maximum bandwidth of the offered stream"
+msgstr "Maximálny dátový tok ponúkaného streamu"
+
+msgid "Unlimited"
+msgstr "Bez obmedzenia"
+
+msgid "8 Mbit/s"
+msgstr ""
+
+msgid "6 Mbit/s"
+msgstr ""
+
+msgid "4 Mbit/s"
+msgstr ""
+
+msgid "3 Mbit/s"
+msgstr ""
+
+msgid "2 Mbit/s"
+msgstr ""

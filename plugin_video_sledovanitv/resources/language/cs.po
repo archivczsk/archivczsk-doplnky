@@ -1,0 +1,295 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_sledovanitv\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-03-09 17:52+0100\n"
+"PO-Revision-Date: 2023-03-09 18:11+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: plugin_video_sledovanitv/provider.py:20
+msgid "Main page"
+msgstr "Úvodní stránka"
+
+#: plugin_video_sledovanitv/provider.py:114
+msgid "Radios"
+msgstr "Radia"
+
+#: plugin_video_sledovanitv/provider.py:114
+msgid "Here you will find the list of radios available in your subscription"
+msgstr "Obsahuje seznam rádií dostupných s vašim předplatným"
+
+#: plugin_video_sledovanitv/provider.py:191
+msgid "Add recording"
+msgstr "Přidat nahrávku"
+
+#: plugin_video_sledovanitv/provider.py:200
+msgid "Recordings"
+msgstr "Nahrávky"
+
+#: plugin_video_sledovanitv/provider.py:200
+msgid "Here you will find recordings of your programs"
+msgstr "Tu najdete nahrávky vašich programů"
+
+#: plugin_video_sledovanitv/provider.py:201
+msgid "Monday"
+msgstr "Pondelí"
+
+#: plugin_video_sledovanitv/provider.py:201
+msgid "Tuesday"
+msgstr "Úterý"
+
+#: plugin_video_sledovanitv/provider.py:201
+msgid "Wednesday"
+msgstr "Středa"
+
+#: plugin_video_sledovanitv/provider.py:201
+msgid "Thursday"
+msgstr "Čtvrtek"
+
+#: plugin_video_sledovanitv/provider.py:201
+msgid "Friday"
+msgstr "Pátek"
+
+#: plugin_video_sledovanitv/provider.py:201
+msgid "Saturday"
+msgstr "Sobota"
+
+#: plugin_video_sledovanitv/provider.py:201
+msgid "Sunday"
+msgstr "Neděle"
+
+#: plugin_video_sledovanitv/provider.py:206
+msgid "Plan recording"
+msgstr "Naplánovat nahrávání"
+
+#: plugin_video_sledovanitv/provider.py:207
+msgid "Futures - planed"
+msgstr "Budoucí - plánováne"
+
+#: plugin_video_sledovanitv/provider.py:208
+msgid "Existing"
+msgstr "Existujíci"
+
+#: plugin_video_sledovanitv/provider.py:235
+msgid "expires"
+msgstr "expiruje"
+
+#: plugin_video_sledovanitv/provider.py:247
+msgid "Delete recording"
+msgstr "Smazat nahrávku"
+
+#: plugin_video_sledovanitv/provider.py:288
+msgid "Today"
+msgstr "Dnes"
+
+#: plugin_video_sledovanitv/provider.py:291
+msgid "Tomorrow"
+msgstr "Zítra"
+
+#: plugin_video_sledovanitv/provider.py:327
+#: plugin_video_sledovanitv/provider.py:508
+msgid "Record the event"
+msgstr "Nahrát pořad"
+
+#: plugin_video_sledovanitv/provider.py:336
+msgid "Special section"
+msgstr "Speciální sekce"
+
+#: plugin_video_sledovanitv/provider.py:347
+msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
+msgstr "Tu si můžete zobrazit a případně vymazat/odregistrovat zbytečná zařízení, aby jste se mohli znova jinde přihlásit."
+
+#: plugin_video_sledovanitv/provider.py:348
+msgid "Registered devices"
+msgstr "Zaregistrovaná zařízení"
+
+#: plugin_video_sledovanitv/provider.py:355
+msgid "In menu you can remove device using Remove device!"
+msgstr "V menu můžete zařízení vymazat pomocí Smazat zařízení!"
+
+#: plugin_video_sledovanitv/provider.py:361
+msgid "Remove device!"
+msgstr "Smazat zařízení!"
+
+#: plugin_video_sledovanitv/provider.py:370
+msgid "This operation is not supported yet"
+msgstr "Tato operace zatím není podporováná"
+
+#: plugin_video_sledovanitv/provider.py:389
+msgid "Mo"
+msgstr "Po"
+
+#: plugin_video_sledovanitv/provider.py:389
+msgid "Tu"
+msgstr "Út"
+
+#: plugin_video_sledovanitv/provider.py:389
+msgid "We"
+msgstr "St"
+
+#: plugin_video_sledovanitv/provider.py:389
+msgid "Th"
+msgstr "Čt"
+
+#: plugin_video_sledovanitv/provider.py:389
+msgid "Fr"
+msgstr "Pá"
+
+#: plugin_video_sledovanitv/provider.py:389
+msgid "Sa"
+msgstr "So"
+
+#: plugin_video_sledovanitv/provider.py:389
+msgid "Su"
+msgstr "Ne"
+
+#: plugin_video_sledovanitv/provider.py:415
+#: plugin_video_sledovanitv/sledovanitv.py:203
+#: plugin_video_sledovanitv/sledovanitv.py:219
+#: plugin_video_sledovanitv/sledovanitv.py:234
+#: plugin_video_sledovanitv/sledovanitv.py:239
+msgid "Login failed"
+msgstr "Přihlášení selhalo"
+
+#: plugin_video_sledovanitv/provider.py:483
+msgid "Recording added"
+msgstr "Nahrávka přidána"
+
+#: plugin_video_sledovanitv/provider.py:483
+msgid "There was an error by adding recording"
+msgstr "Při přidávaní nahrávky nastala chyba"
+
+#: plugin_video_sledovanitv/sledovanitv.py:138
+msgid "Unexpected return code from server"
+msgstr "Neočekávaný návratový kód ze serveru"
+
+#: plugin_video_sledovanitv/sledovanitv.py:180
+msgid "Wrong PIN code"
+msgstr "Špatný PIN kód"
+
+#: plugin_video_sledovanitv/sledovanitv.py:255
+msgid "Error by loading list of devices"
+msgstr "Chyba při načítání seznamu zařízení"
+
+#: plugin_video_sledovanitv/sledovanitv.py:299
+#: plugin_video_sledovanitv/sledovanitv.py:428
+msgid "Error by loading channel list"
+msgstr "Chyba při načítání seznamu kanálů"
+
+#: plugin_video_sledovanitv/sledovanitv.py:374
+#: plugin_video_sledovanitv/sledovanitv.py:407
+msgid "Error by loading EPG"
+msgstr "Chyba při načítání EPG"
+
+#: plugin_video_sledovanitv/sledovanitv.py:458
+msgid "Error by loading recordings"
+msgstr "Chyba načítání nahrávek"
+
+#: plugin_video_sledovanitv/sledovanitv.py:474
+msgid "Error by deleting recording"
+msgstr "Chyba při mazání nahrávky"
+
+#: plugin_video_sledovanitv/sledovanitv.py:488
+msgid "Error by setting recording"
+msgstr "Chyba při nastavování nahrávky"
+
+#: plugin_video_sledovanitv/sledovanitv.py:499
+msgid "Error by loading video. If it's red, the check PIN code."
+msgstr "Chyba při načítaní videa. Pokud je červené, zkontrolujte PIN kód"
+
+#: plugin_video_sledovanitv/sledovanitv.py:503
+msgid "Error by loading video"
+msgstr "Chyba při načítání videa"
+
+#: plugin_video_sledovanitv/sledovanitv.py:550
+msgid "Error by loading event"
+msgstr "Chyba načítání události"
+
+#: plugin_video_sledovanitv/sledovanitv.py:566
+msgid "Error by loading recording"
+msgstr "Chyba při načítaní nahrávky"
+
+msgid "Login name"
+msgstr "Přihlašovací jméno"
+
+msgid "Login password"
+msgstr "Přihlašovací heslo"
+
+msgid "PIN"
+msgstr "PIN"
+
+msgid "SerialId"
+msgstr ""
+
+msgid "Maximum bandwidth of the offered stream"
+msgstr "Maximální datový tok nabízeného streamu"
+
+msgid "Unlimited"
+msgstr "Bez omezení"
+
+msgid "8 Mbit/s"
+msgstr ""
+
+msgid "6 Mbit/s"
+msgstr ""
+
+msgid "4 Mbit/s"
+msgstr ""
+
+msgid "3 Mbit/s"
+msgstr ""
+
+msgid "2 Mbit/s"
+msgstr ""
+
+msgid "Enable adult channels"
+msgstr "Povolit programy pro dospělé"
+
+msgid "Enable special section in main menu"
+msgstr "Povolit speciální sekci v hlavním menu"
+
+msgid "Userbouquet"
+msgstr "Userbouquet"
+
+msgid "Automatically export channel list as userbouquet"
+msgstr "Automaticky exportovat seznam stanic jako userbouquet"
+
+msgid "Generate XML EPG for epgimport plugin (if installed)"
+msgstr "Generovat XML EPG pro epgimport plugin (pokud je nainstalován)"
+
+msgid "Directory for XML EPG data (need at least 20MB of free space)"
+msgstr "Adresář pro XML EPG data (potřebujete alespoň 20MB volného místa)"
+
+msgid "For how many days to generate XML EPG"
+msgstr "Pro kolik dni dopředu generovat XML EPG"
+
+msgid "Automatically download picons when exporting userbouquet"
+msgstr "Při exportování userbouquetu automaticky stáhnout picony"
+
+msgid "Player used for userbouquet"
+msgstr "Přehrávač použitý pro userbouquet"
+
+msgid "Default"
+msgstr "Předvolený"
+
+msgid "gstplayer"
+msgstr ""
+
+msgid "exteplayer3"
+msgstr ""
+
+msgid "DMM"
+msgstr ""
+
+msgid "DVB (OE>=2.5)"
+msgstr ""

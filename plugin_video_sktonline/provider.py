@@ -59,14 +59,14 @@ class SkTContentProvider(CommonContentProvider):
 		self.call_api('login', data=payload, raw_response=True)
 		# check if login passed
 		if not self.check_login():
-			self.login_error("Prihlásenie zlyhalo - skontrolujte prihlasovacie meno a heslo")
+			self.login_error(self._("Login failed - check login name and password"))
 			return False
 
 		# get AVS cookie and store it
 		data['session'] = self.req_session.cookies.get('AVS')
 
 		if not data['session']:
-			self.login_error("Nepodarilo sa vytvoriť prihlasovaciu session. Možno nastala zmena spôsobu prihásenia.")
+			self.login_error(self._("Failed to create login session. Maybe login page has changed."))
 			return False
 
 		data['checksum'] = cks
@@ -105,7 +105,7 @@ class SkTContentProvider(CommonContentProvider):
 		if response.status_code == 200:
 			return response.text
 		else:
-			raise AddonErrorException('HTTP reponse code: %d' % response.status_code)
+			raise AddonErrorException(self._('HTTP reponse code') + ': %d' % response.status_code)
 
 	def search(self, keyword, search_id):
 		return self.list_videos('search/videos?t=a&o=mr&type=public&search_query=' + quote(keyword))
@@ -139,7 +139,7 @@ class SkTContentProvider(CommonContentProvider):
 			links.append((link, res,))
 
 		if len(links) == 0 and self.free_login:
-			self.show_info("Pre spustenie prehrávania je nutné v nastaveniach zadať prihlasovacie meno a heslo")
+			self.show_info(self._("For starting playback you need to set login name and password in addon's settings"))
 			return
 
 		settings = {

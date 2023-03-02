@@ -1,3 +1,6 @@
+1.1.2 - 02.03.2023
+	- pridanie EN/CZ/SK lokalizácie
+
 1.1.1 - 21.02.2023
     - pridanie timeoutov a spoločnej session pre API volania
 

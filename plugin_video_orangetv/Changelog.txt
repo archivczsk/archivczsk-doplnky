@@ -1,3 +1,5 @@
+2023-03-09
+- pridanie en/cs/sk lokalizácie
 2023-02-21
 * pridanie timeoutov a spoločnej session pre API volania
 2023-01-27

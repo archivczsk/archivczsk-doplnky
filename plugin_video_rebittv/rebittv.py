@@ -17,7 +17,7 @@ def _log_dummy(message):
 	pass
 
 class RebitTV:
-	def __init__(self, username, password, device_name, data_dir=None, log_function=None ):
+	def __init__(self, username, password, device_name, data_dir=None, log_function=None, tr_function=None):
 		self.username = username
 		self.password = password
 		self.device_name = device_name
@@ -28,6 +28,7 @@ class RebitTV:
 		self.client_id = None
 		self.data_dir = data_dir
 		self.log_function = log_function if log_function else _log_dummy
+		self._ = tr_function if tr_function else lambda s: s
 		self.api_session = requests.Session()
 		self.api_session.request = functools.partial(self.api_session.request, timeout=10) # set timeout for all session calls
 		
@@ -183,7 +184,7 @@ class RebitTV:
 				try:
 					err_msg = resp.json()['message']
 				except:
-					err_msg = "Neočekávaný návratový kód zo servera: %d" % resp.status_code
+					err_msg = self._('Unexpected return code from server') + ': %d' % resp.status_code
 				
 		except Exception as e:
 			self.log_function(traceback.format_exc())
@@ -232,7 +233,7 @@ class RebitTV:
 			self.access_token_life = 0
 			self.user_id = None
 			self.save_login_data()
-			self.showLoginError("Problém pri prihlásení: %s" % data.get('message', ''))
+			self.showLoginError(self._("Login failed") + ": %s" % data.get('message', ''))
 			return False
 	
 		data = data['data']
@@ -260,7 +261,7 @@ class RebitTV:
 			self.access_token_life = 0
 			self.user_id = None
 			self.save_login_data()
-			self.showLoginError("Problém pri obnove prihlasovacieho tokenu: %s" % data.get('message', ''))
+			self.showLoginError(self._("Error by login token refresh") + ": %s" % data.get('message', ''))
 			return False
 	
 		data = data['data']
@@ -303,7 +304,7 @@ class RebitTV:
 		data = self.call_api('television/client', data=data)
 		
 		if 'data' not in data:
-			self.showLoginError("Problém pri párovaní zariadenia: %s" % data.get('message', ''))
+			self.showLoginError(self._("Error by device pairing") + ": %s" % data.get('message', ''))
 			return False
 	
 		data = data['data']
@@ -364,7 +365,7 @@ class RebitTV:
 		data = self.call_api('television/channels/' + channel_id + '/programmes', params=params )
 		
 		if 'data' not in data:
-			self.showError("Problém s načítaním EPG: %s" % data.get('message',''))
+			self.showError(self._("Error by loading EPG") + ": %s" % data.get('message', ''))
 			return []
 
 		return sorted(data['data'], key=lambda x: x['start'])
@@ -375,7 +376,7 @@ class RebitTV:
 		data = self.call_api('television/channels')
 
 		if 'data' not in data:
-			self.showError("Problém s načítaním zoznamu programov: %s" % data.get('message', ''))
+			self.showError(self._("Error by loading channel list") + ": %s" % data.get('message', ''))
 			return []
 
 		channels = []
@@ -401,11 +402,11 @@ class RebitTV:
 			req = self.api_session.get(url)
 		except:
 			self.log_function("%s" % traceback.format_exc())
-			self.showError("Nastal problém pri načítení videa.")
+			self.showError(self._("Error by loading video"))
 			return None
 		
 		if req.status_code != 200:
-			self.showError("Nastal problém pri načítení videa: http response code: %d" % req.status_code)
+			self.showError(self._("Error by loading video. HTTP response code") + ": %d" % req.status_code)
 			return None
 
 		res = []
@@ -446,13 +447,13 @@ class RebitTV:
 		data = self.call_api(req_url, pin_header=True)
 		
 		if 'data' not in data:
-			self.showError("Nastal problém so získaním adresy streamu: %s" % data.get('message',''))
+			self.showError(self._("Error by getting stream address") + ": %s" % data.get('message', ''))
 			return None
 		
 		data = data['data']
 		
 		if 'protocol' in data and data['protocol'] != 'http-live-stream':
-			self.showError("Nepodporovaný typ stream protokolu: %s" % data['protocol'])
+			self.showError(self._("Unsupported stream type") + ": %s" % data['protocol'])
 			return None
 		
 		if 'quality' in data and data['quality'] == 'adaptive':

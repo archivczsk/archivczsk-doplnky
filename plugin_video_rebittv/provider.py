@@ -118,7 +118,7 @@ class RebitTVModuleArchive(CPModuleArchive):
 class RebitTVModuleExtra(CPModuleTemplate):
 
 	def __init__(self, content_provider):
-		CPModuleTemplate.__init__(self, content_provider, "Špeciálna sekcia")
+		CPModuleTemplate.__init__(self, content_provider, content_provider._("Special section"))
 
 	# #################################################################################################
 
@@ -129,26 +129,26 @@ class RebitTVModuleExtra(CPModuleTemplate):
 	# #################################################################################################
 
 	def root(self, section=None):
-		info_labels = {'plot': "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočná zariadenia, aby ste sa mohli znova inde prihlásiť." }
-		self.cp.add_dir('Zaregistrované zariadenia', info_labels=info_labels, cmd=self.list_devices)
+		info_labels = {'plot': self._("Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one.") }
+		self.cp.add_dir(self._('Registered devices'), info_labels=info_labels, cmd=self.list_devices)
 
 	# #################################################################################################
 
 	def list_devices(self):
 		for pdev in self.cp.rebittv.get_devices():
 			dev_added = self.cp.timestamp_to_str(int(pdev["created_at"]), format='%d.%m.%Y %H:%M')
-			title = 'Model: %s, Typ: %s, Pridané: %s' % (pdev['title'], pdev["type"], dev_added)
-			info_labels = { 'plot': 'V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!'}
+			title = 'Model: %s, Typ: %s, %s: %s' % (pdev['title'], pdev["type"], self._('Added'), dev_added)
+			info_labels = { 'plot': self._('In menu you can remove device using Remove device!')}
 
 			menu = {}
-			self.cp.add_menu_item(menu, 'Zmazať zariadenie!', self.delete_device, device_id=pdev["id"])
+			self.cp.add_menu_item(menu, self._('Remove device!'), self.delete_device, device_id=pdev["id"])
 			self.cp.add_video(title, info_labels=info_labels, menu=menu, download=False)
 
 	# #################################################################################################
 
 	def delete_device(self, device_id):
 		self.cp.rebittv.device_remove(device_id)
-		self.cp.add_video(_C('red', 'Zariadenie %s bolo vymazané!' % device_id), download=False)
+		self.cp.add_video(_C('red', self._('Device {device} was removed!').format(device=device_id)), download=False)
 
 # #################################################################################################
 
@@ -179,7 +179,7 @@ class RebitTVContentProvider(ModuleContentProvider):
 	def login(self, silent):
 		self.rebittv = None
 
-		rebittv = RebitTV(self.get_setting('username'), self.get_setting('password'), self.get_setting('device_name'), self.data_dir, self.log_info)
+		rebittv = RebitTV(self.get_setting('username'), self.get_setting('password'), self.get_setting('device_name'), self.data_dir, self.log_info, self._)
 		self.rebittv = rebittv
 
 		return True

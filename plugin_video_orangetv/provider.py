@@ -119,7 +119,7 @@ class OrangeTVModuleArchive(CPModuleArchive):
 class OrangeTVModuleExtra(CPModuleTemplate):
 
 	def __init__(self, content_provider):
-		CPModuleTemplate.__init__(self, content_provider, "Špeciálna sekcia")
+		CPModuleTemplate.__init__(self, content_provider, content_provider._("Special section"))
 
 	# #################################################################################################
 
@@ -130,8 +130,8 @@ class OrangeTVModuleExtra(CPModuleTemplate):
 	# #################################################################################################
 
 	def root(self, section=None):
-		info_labels = {'plot': "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočná zariadenia, aby ste sa mohli znova inde prihlásiť." }
-		self.cp.add_dir('Zaregistrované zariadenia', info_labels=info_labels, cmd=self.list_devices)
+		info_labels = {'plot': self._("Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one.") }
+		self.cp.add_dir(self._('Registered devices'), info_labels=info_labels, cmd=self.list_devices)
 
 	# #################################################################################################
 
@@ -140,17 +140,17 @@ class OrangeTVModuleExtra(CPModuleTemplate):
 
 		for pdev in self.cp.orangetv.devices:
 			title = pdev["deviceName"] + " - " + self.cp.timestamp_to_str(pdev["lastLoginTimestamp"] / 1000, format='%d.%m.%Y %H:%M') + " - " + pdev["lastLoginIpAddress"] + " - " + pdev["deviceId"]
-			info_labels = { 'plot': 'V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!'}
+			info_labels = { 'plot': self._('In menu you can remove device using Remove device!')}
 
 			menu = {}
-			self.cp.add_menu_item(menu, 'Zmazať zariadenie!', self.delete_device, device_id=pdev["deviceId"])
+			self.cp.add_menu_item(menu, self._('Remove device!'), self.delete_device, device_id=pdev["deviceId"])
 			self.cp.add_video(title, info_labels=info_labels, menu=menu, download=False)
 
 	# #################################################################################################
 	
 	def delete_device(self, device_id):
 		self.cp.orangetv.device_remove(device_id)
-		self.cp.add_video(_C('red', 'Zariadenie %s bolo vymazané!' % device_id), download=False)
+		self.cp.add_video(_C('red', self._('Device {device} was removed!').format(device=device_id)), download=False)
 
 # #################################################################################################
 
@@ -185,7 +185,7 @@ class OrangeTVContentProvider(ModuleContentProvider):
 		self.orangetv = None
 		self.channels = []
 
-		orangetv = OrangeTV(self.get_setting('username'), self.get_setting('password'), self.get_setting('deviceid'), self.data_dir, self.log_info)
+		orangetv = OrangeTV(self.get_setting('username'), self.get_setting('password'), self.get_setting('deviceid'), self.data_dir, self.log_info, self._)
 		orangetv.refresh_configuration()
 
 		self.orangetv = orangetv

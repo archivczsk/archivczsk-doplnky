@@ -38,13 +38,14 @@ def _log_dummy(message):
 	pass
 
 class O2TV:
-	def __init__(self, username, password, deviceid, devicename="tvbox", data_dir=None, log_function=None ):
+	def __init__(self, username, password, deviceid, devicename="tvbox", data_dir=None, log_function=None, tr_function=None):
 		self.username = username
 		self.password = password
 		self.deviceid = deviceid
 		self.devicename = devicename
 		self.data_dir = data_dir
 		self.log_function = log_function if log_function else _log_dummy
+		self._ = tr_function if tr_function else lambda s: s
 		self.devices = None
 		self.access_token = None
 		self.access_token_life = 0
@@ -183,7 +184,7 @@ class O2TV:
 				except:
 					return {}
 			else:
-				err_msg = "Neočekávaný návratový kód ze serveru: %d" % resp.status_code
+				err_msg = self._("Unexpected return code from server") + ": %d" % resp.status_code
 		except Exception as e:
 			err_msg = str(e)
 		
@@ -266,7 +267,7 @@ class O2TV:
 					self.tariff = data["billingParams"]["tariff"]
 					self.devices = data["pairedDevices"]
 				else:
-					raise Exception( "Získávaní konfigurace selhalo" )
+					raise Exception(self._("Failed to load configuration from server"))
 		except Exception as e:
 			self.showLoginError(str(e))
 			

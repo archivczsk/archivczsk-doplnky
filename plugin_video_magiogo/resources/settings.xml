@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-	<setting label="Región" id="region" type="labelenum" values="SK|CZ" default="SK" />
-	<setting label="Prihlasovacie meno" id="username" type="text" default="" />
-	<setting label="Prihlasovacie heslo" id="password" type="text" default="" option="true" />
-	<setting label="Identifikácia zariadenia" id="devicetype" type="enum" lvalues="Android Mobil|iPad|KSTB6077 STB|Android TV|Skyworth STB|Linux Web Browser|Win Web Browser" default="1" />
-	<setting label="ID zariadenia" id="deviceid" type="text" default="" visible="false" />
-	<setting label="Povoliť programy pre dospelých" id="enable_adult" type="bool" default="true" />
+	<setting label="Region" id="region" type="labelenum" values="SK|CZ" default="SK" />
+	<setting label="Login name" id="username" type="text" default="" />
+	<setting label="Login password" id="password" type="text" default="" option="true" />
+	<setting label="Device identification" id="devicetype" type="keyenum" values="0;Android Mobil|1;iPad|2;KSTB6077 STB|3;Android TV|4;Skyworth STB|5;Linux Web Browser|6;Win Web Browser" default="1" />
+	<setting label="Device ID" id="deviceid" type="text" default="" visible="false" />
+	<setting label="Enable adult channels" id="enable_adult" type="bool" default="true" />
 	<category label="Userbouquet">
-		<setting label="Automaticky exportovať zoznam staníc ako userbouquet" id="enable_userbouquet" type="bool" default="false" />
-		<setting label="Generovať XML EPG pre epgimport plugin (ak je nainštalovaný)" id="enable_xmlepg" type="bool" default="false" />
-		<setting label="Adresár pre vygenerované XML EPG (aspoň 20MB voľného miesta)" id="xmlepg_dir" type="text" default="/media/hdd" />
-		<setting label="Pre koľko dní dopredu generovať XML EPG" id="xmlepg_days" type="enum" lvalues="1|2|3|4|5|6|7" default="4"/>
-		<setting label="Pri exportovaní userbouquetu automaticky stiahnuť picony" id="enable_picons" type="bool" default="false" />
-		<setting label="Prehrávač použitý pre userbouquet" id="player_name" type="enum" lvalues="Predvolený|gstplayer|exteplayer3|DMM|DVB (OE>=2.5)" default="0"/>
+		<setting label="Automatically export channel list as userbouquet" id="enable_userbouquet" type="bool" default="false" />
+		<setting label="Generate XML EPG for epgimport plugin (if installed)" id="enable_xmlepg" type="bool" default="false" />
+		<setting label="Directory for XML EPG data (need at least 20MB of free space)" id="xmlepg_dir" type="text" default="/media/hdd" />
+		<setting label="For how many days to generate XML EPG" id="xmlepg_days" type="enum" lvalues="1|2|3|4|5|6|7" default="4"/>
+		<setting label="Automatically download picons when exporting userbouquet" id="enable_picons" type="bool" default="false" />
+		<setting label="Player used for userbouquet" id="player_name" type="enum" lvalues="Default|gstplayer|exteplayer3|DMM|DVB (OE>=2.5)" default="0"/>
 	</category>
-	<category label="Pre pokročilých">
-		<setting label="Povoliť špeciálnu sekciu hlavnej ponuke" id="enable_extra" type="bool" default="false" />
-		<setting label="Použiť preprocessing pre HLS streamy" id="preprocess_hls" type="bool" default="false" />
-		<setting label="Použiť preprocessing pre MPEG-DASH streamy" id="preprocess_mpd" type="bool" default="true" />
-		<setting label="Maximálny dátový tok ponúkaného streamu" id="max_bitrate" type="keyenum" values="0;Bez obmedzenia|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
+	<category label="Advanced">
+		<setting label="Enable special section in main menu" id="enable_extra" type="bool" default="false" />
+		<setting label="Use preprocessing for HLS streams" id="preprocess_hls" type="bool" default="false" />
+		<setting label="Use preprocessing for MPEG-DASH streams" id="preprocess_mpd" type="bool" default="true" />
+		<setting label="Maximum bandwidth of the offered stream" id="max_bitrate" type="keyenum" values="0;Unlimited|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
 	</category>
 </settings>

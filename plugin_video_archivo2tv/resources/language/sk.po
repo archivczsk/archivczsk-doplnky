@@ -1,0 +1,238 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_archivo2tv\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-03-09 17:42+0100\n"
+"PO-Revision-Date: 2023-03-09 17:44+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: sk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: plugin_video_archivo2tv/o2tv.py:187
+msgid "Unexpected return code from server"
+msgstr "Neočakávaný návratový kód zo servera"
+
+#: plugin_video_archivo2tv/o2tv.py:270
+msgid "Failed to load configuration from server"
+msgstr "Získavanie konfigurácie zlyhalo"
+
+#: plugin_video_archivo2tv/provider.py:23
+msgid "All channels"
+msgstr "Všetky kanály"
+
+#: plugin_video_archivo2tv/provider.py:24
+msgid "Favourites"
+msgstr "Favoritné"
+
+#: plugin_video_archivo2tv/provider.py:25
+msgid "My channles lists"
+msgstr "Moje zoznamy kanálov"
+
+#: plugin_video_archivo2tv/provider.py:93
+msgid "Remove from favourites"
+msgstr "Odstrániť z favoritných"
+
+#: plugin_video_archivo2tv/provider.py:95
+msgid "Add to favourites"
+msgstr "Pridať do favoritných"
+
+#: plugin_video_archivo2tv/provider.py:117
+msgid "Added to favourites"
+msgstr "Pridané do favoriných"
+
+#: plugin_video_archivo2tv/provider.py:119
+msgid "Channel is already in favourites"
+msgstr "Kanál už je vo favoritných"
+
+#: plugin_video_archivo2tv/provider.py:164
+#: plugin_video_archivo2tv/provider.py:298
+#: plugin_video_archivo2tv/provider.py:500
+msgid "Record the event"
+msgstr "Nahrať program"
+
+#: plugin_video_archivo2tv/provider.py:175
+msgid "Recordings"
+msgstr "Nahrávky"
+
+#: plugin_video_archivo2tv/provider.py:175
+msgid "Here you will find recordings of your programs"
+msgstr "Tu nájdete nahrávky vašich programov"
+
+#: plugin_video_archivo2tv/provider.py:180
+msgid "Plan recording"
+msgstr "Naplánovať nahrávanie"
+
+#: plugin_video_archivo2tv/provider.py:181
+msgid "Futures - planed"
+msgstr "Budoúce - plánovane"
+
+#: plugin_video_archivo2tv/provider.py:182
+msgid "Existing"
+msgstr "Existujúce"
+
+#: plugin_video_archivo2tv/provider.py:234
+msgid "Delete recording"
+msgstr "Zmazať nahrávku"
+
+#: plugin_video_archivo2tv/provider.py:307
+msgid "Special section"
+msgstr "Špeciálna sekcia"
+
+#: plugin_video_archivo2tv/provider.py:318
+msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
+msgstr "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočné zariadenia, aby ste se mohli opäť prihlásiť inde."
+
+#: plugin_video_archivo2tv/provider.py:319
+msgid "Registered devices"
+msgstr "Zaregistrované zariadenia"
+
+#: plugin_video_archivo2tv/provider.py:328
+msgid "In menu you can remove device using Remove device!"
+msgstr "V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!"
+
+#: plugin_video_archivo2tv/provider.py:331
+msgid "Remove device!"
+msgstr "Vymazať zariadenie!"
+
+#: plugin_video_archivo2tv/provider.py:338
+#, python-brace-format
+msgid "Device {device} was removed!"
+msgstr "Zariadenie {device} bolo vymazané!"
+
+#: plugin_video_archivo2tv/provider.py:357
+msgid "Mo"
+msgstr "Po"
+
+#: plugin_video_archivo2tv/provider.py:357
+msgid "Tu"
+msgstr "Ut"
+
+#: plugin_video_archivo2tv/provider.py:357
+msgid "We"
+msgstr "St"
+
+#: plugin_video_archivo2tv/provider.py:357
+msgid "Th"
+msgstr "Št"
+
+#: plugin_video_archivo2tv/provider.py:357
+msgid "Fr"
+msgstr "Pi"
+
+#: plugin_video_archivo2tv/provider.py:357
+msgid "Sa"
+msgstr "So"
+
+#: plugin_video_archivo2tv/provider.py:357
+msgid "Su"
+msgstr "Ne"
+
+#: plugin_video_archivo2tv/provider.py:365
+msgid "Search"
+msgstr "Vyhľadať"
+
+#: plugin_video_archivo2tv/provider.py:472
+msgid "Recording added"
+msgstr "Nahrávka pridána"
+
+#: plugin_video_archivo2tv/provider.py:472
+msgid "There was an error by adding recording"
+msgstr "Pri pridávaní nahrávky nastala chyba"
+
+msgid "Login name"
+msgstr "Prihlasovacie meno"
+
+msgid "Login password"
+msgstr "Prihlasovacie heslo"
+
+msgid "Device ID"
+msgstr "ID zariadenia"
+
+msgid "Device name"
+msgstr "Meno zariadenia"
+
+msgid "Maximum bandwidth of the offered stream"
+msgstr "Maximálny dátový tok ponúkaného streamu"
+
+msgid "Unlimited"
+msgstr "Bez obmedzenia"
+
+msgid "8 Mbit/s"
+msgstr ""
+
+msgid "6 Mbit/s"
+msgstr ""
+
+msgid "4 Mbit/s"
+msgstr ""
+
+msgid "3 Mbit/s"
+msgstr ""
+
+msgid "2 Mbit/s"
+msgstr ""
+
+msgid "Enable adult channels"
+msgstr "Povoliť programy pre dospelých"
+
+msgid "Show EPG (slows down loading of Live TV)"
+msgstr "Ukázať EPG (spomalí načítanie Live TV)"
+
+msgid "How many hours cache EPG data"
+msgstr "Koľko hodín EPG ukladať do cache"
+
+msgid "How many minutes to play after event ends"
+msgstr "Koľko minút prehrávať po konci programu"
+
+msgid "Number of search history items"
+msgstr "Počet položiek histórie vyhľadávania"
+
+msgid "Enable special section in main menu"
+msgstr "Povoliť špeciálnu sekciu v hlavnom menu"
+
+msgid "Userbouquet"
+msgstr "Userbouquet"
+
+msgid "Automatically export channel list as userbouquet"
+msgstr "Automaticky exportovať zoznam staníc ako userbouquet"
+
+msgid "Generate XML EPG for epgimport plugin (if installed)"
+msgstr "Generovať XML EPG pre epgimport plugin (ak je nainštalovaný)"
+
+msgid "Directory for XML EPG data (need at least 20MB of free space)"
+msgstr "Adresár pre XML EPG dáta (aspoň 20MB voľného miesta)"
+
+msgid "For how many days to generate XML EPG"
+msgstr "Pre koľko dní dopredu generovať XML EPG"
+
+msgid "Automatically download picons when exporting userbouquet"
+msgstr "Pri exportovaní userbouquetu automaticky stiahnuť picony"
+
+msgid "Player used for userbouquet"
+msgstr "Prehrávač použitý pre userbouquet"
+
+msgid "Default"
+msgstr "Predvolený"
+
+msgid "gstplayer"
+msgstr ""
+
+msgid "exteplayer3"
+msgstr ""
+
+msgid "DMM"
+msgstr ""
+
+msgid "DVB (OE>=2.5)"
+msgstr ""
+
+#~ msgid "W"
+#~ msgstr "St"

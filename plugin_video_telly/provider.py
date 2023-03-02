@@ -144,17 +144,17 @@ class TellyContentProvider(ModuleContentProvider):
 		self.channels = []
 		self.channels_by_id = {}
 
-		telly = Telly(self.data_dir, self.log_info)
+		telly = Telly(self.data_dir, self.log_info, self._)
 
 		if telly.token_is_valid() == False:
 			if silent:
 				return False
 			else:
 				# ask user to enter pairing code
-				code = self.get_text_input('Zadajte párovací kód zo stránky https://moje.telly.cz')
+				code = self.get_text_input(self._('Enter pairing code from site') + ' https://moje.telly.cz', input_type='number')
 				if code:
 					if not telly.get_device_token_by_code(code):
-						self.login_error("Párovanie zariadenia s vašim Telly účtom zlyhalo.\nSkontrolujte správnosť párovacieho kódu a skúste to znava.")
+						self.login_error(self._('Device pairing with your Telly account failed.\nCheck pairing code validity and try again.'))
 						return False
 				else:
 					return False
