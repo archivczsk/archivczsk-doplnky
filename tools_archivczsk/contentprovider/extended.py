@@ -7,9 +7,10 @@ from .provider import CommonContentProvider
 from ..string_utils import _I, _B, _C
 
 try:
-	from .archivczsk_provider import _tr
+	from .archivczsk_provider import _
 except:
-	def _tr(string_id):
+
+	def _(string_id):
 		return string_id
 
 # #################################################################################################
@@ -34,6 +35,12 @@ class CPModuleTemplate():
 		self.module_plot = plot
 		self.module_img = img
 
+	def _(self, s):
+		'''
+		Calls translate function from content provider
+		'''
+		return self.cp._(s)
+
 	def add(self):
 		'''
 		This is called by ModuleContentProvider to add this module menu.
@@ -41,9 +48,9 @@ class CPModuleTemplate():
 		'''
 		info_labels = {}
 		if self.module_plot:
-			info_labels['plot'] = self.module_plot
+			info_labels['plot'] = self._(self.module_plot)
 
-		self.cp.add_dir(self.module_name, img=self.module_img, info_labels=info_labels, cmd=self.root)
+		self.cp.add_dir(self._(self.module_name), img=self.module_img, info_labels=info_labels, cmd=self.root)
 
 	def root(self):
 		''' You need to implement this to create module's root menu'''
@@ -58,9 +65,9 @@ class CPModuleLiveTV(CPModuleTemplate):
 
 	def __init__(self, content_provider, name=None, categories=False, plot=None, img=None):
 		if not plot:
-			plot = _tr('Here you will find list of Live TV channels')
+			plot = _('Here you will find list of Live TV channels')
 
-		CPModuleTemplate.__init__(self, content_provider, name if name else _tr('Live TV'), plot, img)
+		CPModuleTemplate.__init__(self, content_provider, name if name else _('Live TV'), plot, img)
 		self.categories = categories
 
 	# #################################################################################################
@@ -104,12 +111,12 @@ class CPModuleArchive(CPModuleTemplate):
 
 	def __init__(self, content_provider, name=None, plot=None, img=None):
 		if not plot:
-			plot = _tr('Here you will find your channels archive')
+			plot = _('Here you will find your channels archive')
 
-		CPModuleTemplate.__init__(self, content_provider, name if name else _tr("Archive"), plot, img)
-		self.days_of_week = (_tr('Monday'), _tr('Tuesday'), _tr('Wednesday'), _tr('Thursday'), 	_tr('Friday'), _tr('Saturday'), _tr('Sunday'))
-		self.day_str = (_tr('day'), _tr('days2-4'), _tr('days5+'))
-		self.hour_str = (_tr('hour'), _tr('hours2-4'), _tr('hours5+'))
+		CPModuleTemplate.__init__(self, content_provider, name if name else _("Archive"), plot, img)
+		self.days_of_week = (_('Monday'), _('Tuesday'), _('Wednesday'), _('Thursday'), 	_('Friday'), _('Saturday'), _('Sunday'))
+		self.day_str = (_('day'), _('days2-4'), _('days5+'))
+		self.hour_str = (_('hour'), _('hours2-4'), _('hours5+'))
 
 	# #################################################################################################
 
@@ -155,9 +162,9 @@ class CPModuleArchive(CPModuleTemplate):
 
 		for i in range(int(archive_hours // 24)):
 			if i == 0:
-				day_name = _tr("Today")
+				day_name = _("Today")
 			elif i == 1:
-				day_name = _tr("Yesterday")
+				day_name = _("Yesterday")
 			else:
 				day = date.today() - timedelta(days=i)
 				day_name = self.days_of_week[day.weekday()] + " " + day.strftime("%d.%m.%Y")
@@ -209,7 +216,7 @@ class CPModuleSearch(CPModuleTemplate):
 	'''
 
 	def __init__(self, content_provider, name=None, search_id='', plot=None, img=None):
-		CPModuleTemplate.__init__(self, content_provider, name if name else _tr("Search"), plot, img)
+		CPModuleTemplate.__init__(self, content_provider, name if name else _("Search"), plot, img)
 		self.search_id = search_id
 
 	# #################################################################################################
@@ -221,9 +228,9 @@ class CPModuleSearch(CPModuleTemplate):
 		'''
 		info_labels = {}
 		if self.module_plot:
-			info_labels['plot'] = self.module_plot
+			info_labels['plot'] = self._(self.module_plot)
 
-		self.cp.add_search_dir(self.module_name, search_id=self.search_id, img=self.module_img, info_labels=info_labels)
+		self.cp.add_search_dir(self._(self.module_name), search_id=self.search_id, img=self.module_img, info_labels=info_labels)
 
 	# #################################################################################################
 
