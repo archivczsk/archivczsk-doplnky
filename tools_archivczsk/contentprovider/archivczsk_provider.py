@@ -487,8 +487,17 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 
-	def get_text_input(self, title, text=""):
-		return client.getTextInput(self.session, title, text)
+	def get_text_input(self, title, text="", input_type="text"):
+		'''
+		input_type: text, number, pin (hidden numbers)
+		'''
+		if input_type == 'text':
+			return client.getTextInput(self.session, title, text)
+		elif input_type in ('number', 'pin'):
+			return client.getNumericInput(self.session, title, text, showChars=(input_type == 'number'))
+		else:
+			# unknown input type
+			return None
 
 	# #################################################################################################
 	

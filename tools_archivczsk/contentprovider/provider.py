@@ -419,9 +419,12 @@ class CommonContentProvider(object):
 		# just dummy one
 		return 0
 
-	def get_text_input(self, title, text=""):
+	def get_text_input(self, title, text="", input_type="text"):
 		'''
-		Asks user to enter some text
+		Asks user to enter some text. Response is always returned as text or None if user hits cancel.
+		title - Title to show in input dialog
+		text - prefilled text
+		input_type: type of input box to show. Allowed types are: text (standard virtual keyboard), number (input box for numbers), pin (the same as number, but hidden)
 		'''
 		return ""
 
