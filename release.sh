@@ -28,6 +28,29 @@ else
 	addons=$1
 fi
 
+build_lang()
+{
+	for lang in cs sk ; do
+		lng_dir=${1}/resources/language
+		if [ -f ${lng_dir}/${lang}.po ] ; then
+			mkdir -p $lng_dir/$lang/LC_MESSAGES
+			msgfmt ${lng_dir}/${lang}.po -o $lng_dir/$lang/LC_MESSAGES/${2}.mo
+		fi
+	done
+}
+
+clean_lang()
+{
+	for lang in cs sk ; do
+		lng_dir=${1}/resources/language
+		if [ -f ${lng_dir}/${lang}.po ] ; then
+			rm $lng_dir/$lang/LC_MESSAGES/${2}.mo
+			rmdir $lng_dir/$lang/LC_MESSAGES
+			rmdir $lng_dir/$lang
+		fi
+	done
+}
+
 for addonFile in $addons ; do
     dirname=$addonFile
     if [ ! -f $addonFile/addon.xml ] ; then
@@ -59,7 +82,9 @@ for addonFile in $addons ; do
     if [ -e "$package" ] ; then
         rm "$package"
     fi
-    zip -FS -q -r "$package" "$dirname" -x "*.py[oc] *.sw[onp]" ".*"
+    build_lang "$dirname" "$addon_id"
+    zip -FS -q -r "$package" "$dirname" -x '*.py[oc]' -x '*.sw[onp]' -x '*.po' -x '.*'
+    clean_lang "$dirname" "$addon_id"
 
     # copy changelog file
     changelog=$(ls "$dirname"/[Cc]hangelog.txt)
@@ -74,7 +99,7 @@ for addonFile in $addons ; do
     fi
     git add $target_dir
     # generate unique hash of released addon for further check 
-    echo $(find $addon_id -type f | xargs md5sum | md5sum | tr -d -) > hashes/$addon_id
+    echo $(find $addonFile -type f | grep -v '.mo$' | xargs md5sum | md5sum | tr -d -) > hashes/$addon_id
 done 
 echo "Regenerate addons.xml"
 $PY_CMD addons_xml_generator.py

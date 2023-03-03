@@ -40,7 +40,7 @@ for addonFile in $addons ; do
         exit 2
     fi
     # generate current hash and check for saved values 
-    md5=`echo $(find $addon_id -type f | xargs md5sum | md5sum | tr -d -)`
+    md5=`echo $(find $addonFile -type f | grep -v '.mo$' | xargs md5sum | md5sum | tr -d -)`
     if [ ! -f hashes/$addon_id ];then
       echo "$addon_id was never released!"
       continue
