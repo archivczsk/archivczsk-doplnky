@@ -1,3 +1,6 @@
+2023-03-06 [2.3.2]
+* oprava autorizácie
+
 2023-02-23 [2.3.1]
 * oprava pádu pri konverzii názvu pre python3
 * oprava stránkovania

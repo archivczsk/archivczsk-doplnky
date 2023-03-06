@@ -35,7 +35,6 @@ def scc_run(session, params):
 	UA = "KODI/18.6 (Windows; U; Windows NT; en) ver1.3.26"
 	UA2 = 'SCC Enigma2'
 	TK = 'asb6mnn72mqruo4v81tn'
-	AU2 = 'Basic ' + TK
 	realm = b':Webshare:'
 	base_url = ""
 	lang_id = language.getLanguage()[:2]
@@ -122,7 +121,7 @@ def scc_run(session, params):
 		if '?' in url: url = url + '&access_token=' + TK
 		else: url = url + '?access_token=' + TK
 		try:
-			data = requests.get(url=url, data=post_data, headers={'User-Agent': UA2, 'Authorization': AU2, 'X-Uuid': xuuid, 'Content-Type': 'application/json'}, timeout=loading_timeout)
+			data = requests.get(url=url, data=post_data, headers={'User-Agent': UA2, 'X-Uuid': xuuid, 'Content-Type': 'application/json'}, timeout=loading_timeout)
 #			client.log.debug("API Request: %s" % data.url)
 			if data.status_code != 200:
 				client.add_operation("SHOW_MSG", {'msg': addon.getLocalizedString(30501), 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
