@@ -83,7 +83,7 @@ class BouquetGeneratorTemplate:
 		
 		try:
 			if session_id:
-				requests.post("http://127.0.0.1/web/servicelistreload?mode=2&sessionid=%s" % session_id)
+				requests.post("http://127.0.0.1/web/servicelistreload", data={ 'mode': 2, 'sessionid': session_id })
 			else:
 				requests.get("http://127.0.0.1/web/servicelistreload?mode=2")
 		except:
