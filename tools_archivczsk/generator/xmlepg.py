@@ -71,8 +71,8 @@ except:
 	def strip_accents(s):
 		return ''.join(c for c in unicodedata.normalize('NFD', py2_decode_utf8(s)) if unicodedata.category(c) != 'Mn')
 
-# #################################################################################################
 
+# #################################################################################################
 
 def _log_dummy(message):
 	pass
@@ -96,8 +96,7 @@ class XmlEpgGeneratorTemplate:
 		self.epgimport_sources_content = EPGIMPORT_SOURCES_CONTENT.format(prefix=self.prefix, name=self.name)
 
 		# parameters for EPGLoad
-		self.epgload_sources_file = '/etc/epgload/.sources.xml'
-		self.epgload_settings_file = '/etc/epgload/epgimport.conf'
+		self.epgload_sources_file = '/etc/epgload/%s.sources.xml' % self.prefix
 		self.epgload_sources_content = EPGLOAD_SOURCES_CONTENT.format(name=self.name)
 
 		# Child class must define these values 
@@ -119,6 +118,41 @@ class XmlEpgGeneratorTemplate:
 			return self.data_mtime
 		except:
 			return 0
+	# #################################################################################################
+
+	def get_epgload_cache_dir(self):
+		try:
+			from Plugins.Extensions.EPGLoad.plugin import getEPGLoadCache
+			return getEPGLoadCache()
+		except:
+			self.log_error(traceback.format_exc())
+			return None
+
+	# #################################################################################################
+
+	def enable_epgload_source(self):
+		try:
+			from Plugins.Extensions.EPGLoad.plugin import createSourceConfig, config
+			# this will recreate EPGLoad's sources configuration
+			createSourceConfig()
+
+			for s in config.plugins.epgload.sources:
+				self.log_info("Source found: %s" % s.name.value)
+				if s.name.value == self.prefix:
+					for ch in s.categories[0].channels:
+						if ch.name.value == self.name:
+							self.log_info("Current value of download property is: %s" % ch.download.value)
+							if ch.download.value == False:
+								ch.download.value = True
+								ch.download.save()
+							break
+					else:
+						self.log_error("Channels name %s not found" % self.name)
+					break
+			else:
+				self.log_error("Source %s not found" % self.prefix)
+		except:
+			return traceback.format_exc()
 
 	# #################################################################################################
 
@@ -191,7 +225,7 @@ class XmlEpgGeneratorTemplate:
 			epgplugin_data_list.append((self.epgimport_sources_content, self.epgimport_sources_file, self.epgimport_settings_file))
 
 		if epgload_found:
-			epgplugin_data_list.append((self.epgload_sources_content, self.epgload_sources_file, self.epgload_settings_file))
+			epgplugin_data_list.append((self.epgload_sources_content, self.epgload_sources_file, None))
 	
 		for epgplugin_data in epgplugin_data_list:
 			xmlepg_source_content = epgplugin_data[0] % (channels_file, data_file)
@@ -204,15 +238,53 @@ class XmlEpgGeneratorTemplate:
 					f.write(xmlepg_source_content)
 
 			# check if source is enabled in epgimport settings and enable if needed
-			if os.path.exists(epgplugin_data[2]):
-				epgimport_settings = pickle.load(open(epgplugin_data[2], 'rb'))
-			else:
-				epgimport_settings = { 'sources': [] }
+			if epgplugin_data[2] != None:
+				# EPGImport
+				if os.path.exists(epgplugin_data[2]):
+					epgimport_settings = pickle.load(open(epgplugin_data[2], 'rb'))
+				else:
+					epgimport_settings = { 'sources': [] }
 
-			if self.name not in epgimport_settings['sources']:
-				self.log_info("Enabling %s in epgimport/epgload config %s" % (self.name, epgplugin_data[2]))
-				epgimport_settings['sources'].append(self.name)
-				pickle.dump(epgimport_settings, open(epgplugin_data[2], 'wb'), pickle.HIGHEST_PROTOCOL)
+				if self.name not in epgimport_settings['sources']:
+					self.log_info("Enabling %s in epgimport/epgload config %s" % (self.name, epgplugin_data[2]))
+					epgimport_settings['sources'].append(self.name)
+					pickle.dump(epgimport_settings, open(epgplugin_data[2], 'wb'), pickle.HIGHEST_PROTOCOL)
+			else:
+				# EPGLoad
+				# for all this we need access to engima :-(
+
+				# 1. check epgload settings and create symlinks to for channels and data file
+				self.log_info("Checking and creating symlinks to data and channels file")
+				cache_dir = self.get_epgload_cache_dir()
+
+				if cache_dir == None:
+					# something failed
+					self.log_error("Failed to get EPGLoad cache dir - can't create symlinks")
+				else:
+					self.log_info("EPGLoad's cache dir: %s" % cache_dir)
+
+					for symlink_file, file in [ (os.path.join(cache_dir, self.data_file), data_file), (os.path.join(cache_dir, self.channels_file), channels_file) ]:
+						if os.path.isfile(symlink_file):
+							# destination file exists and is valid (symlink or not)
+							if os.path.samefile(symlink_file, file):
+								# symlink already exists and points to data file - great
+								self.log_info("Symlink %s already exists" % symlink_file)
+								pass
+							else:
+								self.log_info("Symlink %s points to another file - deleting and creating new one" % symlink_file)
+								os.remove(symlink_file)
+								os.symlink(file, symlink_file)
+						else:
+							if os.path.islink(symlink_file):
+								self.log_info("Symlink %s is broken - deleting" % symlink_file)
+								# broken symlink
+								os.remove(symlink_file)
+
+							self.log_info("Creating symlink %s" % symlink_file)
+							os.symlink(file, symlink_file)
+
+				# 2. enable sources in epgload settings
+				self.enable_epgload_source()
 
 	# #################################################################################################
 
