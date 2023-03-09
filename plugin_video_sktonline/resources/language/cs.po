@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_sktonline\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-09 18:27+0100\n"
-"PO-Revision-Date: 2023-03-09 18:31+0100\n"
+"POT-Creation-Date: 2023-03-09 19:06+0100\n"
+"PO-Revision-Date: 2023-03-09 19:07+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -24,11 +24,11 @@ msgstr "Přihlášení selhalo - zkontrolujte přihlašovací jméno a heslo"
 msgid "Failed to create login session. Maybe login page has changed."
 msgstr "Vytvoření přihlašovací session selhalo. Možná nastala změna způsobu přihlášení."
 
-#: plugin_video_sktonline/provider.py:108
+#: plugin_video_sktonline/provider.py:110
 msgid "HTTP reponse code"
 msgstr "HTTP návratový kód"
 
-#: plugin_video_sktonline/provider.py:142
+#: plugin_video_sktonline/provider.py:144
 msgid "For starting playback you need to set login name and password in addon's settings"
 msgstr "Pro spuštěni přehrávání musíte v nastaveních zadat přihlašovací jméno a heslo"
 
@@ -37,3 +37,6 @@ msgstr "Přihlašovací jméno"
 
 msgid "Login password"
 msgstr "Přihlašovací heslo"
+
+msgid "Enable server SSL certificate check"
+msgstr "Povolit kontrolu SSL certifikátu serveru"

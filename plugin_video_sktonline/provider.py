@@ -83,6 +83,8 @@ class SkTContentProvider(CommonContentProvider):
 			return True
 
 	def call_api(self, endpoint, params=None, data=None, raw_response=False):
+		ssl_verify = self.get_setting('ssl_verify')
+
 		if endpoint.startswith('http'):
 			url = endpoint
 		else:
@@ -93,9 +95,9 @@ class SkTContentProvider(CommonContentProvider):
 		}
 		
 		if data:
-			response = self.req_session.post(url, params=params, data=data, headers=headers)
+			response = self.req_session.post(url, params=params, data=data, headers=headers, verify=ssl_verify)
 		else:
-			response = self.req_session.get(url, params=params, headers=headers)
+			response = self.req_session.get(url, params=params, headers=headers, verify=ssl_verify)
 
 #		dump_json_request(response)
 

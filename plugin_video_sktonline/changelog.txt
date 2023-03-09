@@ -1,5 +1,6 @@
 2.3: 09.03.2023
 - added en/cs/sk localisation
+- added setting to disable server SSL certificate check
 
 2.2: 24.02.2023
 - reset login session if login data changes
