@@ -11,6 +11,7 @@
 	<setting label="How many minutes to play after event ends" type="number" id="offset" default="0"/>
 	<setting label="Number of search history items" type="number" id="keep-searches" default="20"/>
 	<setting label="Enable special section in main menu" id="enable_extra" type="bool" default="false" />
+	<setting label="Allow downloading of live broadcasting" id="download_live" type="bool" default="false" />
 	<category label="Userbouquet">
 		<setting label="Automatically export channel list as userbouquet" id="enable_userbouquet" type="bool" default="false" />
 		<setting label="Generate XML EPG for epgimport plugin (if installed)" id="enable_xmlepg" type="bool" default="false" />

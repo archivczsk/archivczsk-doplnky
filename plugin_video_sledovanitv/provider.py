@@ -53,6 +53,7 @@ class SledovaniTVModuleLiveTV(CPModuleLiveTV):
 	def get_live_tv_channels(self, cat_id=None):
 		self.cp.load_channel_list()
 		enable_adult = self.cp.get_setting('enable_adult')
+		enable_download = self.cp.get_setting('download_live')
 
 		epgdata = self.cp.sledovanitv.get_epg()
 
@@ -93,17 +94,19 @@ class SledovaniTVModuleLiveTV(CPModuleLiveTV):
 				info_labels = {}
 				img = None
 
-			self.cp.add_video(title + epg_str, img, info_labels, download=False, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_url=channel['url'])
+			self.cp.add_video(title + epg_str, img, info_labels, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_url=channel['url'])
 
 	# #################################################################################################
 
 	def get_livetv_stream(self, channel_title, channel_url):
+		enable_download = self.cp.get_setting('download_live')
+
 		for one in self.cp.sledovanitv.get_live_link(channel_url, self.cp.get_setting('max_bitrate')):
 			info_labels = {
 				'quality': one['quality'],
 				'bandwidth': one['bandwidth']
 			}
-			self.cp.add_play(channel_title, one['url'], info_labels, download=False)
+			self.cp.add_play(channel_title, one['url'], info_labels, download=enable_download)
 
 # #################################################################################################
 
@@ -116,6 +119,7 @@ class SledovaniTVModuleRadio(CPModuleLiveTV):
 	# #################################################################################################
 
 	def get_live_tv_channels(self, cat_id=None):
+		enable_download = self.cp.get_setting('download_live')
 		self.cp.load_channel_list()
 
 		epgdata = self.cp.sledovanitv.get_epg()
@@ -149,7 +153,7 @@ class SledovaniTVModuleRadio(CPModuleLiveTV):
 				info_labels = {}
 				img = None
 
-			self.cp.add_video(channel['name'] + epg_str, img, info_labels, download=False, cmd=channel['url'])
+			self.cp.add_video(channel['name'] + epg_str, img, info_labels, download=enable_download, cmd=channel['url'])
 
 # #################################################################################################
 

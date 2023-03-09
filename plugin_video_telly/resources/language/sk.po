@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_telly\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-03 13:48+0100\n"
-"PO-Revision-Date: 2023-03-03 13:56+0100\n"
+"POT-Creation-Date: 2023-03-09 18:43+0100\n"
+"PO-Revision-Date: 2023-03-09 18:48+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -16,11 +16,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_telly/provider.py:154
+#: plugin_video_telly/provider.py:156
 msgid "Enter pairing code from site"
 msgstr "Zadajte párovací kód zo stránky"
 
-#: plugin_video_telly/provider.py:157
+#: plugin_video_telly/provider.py:159
 msgid ""
 "Device pairing with your Telly account failed.\n"
 "Check pairing code validity and try again."
@@ -68,6 +68,9 @@ msgstr "Povoliť programy pre dospelých"
 
 msgid "How many hours cache EPG data"
 msgstr "Koľko hodín EPG ukladať do cache"
+
+msgid "Allow downloading of live broadcasting"
+msgstr "Povoliť sťahovanie u živého vysielania"
 
 msgid "Userbouquet"
 msgstr "Userbouquet"

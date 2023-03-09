@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_magiogo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-09 14:54+0100\n"
-"PO-Revision-Date: 2023-03-09 14:59+0100\n"
+"POT-Creation-Date: 2023-03-09 18:42+0100\n"
+"PO-Revision-Date: 2023-03-09 18:46+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -16,32 +16,32 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_magiogo/provider.py:104
+#: plugin_video_magiogo/provider.py:105
 msgid "Special section"
 msgstr "Speciální sekce"
 
-#: plugin_video_magiogo/provider.py:115
+#: plugin_video_magiogo/provider.py:116
 msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
 msgstr "Tu si můžete zobrazit a případně vymazat/odregistrovat zbytečná zařízení, aby jste se mohli znova jinde přihlásit."
 
-#: plugin_video_magiogo/provider.py:116
+#: plugin_video_magiogo/provider.py:117
 msgid "Registered devices"
 msgstr "Zaregistrovaná zařízení"
 
-#: plugin_video_magiogo/provider.py:129
+#: plugin_video_magiogo/provider.py:130
 msgid "Remove device!"
 msgstr "Smazat zařízení!"
 
-#: plugin_video_magiogo/provider.py:130
+#: plugin_video_magiogo/provider.py:131
 msgid "In menu you can remove device using Remove device!"
 msgstr "V menu můžete zařízení vymazat pomocí Smazat zařízení!"
 
-#: plugin_video_magiogo/provider.py:140
+#: plugin_video_magiogo/provider.py:141
 #, python-brace-format
 msgid "Device {device} was removed!"
 msgstr "Zařízení {device} bylo vymazáno!"
 
-#: plugin_video_magiogo/provider.py:142
+#: plugin_video_magiogo/provider.py:143
 msgid "Error"
 msgstr "Chyba"
 
@@ -143,6 +143,9 @@ msgstr "Pro pokročilé"
 
 msgid "Enable special section in main menu"
 msgstr "Povolit speciální sekci v hlavním menu"
+
+msgid "Allow downloading of live broadcasting"
+msgstr "Povolit stahování u živého vysílání"
 
 msgid "Use preprocessing for HLS streams"
 msgstr "Použit předzpracování HLS streamů"

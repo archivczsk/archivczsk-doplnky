@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_sweettv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-03 20:48+0100\n"
-"PO-Revision-Date: 2023-03-08 23:04+0100\n"
+"POT-Creation-Date: 2023-03-09 18:42+0100\n"
+"PO-Revision-Date: 2023-03-09 18:47+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -16,52 +16,52 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_sweettv/provider.py:119
+#: plugin_video_sweettv/provider.py:122
 msgid "By genre"
 msgstr "Podľa žánru"
 
-#: plugin_video_sweettv/provider.py:120
+#: plugin_video_sweettv/provider.py:123
 msgid "By collection"
 msgstr "Podľa kolekcie"
 
-#: plugin_video_sweettv/provider.py:157
+#: plugin_video_sweettv/provider.py:160
 msgid "Special section"
 msgstr "Špeciálna sekcia"
 
-#: plugin_video_sweettv/provider.py:168
+#: plugin_video_sweettv/provider.py:171
 msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
 msgstr "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočné zariadenia, aby ste sa mohli znova inde prihlásiť."
 
-#: plugin_video_sweettv/provider.py:169
+#: plugin_video_sweettv/provider.py:172
 msgid "Registered devices"
 msgstr "Zaregistrované zariadenia"
 
-#: plugin_video_sweettv/provider.py:170
+#: plugin_video_sweettv/provider.py:173
 msgid "Forces logout from this devices and does new login. Use if you have problem with playback. After running this option it's necessary to go out of this addon to force new automatic login."
 msgstr "Vynúti odhlásenie z tohto zariadenia a vykoná nové prihlásenie. Použite to v prípade problémov s prehrávaním. Po spustení tejto voľby je nutné doplnok opustiť a vrátiť sa späť pre opätovné prihlásenie."
 
-#: plugin_video_sweettv/provider.py:171
+#: plugin_video_sweettv/provider.py:174
 msgid "Logout from this device"
 msgstr "Odhlásiť sa z tohto zariadenia"
 
-#: plugin_video_sweettv/provider.py:178
+#: plugin_video_sweettv/provider.py:181
 msgid "You have been logged out!"
 msgstr "Boli ste odhlásený!"
 
-#: plugin_video_sweettv/provider.py:186
+#: plugin_video_sweettv/provider.py:189
 msgid "In menu you can remove device using Remove device!"
 msgstr "V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!"
 
-#: plugin_video_sweettv/provider.py:189
+#: plugin_video_sweettv/provider.py:192
 msgid "Remove device!"
 msgstr "Zmazať zariadenie!"
 
-#: plugin_video_sweettv/provider.py:196
+#: plugin_video_sweettv/provider.py:199
 #, python-brace-format
 msgid "Device {device} was removed!"
 msgstr "Zariadenie {device} bolo vymazané!"
 
-#: plugin_video_sweettv/provider.py:290
+#: plugin_video_sweettv/provider.py:293
 msgid "Play trailer"
 msgstr "Prehrať trailer"
 
@@ -159,6 +159,9 @@ msgstr "Zobraziť platené filmy"
 
 msgid "Enable special section in main menu"
 msgstr "Povoliť špeciálnu sekciu v hlavnom menu"
+
+msgid "Allow downloading of live broadcasting"
+msgstr "Povoliť sťahovanie u živého vysielania"
 
 msgid "Userbouquet"
 msgstr "Userbouquet"

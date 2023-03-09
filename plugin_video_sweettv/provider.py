@@ -19,6 +19,7 @@ class SweetTVModuleLiveTV(CPModuleLiveTV):
 	def get_live_tv_channels(self):
 		self.cp.load_channel_list()
 		enable_adult = self.cp.get_setting('enable_adult')
+		enable_download = self.cp.get_setting('download_live')
 
 		epg = self.cp.sweettv.get_epg()
 
@@ -42,11 +43,13 @@ class SweetTVModuleLiveTV(CPModuleLiveTV):
 				info_labels = {}
 				img = None
 
-			self.cp.add_video(channel['name'] + epg_str, img=img, info_labels=info_labels, download=False, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_id=channel['id'])
+			self.cp.add_video(channel['name'] + epg_str, img=img, info_labels=info_labels, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_id=channel['id'])
 
 	# #################################################################################################
 
 	def get_livetv_stream(self, channel_title, channel_id):
+		enable_download = self.cp.get_setting('download_live')
+
 		for one in self.cp.sweettv.get_live_link(channel_id, max_bitrate=self.cp.get_setting('max_bitrate')):
 			info_labels = {
 				'quality': one.get('name', '???').replace('"', ''),
@@ -60,7 +63,7 @@ class SweetTVModuleLiveTV(CPModuleLiveTV):
 			settings = {
 				'user-agent' : self.cp.sweettv.get_user_agent(),
 			}
-			self.cp.add_play(channel_title, one['url'], info_labels, data_item=data_item, settings=settings, download=False)
+			self.cp.add_play(channel_title, one['url'], info_labels, data_item=data_item, settings=settings, download=enable_download)
 
 # #################################################################################################
 

@@ -21,6 +21,7 @@ class TellyModuleLiveTV(CPModuleLiveTV):
 		self.cp.load_channel_list()
 
 		enable_adult = self.cp.get_setting('enable_adult')
+		enable_download = self.cp.get_setting('download_live')
 		cache_hours = int(self.cp.get_setting('epgcache'))
 		enable_xmlepg = self.cp.get_setting('enable_xmlepg') and self.cp.get_setting('enable_userbouquet')
 
@@ -55,18 +56,19 @@ class TellyModuleLiveTV(CPModuleLiveTV):
 				epg_str = ''
 				info_labels = {}
 
-			self.cp.add_video(channel.name + epg_str, img=channel.preview, info_labels=info_labels, download=False, cmd=self.get_livetv_stream, channel_title=channel.name, channel_url=channel.stream_url)
+			self.cp.add_video(channel.name + epg_str, img=channel.preview, info_labels=info_labels, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel.name, channel_url=channel.stream_url)
 
 	# #################################################################################################
 
 	def get_livetv_stream(self, channel_title, channel_url):
+		enable_download = self.cp.get_setting('download_live')
 		for one in self.cp.telly.get_video_link(channel_url, self.cp.get_setting('enable_h265'), self.cp.get_setting('max_bitrate'), self.cp.get_setting('use_http_for_stream')):
 			info_labels = {
 				'quality': one['quality'],
 				'bandwidth': one['bitrate'],
 				'vcodec': one['vcodec']
 			}
-			self.cp.add_play(channel_title, one['url'], info_labels, download=False)
+			self.cp.add_play(channel_title, one['url'], info_labels, download=enable_download)
 
 # #################################################################################################
 

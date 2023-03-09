@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_rebittv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-09 17:42+0100\n"
-"PO-Revision-Date: 2023-03-09 17:44+0100\n"
+"POT-Creation-Date: 2023-03-09 18:42+0100\n"
+"PO-Revision-Date: 2023-03-09 18:46+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -16,31 +16,31 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_rebittv/provider.py:121
+#: plugin_video_rebittv/provider.py:123
 msgid "Special section"
 msgstr "Špeciálna sekcia"
 
-#: plugin_video_rebittv/provider.py:132
+#: plugin_video_rebittv/provider.py:134
 msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
 msgstr "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočné zariadenia, aby ste sa mohli znova inde prihlásiť."
 
-#: plugin_video_rebittv/provider.py:133
+#: plugin_video_rebittv/provider.py:135
 msgid "Registered devices"
 msgstr "Zaregistrované zariadenia"
 
-#: plugin_video_rebittv/provider.py:140
+#: plugin_video_rebittv/provider.py:142
 msgid "Added"
 msgstr "Pridané"
 
-#: plugin_video_rebittv/provider.py:141
+#: plugin_video_rebittv/provider.py:143
 msgid "In menu you can remove device using Remove device!"
 msgstr "V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!"
 
-#: plugin_video_rebittv/provider.py:144
+#: plugin_video_rebittv/provider.py:146
 msgid "Remove device!"
 msgstr "Zmazať zariadenie!"
 
-#: plugin_video_rebittv/provider.py:151
+#: plugin_video_rebittv/provider.py:153
 #, python-brace-format
 msgid "Device {device} was removed!"
 msgstr "Zariadenie {device} bolo vymazané!"
@@ -120,6 +120,9 @@ msgstr "Povoliť programy pre dospelých"
 
 msgid "Enable special section in main menu"
 msgstr "Povoliť špeciálnu sekciu v hlavnom menu"
+
+msgid "Allow downloading of live broadcasting"
+msgstr "Povoliť sťahovanie u živého vysielania"
 
 msgid "Userbouquet"
 msgstr "Userbouquet"

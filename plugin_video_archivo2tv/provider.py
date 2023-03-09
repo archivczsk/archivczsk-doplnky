@@ -52,6 +52,7 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 
 		show_epg = self.cp.get_setting('showliveepg')
 		enable_adult = self.cp.get_setting('enable_adult')
+		enable_download = self.cp.get_setting('download_live')
 		cache_hours = int(self.cp.get_setting('epgcache'))
 		enable_xmlepg = self.cp.get_setting('enable_xmlepg') and self.cp.get_setting('enable_userbouquet')
 
@@ -94,19 +95,20 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 			else:
 				self.cp.add_menu_item(menu, self._("Add to favourites"), cmd=self.add_fav, key=channel['key'])
 
-			self.cp.add_video(channel['name'] + epg_str, img=channel['screenshot'], info_labels=info_labels, menu=menu, download=False, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_key=channel['key'])
+			self.cp.add_video(channel['name'] + epg_str, img=channel['screenshot'], info_labels=info_labels, menu=menu, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_key=channel['key'])
 
 		self.cp.o2tv.save_epg_cache()
 
 	# #################################################################################################
 
 	def get_livetv_stream(self, channel_title, channel_key):
+		enable_download = self.cp.get_setting('download_live')
 		for one in self.cp.o2tv.get_live_link(channel_key, self.cp.get_setting('max_bitrate')):
 			info_labels = {
 				'quality': one['quality'],
 				'bandwidth': one['bandwidth']
 			}
-			self.cp.add_play(channel_title, one['url'], info_labels, download=False)
+			self.cp.add_play(channel_title, one['url'], info_labels, download=enable_download)
 
 	# #################################################################################################
 

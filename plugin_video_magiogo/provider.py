@@ -23,6 +23,7 @@ class MagioGOModuleLiveTV(CPModuleLiveTV):
 		self.cp.load_channel_list(True)
 
 		enable_adult = self.cp.get_setting('enable_adult')
+		enable_download = self.cp.get_setting('download_live')
 
 		for channel in self.cp.channels:
 			if not enable_adult and channel.adult:
@@ -41,13 +42,13 @@ class MagioGOModuleLiveTV(CPModuleLiveTV):
 				epg_str = ""
 				info_labels = {}
 
-			self.cp.add_video(channel.name + epg_str, img=channel.preview, info_labels=info_labels, download=False, cmd=self.get_livetv_stream, channel_title=channel.name, channel_id=channel.id)
+			self.cp.add_video(channel.name + epg_str, img=channel.preview, info_labels=info_labels, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel.name, channel_id=channel.id)
 
 	# #################################################################################################
 
 	def get_livetv_stream(self, channel_title, channel_id):
 		url = self.cp.http_endpoint + '/playlive/' + base64.b64encode(str(channel_id).encode("utf-8")).decode("utf-8") + '/index'
-		self.cp.add_play(channel_title, url, download=False, playlist_autogen=False)
+		self.cp.add_play(channel_title, url, download=self.cp.get_setting('download_live'), playlist_autogen=False)
 
 # #################################################################################################
 

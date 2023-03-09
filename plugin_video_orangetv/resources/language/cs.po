@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_orangetv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-09 16:46+0100\n"
-"PO-Revision-Date: 2023-03-09 16:48+0100\n"
+"POT-Creation-Date: 2023-03-09 18:42+0100\n"
+"PO-Revision-Date: 2023-03-09 18:46+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -16,27 +16,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_orangetv/provider.py:122
+#: plugin_video_orangetv/provider.py:124
 msgid "Special section"
 msgstr "Speciální sekce"
 
-#: plugin_video_orangetv/provider.py:133
+#: plugin_video_orangetv/provider.py:135
 msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
 msgstr "Tu si můžete zobrazit a případně vymazat/odregistrovat zbytečná zařízení, aby jste se mohli znova jinde přihlásit."
 
-#: plugin_video_orangetv/provider.py:134
+#: plugin_video_orangetv/provider.py:136
 msgid "Registered devices"
 msgstr "Zaregistrovaná zařízení"
 
-#: plugin_video_orangetv/provider.py:143
+#: plugin_video_orangetv/provider.py:145
 msgid "In menu you can remove device using Remove device!"
 msgstr "V menu můžete zařízení vymazat pomocí Smazat zařízení!"
 
-#: plugin_video_orangetv/provider.py:146
+#: plugin_video_orangetv/provider.py:148
 msgid "Remove device!"
 msgstr "Smazat zařízení!"
 
-#: plugin_video_orangetv/provider.py:153
+#: plugin_video_orangetv/provider.py:155
 #, python-brace-format
 msgid "Device {device} was removed!"
 msgstr "Zařízení {device} bylo vymazáno!"
@@ -94,6 +94,9 @@ msgstr "ID zařízení"
 
 msgid "Enable special section in main menu"
 msgstr "Povolit speciální sekci v hlavním menu"
+
+msgid "Allow downloading of live broadcasting"
+msgstr "Povolit stahování u živého vysílání"
 
 msgid "Userbouquet"
 msgstr "Userbouquet"

@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_archivo2tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-09 17:42+0100\n"
-"PO-Revision-Date: 2023-03-09 17:44+0100\n"
+"POT-Creation-Date: 2023-03-09 18:41+0100\n"
+"PO-Revision-Date: 2023-03-09 18:44+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -36,114 +36,114 @@ msgstr "Favoritné"
 msgid "My channles lists"
 msgstr "Moje zoznamy kanálov"
 
-#: plugin_video_archivo2tv/provider.py:93
+#: plugin_video_archivo2tv/provider.py:94
 msgid "Remove from favourites"
 msgstr "Odstrániť z favoritných"
 
-#: plugin_video_archivo2tv/provider.py:95
+#: plugin_video_archivo2tv/provider.py:96
 msgid "Add to favourites"
 msgstr "Pridať do favoritných"
 
-#: plugin_video_archivo2tv/provider.py:117
+#: plugin_video_archivo2tv/provider.py:119
 msgid "Added to favourites"
 msgstr "Pridané do favoriných"
 
-#: plugin_video_archivo2tv/provider.py:119
+#: plugin_video_archivo2tv/provider.py:121
 msgid "Channel is already in favourites"
 msgstr "Kanál už je vo favoritných"
 
-#: plugin_video_archivo2tv/provider.py:164
-#: plugin_video_archivo2tv/provider.py:298
-#: plugin_video_archivo2tv/provider.py:500
+#: plugin_video_archivo2tv/provider.py:166
+#: plugin_video_archivo2tv/provider.py:300
+#: plugin_video_archivo2tv/provider.py:502
 msgid "Record the event"
 msgstr "Nahrať program"
 
-#: plugin_video_archivo2tv/provider.py:175
+#: plugin_video_archivo2tv/provider.py:177
 msgid "Recordings"
 msgstr "Nahrávky"
 
-#: plugin_video_archivo2tv/provider.py:175
+#: plugin_video_archivo2tv/provider.py:177
 msgid "Here you will find recordings of your programs"
 msgstr "Tu nájdete nahrávky vašich programov"
 
-#: plugin_video_archivo2tv/provider.py:180
+#: plugin_video_archivo2tv/provider.py:182
 msgid "Plan recording"
 msgstr "Naplánovať nahrávanie"
 
-#: plugin_video_archivo2tv/provider.py:181
+#: plugin_video_archivo2tv/provider.py:183
 msgid "Futures - planed"
 msgstr "Budoúce - plánovane"
 
-#: plugin_video_archivo2tv/provider.py:182
+#: plugin_video_archivo2tv/provider.py:184
 msgid "Existing"
 msgstr "Existujúce"
 
-#: plugin_video_archivo2tv/provider.py:234
+#: plugin_video_archivo2tv/provider.py:236
 msgid "Delete recording"
 msgstr "Zmazať nahrávku"
 
-#: plugin_video_archivo2tv/provider.py:307
+#: plugin_video_archivo2tv/provider.py:309
 msgid "Special section"
 msgstr "Špeciálna sekcia"
 
-#: plugin_video_archivo2tv/provider.py:318
+#: plugin_video_archivo2tv/provider.py:320
 msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
 msgstr "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočné zariadenia, aby ste se mohli opäť prihlásiť inde."
 
-#: plugin_video_archivo2tv/provider.py:319
+#: plugin_video_archivo2tv/provider.py:321
 msgid "Registered devices"
 msgstr "Zaregistrované zariadenia"
 
-#: plugin_video_archivo2tv/provider.py:328
+#: plugin_video_archivo2tv/provider.py:330
 msgid "In menu you can remove device using Remove device!"
 msgstr "V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!"
 
-#: plugin_video_archivo2tv/provider.py:331
+#: plugin_video_archivo2tv/provider.py:333
 msgid "Remove device!"
 msgstr "Vymazať zariadenie!"
 
-#: plugin_video_archivo2tv/provider.py:338
+#: plugin_video_archivo2tv/provider.py:340
 #, python-brace-format
 msgid "Device {device} was removed!"
 msgstr "Zariadenie {device} bolo vymazané!"
 
-#: plugin_video_archivo2tv/provider.py:357
+#: plugin_video_archivo2tv/provider.py:359
 msgid "Mo"
 msgstr "Po"
 
-#: plugin_video_archivo2tv/provider.py:357
+#: plugin_video_archivo2tv/provider.py:359
 msgid "Tu"
 msgstr "Ut"
 
-#: plugin_video_archivo2tv/provider.py:357
+#: plugin_video_archivo2tv/provider.py:359
 msgid "We"
 msgstr "St"
 
-#: plugin_video_archivo2tv/provider.py:357
+#: plugin_video_archivo2tv/provider.py:359
 msgid "Th"
 msgstr "Št"
 
-#: plugin_video_archivo2tv/provider.py:357
+#: plugin_video_archivo2tv/provider.py:359
 msgid "Fr"
 msgstr "Pi"
 
-#: plugin_video_archivo2tv/provider.py:357
+#: plugin_video_archivo2tv/provider.py:359
 msgid "Sa"
 msgstr "So"
 
-#: plugin_video_archivo2tv/provider.py:357
+#: plugin_video_archivo2tv/provider.py:359
 msgid "Su"
 msgstr "Ne"
 
-#: plugin_video_archivo2tv/provider.py:365
+#: plugin_video_archivo2tv/provider.py:367
 msgid "Search"
 msgstr "Vyhľadať"
 
-#: plugin_video_archivo2tv/provider.py:472
+#: plugin_video_archivo2tv/provider.py:474
 msgid "Recording added"
 msgstr "Nahrávka pridána"
 
-#: plugin_video_archivo2tv/provider.py:472
+#: plugin_video_archivo2tv/provider.py:474
 msgid "There was an error by adding recording"
 msgstr "Pri pridávaní nahrávky nastala chyba"
 
@@ -197,6 +197,9 @@ msgstr "Počet položiek histórie vyhľadávania"
 
 msgid "Enable special section in main menu"
 msgstr "Povoliť špeciálnu sekciu v hlavnom menu"
+
+msgid "Allow downloading of live broadcasting"
+msgstr "Povoliť sťahovanie u živého vysielania"
 
 msgid "Userbouquet"
 msgstr "Userbouquet"
