@@ -145,12 +145,34 @@ class XmlEpgGeneratorTemplate:
 							if ch.download.value == False:
 								ch.download.value = True
 								ch.download.save()
+								s.save()
+
+								# check if EPGLoad is enabled, and if not, then run it every 24 hours
+								if config.plugins.epgload.latest.value == "0":
+									config.plugins.epgload.latest.value = "24"
+									config.plugins.epgload.latest.save()
+
 							break
 					else:
 						self.log_error("Channels name %s not found" % self.name)
 					break
 			else:
 				self.log_error("Source %s not found" % self.prefix)
+		except:
+			return traceback.format_exc()
+
+	# #################################################################################################
+
+	def enable_epgimport(self):
+		try:
+			from Plugins.Extensions.EPGImport.plugin import config, autoStartTimer
+
+			if config.plugins.epgimport.enabled.value == False:
+				config.plugins.epgimport.enabled.value = True
+				config.plugins.epgimport.enabled.save()
+
+				if autoStartTimer is not None:
+					autoStartTimer.update()
 		except:
 			return traceback.format_exc()
 
@@ -249,6 +271,7 @@ class XmlEpgGeneratorTemplate:
 					self.log_info("Enabling %s in epgimport/epgload config %s" % (self.name, epgplugin_data[2]))
 					epgimport_settings['sources'].append(self.name)
 					pickle.dump(epgimport_settings, open(epgplugin_data[2], 'wb'), pickle.HIGHEST_PROTOCOL)
+					self.enable_epgimport()
 			else:
 				# EPGLoad
 				# for all this we need access to engima :-(
