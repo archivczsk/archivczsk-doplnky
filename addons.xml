@@ -39,7 +39,7 @@
 	</extension>
 </addon>
 
-<addon id="plugin.video.sktonline" name="SkTonline" provider-name="archivczsk" version="2.2">
+<addon id="plugin.video.sktonline" name="SkTonline" provider-name="archivczsk" version="2.3">
 	<requires>
 		<import addon="enigma2.archivczsk" version="2.0.0"/>
 		<import addon="tools.archivczsk" version="1.2" />
@@ -65,7 +65,7 @@
 	</extension>
 </addon>
 
-<addon id="plugin.video.orangetv" name="OrangeTV" provider-name="archivczsk" version="2.11">
+<addon id="plugin.video.orangetv" name="OrangeTV" provider-name="archivczsk" version="2.12">
 	<requires>
 		<import addon="enigma2.archivczsk" version="2.0.0"/>
 		<import addon="tools.archivczsk" version="1.0" />
@@ -89,7 +89,7 @@
 	</extension>
 </addon>
 
-<addon id="plugin.video.rebittv" name="Rebit.tv" provider-name="archivczsk" version="1.3">
+<addon id="plugin.video.rebittv" name="Rebit.tv" provider-name="archivczsk" version="1.4">
 	<requires>
 		<import addon="enigma2.archivczsk" version="2.0.0"/>
 		<import addon="tools.archivczsk" version="1.0" />
@@ -98,13 +98,14 @@
 	<extension point="archivczsk.addon.metadata">
 		<description>Plugin to play videos and live tv from rebit.tv</description>
 		<description lang="sk">Plugin pre prehrávanie live tv z rebit.tv</description>
+		<description lang="cs">Plugin pro přehrávání live tv z rebit.tv</description>
 	</extension>
 </addon>
 
-<addon id="plugin.video.telly" name="Telly" provider-name="archivczsk" version="1.1.1">
+<addon id="plugin.video.telly" name="Telly" provider-name="archivczsk" version="1.1.2">
 	<requires>
 		<import addon="enigma2.archivczsk" version="2.0.0"/>
-		<import addon="tools.archivczsk" version="1.0" />
+		<import addon="tools.archivczsk" version="1.3" />
 	</requires>
 	<extension point="archivczsk.addon.video" preload="yes"/>
 	<extension point="archivczsk.addon.metadata">
@@ -140,7 +141,7 @@
 	</extension>
 </addon>
 
-<addon id="plugin.video.sledovanitv" name="Sledovani.tv" provider-name="archivczsk" version="2.6">
+<addon id="plugin.video.sledovanitv" name="Sledovani.tv" provider-name="archivczsk" version="2.7">
 	<requires>
 		<import addon="enigma2.archivczsk" version="2.0.0"/>
 		<import addon="tools.archivczsk" version="1.0" />
@@ -149,6 +150,7 @@
 	<extension point="archivczsk.addon.metadata">
 		<description>Plugin to play from sledovani.tv</description>
 		<description lang="cs">Plugin pro přehrávání videí ze sledovani.tv</description>
+		<description lang="sk">Plugin pre prehrávanie videí zo sledovani.tv</description>
 	</extension>
 </addon>
 
@@ -189,7 +191,7 @@
 	</extension>
 </addon>
 
-<addon id="plugin.video.sweettv" name="Sweet.tv" provider-name="archivczsk" version="1.6">
+<addon id="plugin.video.sweettv" name="Sweet.tv" provider-name="archivczsk" version="1.7">
 	<requires>
 		<import addon="enigma2.archivczsk" version="2.0.0"/>
 		<import addon="tools.archivczsk" version="1.0" />
@@ -198,12 +200,13 @@
 	<extension point="archivczsk.addon.metadata">
 		<description>Plugin to play videos and live tv from sweet.tv</description>
 		<description lang="sk">Plugin pre prehrávanie videí a live tv zo sweet.tv</description>
+		<description lang="cs">Plugin pro přehrávání videí a live tv ze sweet.tv</description>
 	</extension>
 </addon>
 
-<addon id="tools.archivczsk" name="Addons base" version="1.2">
+<addon id="tools.archivczsk" name="Addons base" version="1.3">
 	<requires>
-		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="enigma2.archivczsk" version="2.1.0"/>
 	</requires>
 	<extension point="archivczsk.addon.tools" />
 	<extension point="archivczsk.addon.metadata">
@@ -225,7 +228,7 @@
 	</extension>
 </addon>
 
-<addon id="plugin.video.magiogo" name="Magio GO" provider-name="archivczsk" version="1.8">
+<addon id="plugin.video.magiogo" name="Magio GO" provider-name="archivczsk" version="1.9">
 	<requires>
 		<import addon="enigma2.archivczsk" version="2.0.0"/>
 		<import addon="tools.archivczsk" version="1.0" />
@@ -352,14 +355,16 @@
 	</extension>
 </addon>
 
-<addon id="plugin.video.archivo2tv" name="Sledování O2TV" provider-name="archivczsk" version="1.8.1">
+<addon id="plugin.video.archivo2tv" name="Sledování O2TV" provider-name="archivczsk" version="1.8.2">
 	<requires>
 		<import addon="enigma2.archivczsk" version="2.0.0"/>
-		<import addon="tools.archivczsk" version="1.0" />
+		<import addon="tools.archivczsk" version="1.3" />
 	</requires>
 	<extension point="archivczsk.addon.video" preload="yes"/>
 	<extension point="archivczsk.addon.metadata">
-		<description lang="cs">Umožnuje sledování O2TV, včetně základní práce s nahrávkami</description>
+		<description>Allows watching O2TV inclusive base work with recordings</description>
+		<description lang="cs">Umožnuje sledování O2TV včetně základní práce s nahrávkami</description>
+		<description lang="sk">Umožňuje sledovanie O2TV vrátane základnej práce s nahrávkami</description>
 	</extension>
 </addon>
 
