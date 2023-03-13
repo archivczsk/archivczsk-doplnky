@@ -20,6 +20,8 @@
 import sys, os, traceback
 
 import json
+import re
+import requests
 from datetime import datetime
 from hashlib import md5
 from .exception import LoginException
@@ -303,6 +305,59 @@ class CommonContentProvider(object):
 		Raises login exception that will produce automatic re-login attempt (or will show message, if login fails).
 		'''
 		raise LoginException(msg)
+
+	# #################################################################################################
+
+	def get_hls_streams(self, url, requests_session=None, headers=None, max_bitrate=None):
+		'''
+		Returns streams from hls master playlist. Only EXT-X-STREAM-INF addresses are returned.
+		If master playlist contains EXT-X-MEDIA tags, then returned streams are not directly playable and HlsHTTPRequestHandler needs to be used to convert master playlist to right format.
+		url - url of master playslist
+		requests_session - session to use
+		headers - additional requests headers (if needed)
+		max_bitrate - max bitrate in Mbits/s of returned streams
+
+		returns list of stream informations sorted by bitrate (from max)
+		'''
+		try:
+			if requests_session:
+				response = requests_session.get(url, headers=headers)
+			else:
+				response = requests.get(url, headers=headers)
+		except:
+			self.log_exception()
+			return None
+
+		if response.status_code != 200:
+			self.log_error("Status code response for HLS master playlist: %d" % response.status_code)
+			return None
+
+		if max_bitrate and int(max_bitrate) > 0:
+			max_bitrate = int(max_bitrate) * 1000000
+		else:
+			max_bitrate = 1000000000
+
+		streams = []
+
+		for m in re.finditer(r'^#EXT-X-STREAM-INF:(?P<info>.+)\n(?P<chunk>.+)', response.text, re.MULTILINE):
+			stream_info = {}
+			for info in re.split(r''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', m.group('info')):
+				key, val = info.split('=', 1)
+				stream_info[key.strip().lower()] = val.strip()
+
+			stream_url = m.group('chunk')
+
+			if not stream_url.startswith('http'):
+				if stream_url.startswith('/'):
+					stream_url = url[:url[9:].find('/') + 9] + stream_url
+				else:
+					stream_url = url[:url.rfind('/') + 1] + stream_url
+
+			stream_info['url'] = stream_url
+			if int(stream_info.get('bandwidth', 0)) <= max_bitrate:
+				streams.append(stream_info)
+
+		return sorted(streams, key=lambda i: int(i['bandwidth']), reverse=True)
 
 	# #################################################################################################
 	@staticmethod

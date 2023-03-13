@@ -1,3 +1,6 @@
+1.4 - 13.03.2023
+    - added hls http handler
+
 1.3 - 10.03.2023
 	- added numeric and pin input box support
 	- fixed reload of settings on DMM
