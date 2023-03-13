@@ -1,0 +1,17 @@
+2.4: 13.03.2023
+- pridaná možnosť pre vypnutie overovania ssl certifikátov
+- pridanie nastavenia timeoutov pre požiadavky
+- oprava načítavania epizód s iným formátom html stránky
+
+2.3: 13.03.2023
+- en/cs/sk lokalizácia
+- pridaná podpora pre samostatné video a audio streamy
+
+2.2: 24.02.2023
+- reset login session pri zmene prihlasovacích údajov
+
+2.1: 20.02.2023
+- vylepšenie názvov pri sťahovaní programu
+
+2.0: 20.02.2023
+- initial version
