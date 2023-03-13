@@ -125,6 +125,8 @@ class MarkizaContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def call_api(self, endpoint, params=None, data=None, headers=None, raw_response=False):
+		ssl_verify = self.get_setting('ssl_verify')
+
 		if endpoint.startswith('http'):
 			url = endpoint
 		else:
@@ -135,11 +137,18 @@ class MarkizaContentProvider(CommonContentProvider):
 		}
 		if headers:
 			req_headers.update(headers)
-		
-		if data:
-			response = self.req_session.post(url, params=params, data=data, headers=req_headers)
-		else:
-			response = self.req_session.get(url, params=params, headers=req_headers)
+
+		timeout = int(self.get_setting('loading_timeout'))
+		if timeout == 0:
+			timeout = None
+
+		try:
+			if data:
+				response = self.req_session.post(url, params=params, data=data, headers=req_headers, timeout=timeout, verify=ssl_verify)
+			else:
+				response = self.req_session.get(url, params=params, headers=req_headers, timeout=timeout, verify=ssl_verify)
+		except Exception as e:
+			raise AddonErrorException(self._('Request to remote server failed. Try to repeat operation.') + '\n%s' % str(e))
 
 #		dump_json_request(response)
 
@@ -249,17 +258,22 @@ class MarkizaContentProvider(CommonContentProvider):
 
 	def list_episodes(self, url, category=False):
 		list_voyo = self.get_setting('list-voyo')
+		soup = None
+		url_orig = url
 
 		if category:
 			self.add_dir(self._("Categories"), cmd=self.list_categories, url=url)
 			url += "/videa/cele-epizody"
 
-		soup = self.call_api(url)
-
 		try:
+			soup = self.call_api(url)
 			articles = soup.find(
 				"div", "c-article-wrapper").find_all("article", "c-article")
 		except:
+			if category:
+				# cele-epizody is not available, so jump directly to main page
+				return self.list_episodes(url_orig)
+
 			articles = []
 
 		count = 0
@@ -284,7 +298,7 @@ class MarkizaContentProvider(CommonContentProvider):
 
 			count += 1
 
-		next = soup.find("div", {"class": "js-load-more-trigger"})
+		next = soup.find("div", {"class": "js-load-more-trigger"}) if soup else None
 		if next and count > 0:
 			self.add_next(self.list_episodes, url=next.find("button")["data-href"])
 

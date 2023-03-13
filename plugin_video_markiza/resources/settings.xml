@@ -4,4 +4,5 @@
   <setting label="Login password" id="password" type="password" default=""/>
   <setting label="Show VOYO content (marked as *)" id="list-voyo" type="bool" default="true" />
   <setting label="Maximum bandwidth of the offered stream" id="max_bitrate" type="keyenum" values="0;Unlimited|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
+  <setting label="Enable server SSL certificate check" id="ssl_verify" type="bool" default="true" />
 </settings>

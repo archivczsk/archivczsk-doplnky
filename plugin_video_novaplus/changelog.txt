@@ -1,3 +1,7 @@
+2023-03-13 (verze 3.3)
+* pridaná možnosť pre vypnutie overovania ssl certifikátov
+* pridanie nastavenia timeoutov pre požiadavky
+* oprava načítavania epizód s iným formátom html stránky
 2023-03-13 (verze 3.2)
 * úprava po vzore Markiza doplnku
 * oprava prehrávania zvuku po zmenách vo formáte streamov

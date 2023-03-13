@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_markiza\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-13 13:00+0100\n"
-"PO-Revision-Date: 2023-03-13 13:14+0100\n"
+"POT-Creation-Date: 2023-03-13 19:18+0100\n"
+"PO-Revision-Date: 2023-03-13 19:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -24,11 +24,15 @@ msgstr "Přihlášení selhalo - zkontrolujte přihlašovací jméno a heslo"
 msgid "Failed to create login session. Maybe login page has changed."
 msgstr "Vytvoření přihlašovací session selhalo. Možná nastala změna způsobu přihlášení."
 
-#: plugin_video_markiza/provider.py:152
+#: plugin_video_markiza/provider.py:151
+msgid "Request to remote server failed. Try to repeat operation."
+msgstr "Požadavek na vzdálený server selhal. Zkuste operaci zopakovat."
+
+#: plugin_video_markiza/provider.py:161
 msgid "HTTP response code"
 msgstr "HTTP návratový kód"
 
-#: plugin_video_markiza/provider.py:158
+#: plugin_video_markiza/provider.py:167
 #, python-brace-format
 msgid ""
 "In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\n"
@@ -37,39 +41,39 @@ msgstr ""
 "K fungování doplňku si musíte pomocí svého správce balíků doinstalovat BeautifulSoup4. Hledejte balík se jménem:\n"
 "python{0}-beautifulsoup4 nebo python{0}-bs4"
 
-#: plugin_video_markiza/provider.py:164
+#: plugin_video_markiza/provider.py:173
 msgid "Latest episodes"
 msgstr "Poslední epizody"
 
-#: plugin_video_markiza/provider.py:165
+#: plugin_video_markiza/provider.py:174
 msgid "TOP programs"
 msgstr "TOP programy"
 
-#: plugin_video_markiza/provider.py:226
+#: plugin_video_markiza/provider.py:235
 msgid "Go to show"
 msgstr "Přejít na pořad"
 
-#: plugin_video_markiza/provider.py:232
+#: plugin_video_markiza/provider.py:241
 msgid "Best"
 msgstr "Nejlepší"
 
-#: plugin_video_markiza/provider.py:233
+#: plugin_video_markiza/provider.py:242
 msgid "Latest"
 msgstr "Poslední"
 
-#: plugin_video_markiza/provider.py:234
+#: plugin_video_markiza/provider.py:243
 msgid "All"
 msgstr "Všechny"
 
-#: plugin_video_markiza/provider.py:254
+#: plugin_video_markiza/provider.py:265
 msgid "Categories"
 msgstr "Kategorie"
 
-#: plugin_video_markiza/provider.py:343
+#: plugin_video_markiza/provider.py:357
 msgid "Video not found."
 msgstr "Video nenalezeno."
 
-#: plugin_video_markiza/provider.py:370
+#: plugin_video_markiza/provider.py:384
 msgid "Failed to play video"
 msgstr "Nepodařilo se přehrát video"
 
@@ -102,3 +106,6 @@ msgstr ""
 
 msgid "2 Mbit/s"
 msgstr ""
+
+msgid "Enable server SSL certificate check"
+msgstr "Povolit kontrolu SSL certifikátu serveru"
