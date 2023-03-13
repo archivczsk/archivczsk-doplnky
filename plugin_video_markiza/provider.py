@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from tools_archivczsk.contentprovider.exception import AddonErrorException
+from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.string_utils import _I, _C, _B, decode_html
 from tools_archivczsk.debug.http import dump_json_request
 import sys
@@ -47,8 +48,10 @@ def img_res(url):
 
 class MarkizaContentProvider(CommonContentProvider):
 
-	def __init__(self, settings=None, data_dir=None):
+	def __init__(self, settings=None, data_dir=None, http_endpoint=None):
 		CommonContentProvider.__init__(self, 'Markiza', settings=settings, data_dir=data_dir)
+		self.http_endpoint = http_endpoint
+		self.last_hls = None
 		self.login_optional_settings_names = ('username', 'password')
 		self.req_session = requests.Session()
 		self.req_session.headers.update(COMMON_HEADERS)
@@ -94,14 +97,14 @@ class MarkizaContentProvider(CommonContentProvider):
 
 		# check if login passed
 		if not self.check_login():
-			self.login_error("Prihlásenie zlyhalo - skontrolujte prihlasovacie meno a heslo")
+			self.login_error(self._("Login failed - check login name and password"))
 			return False
 
 		# get votoken cookie and store it
 		data['session'] = self.req_session.cookies.get('votoken')
 
 		if not data['session']:
-			self.login_error("Nepodarilo sa vytvoriť prihlasovaciu session. Možno nastala zmena spôsobu prihásenia.")
+			self.login_error(self._("Failed to create login session. Maybe login page has changed."))
 			return False
 
 		data['checksum'] = cks
@@ -146,20 +149,20 @@ class MarkizaContentProvider(CommonContentProvider):
 		if response.status_code == 200:
 			return BeautifulSoup(response.content, "html.parser")
 		else:
-			raise AddonErrorException('HTTP reponse code: %d' % response.status_code)
+			raise AddonErrorException(self._('HTTP response code') + ': %d' % response.status_code)
 
 	# ##################################################################################################################
 
 	def root(self):
 		if not bs4_available:
-			self.show_info("K fungovniu doplnku TV Markiza si musíte pomocou svojho správcu balíkov doinštalovať BeautifulSoup4. Hľadejte balík se menem:\npython{0}-beautifulsoup4 alebo python{0}-bs4".format('3' if sys.version_info[0] == 3 else ''))
+			self.show_info(self._("In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\npython{0}-beautifulsoup4 or python{0}-bs4)").format('3' if sys.version_info[0] == 3 else ''))
 			return
 
 		if self.login_ok:
 			self.add_video('Markíza Live', cmd=self.resolve_video, video_title="Markíza Live", url="live/1-markiza", download=False)
 
-		self.add_dir("Posledné epizódy", cmd=self.list_recent_episodes)
-		self.add_dir("TOP programy", cmd=self.list_shows_menu)
+		self.add_dir(self._("Latest episodes"), cmd=self.list_recent_episodes)
+		self.add_dir(self._("TOP programs"), cmd=self.list_shows_menu)
 
 	# ##################################################################################################################
 
@@ -220,15 +223,15 @@ class MarkizaContentProvider(CommonContentProvider):
 			}
 
 			menu = {}
-			self.add_menu_item(menu, 'Prejsť na reláciu', cmd=self.list_episodes, url=show_url, category=True)
+			self.add_menu_item(menu, self._('Go to show'), cmd=self.list_episodes, url=show_url, category=True)
 			self.add_video(video_title, img, info_labels, menu=menu, cmd=self.resolve_video, video_title=video_title, url=article.find("a", {"class": "img"})["href"])
 
 	# ##################################################################################################################
 
 	def list_shows_menu(self):
-		self.add_dir('Nejlepšie', cmd=self.list_shows, selector='c-show-wrapper -highlight tab-pane fade show active')
-		self.add_dir('Najnovšie', cmd=self.list_shows, selector='c-show-wrapper -highlight tab-pane fade')
-		self.add_dir('Všetky', cmd=self.list_shows, selector='c-show-wrapper')
+		self.add_dir(self._('Best'), cmd=self.list_shows, selector='c-show-wrapper -highlight tab-pane fade show active')
+		self.add_dir(self._('Latest'), cmd=self.list_shows, selector='c-show-wrapper -highlight tab-pane fade')
+		self.add_dir(self._('All'), cmd=self.list_shows, selector='c-show-wrapper')
 
 	# ##################################################################################################################
 
@@ -248,7 +251,7 @@ class MarkizaContentProvider(CommonContentProvider):
 		list_voyo = self.get_setting('list-voyo')
 
 		if category:
-			self.add_dir("Kategórie", cmd=self.list_categories, url=url)
+			self.add_dir(self._("Categories"), cmd=self.list_categories, url=url)
 			url += "/videa/cele-epizody"
 
 		soup = self.call_api(url)
@@ -297,48 +300,33 @@ class MarkizaContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def resolve_streams(self, url, max_bitrate=None):
-		try:
-			headers = {
+	def get_hls_info(self, stream_key):
+		return {
+			'url': self.last_hls,
+			'bandwidth': stream_key,
+			'headers': {
 				'referer': REFERER_MEDIA,
 				'origin': REFERER_MEDIA
 			}
-			req = self.call_api(url, headers=headers, raw_response=True)
-		except:
-			self.log_exception()
-			self.show_error("Problém při načítaním videa - URL neexistuje")
-			return None
+		}
 
-		if req.status_code != 200:
-			self.show_error("Problém při načtení videa - neočekávaný návratový kód %d" % req.status_code)
-			return None
+	# ##################################################################################################################
 
-		if max_bitrate and int(max_bitrate) > 0:
-			max_bitrate = int(max_bitrate) * 1000000
-		else:
-			max_bitrate = 100000000
+	def resolve_streams(self, url, max_bitrate=None):
+		headers = {
+			'referer': REFERER_MEDIA,
+			'origin': REFERER_MEDIA
+		}
 
-		streams = []
-#		self.log_info("Playlist data:\n%s" % req.text)
-		for m in re.finditer(r'^#EXT-X-STREAM-INF:(?P<info>.+)\n(?P<chunk>.+)', req.text, re.MULTILINE):
-			stream_info = {}
-			for info in re.split(r''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', m.group('info')):
-				key, val = info.split('=', 1)
-				stream_info[key.lower()] = val
+		streams = self.get_hls_streams(url, headers=headers, requests_session=self.req_session, max_bitrate=max_bitrate)
 
-			stream_url = m.group('chunk')
+		self.last_hls = url
 
-			if not stream_url.startswith('http'):
-				if stream_url.startswith('/'):
-					stream_url = url[:url[9:].find('/') + 9] + stream_url
-				else:
-					stream_url = url[:url.rfind('/') + 1] + stream_url
+		for stream in streams:
+			stream['url'] = stream_key_to_hls_url(self.http_endpoint, stream['bandwidth'])
+#			self.log_debug("HLS for bandwidth %s: %s" % (stream['bandwidth'], stream['url']))
 
-			stream_info['url'] = stream_url
-			if int(stream_info['bandwidth']) <= max_bitrate:
-				streams.append(stream_info)
-
-		return sorted(streams, key=lambda i: int(i['bandwidth']), reverse=True)
+		return streams
 
 	# ##################################################################################################################
 
@@ -352,7 +340,7 @@ class MarkizaContentProvider(CommonContentProvider):
 			try:
 				embeded_url = soup.find("div", {"class": "js-player-detach-container"}).find("iframe")["src"]
 			except:
-				self.show_info("Video nebolo nájdené.")
+				self.show_info(self._("Video not found."))
 
 #		self.log_info("Embedded url: %s" % embeded_url)
 		embeded = self.call_api(embeded_url)
@@ -379,7 +367,7 @@ class MarkizaContentProvider(CommonContentProvider):
 				if '\n' in embeded_text:
 					embeded_text = embeded_text[embeded_text.rfind('\n'):]
 
-				self.show_info("Nepodarilo sa prehrať video: %s" % embeded_text.replace('Error', '').strip())
+				self.show_info(self._("Failed to play video") + ": %s" % embeded_text.replace('Error', '').strip())
 
 		if resolved_url:
 			stream_links = self.resolve_streams(resolved_url, self.get_setting('max_bitrate'))

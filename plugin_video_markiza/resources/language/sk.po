@@ -1,0 +1,107 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_markiza\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-03-13 13:00+0100\n"
+"PO-Revision-Date: 2023-03-13 13:00+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: sk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: plugin_video_markiza/provider.py:100
+msgid "Login failed - check login name and password"
+msgstr "Prihlásenie zlyhalo - skontrolujte prihlasovacie meno a heslo"
+
+#: plugin_video_markiza/provider.py:107
+msgid "Failed to create login session. Maybe login page has changed."
+msgstr "Nepodarilo sa vytvoriť prihlasovaciu session. Možno nastala zmena spôsobu prihásenia."
+
+#: plugin_video_markiza/provider.py:152
+msgid "HTTP response code"
+msgstr "HTTP návratový kód"
+
+#: plugin_video_markiza/provider.py:158
+#, python-brace-format
+msgid ""
+"In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\n"
+"python{0}-beautifulsoup4 or python{0}-bs4)"
+msgstr ""
+"K fungovaniu doplnku si musíte pomocou svojho správcu balíkov doinštalovať BeautifulSoup4. Hľadajte balík se menom:\n"
+"python{0}-beautifulsoup4 alebo python{0}-bs4"
+
+#: plugin_video_markiza/provider.py:164
+msgid "Latest episodes"
+msgstr "Posledné epizódy"
+
+#: plugin_video_markiza/provider.py:165
+msgid "TOP programs"
+msgstr "TOP programy"
+
+#: plugin_video_markiza/provider.py:226
+msgid "Go to show"
+msgstr "Prejsť na reláciu"
+
+#: plugin_video_markiza/provider.py:232
+msgid "Best"
+msgstr "Nejlepšie"
+
+#: plugin_video_markiza/provider.py:233
+msgid "Latest"
+msgstr "Najnovšie"
+
+#: plugin_video_markiza/provider.py:234
+msgid "All"
+msgstr "Všetky"
+
+#: plugin_video_markiza/provider.py:254
+msgid "Categories"
+msgstr "Kategórie"
+
+#: plugin_video_markiza/provider.py:343
+msgid "Video not found."
+msgstr "Video nebolo nájdené."
+
+#: plugin_video_markiza/provider.py:370
+msgid "Failed to play video"
+msgstr "Nepodarilo sa prehrať video"
+
+msgid "Login name"
+msgstr "Prihlasovacie meno"
+
+msgid "Login password"
+msgstr "Prihlasovacie heslo"
+
+msgid "Show VOYO content (marked as *)"
+msgstr "Zobrazovať VOYO obsah (označí sa *)"
+
+msgid "Maximum bandwidth of the offered stream"
+msgstr "Maximálny dátový tok ponúkaného streamu"
+
+msgid "Unlimited"
+msgstr "Bez obmedzenia"
+
+msgid "8 Mbit/s"
+msgstr ""
+
+msgid "6 Mbit/s"
+msgstr ""
+
+msgid "4 Mbit/s"
+msgstr ""
+
+msgid "3 Mbit/s"
+msgstr ""
+
+msgid "2 Mbit/s"
+msgstr ""
+
+#~ msgid "Login failed - check login username and password"
+#~ msgstr "Prihlásenie zlyhalo - skontrolujte prihlasovacie meno a heslo"
