@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <settings>
-  <setting label="30050" id="quality" type="enum" lvalues="30051|30052|30053" default="0" />
-  <setting label="Zobrazovat VOYO obsah (označí se *)" id="list-voyo" type="bool" default="true" />
-  <setting label="Přihašovací jméno" id="username" type="text" default="" visible="false"/>
-  <setting label="Heslo" id="password" type="text" default="" option="true" visible="false"/>
+  <setting label="Login name" id="username" type="text" default=""/>
+  <setting label="Login password" id="password" type="password" default=""/>
+  <setting label="Show VOYO content (marked as *)" id="list-voyo" type="bool" default="true" />
+  <setting label="Maximum bandwidth of the offered stream" id="max_bitrate" type="keyenum" values="0;Unlimited|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
 </settings>

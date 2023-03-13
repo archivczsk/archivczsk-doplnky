@@ -1,3 +1,7 @@
+2023-03-13 (verze 3.2)
+* úprava po vzore Markiza doplnku
+* oprava prehrávania zvuku po zmenách vo formáte streamov
+* pridanie en/cs/sk lokalizácie
 2023-01-27 (verze 3.1)
 * kompletne novy addon kvuli zmenam na strance 
 2022-09-19 (verze 3.0)

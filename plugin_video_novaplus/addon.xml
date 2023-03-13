@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.novaplus" name="TV Nova" provider-name="archivczsk" version="3.1">
+<addon id="plugin.video.novaplus" name="TV Nova" provider-name="archivczsk" version="3.2">
 	<requires>
 		<import addon="enigma2.archivczsk" version="2.0.0"/>
-		<import addon="tools.xbmc" version="1.0" />
+		<import addon="tools.archivczsk" version="1.4" />
 	</requires>
 	<extension point="archivczsk.addon.video"/>
 	<extension point="archivczsk.addon.metadata">
 		<description lang="en">Plugin to play TV video archive tv.nova.cz</description>
 		<description lang="cs">Plugin pro přehrávání videí z archivu tv.nova.cz</description>
+		<description lang="sk">Plugin pre prehrávanie videí z archívu tv.nova.cz</description>
 	</extension>
 </addon>
