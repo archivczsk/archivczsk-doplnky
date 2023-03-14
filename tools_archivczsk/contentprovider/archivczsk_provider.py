@@ -127,8 +127,10 @@ class ArchivCZSKContentProvider(object):
 		self.provider.get_text_input = self.get_text_input
 		self.provider.refresh_screen = self.refresh_screen
 		self.provider._ = addon.get_localized_string
+		self.initialised_cbk_called = False
+		self.login_tries = 0
 
-		self.logged_in = self.process_login()
+		self.logged_in = self.process_login() # True = logged in, False = not logged, None = unknown
 
 		if hasattr(self.provider, 'login_settings_names'):
 			# if provider provided settings needed for login, then install notifier for autolog call
@@ -138,10 +140,13 @@ class ArchivCZSKContentProvider(object):
 			# if provider provided settings needed for login, then install notifier for autolog call
 			self.addon.add_setting_change_notifier(self.provider.login_optional_settings_names, self.login_data_changed)
 
-		try:
-			self.provider.initialised()
-		except:
-			self.log_error("Call of initalised callback failed:\n%s" % traceback.format_exc())
+		if self.logged_in != None:
+			self.call_initialised_cbk()
+		else:
+			# login ended with unknown login state, so do not call initialised callbacks - they need to know real login state (true/false)
+			# plan login refresh in background
+			self.log_info("Login status is unknown - planing delayed login in background")
+			self.login_delayed()
 
 	# #################################################################################################
 	
@@ -153,6 +158,16 @@ class ArchivCZSKContentProvider(object):
 
 	def log_error(self, msg):
 		client.log.error('[%s] %s' % (self.provider.name, msg))
+
+	# #################################################################################################
+
+	def call_initialised_cbk(self):
+		if self.initialised_cbk_called == False:
+			try:
+				self.initialised_cbk_called = True
+				self.provider.initialised()
+			except:
+				self.log_error("Call of initalised callback failed:\n%s" % traceback.format_exc())
 
 	# #################################################################################################
 
@@ -168,12 +183,18 @@ class ArchivCZSKContentProvider(object):
 				if value == "":
 					return False
 		
+		# check if we have correct time set - without correct time login process can fail
+		if int(time.time()) < 1678802000:
+			self.log_error("Time is not correct - returning unknown login state")
+			return None
+
 		# pre-checks passed - process real login
-		logged_in = False
+		logged_in = None
 		
 		try:
 			logged_in = self.provider.login(silent)
 		except LoginException as e:
+			logged_in = False
 			self.log_error("Login failed: %s" % str(e))
 
 			if not silent:
@@ -189,18 +210,53 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 
+	def login_delayed(self):
+		def __try_login():
+			if self.logged_in != None:
+				return
+
+			if not self.login_refresh_running:
+				self.log_debug("Trying new login in background")
+
+				self.login_refresh_running = True
+
+				self.logged_in = self.process_login()
+
+				if self.logged_in == None:
+					self.login_tries += 1
+
+					if self.login_tries < 5:
+						self.addon.bgservice.run_delayed('login_delayed(try login)', 30, None, __try_login)
+					else:
+						self.log_error("Background login failed: max retries reached")
+				else:
+					self.login_tries = 0
+					self.log_info("Background login finished with status: %s" % str(self.logged_in))
+					self.call_initialised_cbk()
+
+				self.login_refresh_running = False
+			else:
+				self.log_debug("Background login already running")
+
+		self.addon.bgservice.run_delayed('login_delayed(try login)', 10, None, __try_login)
+
+	# #################################################################################################
+
 	def login_data_changed(self, name, value):
 
 		def __login_refreshed(success, result):
-			if self.logged_in:
-				self.log_debug("Login refreshed successfuly")
+			if self.logged_in == True:
+				self.log_debug("Login refreshed successfuly - user is logged in")
+			elif self.logged_in == False:
+				self.log_debug("Login refresh failed - user is not logged")
 			else:
-				self.log_debug("Login refresh failed")
+				self.log_debug("Login refresh failed - error occured during operation")
 
 			self.login_refresh_running = False
 
 		def __process_login_refresh():
 			self.logged_in = self.process_login()
+			self.call_initialised_cbk()
 
 		if not self.login_refresh_running:
 			self.log_debug("Login data changed - starting new login in background")
@@ -257,17 +313,21 @@ class ArchivCZSKContentProvider(object):
 		
 	# #################################################################################################
 
-	def __run(self, session, params, allow_retry=True):
+	def run(self, session, params, allow_retry=True):
 		self.session = session
 		
-		if self.logged_in == False:
+		if self.logged_in != True:
 			# this must be set to prevent calling login refresh when login config option changes during login phase
 			# for example when during login new device id is generated
 			self.login_refresh_running = True
 			self.logged_in = self.process_login(False)
 			self.login_refresh_running = False
 
-		if self.logged_in == False:
+		if self.logged_in != None:
+			# check if initialised callback was called and if not then call it
+			self.call_initialised_cbk()
+
+		if self.logged_in != True:
 			return
 
 		try:
@@ -291,7 +351,7 @@ class ArchivCZSKContentProvider(object):
 			# login exception handler - try once more with new login
 			self.logged_in = False
 			if allow_retry:
-				return self.__run(session, params, False)
+				return self.run(session, params, False)
 			else:
 				# login method returned True, but run returned LoginException
 				client.showError(_('Login failed') + ': ' + str(e))
@@ -307,11 +367,6 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 
-	def run(self, session, params):
-		self.__run(session, params)
-		
-	# #################################################################################################
-	
 	def trakt(self, session, item, action, result ):
 		if hasattr(self.provider, 'trakt'):
 			self.session = session

@@ -1,6 +1,7 @@
 1.5 - 14.03.2023
-    - malé vylepšenia v nastaveniach epgimport
-    - pridaný reload settingov priamo cez enigmu namiesto web rozhrania
+    - set additional settings for epgimport
+    - added userbouquet reload using enigma instead of web interface
+    - enhanced login procedure - added unknown login state and background delayed login
 
 1.4 - 13.03.2023
     - added hls http handler
