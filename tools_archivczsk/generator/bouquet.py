@@ -65,6 +65,16 @@ class BouquetGeneratorTemplate:
 	# #################################################################################################
 	
 	def reload_bouquets(self):
+		try:
+			# try to reload bouquets directly using enigma
+			from enigma import eDVBDB
+			eDVBDB.getInstance().reloadBouquets()
+			return
+		except:
+			raise
+			pass
+
+		# fallback - use webinterface to reload bouquets
 		session_id = None
 		
 		try:
