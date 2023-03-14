@@ -170,6 +170,8 @@ class XmlEpgGeneratorTemplate:
 			if config.plugins.epgimport.enabled.value == False:
 				config.plugins.epgimport.enabled.value = True
 				config.plugins.epgimport.enabled.save()
+				config.plugins.epgimport.import_onlybouquet.value = False
+				config.plugins.epgimport.import_onlybouquet.save()
 
 				if autoStartTimer is not None:
 					autoStartTimer.update()
