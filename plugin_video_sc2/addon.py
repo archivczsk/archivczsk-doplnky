@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import sys, os, requests, hashlib, re, datetime, json, math, uuid, unicodedata
+import sys, os, requests, hashlib, re, datetime, json, math, uuid, unicodedata, traceback
 from xml.etree import ElementTree as ET
 from string import ascii_uppercase, ascii_lowercase, digits
 from Screens.MessageBox import MessageBox
@@ -46,7 +46,9 @@ def scc_run(session, params):
 	bitrates = [0, 1, 2, 3, 4, 5, 10, 15, 20, 30, 40, 50]
 	quality_map = {144: '144p', 240: '240p', 360: '360p', 480: '480p', 720: '720p', 1080: '1080p', 2160: '2160p', 4320: '4320p'}
 	max_studios = 500
-	loading_timeout = int(addon.getSetting('loading_timeout')) if addon.getSetting('loading_timeout') else 15
+	loading_timeout = int(addon.getSetting('loading_timeout'))
+	if loading_timeout == 0:
+		loading_timeout = None
 
 	def writeLog(msg, type='INFO'):
 		try:
@@ -124,11 +126,13 @@ def scc_run(session, params):
 			data = requests.get(url=url, data=post_data, headers={'User-Agent': UA2, 'X-Uuid': xuuid, 'Content-Type': 'application/json'}, timeout=loading_timeout)
 #			client.log.debug("API Request: %s" % data.url)
 			if data.status_code != 200:
+				client.log.error("SCC API request failed. Returned HTTP response code: %d" % data.status_code)
 				client.add_operation("SHOW_MSG", {'msg': addon.getLocalizedString(30501), 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
 				return {'data': "" }
 			else:
 				return data.json()
 		except Exception as e:
+			client.log.error("SCC API request failed:\n%s" % traceback.format_exc())
 			client.add_operation("SHOW_MSG", {'msg': addon.getLocalizedString(30501), 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
 			pass
 		return {'data': "" }
