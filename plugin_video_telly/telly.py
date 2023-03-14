@@ -151,12 +151,9 @@ class Telly:
 #			dump_json_request(resp)
 			
 			if resp.status_code == 200:
-				try:
-					return resp.json()
-				except:
-					return {}
+				return resp.json()
 			else:
-				err_msg = "Server returned unexpected status code: %d" % resp.status_code
+				self._("Unexpected return code from server") + ": %d" % resp.status_code
 		except Exception as e:
 			self.log_function("TELLY ERROR:\n"+traceback.format_exc())
 			err_msg = str(e)
@@ -164,7 +161,7 @@ class Telly:
 		if err_msg:
 			self.log_function( "Telly error for URL %s: %s" % (url, traceback.format_exc()))
 			self.log_function( "Telly: %s" % err_msg )
-#			raise AddonErrorException(err_msg)
+			raise AddonErrorException(err_msg)
 
 		return None
 	
@@ -186,10 +183,10 @@ class Telly:
 	# #################################################################################################
 
 	def check_token(self):
-		if not self.token_is_valid():
+		resp = self.token_is_valid()
+
+		if resp == False:
 			raise LoginException(self._("Login token is invalid. Pair device again."))
-		else:
-			raise AddonErrorException(self._('Unexpected answer from server. Try to repeat operation again.'))
 
 	# #################################################################################################
 

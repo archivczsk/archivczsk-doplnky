@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_telly\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-09 18:43+0100\n"
-"PO-Revision-Date: 2023-03-09 18:48+0100\n"
+"POT-Creation-Date: 2023-03-14 15:31+0100\n"
+"PO-Revision-Date: 2023-03-14 15:32+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -28,13 +28,13 @@ msgstr ""
 "Párovanie zariadenia s vašim Telly účtom zlyhalo.\n"
 "Skontrolujte správnosť párovacieho kódu a skúste to znavu."
 
-#: plugin_video_telly/telly.py:190
+#: plugin_video_telly/telly.py:156
+msgid "Unexpected return code from server"
+msgstr "Neočakávaný návratový kód zo servera"
+
+#: plugin_video_telly/telly.py:189
 msgid "Login token is invalid. Pair device again."
 msgstr "Prihlasovací token je neplatný. Spárujte zariadenie znova."
-
-#: plugin_video_telly/telly.py:192
-msgid "Unexpected answer from server. Try to repeat operation again."
-msgstr "Neočakávaná odpoveď zo servera. Skúste operáciu zopakovať."
 
 msgid "Enable H.265 video codec"
 msgstr "Povoliť H.265 video kodek"
@@ -107,3 +107,6 @@ msgstr ""
 
 msgid "DVB (OE>=2.5)"
 msgstr ""
+
+#~ msgid "Unexpected answer from server. Try to repeat operation again."
+#~ msgstr "Neočakávaná odpoveď zo servera. Skúste operáciu zopakovať."
