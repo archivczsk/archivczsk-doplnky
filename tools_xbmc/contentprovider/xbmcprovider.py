@@ -65,6 +65,9 @@ class XBMContentProvider(object):
 
 	def run(self, params):
 		rslog.logDebug("XBMC run params=%s"%params)
+
+		self.provider.silent_mode = params.get('silent_mode', False)
+
 		if params == {} or params == self.params():
 			return self.root()
 		elif 'list' in list(params.keys()):

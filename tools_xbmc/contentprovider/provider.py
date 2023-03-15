@@ -62,6 +62,7 @@ class ContentProvider(object):
 		self.tmp_dir = tmp_dir
 		self.cache = StorageServer(self.name, 24)
 		self.lang = 'cs' # initialize, current language could be set by XBMContentProvider
+		self.silent_mode = False # initialize, current mode will be setby XBMContentProvider
 
 	def __str__(self):
 		return 'ContentProvider' + self.name

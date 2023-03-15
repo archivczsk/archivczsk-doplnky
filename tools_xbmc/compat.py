@@ -12,6 +12,12 @@ class XBMCCompatInterface():
 
 	# #################################################################################################
 
+	def run_silent(self, session, params):
+		params['silent_mode'] = True
+		self.xbmc_run_cbk(session, params)
+
+	# #################################################################################################
+
 	def stats(self, session, item, action, **extra_params):
 		params = {
 			'cp': 'czsklib',
