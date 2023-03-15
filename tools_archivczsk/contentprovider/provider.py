@@ -76,6 +76,9 @@ class CommonContentProvider(object):
 		self.data_dir = data_dir if data_dir else '/tmp'
 		self.__initialised_cbks = []
 
+		# if silent_mode is set to True, then addon should not perform any user interaction and should do all work silently
+		self.silent_mode = False
+
 		# If you set this property, then values of those settings names will be checked, if they are filled.
 		# If not, then login process will end as not logged and no login() method will be called. If some of those
 		# settings changes, then new login procedure will be automaticaly called.
@@ -453,6 +456,13 @@ class CommonContentProvider(object):
 		}
 		"""
 		pass
+
+	def add_playlist(self, title):
+		"""
+		Adds new playlist to content screen and returns interface to add items to it (using add_video and add_play methods)
+		"""
+		# just fake interface here
+		return self
 
 	def add_menu_item(self, menu, title, cmd=None, **cmd_args):
 		'''

@@ -118,6 +118,7 @@ class ArchivCZSKContentProvider(object):
 		self.provider.add_next = self.add_next
 		self.provider.add_video = self.add_video
 		self.provider.add_play = self.add_play
+		self.provider.add_playlist = self.add_playlist
 		self.provider.add_menu_item = self.add_menu_item
 		self.provider.show_info = self.show_info
 		self.provider.show_error = self.show_error
@@ -288,23 +289,23 @@ class ArchivCZSKContentProvider(object):
 			i = 1
 			for pl_item in self.__playlist:
 				if not pl_name:
-					pl_name = pl_item['name']
+					pl_name = pl_item['title']
 				
 				# create nice names for streams
 				prefix = '[%d] ' % i
 				
 				for key in ('quality', 'bandwidth', 'vcodec', 'acodec', 'lang'):
-					if key in pl_item['infoLabels']:
+					if key in pl_item['info_labels']:
 						if key == 'bandwidth':
-							if int(pl_item['infoLabels'][key]) > 100:
+							if int(pl_item['info_labels'][key]) > 100:
 								# filter out garbage
-								prefix += '[%.1f MBit/s] ' % (float(pl_item['infoLabels'][key]) / 1000000)
+								prefix += '[%.1f MBit/s] ' % (float(pl_item['info_labels'][key]) / 1000000)
 						else:
-							prefix += '[%s] ' % pl_item['infoLabels'][key]
+							prefix += '[%s] ' % pl_item['info_labels'][key]
 
-				pl_item['infoLabels']['title'] = pl_item['infoLabels'].get('title', pl_item['name'])
-				pl_item['name'] = prefix + pl_item['name']
-				playlist.append(client.create_video_it(**pl_item))
+				pl_item['info_labels']['title'] = pl_item['info_labels'].get('title', pl_item['title'])
+				pl_item['title'] = prefix + pl_item['title']
+				playlist.append(self.create_play_item(**pl_item))
 				i += 1
 			
 			client.add_playlist(pl_name, playlist)
@@ -313,14 +314,14 @@ class ArchivCZSKContentProvider(object):
 		
 	# #################################################################################################
 
-	def run(self, session, params, allow_retry=True):
+	def run(self, session, params, silent=False, allow_retry=True):
 		self.session = session
 		
 		if self.logged_in != True:
 			# this must be set to prevent calling login refresh when login config option changes during login phase
 			# for example when during login new device id is generated
 			self.login_refresh_running = True
-			self.logged_in = self.process_login(False)
+			self.logged_in = self.process_login(silent)
 			self.login_refresh_running = False
 
 		if self.logged_in != None:
@@ -331,6 +332,8 @@ class ArchivCZSKContentProvider(object):
 			return
 
 		try:
+			self.provider.silent_mode = silent
+
 			if params == {}:
 				self.provider.root()
 			elif 'CP_action' in params:
@@ -351,7 +354,7 @@ class ArchivCZSKContentProvider(object):
 			# login exception handler - try once more with new login
 			self.logged_in = False
 			if allow_retry:
-				return self.run(session, params, False)
+				return self.run(session, params, silent, False)
 			else:
 				# login method returned True, but run returned LoginException
 				client.showError(_('Login failed') + ': ' + str(e))
@@ -364,6 +367,11 @@ class ArchivCZSKContentProvider(object):
 
 		except AddonWarningException as e:
 			client.showWarning(str(e))
+
+	# #################################################################################################
+
+	def run_silent(self, session, params):
+		self.run(session, params, silent=True)
 
 	# #################################################################################################
 
@@ -465,7 +473,7 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 	
-	def __auto_play_video(self, title, urls, info_labels, data_item, trakt_item, download, **cmd_args):
+	def _auto_play_video(self, title, urls, info_labels, data_item, trakt_item, download, **cmd_args):
 		if not isinstance(urls, type([])):
 			urls = [urls]
 		
@@ -482,7 +490,7 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 	
-	def add_video(self, title, img=None, info_labels={}, menu={}, data_item=None, trakt_item=None, download=True, cmd=None, **cmd_args):
+	def create_video_item(self, title, img=None, info_labels={}, menu={}, data_item=None, trakt_item=None, download=True, cmd=None, **cmd_args):
 		"""
 		Actually the same as directory, but with different icon - should produce resolved video items using add_play()
 		
@@ -492,21 +500,56 @@ class ArchivCZSKContentProvider(object):
 		More items can be passed as list (without callable type)
 		"""
 		if cmd == None or callable(cmd):
-			client.add_dir(title, self.action(cmd, **cmd_args), image=img, infoLabels=info_labels, menuItems=menu, video_item=True, dataItem=data_item, traktItem=trakt_item, download=download)
+			item = client.create_directory_it(title, self.action(cmd, **cmd_args), image=img, infoLabels=info_labels, menuItems=menu, video_item=True, dataItem=data_item, traktItem=trakt_item, download=download)
 		else:
-			client.add_dir(title, self.action(self.__auto_play_video, title=title, urls=cmd, info_labels=info_labels, data_item=data_item, trakt_item=trakt_item, download=download, **cmd_args), image=img, infoLabels=info_labels, menuItems=menu, video_item=True, dataItem=data_item, traktItem=trakt_item, download=download)
+			item = client.create_directory_it(title, self.action(self._auto_play_video, title=title, urls=cmd, info_labels=info_labels, data_item=data_item, trakt_item=trakt_item, download=download, **cmd_args), image=img, infoLabels=info_labels, menuItems=menu, video_item=True, dataItem=data_item, traktItem=trakt_item, download=download)
+
+		return item
+
+	def add_video(self, *args, **kwargs):
+		item = self.create_video_item(*args, **kwargs)
+		client.add_item(item)
 	
 	# #################################################################################################
-	
+
+	def create_play_item(self, title, url, info_labels={}, data_item=None, trakt_item=None, subs=None, settings=None, live=False, download=True):
+		return client.create_video_it(name=title, url=url, subs=subs, infoLabels=info_labels, live=live, settings=settings, dataItem=data_item, traktItem=trakt_item, download=download)
+
 	def add_play(self, title, url, info_labels={}, data_item=None, trakt_item=None, subs=None, settings=None, live=False, download=True, playlist_autogen=True):
-		def __add_play(**kwargs):
-			if playlist_autogen:
-				self.__playlist.append(kwargs)
-			else:
-				client.add_video(**kwargs)
+		kwargs = {
+			'title': title,
+			'url': url,
+			'info_labels': info_labels,
+			'data_item': data_item,
+			'trakt_item': trakt_item,
+			'subs': subs,
+			'settings': settings,
+			'live': live,
+			'download': download
+		}
+
+		if playlist_autogen:
+			self.__playlist.append(kwargs)
+		else:
+			item = self.create_play_item(**kwargs)
+			client.add_item(item)
+
+	# #################################################################################################
+
+	def add_playlist(self, title):
+		class PlaylistInterface(object):
+			def __init__(self, aczsk_provider, playlist):
+				self.playlist = playlist
+				self.aczsk_provider = aczsk_provider
+
+			def add_play(self, *args, **kwargs):
+				self.playlist.add(self.aczsk_provider.create_play_item(*args, **kwargs))
+
+			def add_video(self, *args, **kwargs):
+				self.playlist.add(self.aczsk_provider.create_video_item(*args, **kwargs))
+
+		return PlaylistInterface(self, client.add_playlist(title))
 		
-		__add_play(name=title, url=url, subs=subs, infoLabels=info_labels, live=live, settings=settings, dataItem=data_item, traktItem=trakt_item, download=download)
-				
 	# #################################################################################################
 	
 	def show_error(self, msg, noexit=False, timeout=0, can_close=True ):

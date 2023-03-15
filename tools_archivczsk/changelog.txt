@@ -1,3 +1,7 @@
+1.6 - 15.03.2023
+    - added support for playlists to provider
+    - added silent run mode
+
 1.5 - 14.03.2023
     - set additional settings for epgimport
     - added userbouquet reload using enigma instead of web interface
