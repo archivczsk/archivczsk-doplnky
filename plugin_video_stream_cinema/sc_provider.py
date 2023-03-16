@@ -960,7 +960,7 @@ class StreamCinemaContentProvider(ContentProvider):
 		last_position = self.watched.get_last_position( info_item.get('url') )
 		duration = info_item.get('info', {}).get('duration')
 		
-		if last_position > 0 and (not duration or last_position < (duration * self.settings['last-play-pos-limit']) // 100):
+		if self.silent_mode == False and last_position > 0 and (not duration or last_position < (duration * self.settings['last-play-pos-limit']) // 100):
 			if client.getYesNoInput(self.session, "Obnoviť prehrávanie od poslednej pozície?"):
 				item['playerSettings'] = { 'resume_time_sec' : last_position }
 		
@@ -1103,7 +1103,7 @@ class StreamCinemaContentProvider(ContentProvider):
 		
 		if len( streams_filtered ) > 0:
 			streams = streams_filtered
-			if len(streams) == 1:
+			if len(streams) == 1 or self.silent_mode:
 				return self.create_video_item( streams[0], result.get('info') )
 		else:
 			# no stream passed filtering - let the user decide what now
