@@ -9,5 +9,5 @@ from .provider import TellyContentProvider
 
 def main(addon):
 	cp = TellyContentProvider(addon.settings, data_dir=addon.get_info('profile'), http_endpoint=archivCZSKHttpServer.getAddonEndpoint(addon.id), bgservice=addon.bgservice)
-	archivCZSKHttpServer.registerRequestHandler(PlayliveTVHTTPRequestHandler(cp, addon, cache_life=0))
+	archivCZSKHttpServer.registerRequestHandler(PlayliveTVHTTPRequestHandler(cp, addon))
 	return ArchivCZSKContentProvider(cp, addon)
