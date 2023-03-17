@@ -73,14 +73,11 @@ def getAccessToken(refresh=False, device=None):
 
 def login(email, password, device_id):
 	s = requests.Session()
-
-	cookies = {
-		'prima_device_id': device_id,
-		'from_mobile_app': '1'
-	}
+	s.cookies.set('prima_device_id', device_id, domain='.iprima.cz')
+	s.cookies.set('from_mobile_app', '1', domain='.iprima.cz')
 
 	# Get login page
-	login_page = s.get('https://auth.iprima.cz/oauth2/login', cookies=cookies, verify=False)
+	login_page = s.get('https://auth.iprima.cz/oauth2/login', verify=False)
 	login_page_content = login_page.text
 
 	# Acquire CSRF token
@@ -97,7 +94,14 @@ def login(email, password, device_id):
 		'_email': email,
 		'_password': password,
 		'_csrf_token': csrf_token
-	}, cookies=cookies, verify=False)
+	}, verify=False)
+
+	if do_login.status_code != 200:
+		client.showError('Přihlášení selhalo. Zkontrolujte přihlašovací jmémo a heslo.')
+		return
+
+	# select profile
+	do_login = s.get('https://auth.iprima.cz/user/profile-select', verify=False)
 
 	# Search for profile id and set it
 	profile_id_search = re.search('data-edit-url="/user/profile-edit/(.*)"', do_login.text)
@@ -108,9 +112,7 @@ def login(email, password, device_id):
 		client.showError('Nepodařilo se získat ID profilu')
 		return
 
-	cookies_profile = cookies.copy()
-	cookies_profile['prima_sso_profile'] = profile_id
-	do_profile_select = s.get('https://auth.iprima.cz/user/profile-select-perform/{}?continueUrl=/oauth2/authorize?response_type=code%26client_id=prima_sso%26redirect_uri=https://auth.iprima.cz/sso/auth-check%26scope=openid%20email%20profile%20phone%20address%20offline_access%26state=prima_sso%26auth_init_url=https://www.iprima.cz/%26auth_return_url=https://www.iprima.cz/?authentication%3Dcancelled'.format(profile_id), cookies=cookies_profile)
+	do_profile_select = s.get('https://auth.iprima.cz/user/profile-select-perform/{}?continueUrl=/oauth2/authorize?response_type=code%26client_id=prima_sso%26redirect_uri=https://auth.iprima.cz/sso/auth-check%26scope=openid%20email%20profile%20phone%20address%20offline_access%26state=prima_sso%26auth_init_url=https://www.iprima.cz/%26auth_return_url=https://www.iprima.cz/?authentication%3Dcancelled'.format(profile_id), verify=False)
 
 	# Acquire authorization code from profile select result
 	parsed_auth_url = urlparse(do_profile_select.url)
@@ -127,7 +129,7 @@ def login(email, password, device_id):
 		'grant_type': 'authorization_code',
 		'code': auth_code,
 		'redirect_uri': 'https://auth.iprima.cz/sso/auth-check'
-	}, cookies=cookies, verify=False)
+	}, verify=False)
 	if get_token.ok:
 		return get_token.json()
 	else:
