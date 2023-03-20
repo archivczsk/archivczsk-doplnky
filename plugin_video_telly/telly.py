@@ -381,6 +381,9 @@ class Telly:
 		params = dict(parse_qsl( u.query ))
 		url = urlunparse( (u.scheme, u.netloc, u.path, '', '', '') )
 		
+		if force_http:
+			url = url.replace('https://', 'http://')
+
 		if enable_h265:
 			profiles_h265 = [
 				'profile40', # H265 profil 4K 2160
