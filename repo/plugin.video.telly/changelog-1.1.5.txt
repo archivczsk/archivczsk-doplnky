@@ -1,0 +1,30 @@
+1.1.5 - 20.03.2023
+    - drobné opravy
+
+1.1.4 - 17.03.2023
+    - zapnutie cache pre resolvnuté streamy pre rýchlejšie prepínanie
+
+1.1.3 - 14.03.2023
+    - lepšie ošetrenie chybových stavov pri komunikácii so serverom
+
+1.1.2 - 02.03.2023
+	- pridanie EN/CZ/SK lokalizácie
+
+1.1.1 - 21.02.2023
+    - pridanie timeoutov a spoločnej session pre API volania
+
+1.1.0 - 29.01.2023
+    - konverzia na modul pre archivCZSK >= 2.0.0
+
+1.0.3 - 01.12.2022
+    - podpora pre zapínanie/vypínanie podpornej služby podľa potreby
+    
+1.0.2 - 26.07.2022
+    - pridaná možnosť vynútiť streamovanie cez http namiesto https
+
+1.0.1 - 22.07.2022
+    - oprava behu na python3 a DreamOS
+    
+1.0.0 - 18.07.2022
+    - úvodná verejná verzia
+	- podpora pre Live TV, archív a userbouquet
