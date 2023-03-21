@@ -280,7 +280,7 @@ class ArchivCZSKContentProvider(object):
 		# check if there are som playable items in playlist			
 		if len( self.__playlist ) == 1:
 			# only one item - create one normal video item
-			client.add_video(**self.__playlist[0])
+			client.add_item(self.create_play_item(**self.__playlist[0]))
 		elif len( self.__playlist ) > 1:
 			# we have more streams - create playlist and play the first one
 			playlist = []

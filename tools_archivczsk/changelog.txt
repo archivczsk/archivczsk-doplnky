@@ -1,3 +1,6 @@
+1.7 - 21.03.2023
+    - fixed bug when playlist contains only one item
+
 1.6 - 15.03.2023
     - added support for playlists to provider
     - added silent run mode
