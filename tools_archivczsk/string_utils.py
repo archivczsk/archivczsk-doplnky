@@ -78,22 +78,55 @@ def decode_html(data):
 	
 # #################################################################################################
 
-def _C(color, str):
+
+def _C(color, s):
 	"""
 	Returns colored text
 	"""
-	return '[COLOR %s]%s[/COLOR]' % (color, str)
+	return '[COLOR %s]%s[/COLOR]' % (color, s)
 
-def _B(str):
+
+def _B(s):
 	"""
 	Returns bold text
 	"""
-	return '[B]%s[/B]' % str
+	return '[B]%s[/B]' % s
 
-def _I(str):
+
+def _I(s):
 	"""
 	Returns italic text
 	"""
-	return '[I]%s[/I]' % str
+	return '[I]%s[/I]' % s
+
+# #################################################################################################
+
+def int_to_roman(i):
+	roman_map = (
+		('M', 1000),
+		('CM', 900),
+		('D', 500),
+		('CD', 400),
+		('C', 100),
+		('XC', 90),
+		('L', 50),
+		('XL', 40),
+		('X', 10),
+		('IX', 9),
+		('V', 5),
+		('IV', 4),
+		('I', 1)
+	)
+
+	if i <= 0 or i >= 5000:
+		return ''
+
+	result = ''
+	for numeral, integer in roman_map:
+		while i >= integer:
+			result += numeral
+			i -= integer
+
+	return result
 
 # #################################################################################################
