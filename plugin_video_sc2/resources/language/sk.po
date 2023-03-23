@@ -1,0 +1,1590 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_scc\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-04-03 15:53+0200\n"
+"PO-Revision-Date: 2023-04-03 15:54+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: sk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: plugin_video_sc2/seasonal_events.py:7
+msgid "Christmas"
+msgstr "Vianoce"
+
+#: plugin_video_sc2/seasonal_events.py:8
+msgid "Christmas CZ & SK"
+msgstr "Vianoce CZ & SK"
+
+#: plugin_video_sc2/seasonal_events.py:9
+msgid "Valentine's Day"
+msgstr "Valentín"
+
+#: plugin_video_sc2/seasonal_events.py:10
+msgid "Spring"
+msgstr "Jar"
+
+#: plugin_video_sc2/seasonal_events.py:11
+msgid "Summer"
+msgstr "Leto"
+
+#: plugin_video_sc2/seasonal_events.py:12
+msgid "Easter"
+msgstr "Veľká noc"
+
+#: plugin_video_sc2/seasonal_events.py:13
+msgid "Autumn"
+msgstr "Jeseň"
+
+#: plugin_video_sc2/seasonal_events.py:14
+msgid "International womans day"
+msgstr "Medzinárodný deň žien"
+
+#: plugin_video_sc2/seasonal_events.py:15
+msgid "Winter"
+msgstr "Zima"
+
+#: plugin_video_sc2/seasonal_events.py:16
+msgid "Disney+"
+msgstr "Disney+"
+
+#: plugin_video_sc2/seasonal_events.py:17
+msgid "Spring break"
+msgstr "Jarné prázdniny"
+
+#: plugin_video_sc2/lang_lists.py:10
+msgid "Erotic"
+msgstr "Erotický"
+
+#: plugin_video_sc2/lang_lists.py:11
+msgid "Pornographic"
+msgstr "Pornografický"
+
+#: plugin_video_sc2/lang_lists.py:12
+msgid "Action"
+msgstr "Akčný"
+
+#: plugin_video_sc2/lang_lists.py:13
+msgid "Adult"
+msgstr "Pre dospelých"
+
+#: plugin_video_sc2/lang_lists.py:14
+msgid "Animated"
+msgstr "Animovaný"
+
+#: plugin_video_sc2/lang_lists.py:15
+msgid "Animation"
+msgstr "Animácie"
+
+#: plugin_video_sc2/lang_lists.py:16
+msgid "Adventure"
+msgstr "Dobrodružný"
+
+#: plugin_video_sc2/lang_lists.py:17
+msgid "Biographical"
+msgstr "Životopisný"
+
+#: plugin_video_sc2/lang_lists.py:18
+msgid "Catastrophic"
+msgstr "Katastrofický"
+
+#: plugin_video_sc2/lang_lists.py:19
+msgid "Comedy"
+msgstr "Komédia"
+
+#: plugin_video_sc2/lang_lists.py:20
+msgid "Competition"
+msgstr "Súťažný"
+
+#: plugin_video_sc2/lang_lists.py:21
+msgid "Crime"
+msgstr "Kriminálny"
+
+#: plugin_video_sc2/lang_lists.py:22
+msgid "Documentary"
+msgstr "Dokumentárny"
+
+#: plugin_video_sc2/lang_lists.py:23
+msgid "Fairy Tale"
+msgstr "Rozprávky"
+
+#: plugin_video_sc2/lang_lists.py:24
+msgid "Drama"
+msgstr "Dráma"
+
+#: plugin_video_sc2/lang_lists.py:25
+msgid "Family"
+msgstr "Rodinný"
+
+#: plugin_video_sc2/lang_lists.py:26
+msgid "Fantasy"
+msgstr "Fantasy"
+
+#: plugin_video_sc2/lang_lists.py:27
+msgid "Historical"
+msgstr "Historický"
+
+#: plugin_video_sc2/lang_lists.py:28
+msgid "Horror"
+msgstr "Hororový"
+
+#: plugin_video_sc2/lang_lists.py:29
+msgid "IMAX"
+msgstr "IMAX"
+
+#: plugin_video_sc2/lang_lists.py:30
+msgid "Educational"
+msgstr "Náučný"
+
+#: plugin_video_sc2/lang_lists.py:31
+msgid "Music"
+msgstr "Hudobný"
+
+#: plugin_video_sc2/lang_lists.py:32
+msgid "Journalistic"
+msgstr "Publicistický"
+
+#: plugin_video_sc2/lang_lists.py:33
+msgid "Military"
+msgstr "Vojenský"
+
+#: plugin_video_sc2/lang_lists.py:34
+msgid "Musical"
+msgstr "Muzikál"
+
+#: plugin_video_sc2/lang_lists.py:35
+msgid "Mysterious"
+msgstr "Mysteriózny"
+
+#: plugin_video_sc2/lang_lists.py:36
+msgid "Psychological"
+msgstr "Psychologický"
+
+#: plugin_video_sc2/lang_lists.py:37
+msgid "Reality"
+msgstr "Reality"
+
+#: plugin_video_sc2/lang_lists.py:38
+msgid "Romance"
+msgstr "Romantický"
+
+#: plugin_video_sc2/lang_lists.py:39
+msgid "Sci-Fi"
+msgstr "Sci-Fi"
+
+#: plugin_video_sc2/lang_lists.py:40
+msgid "Short"
+msgstr "Krátkometrážny"
+
+#: plugin_video_sc2/lang_lists.py:41
+msgid "Sports"
+msgstr "Športový"
+
+#: plugin_video_sc2/lang_lists.py:42
+msgid "Stand-Up"
+msgstr "Stand-Up"
+
+#: plugin_video_sc2/lang_lists.py:43
+msgid "Talk-Show"
+msgstr "Talk-show"
+
+#: plugin_video_sc2/lang_lists.py:44
+msgid "Telenovela"
+msgstr "Telenovela"
+
+#: plugin_video_sc2/lang_lists.py:45
+msgid "Thriller"
+msgstr "Thriller"
+
+#: plugin_video_sc2/lang_lists.py:46
+msgid "Travel"
+msgstr "Cestopisný"
+
+#: plugin_video_sc2/lang_lists.py:47
+msgid "Western"
+msgstr "Western"
+
+#: plugin_video_sc2/lang_lists.py:48
+msgid "War"
+msgstr "Vojnový"
+
+#: plugin_video_sc2/lang_lists.py:52
+msgid "Algeria"
+msgstr "Alžírsko"
+
+#: plugin_video_sc2/lang_lists.py:53
+msgid "Argentina"
+msgstr "Argentína"
+
+#: plugin_video_sc2/lang_lists.py:54
+msgid "Armenia"
+msgstr "Arménsko"
+
+#: plugin_video_sc2/lang_lists.py:55
+msgid "Aruba"
+msgstr "Aruba"
+
+#: plugin_video_sc2/lang_lists.py:56
+msgid "Australia"
+msgstr "Austrália"
+
+#: plugin_video_sc2/lang_lists.py:57
+msgid "Austria"
+msgstr "Rakúsko"
+
+#: plugin_video_sc2/lang_lists.py:58
+msgid "Azerbaijan"
+msgstr "Azerbajdžan"
+
+#: plugin_video_sc2/lang_lists.py:59
+msgid "Bahamas"
+msgstr "Bahamy"
+
+#: plugin_video_sc2/lang_lists.py:60
+msgid "Bangladesh"
+msgstr "Bangladéš"
+
+#: plugin_video_sc2/lang_lists.py:61
+msgid "Belarus"
+msgstr "Bielorusko"
+
+#: plugin_video_sc2/lang_lists.py:62
+msgid "Belgium"
+msgstr "Belgicko"
+
+#: plugin_video_sc2/lang_lists.py:63
+msgid "Bhutan"
+msgstr "Bhután"
+
+#: plugin_video_sc2/lang_lists.py:64
+msgid "Bolivia"
+msgstr "Bolívia"
+
+#: plugin_video_sc2/lang_lists.py:65
+msgid "Bosnia and Herzegovina"
+msgstr "Bosna a Hercegovina"
+
+#: plugin_video_sc2/lang_lists.py:66
+msgid "Botswana"
+msgstr "Botswana"
+
+#: plugin_video_sc2/lang_lists.py:67
+msgid "Brazil"
+msgstr "Brazília"
+
+#: plugin_video_sc2/lang_lists.py:68
+msgid "Brunei"
+msgstr "Brunei"
+
+#: plugin_video_sc2/lang_lists.py:69
+msgid "Bulgaria"
+msgstr "Bulharsko"
+
+#: plugin_video_sc2/lang_lists.py:70
+msgid "Cambodia"
+msgstr "Kambodža"
+
+#: plugin_video_sc2/lang_lists.py:71
+msgid "Canada"
+msgstr "Kanada"
+
+#: plugin_video_sc2/lang_lists.py:72
+msgid "Chile"
+msgstr "Čile"
+
+#: plugin_video_sc2/lang_lists.py:73
+msgid "China"
+msgstr "Čína"
+
+#: plugin_video_sc2/lang_lists.py:74
+msgid "Colombia"
+msgstr "Kolumbia"
+
+#: plugin_video_sc2/lang_lists.py:75
+msgid "Costa Rica"
+msgstr "Kostarika"
+
+#: plugin_video_sc2/lang_lists.py:76
+msgid "Croatia"
+msgstr "Chorvátsko"
+
+#: plugin_video_sc2/lang_lists.py:77
+msgid "Cuba"
+msgstr "Kuba"
+
+#: plugin_video_sc2/lang_lists.py:78
+msgid "Cyprus"
+msgstr "Cyprus"
+
+#: plugin_video_sc2/lang_lists.py:79
+msgid "Czechia"
+msgstr "Česko"
+
+#: plugin_video_sc2/lang_lists.py:80
+msgid "Czechoslovakia"
+msgstr "Československo"
+
+#: plugin_video_sc2/lang_lists.py:81
+msgid "Democratic Republic of the Congo"
+msgstr "Konžská demokratická republika"
+
+#: plugin_video_sc2/lang_lists.py:82
+msgid "Denmark"
+msgstr "Dánsko"
+
+#: plugin_video_sc2/lang_lists.py:83
+msgid "Dominican republic"
+msgstr "Dominikánska republika"
+
+#: plugin_video_sc2/lang_lists.py:84
+msgid "East Germany"
+msgstr "Východné Nemecko"
+
+#: plugin_video_sc2/lang_lists.py:85
+msgid "Egypt"
+msgstr "Egypt"
+
+#: plugin_video_sc2/lang_lists.py:86
+msgid "Estonia"
+msgstr "Estónsko"
+
+#: plugin_video_sc2/lang_lists.py:87
+msgid "Fed. Rep. Yugoslavia"
+msgstr "Fed. Rep. Juhoslávia"
+
+#: plugin_video_sc2/lang_lists.py:88
+msgid "Finland"
+msgstr "Fínsko"
+
+#: plugin_video_sc2/lang_lists.py:89
+msgid "France"
+msgstr "Francúzsko"
+
+#: plugin_video_sc2/lang_lists.py:90
+msgid "French Polynesia"
+msgstr "Francúzská Polynézia"
+
+#: plugin_video_sc2/lang_lists.py:91
+msgid "Georgia"
+msgstr "Georgia"
+
+#: plugin_video_sc2/lang_lists.py:92
+msgid "German Empire"
+msgstr "Nemecká ríša"
+
+#: plugin_video_sc2/lang_lists.py:93
+msgid "Germany"
+msgstr "Nemecko"
+
+#: plugin_video_sc2/lang_lists.py:94
+msgid "Ghana"
+msgstr "Ghana"
+
+#: plugin_video_sc2/lang_lists.py:95
+msgid "Greece"
+msgstr "Grécko"
+
+#: plugin_video_sc2/lang_lists.py:96
+msgid "Haiti"
+msgstr "Haiti"
+
+#: plugin_video_sc2/lang_lists.py:97
+msgid "Hong Kong"
+msgstr "Hong Kong"
+
+#: plugin_video_sc2/lang_lists.py:98
+msgid "Hungary"
+msgstr "Maďarsko"
+
+#: plugin_video_sc2/lang_lists.py:99
+msgid "Iceland"
+msgstr "Island"
+
+#: plugin_video_sc2/lang_lists.py:100
+msgid "India"
+msgstr "India"
+
+#: plugin_video_sc2/lang_lists.py:101
+msgid "Indonesia"
+msgstr "Indonézia"
+
+#: plugin_video_sc2/lang_lists.py:102
+msgid "Iran"
+msgstr "Irán"
+
+#: plugin_video_sc2/lang_lists.py:103
+msgid "Iraq"
+msgstr "Irak"
+
+#: plugin_video_sc2/lang_lists.py:104
+msgid "Ireland"
+msgstr "Írsko"
+
+#: plugin_video_sc2/lang_lists.py:105
+msgid "Israel"
+msgstr "Izrael"
+
+#: plugin_video_sc2/lang_lists.py:106
+msgid "Italy"
+msgstr "Taliansko"
+
+#: plugin_video_sc2/lang_lists.py:107
+msgid "Jamaica"
+msgstr "Jamaika"
+
+#: plugin_video_sc2/lang_lists.py:108
+msgid "Japan"
+msgstr "Japonsko"
+
+#: plugin_video_sc2/lang_lists.py:109
+msgid "Jordan"
+msgstr "Jordán"
+
+#: plugin_video_sc2/lang_lists.py:110
+msgid "Kazakhstan"
+msgstr "Kazachstan"
+
+#: plugin_video_sc2/lang_lists.py:111
+msgid "Kenya"
+msgstr "Keňa"
+
+#: plugin_video_sc2/lang_lists.py:112
+msgid "Laos"
+msgstr "Laos"
+
+#: plugin_video_sc2/lang_lists.py:113
+msgid "Latvia"
+msgstr "Lotyšsko"
+
+#: plugin_video_sc2/lang_lists.py:114
+msgid "Lebanon"
+msgstr "Libanon"
+
+#: plugin_video_sc2/lang_lists.py:115
+msgid "Lichtenstein"
+msgstr "Lichtenštajnsko"
+
+#: plugin_video_sc2/lang_lists.py:116
+msgid "Lithuania"
+msgstr "Litva"
+
+#: plugin_video_sc2/lang_lists.py:117
+msgid "Luxembourg"
+msgstr "Luxembursko"
+
+#: plugin_video_sc2/lang_lists.py:118
+msgid "Macao"
+msgstr "Makao"
+
+#: plugin_video_sc2/lang_lists.py:119
+msgid "Macedonia"
+msgstr "Macedónsko"
+
+#: plugin_video_sc2/lang_lists.py:120
+msgid "Malaysia"
+msgstr "Malajzia"
+
+#: plugin_video_sc2/lang_lists.py:121
+msgid "Malta"
+msgstr "Malta"
+
+#: plugin_video_sc2/lang_lists.py:122
+msgid "Mexico"
+msgstr "Mexiko"
+
+#: plugin_video_sc2/lang_lists.py:123
+msgid "Monaco"
+msgstr "Monako"
+
+#: plugin_video_sc2/lang_lists.py:124
+msgid "Mongolia"
+msgstr "Mongolsko"
+
+#: plugin_video_sc2/lang_lists.py:125
+msgid "Montenegro"
+msgstr "Čierna Hora"
+
+#: plugin_video_sc2/lang_lists.py:126
+msgid "Morocco"
+msgstr "Maroko"
+
+#: plugin_video_sc2/lang_lists.py:127
+msgid "Namibia"
+msgstr "Namíbia"
+
+#: plugin_video_sc2/lang_lists.py:128
+msgid "Nepal"
+msgstr "Nepál"
+
+#: plugin_video_sc2/lang_lists.py:129
+msgid "Netherlands"
+msgstr "Holandsko"
+
+#: plugin_video_sc2/lang_lists.py:130
+msgid "New Zealand"
+msgstr "Nový Zéland"
+
+#: plugin_video_sc2/lang_lists.py:131
+msgid "Nigeria"
+msgstr "Nigéria"
+
+#: plugin_video_sc2/lang_lists.py:132
+msgid "North Korea"
+msgstr "Severná Kórea"
+
+#: plugin_video_sc2/lang_lists.py:133
+msgid "Norway"
+msgstr "Nórsko"
+
+#: plugin_video_sc2/lang_lists.py:134
+msgid "Pakistan"
+msgstr "Pakistan"
+
+#: plugin_video_sc2/lang_lists.py:135
+msgid "Palestine"
+msgstr "Palestína"
+
+#: plugin_video_sc2/lang_lists.py:136
+msgid "Panama"
+msgstr "Panama"
+
+#: plugin_video_sc2/lang_lists.py:137
+msgid "Papua New Guinea"
+msgstr "Papua Nová Guinea"
+
+#: plugin_video_sc2/lang_lists.py:138
+msgid "Paraguay"
+msgstr "Paraguaj"
+
+#: plugin_video_sc2/lang_lists.py:139
+msgid "Peru"
+msgstr "Peru"
+
+#: plugin_video_sc2/lang_lists.py:140
+msgid "Philippines"
+msgstr "Filipíny"
+
+#: plugin_video_sc2/lang_lists.py:141
+msgid "Poland"
+msgstr "Poľsko"
+
+#: plugin_video_sc2/lang_lists.py:142
+msgid "Portugal"
+msgstr "Portugalsko"
+
+#: plugin_video_sc2/lang_lists.py:143
+msgid "Puerto Rico"
+msgstr "Portoriko"
+
+#: plugin_video_sc2/lang_lists.py:144
+msgid "Qatar"
+msgstr "Qatar"
+
+#: plugin_video_sc2/lang_lists.py:145
+msgid "Romania"
+msgstr "Rumunsko"
+
+#: plugin_video_sc2/lang_lists.py:146
+msgid "Russia"
+msgstr "Rusko"
+
+#: plugin_video_sc2/lang_lists.py:147
+msgid "Saudi Arabia"
+msgstr "Saudská Arábia"
+
+#: plugin_video_sc2/lang_lists.py:148
+msgid "Senegal"
+msgstr "Senegal"
+
+#: plugin_video_sc2/lang_lists.py:149
+msgid "Serbia"
+msgstr "Srbsko"
+
+#: plugin_video_sc2/lang_lists.py:150
+msgid "Serbia and Montenegro"
+msgstr "Srbsko a Čierna Hora"
+
+#: plugin_video_sc2/lang_lists.py:151
+msgid "Singapore"
+msgstr "Singapur"
+
+#: plugin_video_sc2/lang_lists.py:152
+msgid "Slovakia"
+msgstr "Slovensko"
+
+#: plugin_video_sc2/lang_lists.py:153
+msgid "Slovenia"
+msgstr "Slovinsko"
+
+#: plugin_video_sc2/lang_lists.py:154
+msgid "South African Republic"
+msgstr "Juhoafrická republika"
+
+#: plugin_video_sc2/lang_lists.py:155
+msgid "South Korea"
+msgstr "Južná Kórea"
+
+#: plugin_video_sc2/lang_lists.py:156
+msgid "Spain"
+msgstr "Španielsko"
+
+#: plugin_video_sc2/lang_lists.py:157
+msgid "Sweden"
+msgstr "Švédsko"
+
+#: plugin_video_sc2/lang_lists.py:158
+msgid "Switzerland"
+msgstr "Švajčiarsko"
+
+#: plugin_video_sc2/lang_lists.py:159
+msgid "Syria"
+msgstr "Sýria"
+
+#: plugin_video_sc2/lang_lists.py:160
+msgid "Taiwan"
+msgstr "Taiwan"
+
+#: plugin_video_sc2/lang_lists.py:161
+msgid "Tanzania"
+msgstr "Tanzánia"
+
+#: plugin_video_sc2/lang_lists.py:162
+msgid "Thailand"
+msgstr "Thajsko"
+
+#: plugin_video_sc2/lang_lists.py:163
+msgid "The Soviet Union"
+msgstr "Sovietsky zväz"
+
+#: plugin_video_sc2/lang_lists.py:164
+msgid "Tunisia"
+msgstr "Tunisko"
+
+#: plugin_video_sc2/lang_lists.py:165
+msgid "Turkey"
+msgstr "Turecko"
+
+#: plugin_video_sc2/lang_lists.py:166
+msgid "Uganda"
+msgstr "Uganda"
+
+#: plugin_video_sc2/lang_lists.py:167
+msgid "Ukraine"
+msgstr "Ukrajina"
+
+#: plugin_video_sc2/lang_lists.py:168
+msgid "United Arab Emirates"
+msgstr "Spojené arabské emiráty"
+
+#: plugin_video_sc2/lang_lists.py:169
+msgid "United Kingdom"
+msgstr "Spojené kráľovstvo"
+
+#: plugin_video_sc2/lang_lists.py:170
+msgid "United States of America"
+msgstr "Spojené štáty americké"
+
+#: plugin_video_sc2/lang_lists.py:171
+msgid "Uruguay"
+msgstr "Uruguaj"
+
+#: plugin_video_sc2/lang_lists.py:172
+msgid "Venezuela"
+msgstr "Venezuela"
+
+#: plugin_video_sc2/lang_lists.py:173
+msgid "Vietnam"
+msgstr "Vietnam"
+
+#: plugin_video_sc2/lang_lists.py:174
+msgid "West Germany"
+msgstr "Západné Nemecko"
+
+#: plugin_video_sc2/lang_lists.py:175
+msgid "Yugoslavia"
+msgstr "Juhoslávia"
+
+#: plugin_video_sc2/lang_lists.py:176
+msgid "Zimbabwe"
+msgstr "Zimbabwe"
+
+#: plugin_video_sc2/lang_lists.py:180
+msgid "Afar"
+msgstr "Afarčina"
+
+#: plugin_video_sc2/lang_lists.py:181
+msgid "Abkhazian"
+msgstr "Abcházština"
+
+#: plugin_video_sc2/lang_lists.py:182
+msgid "Afrikaans"
+msgstr "Afrikánčina"
+
+#: plugin_video_sc2/lang_lists.py:183
+msgid "Amharic"
+msgstr "Amharčina"
+
+#: plugin_video_sc2/lang_lists.py:184
+msgid "Arabic"
+msgstr "Arabčina"
+
+#: plugin_video_sc2/lang_lists.py:185
+msgid "Assamese"
+msgstr "Ásámčina"
+
+#: plugin_video_sc2/lang_lists.py:186
+msgid "Aymara"
+msgstr "Aymarčina"
+
+#: plugin_video_sc2/lang_lists.py:187
+msgid "Azerbaijani"
+msgstr "Azerbajdžančina"
+
+#: plugin_video_sc2/lang_lists.py:188
+msgid "Bashkir"
+msgstr "Baškirčina"
+
+#: plugin_video_sc2/lang_lists.py:189
+msgid "Byelorussian"
+msgstr "Bieloruština"
+
+#: plugin_video_sc2/lang_lists.py:190
+msgid "Bulgarian"
+msgstr "Bulharčina"
+
+#: plugin_video_sc2/lang_lists.py:191
+msgid "Bihari"
+msgstr "Bihárčina"
+
+#: plugin_video_sc2/lang_lists.py:192
+msgid "Bislama"
+msgstr "Bislamčina"
+
+#: plugin_video_sc2/lang_lists.py:193
+msgid "Bengali; Bangla"
+msgstr "Bengálčina"
+
+#: plugin_video_sc2/lang_lists.py:194
+msgid "Tibetan"
+msgstr "Tibetčina"
+
+#: plugin_video_sc2/lang_lists.py:195
+msgid "Breton"
+msgstr "Bretónčina"
+
+#: plugin_video_sc2/lang_lists.py:196
+msgid "Catalan"
+msgstr "Katalánčina"
+
+#: plugin_video_sc2/lang_lists.py:197
+msgid "Corsican"
+msgstr "Korzičtina"
+
+#: plugin_video_sc2/lang_lists.py:198
+msgid "Czech"
+msgstr "Čeština"
+
+#: plugin_video_sc2/lang_lists.py:199
+msgid "Welsh"
+msgstr "Waleština"
+
+#: plugin_video_sc2/lang_lists.py:200
+msgid "Danish"
+msgstr "Dánčina"
+
+#: plugin_video_sc2/lang_lists.py:201
+msgid "German"
+msgstr "Nemčina"
+
+#: plugin_video_sc2/lang_lists.py:202
+msgid "Bhutani"
+msgstr "Dzongkha"
+
+#: plugin_video_sc2/lang_lists.py:203
+msgid "Greek"
+msgstr "Gréčtina"
+
+#: plugin_video_sc2/lang_lists.py:204
+msgid "English"
+msgstr "Angličtina"
+
+#: plugin_video_sc2/lang_lists.py:205
+msgid "Esperanto"
+msgstr "Esperanto"
+
+#: plugin_video_sc2/lang_lists.py:206
+msgid "Spanish"
+msgstr "Španielčina"
+
+#: plugin_video_sc2/lang_lists.py:207
+msgid "Estonian"
+msgstr "Estónčina"
+
+#: plugin_video_sc2/lang_lists.py:208
+msgid "Basque"
+msgstr "Baskičtina"
+
+#: plugin_video_sc2/lang_lists.py:209
+msgid "Persian"
+msgstr "Perzština"
+
+#: plugin_video_sc2/lang_lists.py:210
+msgid "Finnish"
+msgstr "Fínčina"
+
+#: plugin_video_sc2/lang_lists.py:211
+msgid "Fiji"
+msgstr "Fidžijčina"
+
+#: plugin_video_sc2/lang_lists.py:212
+msgid "Faeroese"
+msgstr "Faerčina"
+
+#: plugin_video_sc2/lang_lists.py:213
+msgid "French"
+msgstr "Francúzština"
+
+#: plugin_video_sc2/lang_lists.py:214
+msgid "Frisian"
+msgstr "Fríština"
+
+#: plugin_video_sc2/lang_lists.py:215
+msgid "Irish"
+msgstr "Írčina"
+
+#: plugin_video_sc2/lang_lists.py:216
+msgid "Scots Gaelic"
+msgstr "Škótska gaelčina"
+
+#: plugin_video_sc2/lang_lists.py:217
+msgid "Galician"
+msgstr "Galícijčina"
+
+#: plugin_video_sc2/lang_lists.py:218
+msgid "Guarani"
+msgstr "Guaraníjčina"
+
+#: plugin_video_sc2/lang_lists.py:219
+msgid "Gujarati"
+msgstr "Gujarati"
+
+#: plugin_video_sc2/lang_lists.py:220
+msgid "Hausa"
+msgstr "Hauština"
+
+#: plugin_video_sc2/lang_lists.py:221
+msgid "Hebrew"
+msgstr "Hebrejčina"
+
+#: plugin_video_sc2/lang_lists.py:222
+msgid "Hindi"
+msgstr "Hindčina"
+
+#: plugin_video_sc2/lang_lists.py:223
+msgid "Croatian"
+msgstr "Chorvátčina"
+
+#: plugin_video_sc2/lang_lists.py:224
+msgid "Hungarian"
+msgstr "Maďarčina"
+
+#: plugin_video_sc2/lang_lists.py:225
+msgid "Armenian"
+msgstr "Arménčina"
+
+#: plugin_video_sc2/lang_lists.py:226
+msgid "Interlingua"
+msgstr "Interlingua"
+
+#: plugin_video_sc2/lang_lists.py:227
+msgid "Indonesian"
+msgstr "Indonézština"
+
+#: plugin_video_sc2/lang_lists.py:228
+msgid "Interlingue"
+msgstr "Interlingue"
+
+#: plugin_video_sc2/lang_lists.py:229
+msgid "Inupiak"
+msgstr "Inupiaq"
+
+#: plugin_video_sc2/lang_lists.py:230
+msgid "Icelandic"
+msgstr "Islandčina"
+
+#: plugin_video_sc2/lang_lists.py:231
+msgid "Italian"
+msgstr "Taliančina"
+
+#: plugin_video_sc2/lang_lists.py:232
+msgid "Japanese"
+msgstr "Japončina"
+
+#: plugin_video_sc2/lang_lists.py:233
+msgid "Yiddish"
+msgstr "Jidiš"
+
+#: plugin_video_sc2/lang_lists.py:234
+msgid "Javanese"
+msgstr "Javánština"
+
+#: plugin_video_sc2/lang_lists.py:235
+msgid "Georgian"
+msgstr "Gruzínčina"
+
+#: plugin_video_sc2/lang_lists.py:236
+msgid "Kazakh"
+msgstr "Kazaština"
+
+#: plugin_video_sc2/lang_lists.py:237
+msgid "Greenlandic"
+msgstr "Grónčina"
+
+#: plugin_video_sc2/lang_lists.py:238
+msgid "Cambodian"
+msgstr "Khmérčina"
+
+#: plugin_video_sc2/lang_lists.py:239
+msgid "Kannada"
+msgstr "Kannadčina"
+
+#: plugin_video_sc2/lang_lists.py:240
+msgid "Korean"
+msgstr "Kórejčina"
+
+#: plugin_video_sc2/lang_lists.py:241
+msgid "Kashmiri"
+msgstr "Kašmírčina"
+
+#: plugin_video_sc2/lang_lists.py:242
+msgid "Kurdish"
+msgstr "Kurdčina"
+
+#: plugin_video_sc2/lang_lists.py:243
+msgid "Kirghiz"
+msgstr "Kirgizština"
+
+#: plugin_video_sc2/lang_lists.py:244
+msgid "Latin"
+msgstr "Latinčina"
+
+#: plugin_video_sc2/lang_lists.py:245
+msgid "Lingala"
+msgstr "Lingalčina"
+
+#: plugin_video_sc2/lang_lists.py:246
+msgid "Laothian"
+msgstr "Laoština"
+
+#: plugin_video_sc2/lang_lists.py:247
+msgid "Lithuanian"
+msgstr "Litovčina"
+
+#: plugin_video_sc2/lang_lists.py:248
+msgid "Latvian, Lettish"
+msgstr "Lotyština"
+
+#: plugin_video_sc2/lang_lists.py:249
+msgid "Malagasy"
+msgstr "Malgaština"
+
+#: plugin_video_sc2/lang_lists.py:250
+msgid "Maori"
+msgstr "Maorčina"
+
+#: plugin_video_sc2/lang_lists.py:251
+msgid "Macedonian"
+msgstr "Macedónčina"
+
+#: plugin_video_sc2/lang_lists.py:252
+msgid "Malayalam"
+msgstr "Malajálamčina"
+
+#: plugin_video_sc2/lang_lists.py:253
+msgid "Mongolian"
+msgstr "Mongolčina"
+
+#: plugin_video_sc2/lang_lists.py:254
+msgid "Moldavian"
+msgstr "Moldavčina"
+
+#: plugin_video_sc2/lang_lists.py:255
+msgid "Marathi"
+msgstr "Maráthčina"
+
+#: plugin_video_sc2/lang_lists.py:256
+msgid "Malay"
+msgstr "Malajčina"
+
+#: plugin_video_sc2/lang_lists.py:257
+msgid "Maltese"
+msgstr "Maltčina"
+
+#: plugin_video_sc2/lang_lists.py:258
+msgid "Burmese"
+msgstr "Barmčina"
+
+#: plugin_video_sc2/lang_lists.py:259
+msgid "Nauru"
+msgstr "Nauru"
+
+#: plugin_video_sc2/lang_lists.py:260
+msgid "Nepali"
+msgstr "Nepálčina"
+
+#: plugin_video_sc2/lang_lists.py:261
+msgid "Dutch"
+msgstr "Holandčina"
+
+#: plugin_video_sc2/lang_lists.py:262
+msgid "Norwegian"
+msgstr "Nórčina"
+
+#: plugin_video_sc2/lang_lists.py:263
+msgid "Occitan"
+msgstr "Okcitánčina"
+
+#: plugin_video_sc2/lang_lists.py:264
+msgid "(Afan) Oromo"
+msgstr "Oromčina"
+
+#: plugin_video_sc2/lang_lists.py:265
+msgid "Oriya"
+msgstr "Orijčina"
+
+#: plugin_video_sc2/lang_lists.py:266
+msgid "Punjabi"
+msgstr "Pandžábčina"
+
+#: plugin_video_sc2/lang_lists.py:267
+msgid "Polish"
+msgstr "Poľština"
+
+#: plugin_video_sc2/lang_lists.py:268
+msgid "Pashto, Pushto"
+msgstr "Paštčina"
+
+#: plugin_video_sc2/lang_lists.py:269
+msgid "Portuguese"
+msgstr "Portugalčina"
+
+#: plugin_video_sc2/lang_lists.py:270
+msgid "Quechua"
+msgstr "Kečuánčina"
+
+#: plugin_video_sc2/lang_lists.py:271
+msgid "Rhaeto-Romance"
+msgstr "Rétorománske jazyky"
+
+#: plugin_video_sc2/lang_lists.py:272
+msgid "Kirundi"
+msgstr "Bantuské jazyky"
+
+#: plugin_video_sc2/lang_lists.py:273
+msgid "Romanian"
+msgstr "Rumunčina"
+
+#: plugin_video_sc2/lang_lists.py:274
+msgid "Russian"
+msgstr "Ruština"
+
+#: plugin_video_sc2/lang_lists.py:275
+msgid "Kinyarwanda"
+msgstr "Rwandčina"
+
+#: plugin_video_sc2/lang_lists.py:276
+msgid "Sanskrit"
+msgstr "Sanskrit"
+
+#: plugin_video_sc2/lang_lists.py:277
+msgid "Sindhi"
+msgstr "Sindhi Sindhi"
+
+#: plugin_video_sc2/lang_lists.py:278
+msgid "Sangro"
+msgstr "Sangro"
+
+#: plugin_video_sc2/lang_lists.py:279
+msgid "Serbo-Croatian"
+msgstr "Srbochorvátčina"
+
+#: plugin_video_sc2/lang_lists.py:280
+msgid "Singhalese"
+msgstr "Sinhalčina"
+
+#: plugin_video_sc2/lang_lists.py:281
+msgid "Slovak"
+msgstr "Slovenčina"
+
+#: plugin_video_sc2/lang_lists.py:282
+msgid "Slovenian"
+msgstr "Slovinčina"
+
+#: plugin_video_sc2/lang_lists.py:283
+msgid "Samoan"
+msgstr "Samojčina"
+
+#: plugin_video_sc2/lang_lists.py:284
+msgid "Shona"
+msgstr "Shona"
+
+#: plugin_video_sc2/lang_lists.py:285
+msgid "Somali"
+msgstr "Somálčina"
+
+#: plugin_video_sc2/lang_lists.py:286
+msgid "Albanian"
+msgstr "Albánčina"
+
+#: plugin_video_sc2/lang_lists.py:287
+msgid "Serbian"
+msgstr "Srbčina"
+
+#: plugin_video_sc2/lang_lists.py:288
+msgid "Siswati"
+msgstr "Siswati"
+
+#: plugin_video_sc2/lang_lists.py:289
+msgid "Sesotho"
+msgstr "Sesotho"
+
+#: plugin_video_sc2/lang_lists.py:290
+msgid "Sundanese"
+msgstr "Sunda"
+
+#: plugin_video_sc2/lang_lists.py:291
+msgid "Swedish"
+msgstr "Švédčina"
+
+#: plugin_video_sc2/lang_lists.py:292
+msgid "Swahili"
+msgstr "Svahilčina"
+
+#: plugin_video_sc2/lang_lists.py:293
+msgid "Tamil"
+msgstr "Tamilčina"
+
+#: plugin_video_sc2/lang_lists.py:294
+msgid "Tegulu"
+msgstr "Tegulu"
+
+#: plugin_video_sc2/lang_lists.py:295
+msgid "Tajik"
+msgstr "Tadžičtina"
+
+#: plugin_video_sc2/lang_lists.py:296
+msgid "Thai"
+msgstr "Thajčina"
+
+#: plugin_video_sc2/lang_lists.py:297
+msgid "Tigrinya"
+msgstr "Tigrejčina"
+
+#: plugin_video_sc2/lang_lists.py:298
+msgid "Turkmen"
+msgstr "Turkménčina"
+
+#: plugin_video_sc2/lang_lists.py:299
+msgid "Tagalog"
+msgstr "Tagalčina"
+
+#: plugin_video_sc2/lang_lists.py:300
+msgid "Setswana"
+msgstr "Setswana"
+
+#: plugin_video_sc2/lang_lists.py:301
+msgid "Tonga"
+msgstr "Tongčina"
+
+#: plugin_video_sc2/lang_lists.py:302
+msgid "Turkish"
+msgstr "Turečtina"
+
+#: plugin_video_sc2/lang_lists.py:303
+msgid "Tsonga"
+msgstr "Tsonga"
+
+#: plugin_video_sc2/lang_lists.py:304
+msgid "Tatar"
+msgstr "Tatárčina"
+
+#: plugin_video_sc2/lang_lists.py:305
+msgid "Twi"
+msgstr "Twi"
+
+#: plugin_video_sc2/lang_lists.py:306
+msgid "Ukrainian"
+msgstr "Ukrajinčina"
+
+#: plugin_video_sc2/lang_lists.py:307
+msgid "Urdu"
+msgstr "Urdčina"
+
+#: plugin_video_sc2/lang_lists.py:308
+msgid "Uzbek"
+msgstr "Uzbečtina"
+
+#: plugin_video_sc2/lang_lists.py:309
+msgid "Vietnamese"
+msgstr "Vietnamčina"
+
+#: plugin_video_sc2/lang_lists.py:310
+msgid "Volapuk"
+msgstr "Volapük"
+
+#: plugin_video_sc2/lang_lists.py:311
+msgid "Wolof"
+msgstr "Wolof"
+
+#: plugin_video_sc2/lang_lists.py:312
+msgid "Xhosa"
+msgstr "Xhosa"
+
+#: plugin_video_sc2/lang_lists.py:313
+msgid "Yoruba"
+msgstr "Yoruba"
+
+#: plugin_video_sc2/lang_lists.py:314 plugin_video_sc2/lang_lists.py:315
+msgid "Chinese"
+msgstr "Čínština"
+
+#: plugin_video_sc2/lang_lists.py:316
+msgid "Zulu"
+msgstr "Zuluština"
+
+#: plugin_video_sc2/lang_lists.py:317
+msgid "Bosnian"
+msgstr "Bosniančina"
+
+#: plugin_video_sc2/lang_lists.py:318
+msgid "Inuktitut"
+msgstr "Inuitčina"
+
+#: plugin_video_sc2/lang_lists.py:319
+msgid "No Language"
+msgstr "Žiadny jazyk"
+
+#: plugin_video_sc2/scc_api.py:99 plugin_video_sc2/csfd.py:33
+#: plugin_video_sc2/prehrajto.py:67
+msgid "Unexpected return code from server"
+msgstr "Neočakávaný návratový kód zo servera"
+
+#: plugin_video_sc2/webshare.py:213
+msgid "Wrong webshare login data provided"
+msgstr "Nesprávne prihlasovacie údaje pre Webshare"
+
+#: plugin_video_sc2/webshare.py:216
+msgid "Webshare subscription expired"
+msgstr "Webshare predplatné vypršalo"
+
+#: plugin_video_sc2/webshare.py:224
+msgid "Failed to resolve file"
+msgstr "Nepodarilo sa získať adresu súboru"
+
+#: plugin_video_sc2/provider.py:76
+msgid "Webshare VIP account expired"
+msgstr "Webshare VIP predplatné vypršalo"
+
+#: plugin_video_sc2/provider.py:84
+msgid "No Webshare username and password provided - continuing with free account"
+msgstr "Nezadané prihlasovacie údaje pre Webshare - pokračujem s free predplatným"
+
+#: plugin_video_sc2/provider.py:114 plugin_video_sc2/provider.py:124
+#: plugin_video_sc2/provider.py:251
+msgid "Movies"
+msgstr "Filmy"
+
+#: plugin_video_sc2/provider.py:115 plugin_video_sc2/provider.py:125
+#: plugin_video_sc2/provider.py:252
+msgid "Series"
+msgstr "Serilály"
+
+#: plugin_video_sc2/provider.py:118
+msgid "CSFD Tips"
+msgstr "ČSFD Tipy"
+
+#: plugin_video_sc2/provider.py:119
+msgid "Concerts"
+msgstr "Koncerty"
+
+#: plugin_video_sc2/provider.py:120
+msgid "Anime"
+msgstr "Anime"
+
+#: plugin_video_sc2/provider.py:121
+msgid "Thematic lists"
+msgstr "Tématické zoznamy"
+
+#: plugin_video_sc2/provider.py:123
+msgid "All"
+msgstr "Všetky"
+
+#: plugin_video_sc2/provider.py:132 plugin_video_sc2/provider.py:248
+msgid "Trending"
+msgstr "Trendy"
+
+#: plugin_video_sc2/provider.py:134
+msgid "New episodes"
+msgstr "Nové epizódy"
+
+#: plugin_video_sc2/provider.py:135 plugin_video_sc2/provider.py:249
+msgid "Popular"
+msgstr "Populárne"
+
+#: plugin_video_sc2/provider.py:136
+msgid "Most watched"
+msgstr "Najsledovanejšie"
+
+#: plugin_video_sc2/provider.py:137
+msgid "New releases"
+msgstr "Novinky"
+
+#: plugin_video_sc2/provider.py:138
+msgid "New dubbed releases"
+msgstr "Novinky dabované"
+
+#: plugin_video_sc2/provider.py:139
+msgid "New releases with subtitles"
+msgstr "Novinky s vloženými titulkami"
+
+#: plugin_video_sc2/provider.py:140
+msgid "Latest added"
+msgstr "Posledné pridané"
+
+#: plugin_video_sc2/provider.py:141
+msgid "Latest added streams"
+msgstr "Posledné pridané streamy"
+
+#: plugin_video_sc2/provider.py:144
+msgid "CSFD Top 100"
+msgstr "ČSFD Top 100"
+
+#: plugin_video_sc2/provider.py:145
+msgid "CSFD Top 100 CZ & SK"
+msgstr "ČSFD Top 100 CZ & SK"
+
+#: plugin_video_sc2/provider.py:146
+msgid "CSFD Top 100 CZ"
+msgstr "ČSFD Top 100 CZ"
+
+#: plugin_video_sc2/provider.py:147
+msgid "CSFD Top 100 SK"
+msgstr "ČSFD Top 100 SK"
+
+#: plugin_video_sc2/provider.py:149
+msgid "By alphabet"
+msgstr "Podľa abecedy"
+
+#: plugin_video_sc2/provider.py:150
+msgid "By genre"
+msgstr "Podľa žánru"
+
+#: plugin_video_sc2/provider.py:151
+msgid "By country"
+msgstr "Poľa krajiny"
+
+#: plugin_video_sc2/provider.py:152
+msgid "By language"
+msgstr "Podľa jazyka"
+
+#: plugin_video_sc2/provider.py:153
+msgid "By year"
+msgstr "Podľa roku"
+
+#: plugin_video_sc2/provider.py:154
+msgid "By studio"
+msgstr "Podľa štúdia"
+
+#: plugin_video_sc2/provider.py:168
+msgid "Last seen"
+msgstr "Naposledy sledované"
+
+#: plugin_video_sc2/provider.py:174
+msgid "Fairy Tales"
+msgstr "Rozprávky"
+
+#: plugin_video_sc2/provider.py:175
+msgid "Golden fund"
+msgstr "Zlatý fond"
+
+#: plugin_video_sc2/provider.py:176
+msgid "Czech and Slovak"
+msgstr "České a Slovenské"
+
+#: plugin_video_sc2/provider.py:177
+msgid "Movie Club"
+msgstr "Filmový klub"
+
+#: plugin_video_sc2/provider.py:178
+msgid "Religious"
+msgstr "Náboženské"
+
+#: plugin_video_sc2/provider.py:244
+msgid "Trakt.tv"
+msgstr "Trakt.tv"
+
+#: plugin_video_sc2/provider.py:246
+msgid "My lists"
+msgstr "Moje zoznamy"
+
+#: plugin_video_sc2/provider.py:247
+msgid "History"
+msgstr "Histoória"
+
+#: plugin_video_sc2/provider.py:393
+msgid "Episode"
+msgstr "Epizóda"
+
+#: plugin_video_sc2/provider.py:628
+msgid "Remove from seen"
+msgstr "Odstrániť z videných"
+
+#: plugin_video_sc2/provider.py:631
+msgid "Search on prehraj.to"
+msgstr "Vyhľadať na prehraj.to"
+
+#: plugin_video_sc2/provider.py:634
+msgid "Play trailer"
+msgstr "Prehrať trailer"
+
+#: plugin_video_sc2/provider.py:647
+msgid "Related"
+msgstr "Súvisiace"
+
+#: plugin_video_sc2/provider.py:648
+msgid "Similar"
+msgstr "Podobné"
+
+msgid "Number of remembered searches"
+msgstr "Počet zapamätaných vyhľadávaní"
+
+msgid "Number of last seen entries"
+msgstr "Počet videných položiek"
+
+msgid "Store play position of last seen entries"
+msgstr "Ukladať pozíciu prehrávania u videných položiek"
+
+msgid "Don't store if play position is more then (in %)"
+msgstr "Neukladať pozíciu prehrávania ak je viac ako (v %)"
+
+msgid "Allow integration with Trakt.tv"
+msgstr "Povoliť integráciu s Trakt.tv"
+
+msgid "DeviceId"
+msgstr "DeviceId"
+
+msgid "Protocol used for API communication"
+msgstr "Protokol pre komunikáciu s API"
+
+msgid "http"
+msgstr ""
+
+msgid "https"
+msgstr ""
+
+msgid "Accounts"
+msgstr "Účty"
+
+msgid "Login name (webshare.cz)"
+msgstr "Prihlasovacie meno (webshare.cz)"
+
+msgid "Login password (webshare.cz)"
+msgstr "Prihlasovacie heslo (webshare.cz)"
+
+msgid "VIP days remaining (webshare.cz)"
+msgstr "Zostávajúci počet VIP (webshare.cz)"
+
+msgid "Login name (prehraj.cz)"
+msgstr "Prihlasovacie meno (prehraj.to)"
+
+msgid "Login password (prehraj.to)"
+msgstr "Prihlasovacie heslo (prehraj.to)"
+
+msgid "Use primary prehraj.to search"
+msgstr "Primárne použiť vyhľadávanie na prehraj.to"
+
+msgid "Filters"
+msgstr "Filtre"
+
+msgid "Language of dubbed entries"
+msgstr "Jazyk dabovaných položiek"
+
+msgid "Auto"
+msgstr ""
+
+msgid "CZ"
+msgstr "CZ"
+
+msgid "SK"
+msgstr "SK"
+
+msgid "CZ & SK"
+msgstr "CZ & SK"
+
+msgid "EN"
+msgstr "EN"
+
+msgid "Show HDR streams"
+msgstr "Zobraziť HDR streamy"
+
+msgid "Show 3D streams"
+msgstr "Zobraziť 3D streamy"
+
+msgid "Minimal offered stream quality"
+msgstr "Minimálna ponúkaná kvalita streamu"
+
+msgid "720p"
+msgstr ""
+
+msgid "1080p"
+msgstr ""
+
+msgid "4k"
+msgstr ""
+
+msgid "Maximal offered stream quality"
+msgstr "Maximálna ponúkaná kvalita streamu"
+
+msgid "8k"
+msgstr ""
+
+msgid "Filter items by lanuage"
+msgstr "Filter položiek podľa jazyka"
+
+msgid "Only dubbed or subs"
+msgstr "Iba dabované alebo s titulkami"
+
+msgid "Only dubbed"
+msgstr "Iba dabované"
+
+msgid "Filter streams by language"
+msgstr "Filter streamov podľa jazyka"
+
+msgid "Enable adult content"
+msgstr "Povoliť obsah pre dospelých"
+
+msgid "Enable h265/hevc codec"
+msgstr "Povoliť h265/hevc  kodek"
+
+msgid "Maximum size of stream (in GB)"
+msgstr "Maximálna veľkosť streamu (v GB)"
+
+#~ msgid "Maximal size of stream (in GB)"
+#~ msgstr "Maximálna veľkosť streamu (v GB)"
+
+#~ msgid "Mystery"
+#~ msgstr "Mysteriózny"
+
+#~ msgid "Talk-show"
+#~ msgstr "Talk-show"
+
+#~ msgid "Albania"
+#~ msgstr "Albánsko"

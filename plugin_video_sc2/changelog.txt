@@ -1,3 +1,10 @@
+2023-04-03 [3.0]
+* kompletný prepis doplnku postavený nad tools_archivczsk
+* úprava rozhrania po vzore oficiálneho kodi doplnku
+* pridanie histórie sledovania podľa jednotlivých kategórii a integrácia s trakt.tv
+* pridanie možnosti vyhľadania filmu na prehraj.to
+* mnoho rôznych vylepšení
+
 2023-03-06 [2.3.3]
 * oprava nastavovania timeoutu pre požiadavky
 * pridanie chybových výpisov pri zlyhaní požiadavky
