@@ -10,25 +10,9 @@ from time import time
 from datetime import datetime
 from xml.sax.saxutils import escape
 from hashlib import md5
+from ..string_utils import strip_accents
 
-try:
-	basestring
-	is_py3 = False
-
-	def py2_encode_utf8(text):
-		return text.encode('utf-8', 'ignore')
-
-	def py2_decode_utf8(text):
-		return text.decode('utf-8', 'ignore')
-
-except NameError:
-	is_py3 = True
-
-	def py2_encode_utf8(text):
-		return text
-
-	def py2_decode_utf8(text):
-		return text
+# #################################################################################################
 
 EPGIMPORT_SOURCES_CONTENT = '''<?xml version="1.0" encoding="utf-8"?>
 <sources>
@@ -56,21 +40,6 @@ EPGLOAD_SOURCES_CONTENT = '''<?xml version="1.0" encoding="utf-8"?>
 	</sourcecat>
 </sources>
 '''
-
-# #################################################################################################
-
-try:
-	import unidecode
-
-	def strip_accents(s):
-		return unidecode.unidecode(s)
-
-except:
-	import unicodedata
-
-	def strip_accents(s):
-		return ''.join(c for c in unicodedata.normalize('NFD', py2_decode_utf8(s)) if unicodedata.category(c) != 'Mn')
-
 
 # #################################################################################################
 

@@ -128,6 +128,7 @@ class ArchivCZSKContentProvider(object):
 		self.provider.get_text_input = self.get_text_input
 		self.provider.refresh_screen = self.refresh_screen
 		self.provider._ = addon.get_localized_string
+		self.provider.get_lang_code = addon.language.get_language
 		self.initialised_cbk_called = False
 		self.login_tries = 0
 
@@ -283,14 +284,10 @@ class ArchivCZSKContentProvider(object):
 			client.add_item(self.create_play_item(**self.__playlist[0]))
 		elif len( self.__playlist ) > 1:
 			# we have more streams - create playlist and play the first one
-			playlist = []
+			playlist = client.add_playlist(self.__playlist[0]['title'], auto_next=False, auto_restore=True)
 			
-			pl_name = None
 			i = 1
 			for pl_item in self.__playlist:
-				if not pl_name:
-					pl_name = pl_item['title']
-				
 				# create nice names for streams
 				prefix = '[%d] ' % i
 				
@@ -305,11 +302,9 @@ class ArchivCZSKContentProvider(object):
 
 				pl_item['info_labels']['title'] = pl_item['info_labels'].get('title', pl_item['title'])
 				pl_item['title'] = prefix + pl_item['title']
-				playlist.append(self.create_play_item(**pl_item))
+				playlist.add(self.create_play_item(**pl_item))
 				i += 1
 			
-			client.add_playlist(pl_name, playlist)
-
 		self.__playlist = []
 		
 	# #################################################################################################
@@ -468,8 +463,20 @@ class ArchivCZSKContentProvider(object):
 		
 	# #################################################################################################
 	
-	def add_next(self, cmd, **cmd_args):
-		self.add_dir(_B(_('Next')), _icon('next.png'), cmd=cmd, **cmd_args)
+	def add_next(self, cmd, page_info=None, **cmd_args):
+		title = _B(_('Next'))
+
+		info_labels = {}
+
+		if page_info != None:
+			if isinstance(page_info, (type(()), type([]),)):
+				title += ' (%s/%s)' % (page_info[0], page_info[1])
+				info_labels['plot'] = '%s/%s' % (page_info[0], page_info[1])
+			else:
+				title += ' (%s)' % page_info
+				info_labels['plot'] = '%s' % page_info
+
+		self.add_dir(title, _icon('next.png'), info_labels=info_labels, cmd=cmd, **cmd_args)
 
 	# #################################################################################################
 	
@@ -536,7 +543,7 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 
-	def add_playlist(self, title):
+	def add_playlist(self, title, auto_next=True, auto_resume=False):
 		class PlaylistInterface(object):
 			def __init__(self, aczsk_provider, playlist):
 				self.playlist = playlist
@@ -548,7 +555,7 @@ class ArchivCZSKContentProvider(object):
 			def add_video(self, *args, **kwargs):
 				self.playlist.add(self.aczsk_provider.create_video_item(*args, **kwargs))
 
-		return PlaylistInterface(self, client.add_playlist(title))
+		return PlaylistInterface(self, client.add_playlist(title, auto_next=auto_next, auto_resume=auto_resume))
 		
 	# #################################################################################################
 	

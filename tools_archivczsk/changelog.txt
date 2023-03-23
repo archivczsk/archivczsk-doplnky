@@ -1,3 +1,9 @@
+1.8 - 28.03.2023
+    - updated content provider api
+    - updated strings utils
+    - updated http debug dump
+    - some modifications needed for current archivCZSK version
+
 1.7 - 21.03.2023
     - fixed bug when playlist contains only one item
 

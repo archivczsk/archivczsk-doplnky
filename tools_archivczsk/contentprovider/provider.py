@@ -411,7 +411,7 @@ class CommonContentProvider(object):
 		"""
 		pass
 
-	def add_next(self, cmd, **cmd_args):
+	def add_next(self, cmd, page_info=None, **cmd_args):
 		'''
 		Adds shortcut to next page
 		'''
@@ -457,9 +457,11 @@ class CommonContentProvider(object):
 		"""
 		pass
 
-	def add_playlist(self, title):
+	def add_playlist(self, title, auto_next=True, auto_resume=False):
 		"""
 		Adds new playlist to content screen and returns interface to add items to it (using add_video and add_play methods)
+		auto_next - automaticly play next item in playlist when current one finishes
+		auto_resume - resume playback position when changing item in playlist
 		"""
 		# just fake interface here
 		return self
@@ -498,3 +500,10 @@ class CommonContentProvider(object):
 		Refreshes/reloads the actual screen. Usefull when something changes on actual screen.
 		'''
 		return
+
+	def get_lang_code(self):
+		'''
+		Returns current used language code for GUI
+		'''
+		# just dummy one
+		return 'en'

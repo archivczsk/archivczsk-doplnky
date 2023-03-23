@@ -31,6 +31,12 @@ def dump_json_request(response):
 	except:
 		json_data = None
 
+	if not json_data:
+		try:
+			json_data = json.loads(request.body)
+		except:
+			json_data = None
+
 	data = {
 		'request': {
 			'method': request.method,

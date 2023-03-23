@@ -130,3 +130,17 @@ def int_to_roman(i):
 	return result
 
 # #################################################################################################
+
+try:
+	import unidecode
+
+	def strip_accents(s):
+		return unidecode.unidecode(s)
+
+except:
+	import unicodedata
+
+	def strip_accents(s):
+		return ''.join(c for c in unicodedata.normalize('NFD', py2_decode_utf8(s)) if unicodedata.category(c) != 'Mn')
+
+# #################################################################################################
