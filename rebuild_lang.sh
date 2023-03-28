@@ -27,6 +27,8 @@ for lang in cs sk ; do
 	
 	# merge old translated strings to clean list
 	if [ -e ${LOCALE_DIR}/${lang}.po ] ; then
+		msguniq --no-wrap ${LOCALE_DIR}/${lang}.pot > ${LOCALE_DIR}/${lang}.pox
+		mv ${LOCALE_DIR}/${lang}.pox ${LOCALE_DIR}/${lang}.pot
 		msgmerge -U --no-wrap -N --backup=none --lang=${lang} ${LOCALE_DIR}/${lang}.po ${LOCALE_DIR}/${lang}.pot
 
 		# remove clean strings file
