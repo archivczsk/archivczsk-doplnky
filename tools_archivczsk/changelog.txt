@@ -3,6 +3,7 @@
     - updated strings utils
     - updated http debug dump
     - updated context menu api
+    - added LRU cache
     - some modifications needed for current archivCZSK version
 
 1.7 - 21.03.2023
