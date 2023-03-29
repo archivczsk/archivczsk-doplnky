@@ -466,9 +466,21 @@ class CommonContentProvider(object):
 		# just fake interface here
 		return self
 
+	def create_ctx_menu(self):
+		"""
+		Creates context menu and returns interface to create items using add_menu_item() and add_media_menu_item()
+		"""
+		return self
+
 	def add_menu_item(self, menu, title, cmd=None, **cmd_args):
 		'''
 		Used to add item to context menu.
+		'''
+		pass
+
+	def add_media_menu_item(self, menu, title, cmd=None, **cmd_args):
+		'''
+		Used to add media item to context menu. Media item is used to directly play video from context menu (should produce video files).
 		'''
 		pass
 
@@ -507,3 +519,9 @@ class CommonContentProvider(object):
 		'''
 		# just dummy one
 		return 'en'
+
+	def youtube_resolve(self, url):
+		'''
+		Resolves youtube link to video streams using youtube_dl
+		'''
+		return None

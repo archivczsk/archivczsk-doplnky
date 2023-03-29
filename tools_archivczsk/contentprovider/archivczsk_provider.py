@@ -119,7 +119,9 @@ class ArchivCZSKContentProvider(object):
 		self.provider.add_video = self.add_video
 		self.provider.add_play = self.add_play
 		self.provider.add_playlist = self.add_playlist
+		self.provider.create_ctx_menu = self.create_ctx_menu
 		self.provider.add_menu_item = self.add_menu_item
+		self.provider.add_media_menu_item = self.add_media_menu_item
 		self.provider.show_info = self.show_info
 		self.provider.show_error = self.show_error
 		self.provider.show_warning = self.show_warning
@@ -129,6 +131,7 @@ class ArchivCZSKContentProvider(object):
 		self.provider.refresh_screen = self.refresh_screen
 		self.provider._ = addon.get_localized_string
 		self.provider.get_lang_code = addon.language.get_language
+		self.provider.youtube_resolve = client.getVideoFormats
 		self.initialised_cbk_called = False
 		self.login_tries = 0
 
@@ -284,7 +287,7 @@ class ArchivCZSKContentProvider(object):
 			client.add_item(self.create_play_item(**self.__playlist[0]))
 		elif len( self.__playlist ) > 1:
 			# we have more streams - create playlist and play the first one
-			playlist = client.add_playlist(self.__playlist[0]['title'], auto_next=False, auto_restore=True)
+			playlist = client.add_playlist(self.__playlist[0]['title'], auto_next=False, auto_resume=True)
 			
 			i = 1
 			for pl_item in self.__playlist:
@@ -439,8 +442,25 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 	
+	def create_ctx_menu(self):
+		class CtxMenuInterface(object):
+			def __init__(self, aczsk_provider):
+				self.menu = {}
+				self.aczsk_provider = aczsk_provider
+
+			def add_menu_item(self, *args, **kwargs):
+				self.aczsk_provider.add_menu_item(self.menu, *args, **kwargs)
+
+			def add_media_menu_item(self, *args, **kwargs):
+				self.aczsk_provider.add_media_menu_item(self.menu, *args, **kwargs)
+
+		return CtxMenuInterface(self)
+
 	def add_menu_item(self, menu, title, cmd=None, **cmd_args):
 		menu[title] = self.action(cmd, **cmd_args)
+
+	def add_media_menu_item(self, menu, title, cmd=None, **cmd_args):
+		menu[title] = [None, self.action(cmd, **cmd_args), True]
 		
 	# #################################################################################################
 	
@@ -454,6 +474,8 @@ class ArchivCZSKContentProvider(object):
 			'duration': 'Dlzka v sekundach ako int'
 		}
 		"""
+		if not isinstance(menu, dict):
+			menu = menu.menu
 		client.add_dir(title, self.action(cmd, **cmd_args), image=img, infoLabels=info_labels, menuItems=menu, video_item=False, dataItem=data_item, traktItem=trakt_item)
 		
 	# #################################################################################################
@@ -506,6 +528,9 @@ class ArchivCZSKContentProvider(object):
 		If cmd is string, then it holds direct url of resolved video
 		More items can be passed as list (without callable type)
 		"""
+		if not isinstance(menu, dict):
+			menu = menu.menu
+
 		if cmd == None or callable(cmd):
 			item = client.create_directory_it(title, self.action(cmd, **cmd_args), image=img, infoLabels=info_labels, menuItems=menu, video_item=True, dataItem=data_item, traktItem=trakt_item, download=download)
 		else:
