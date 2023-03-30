@@ -119,6 +119,7 @@ class ArchivCZSKContentProvider(object):
 		self.provider.add_video = self.add_video
 		self.provider.add_play = self.add_play
 		self.provider.add_playlist = self.add_playlist
+		self.provider.sort_content_items = client.sort_items
 		self.provider.create_ctx_menu = self.create_ctx_menu
 		self.provider.add_menu_item = self.add_menu_item
 		self.provider.add_media_menu_item = self.add_media_menu_item

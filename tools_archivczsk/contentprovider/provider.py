@@ -466,6 +466,12 @@ class CommonContentProvider(object):
 		# just fake interface here
 		return self
 
+	def sort_content_items(self, reverse=False, use_diacritics=True, ignore_case=False):
+		"""
+		Sort content items added with add_dir/add_video/add_play/add_playlist
+		"""
+		return
+
 	def create_ctx_menu(self):
 		"""
 		Creates context menu and returns interface to create items using add_menu_item() and add_media_menu_item()
