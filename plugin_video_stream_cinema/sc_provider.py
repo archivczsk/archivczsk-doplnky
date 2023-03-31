@@ -12,7 +12,7 @@ try:
 except:
 	trakttv = None
 
-from .sc_cache import ExpiringLRUCache
+from .sc_cache import ExpiringLRUCache, lru_cache
 from tools_xbmc.tools import util
 from tools_xbmc.contentprovider.provider import ContentProvider
 from .kraska import Kraska
@@ -59,8 +59,6 @@ _KODI_SORT_METHODS = {
 API_VERSION='2.0'
 
 addon = ArchivCZSK.get_xbmc_addon('plugin.video.stream-cinema')
-
-__request_nr=1
 
 # #################################################################################################
 
@@ -238,7 +236,7 @@ class SCWatched:
 			for item in self.items['trakt']['m']:
 				for id_name in [ 'trakt', 'tvdb', 'tmdb', 'imdb' ]:
 					if id_name in item:
-						self.trakt_movies[id_name][ item[id_name] ] = item
+						self.trakt_movies[id_name][ str(item[id_name]) ] = item
 
 		if reload_shows_index or len(self.trakt_shows) == 0:
 			self.trakt_shows = { 'trakt': {}, 'tvdb': {}, 'tmdb': {}, 'imdb': {} }
@@ -246,7 +244,7 @@ class SCWatched:
 			for item in self.items['trakt']['s']:
 				for id_name in [ 'trakt', 'tvdb', 'tmdb', 'imdb' ]:
 					if id_name in item:
-						self.trakt_shows[id_name][ item[id_name] ] = item
+						self.trakt_shows[id_name][ str(item[id_name]) ] = item
 		
 		self.save()
 	
@@ -329,6 +327,7 @@ class StreamCinemaContentProvider(ContentProvider):
 	watched = None
 	watched_init_params = None
 	tapi = None
+	request_nr = 1
 	
 	# #################################################################################################
 	
@@ -484,15 +483,14 @@ class StreamCinemaContentProvider(ContentProvider):
 					resp = requests.get( url, params=default_params, headers=headers )
 					ttl = 3600
 					if 'system' in resp and 'TTL' in resp['system']:
-						ttl = int(ret['system']['TTL'])
+						ttl = int(resp['system']['TTL'])
 
 					cache.put( rurl, resp, ttl )
 			
 			if self.dump_sc_communication:
-				global __request_nr
-				with open( "/tmp/%03d_sc_%s.txt" % (__request_nr, url_short.replace('/','_')), "w" ) as f:
+				with open("/tmp/%03d_sc_%s.txt" % (self.request_nr, url_short.replace('/', '_')), "w") as f:
 					f.write( resp.text )
-					__request_nr += 1
+					self.request_nr += 1
 			
 			if resp.status_code == 200:
 				try:
@@ -541,7 +539,7 @@ class StreamCinemaContentProvider(ContentProvider):
 			'type': trakt_type,
 			'ids' : menu_item['unique_ids'],
 			'episode' : menu_item['info'].get('episode') if mediatype == 'episode' else None,
-			'season' : menu_item['info'].get('season') if mediatype == 'season' else None,
+			'season': menu_item['info'].get('season') if mediatype in ('episode', 'season') else None,
 		}
 		
 		return { k: v for k, v in trakt_items.items() if v is not None }
@@ -740,22 +738,61 @@ class StreamCinemaContentProvider(ContentProvider):
 	
 	def get_trakt_dir(self, url= None ):
 		if not url:
-			item = self.dir_item('Trakt.tv', '#trakt_show_lists#')
+			item = self.dir_item('Trakt.tv', '#trakt_show_root#')
 			return item
 		
 		result = []
 
-		if url == '#trakt_show_lists#':
+		if url == '#trakt_show_root#':
+			result.append(self.dir_item('Moje zoznamy', '#trakt_show_lists#'))
+			result.append(self.dir_item('História', '#trakt_show_history#'))
+			result.append(self.dir_item('Trendy', '#trakt_show_global_list#trending:0'))
+			result.append(self.dir_item('Populárne', '#trakt_show_global_list#popular:0'))
+		elif url == '#trakt_show_lists#':
 			for titem in self.tapi.get_lists():
 				item = self.dir_item(titem['name'], '#trakt_list#' + titem['id'])
 				item['plot'] = titem.get('description')
 				result.append(item)
-				
+		elif url == '#trakt_show_history#':
+			result.append(self.dir_item('Filmy', '#trakt_show_history#movie'))
+			result.append(self.dir_item('Seriály', '#trakt_show_history#tvshow'))
+		elif url.startswith('#trakt_show_history#'):
+			@lru_cache(30, timeout=1800)
+			def get_list_items(media_type):
+				if media_type == 'movie':
+					return self.tapi.get_watched_movies()
+				else:
+					return self.tapi.get_watched_shows()
+
+			track_ids = []
+			titem_type = url[20:]
+			sc_type = 1 if titem_type == 'movie' else 3
+			# get list from Trakt.tv and extract trakt ID + type
+			for data in get_list_items(titem_type):
+				track_ids.append("{},{}".format(sc_type, str(data['trakt'])))
+
+			if len(track_ids) > 0:
+				result = self.list('/Search/getTrakt', data={ 'ids': json.dumps(track_ids)})
+		elif url.startswith('#trakt_show_global_list#'):
+			dir_type, page = url[24:].split(':')
+			for titem in self.tapi.get_global_lists(dir_type, int(page)):
+				if titem['id'] and titem['user']:
+					item = self.dir_item(titem['name'], '#trakt_list#' + titem['id'] + '#' + titem['user'])
+					item['plot'] = titem.get('description', '')
+					result.append(item)
+			item = self.dir_item('Ďalšie', '#trakt_show_global_list#' + dir_type + ':' + str(int(page) + 1))
+			item['type'] = 'next'
+			result.append(item)
+
 		elif url.startswith('#trakt_list#'):
 			slug = url[12:]
+			if '#' in slug:
+				slug, user = slug.split('#')
+			else:
+				user = 'me'
 			track_ids = []
 			
-			for titem in self.tapi.get_list_items(slug):
+			for titem in self.tapi.get_list_items(slug, user):
 				titem_type = titem.get('type')
 
 				if titem_type not in ['movie', 'tvshow', 'show']:
@@ -961,8 +998,7 @@ class StreamCinemaContentProvider(ContentProvider):
 		duration = info_item.get('info', {}).get('duration')
 		
 		if self.silent_mode == False and last_position > 0 and (not duration or last_position < (duration * self.settings['last-play-pos-limit']) // 100):
-			if client.getYesNoInput(self.session, "Obnoviť prehrávanie od poslednej pozície?"):
-				item['playerSettings'] = { 'resume_time_sec' : last_position }
+			item['playerSettings'] = { 'resume_time_sec': last_position }
 		
 		if subs_url:
 			item['subs'] = subs_url
@@ -994,8 +1030,8 @@ class StreamCinemaContentProvider(ContentProvider):
 		except:
 			return None
 	
-   # #################################################################################################
-   
+	# #################################################################################################
+
 	def filter_streams(self, streams ):
 		result = []
 		
@@ -1111,7 +1147,7 @@ class StreamCinemaContentProvider(ContentProvider):
 		
 		titles = []
 		for strm in streams:
-			title = "[%s%s][%s][%s][%s]" % (strm['quality'], strm['vinfo'], strm['size'], strm['lang'], strm['ainfo'][2:].replace('[','').replace(']',''))
+			title = "[[I]%s[/I]%s][%s][[I]%s[/I]][%s]" % (strm['quality'], strm['vinfo'], strm['size'], strm['lang'], strm['ainfo'][2:].replace('[', '').replace(']', ''))
 			titles.append( title )
 			
 		idx = client.getListInput(self.session, titles, '')
