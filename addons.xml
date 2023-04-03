@@ -25,17 +25,17 @@
 	</extension>
 </addon>
 
-<addon id="plugin.video.sc2" name="Stream Cinema Community" provider-name="hotshot.sk" version="2.3.3">
+<addon id="plugin.video.sc2" name="Stream Cinema Community" version="3.0">
 	<requires>
-		<import addon="enigma2.archivczsk" version="2.0.0"/>
-		<import addon="tools.xbmc" version="1.0" />
+		<import addon="enigma2.archivczsk" version="2.2.0"/>
+		<import addon="tools.archivczsk" version="1.8" />
 	</requires>
 	<extension point="archivczsk.addon.seeker"/>
 	<extension point="archivczsk.addon.video"/>
 	<extension point="archivczsk.addon.metadata">
-		<description>Plugin to play video archive.</description>
-		<description lang="cs">Plugin pro přehrávání videí.</description>
-		<description lang="sk">Plugin pre prehravanie videí.</description>
+		<description>Stream Cinema Community - web storage content player</description>
+		<description lang="cs">Stream Cinema Community - přehrávač obsahu webového úložiště</description>
+		<description lang="sk">Stream Cinema Community - prehrávač obsahu webového úložiska</description>
 	</extension>
 </addon>
 
@@ -204,9 +204,9 @@
 	</extension>
 </addon>
 
-<addon id="tools.archivczsk" name="Addons base" version="1.7">
+<addon id="tools.archivczsk" name="Addons base" version="1.8">
 	<requires>
-		<import addon="enigma2.archivczsk" version="2.1.3"/>
+		<import addon="enigma2.archivczsk" version="2.1.4"/>
 	</requires>
 	<extension point="archivczsk.addon.tools" />
 	<extension point="archivczsk.addon.metadata">
@@ -380,7 +380,7 @@
 	</extension>
 </addon>
 
-<addon id="plugin.video.stream-cinema" name="Stream Cinema" provider-name="archivczsk" version="2.1.2">
+<addon id="plugin.video.stream-cinema" name="Stream Cinema" provider-name="archivczsk" version="2.1.3">
 	<requires>
 		<import addon="enigma2.archivczsk" version="2.1.3"/>
 		<import addon="tools.xbmc" version="1.1" />
