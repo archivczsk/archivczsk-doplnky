@@ -453,6 +453,11 @@ class CommonContentProvider(object):
 			'user-agent': user agent to use by player
 			'extra-headers': aditional extra HTTP headers
 			'forced_player': service reference used for player (4097, 5001, 5001, ...)
+			'lang_priority': list of priority langs used for audio and subtitles - audio will be automatically switched to first available language
+			'lang_fallback': list of fallback langs - audio will be automatically switched to first available language, but also subtitles will be enabled
+			'subs_autostart': allow autostart of subtitles (when subtitle lang will be found in lang_priority)
+			'subs_always': always start subtitles, even if audio from lang_priority was found
+			'subs_forced_autostart': start subtitles when forced subtitle track is found (this is poorly supported by enigma)
 		}
 		"""
 		pass
