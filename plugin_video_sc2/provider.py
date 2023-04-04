@@ -834,7 +834,6 @@ class SccContentProvider(CommonContentProvider):
 						self.log_debug("Stream filtered due lang 2")
 						continue
 
-			self.log_debug("Stream added")
 			# strm passed filtering
 			result.append(strm)
 
@@ -944,14 +943,22 @@ class SccContentProvider(CommonContentProvider):
 
 		last_position = self.watched.get_last_position(media_id)
 
-		if self.silent_mode == False and last_position > 0 and (not duration or last_position < (duration * int(self.get_setting('last-play-pos-limit'))) // 100):
+		if self.silent_mode == False and self.get_setting('save-last-play-pos') and last_position > 0 and (not duration or last_position < (duration * int(self.get_setting('last-play-pos-limit'))) // 100):
 			settings['resume_time_sec'] = last_position
 
-		play_params = { 'info_labels': info_labels, 'trakt_item': trakt_info, 'data_item': data_item}
+		settings['lang_priority'] = self.get_dubbed_lang_list()
+		if 'en' not in settings['lang_priority']:
+			settings['lang_fallback'] = ['en']
+
+		settings['subs_autostart'] = self.get_setting('subs-autostart') in ('always', 'undubbed')
+		settings['subs_always'] = self.get_setting('subs-autostart') == 'always'
+		settings['subs_forced_autostart'] = self.get_setting('forced-subs-autostart')
+
+		play_params = { 'info_labels': info_labels, 'trakt_item': trakt_info, 'data_item': data_item, 'settings': settings}
 
 		playlist = self.add_playlist(media_title, auto_next=False, auto_resume=True)
 		try:
-			playlist.add_play(titles[idx], self.webshare.resolve(ident), settings=settings, **play_params)
+			playlist.add_play(titles[idx], self.webshare.resolve(ident), **play_params)
 		except (WebshareLoginFail, ResolveException) as e:
 			self.show_error(str(e))
 		

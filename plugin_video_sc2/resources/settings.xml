@@ -5,10 +5,10 @@
 	<setting label="Store play position of last seen entries" id="save-last-play-pos" type="bool" default="false"/>
 	<setting label="Don't store if play position is more then (in %)" id="last-play-pos-limit" type="labelenum" values="80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100" default="95"/>
 	<setting label="Allow integration with Trakt.tv" id="trakt_enabled" type="bool" default="false"/>
-	
 	<setting label="DeviceId" id="deviceid" type="text" default="" visible="false"/>
 	<setting label="Protocol used for API communication" id="api-protocol" type="labelenum" values="http|https" default="http" />
-
+	<setting label="Start subtitles automatically" id="subs-autostart" type="keyenum" values="always;Always|undubbed;When undubbed|never;Never" default="undubbed" />
+	<setting label="Start forced subtitles automatically" id="forced-subs-autostart" type="bool" default="true" />
 	<category label="Accounts">
 		<setting label="Login name (webshare.cz)" id="wsuser" type="text" default="" />
 		<setting label="Login password (webshare.cz)" id="wspass" type="password" default="" />
@@ -18,7 +18,7 @@
 		<setting label="Use primary prehraj.to search" id="prehrajto-primary" type="bool" default="false" />
 	</category>
 	<category label="Filters">
-		<setting label="Language of dubbed entries" id="dubbed-lang" type="keyenum" values="auto;Auto|cs;CZ|sk;SK|cs+sk;CZ &amp; SK|en;EN" default="auto" />
+		<setting label="Language of dubbed entries" id="dubbed-lang" type="keyenum" values="auto;Auto|cs;CZ|sk;SK|cs+sk;CZ &amp; SK|sk+cs;SK &amp; CZ|en;EN" default="auto" />
 		<setting label="Show HDR streams" id="enable-hdr" type="bool" default="true" />
 		<setting label="Show 3D streams" id="enable-3d" type="bool" default="false" />
 		<setting label="Minimal offered stream quality" id="min-quality" type="keyenum" values="0;All|720;720p|1080;1080p|2160;4k" default="720" />

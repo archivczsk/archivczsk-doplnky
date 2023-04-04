@@ -1,5 +1,6 @@
 2023-04-03 [3.1]
 * oprava scrobble pre trakt.tv
+* pridanie automatického spustenia titulkov a zmenu audio streamu
 
 2023-04-03 [3.0]
 * kompletný prepis doplnku postavený nad tools_archivczsk

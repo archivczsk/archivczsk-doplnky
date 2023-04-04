@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_scc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-03 15:53+0200\n"
-"PO-Revision-Date: 2023-04-03 15:54+0200\n"
+"POT-Creation-Date: 2023-04-04 19:07+0200\n"
+"PO-Revision-Date: 2023-04-04 19:07+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -1305,7 +1305,7 @@ msgstr "Filmy"
 #: plugin_video_sc2/provider.py:115 plugin_video_sc2/provider.py:125
 #: plugin_video_sc2/provider.py:252
 msgid "Series"
-msgstr "Serilály"
+msgstr "Seriály"
 
 #: plugin_video_sc2/provider.py:118
 msgid "CSFD Tips"
@@ -1490,6 +1490,21 @@ msgstr ""
 msgid "https"
 msgstr ""
 
+msgid "Start subtitles automatically"
+msgstr "Automaticky spustiť titulky"
+
+msgid "Always"
+msgstr "Vždy"
+
+msgid "When undubbed"
+msgstr "U nedabovaných"
+
+msgid "Never"
+msgstr "Nikdy"
+
+msgid "Start forced subtitles automatically"
+msgstr "Automaticky spustiť forced titulky"
+
 msgid "Accounts"
 msgstr "Účty"
 
@@ -1576,6 +1591,9 @@ msgstr "Povoliť h265/hevc  kodek"
 
 msgid "Maximum size of stream (in GB)"
 msgstr "Maximálna veľkosť streamu (v GB)"
+
+#~ msgid "Start forced subtitles automatically "
+#~ msgstr "Automaticky spustiť forced titulky"
 
 #~ msgid "Maximal size of stream (in GB)"
 #~ msgstr "Maximálna veľkosť streamu (v GB)"
