@@ -669,14 +669,16 @@ class SccContentProvider(CommonContentProvider):
 						else:
 							title += ' *'
 
+			trakt_item = self.fill_trakt_info(source, is_watched)
+
 			if media_type in ('tvshow', 'season'):
-				self.add_dir(title, img, info_labels=info_labels, menu=menu, trakt_item=self.fill_trakt_info(source, is_watched), cmd=self.get_data_by_parent, media_id=media['_id'], services=services, category=cat)
+				self.add_dir(title, img, info_labels=info_labels, menu=menu, trakt_item=trakt_item, cmd=self.get_data_by_parent, media_id=media['_id'], services=services, category=cat)
 			elif media_type in ('movie', 'episode', 'concert'):
 				if prehrajto_primary:
 					self.add_dir(title, img, info_labels=info_labels, menu=menu, cmd=self.prehrajto_search, keyword=info_labels['search_keyword'])
 				else:
 					root_media_id = source.get('root_parent') if media_type == 'episode' else None
-					self.add_video(title, img, info_labels=info_labels, menu=menu, trakt_item=self.fill_trakt_info(source, is_watched), cmd=self.get_streams, media_title=info_labels['title'], media_id=media['_id'], category=cat, root_media_id=root_media_id)
+					self.add_video(title, img, info_labels=info_labels, menu=menu, trakt_item=trakt_item, cmd=self.get_streams, media_title=info_labels['title'], media_id=media['_id'], category=cat, root_media_id=root_media_id, trakt_info=trakt_item)
 			else:
 				self.log_error("Unhandled media type: %s" % media_type)
 
@@ -878,7 +880,7 @@ class SccContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def get_streams(self, media_title, media_id, category=None, root_media_id=None):
+	def get_streams(self, media_title, media_id, category=None, root_media_id=None, trakt_info=None):
 		audios = { 1: '1.0', 2: '2.0', 6: '5.1', 8: '7.1'}
 		data = self.api.call_streams_api(media_id)
 
@@ -945,21 +947,23 @@ class SccContentProvider(CommonContentProvider):
 		if self.silent_mode == False and last_position > 0 and (not duration or last_position < (duration * int(self.get_setting('last-play-pos-limit'))) // 100):
 			settings['resume_time_sec'] = last_position
 
+		play_params = { 'info_labels': info_labels, 'trakt_item': trakt_info, 'data_item': data_item}
+
 		playlist = self.add_playlist(media_title, auto_next=False, auto_resume=True)
 		try:
-			playlist.add_play(titles[idx], self.webshare.resolve(ident), info_labels=info_labels, data_item=data_item, settings=settings)
+			playlist.add_play(titles[idx], self.webshare.resolve(ident), settings=settings, **play_params)
 		except (WebshareLoginFail, ResolveException) as e:
 			self.show_error(str(e))
 		
 		for i in range(len(data)):
 			if i != idx:
-				playlist.add_video(titles[i], info_labels=info_labels, data_item=data_item, cmd=self.webshare_resolve, ident=data[i].get('ident'), media_title=media_title)
+				playlist.add_video(titles[i], cmd=self.webshare_resolve, ident=data[i].get('ident'), media_title=media_title, play_params=play_params, **play_params)
 		
 	# ##################################################################################################################
 
-	def webshare_resolve(self, media_title, ident):
+	def webshare_resolve(self, media_title, ident, play_params={}):
 		try:
-			self.add_play(media_title, self.webshare.resolve(ident))
+			self.add_play(media_title, self.webshare.resolve(ident), **play_params)
 		except (WebshareLoginFail, ResolveException) as e:
 			self.show_error(str(e))
 
