@@ -27,7 +27,7 @@ try:
 except:
 	from html.entities import name2codepoint as n2cp
 
-if sys.version[0] == 2:
+if sys.version[0] == '2':
 	is_py3 = False
 	
 	def py2_decode_utf8( text ):
