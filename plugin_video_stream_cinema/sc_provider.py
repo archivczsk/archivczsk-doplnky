@@ -340,10 +340,13 @@ class StreamCinemaContentProvider(ContentProvider):
 		
 		lang = addon.getSetting('lang')
 		
+		if lang == 'Auto':
+			lang = addon.language.get_language().upper()
+
 		if lang == 'SK':
 			self.lang_code='sl'
 			self.lang_list = ['sk', 'cs', 'en']
-		elif lang == 'CZ':
+		elif lang in ('CZ', 'CS'):
 			self.lang_code='cs'
 			self.lang_list = ['cs', 'sk', 'en']
 		else:
@@ -369,6 +372,9 @@ class StreamCinemaContentProvider(ContentProvider):
 			"webshare-primary": addon.getSetting('webshare-primary') == 'true',
 			"wsvipdays": int(addon.getSetting('wsvipdays')),
 			"trakt_enabled": addon.getSetting('trakt_enabled') == 'true',
+			"dubbed-lang": addon.getSetting('dubbed-lang'),
+			"subs-autostart": addon.getSetting('subs-autostart'),
+			"forced-subs-autostart": addon.getSetting('forced-subs-autostart'),
 		}
 
 		kruser = addon.getSetting('kruser')
@@ -958,6 +964,22 @@ class StreamCinemaContentProvider(ContentProvider):
 	
 	# #################################################################################################
 	
+	def get_dubbed_lang_list(self):
+		dl = self.settings['dubbed-lang']
+
+		if dl == 'auto':
+			lang_code = addon.language.get_language()
+			if lang_code == 'cs':
+				return ['cs', 'sk']
+			elif lang_code == 'sk':
+				return ['sk', 'cs']
+			else:
+				return ['en']
+		else:
+			return dl.split('+')
+
+	# #################################################################################################
+
 	def create_video_item(self, stream, info_item ):
 		file_url = None
 		
@@ -996,10 +1018,21 @@ class StreamCinemaContentProvider(ContentProvider):
 		
 		last_position = self.watched.get_last_position( info_item.get('url') )
 		duration = info_item.get('info', {}).get('duration')
+
+		player_settings = {}
+		player_settings['lang_priority'] = self.get_dubbed_lang_list()
+		if 'en' not in player_settings['lang_priority']:
+			player_settings['lang_fallback'] = ['en']
+
+		player_settings['subs_autostart'] = self.settings['subs-autostart'] in ('always', 'undubbed')
+		player_settings['subs_always'] = self.settings['subs-autostart'] == 'always'
+		player_settings['subs_forced_autostart'] = self.settings['forced-subs-autostart']
+
+		if self.silent_mode == False and self.settings['save-last-play-pos'] and last_position > 0 and (not duration or last_position < (duration * self.settings['last-play-pos-limit']) // 100):
+			player_settings['resume_time_sec'] = last_position
 		
-		if self.silent_mode == False and last_position > 0 and (not duration or last_position < (duration * self.settings['last-play-pos-limit']) // 100):
-			item['playerSettings'] = { 'resume_time_sec': last_position }
-		
+		item['playerSettings'] = player_settings
+
 		if subs_url:
 			item['subs'] = subs_url
 			

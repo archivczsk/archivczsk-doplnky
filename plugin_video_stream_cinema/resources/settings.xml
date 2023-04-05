@@ -7,9 +7,9 @@
 	<setting label="Ukladať pozíciu prehrávania u videných položiek" id="save-last-play-pos" type="bool" default="false"/>
 	<setting label="Neukladať ak je pozícia prehrávania viac ako (v %)" id="last-play-pos-limit" type="labelenum" values="80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100" default="95"/>
 	<setting label="Povoliť integráciu s Trakt.tv" id="trakt_enabled" type="bool" default="false"/>
-	
+	<setting label="Automaticky spustiť titulky" id="subs-autostart" type="keyenum" values="always;Vždy|undubbed;U nedabovaných|never;Nikdy" default="undubbed" />
+	<setting label="Automaticky spustiť forced titulky" id="forced-subs-autostart" type="bool" default="true" />
 	<setting label="DeviceId" id="deviceid" type="text" default="" visible="false"/>
-
 	<category label="Účty">
 		<setting label="Prihlasovacie meno (kra.sk)" id="kruser" type="text" default="" />
 		<setting label="Heslo (kra.sk)" id="krpass" type="text" default="" option="true" />
@@ -20,7 +20,8 @@
 		<setting label="Používať primárne webshare vyhľadávanie" id="webshare-primary" type="bool" default="false" />
 	</category>
 	<category label="Filtre">
-		<setting label="Preferovaný jazyk pre položky a vyhľadávanie" id="lang" type="labelenum" values="CZ|SK|EN" default="CZ" />
+		<setting label="Jazyk dabovaných položiek" id="dubbed-lang" type="keyenum" values="auto;Auto|cs;CZ|sk;SK|cs+sk;CZ &amp; SK|sk+cs;SK &amp; CZ|en;EN" default="auto" />
+		<setting label="Preferovaný jazyk pre položky a vyhľadávanie" id="lang" type="labelenum" values="Auto|CZ|SK|EN" default="Auto" />
 		<setting label="Vekové obmedzenie" id="maturity-rating" type="enum" lvalues="Žiadne|0|6|12|15" default="0" />
 		<setting label="Filter položiek podľa jazyka" id="item-lang-filter" type="enum" lvalues="Všetky|Iba dabing alebo titulky|Iba dabing" default="0" />
 		<setting label="Filter streamov podľa jazyka" id="stream-lang-filter" type="enum" lvalues="301071|301072|301073|301074|301075" default="0" />
