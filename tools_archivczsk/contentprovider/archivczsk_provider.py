@@ -288,7 +288,7 @@ class ArchivCZSKContentProvider(object):
 			client.add_item(self.create_play_item(**self.__playlist[0]))
 		elif len( self.__playlist ) > 1:
 			# we have more streams - create playlist and play the first one
-			playlist = client.add_playlist(self.__playlist[0]['title'], auto_next=False, auto_resume=True)
+			playlist = client.add_playlist(self.__playlist[0]['title'], variant=True)
 			
 			i = 1
 			for pl_item in self.__playlist:
@@ -569,7 +569,7 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 
-	def add_playlist(self, title, auto_next=True, auto_resume=False):
+	def add_playlist(self, title, variant=False):
 		class PlaylistInterface(object):
 			def __init__(self, aczsk_provider, playlist):
 				self.playlist = playlist
@@ -581,7 +581,7 @@ class ArchivCZSKContentProvider(object):
 			def add_video(self, *args, **kwargs):
 				self.playlist.add(self.aczsk_provider.create_video_item(*args, **kwargs))
 
-		return PlaylistInterface(self, client.add_playlist(title, auto_next=auto_next, auto_resume=auto_resume))
+		return PlaylistInterface(self, client.add_playlist(title, variant=variant))
 		
 	# #################################################################################################
 	

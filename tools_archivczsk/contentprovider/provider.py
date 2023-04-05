@@ -462,11 +462,10 @@ class CommonContentProvider(object):
 		"""
 		pass
 
-	def add_playlist(self, title, auto_next=True, auto_resume=False):
+	def add_playlist(self, title, variant=False):
 		"""
 		Adds new playlist to content screen and returns interface to add items to it (using add_video and add_play methods)
-		auto_next - automaticly play next item in playlist when current one finishes
-		auto_resume - resume playback position when changing item in playlist
+		variant - defines variant playlist - playlist contains the same video content with various qualities
 		"""
 		# just fake interface here
 		return self

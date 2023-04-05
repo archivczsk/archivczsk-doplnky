@@ -956,7 +956,7 @@ class SccContentProvider(CommonContentProvider):
 
 		play_params = { 'info_labels': info_labels, 'trakt_item': trakt_info, 'data_item': data_item, 'settings': settings}
 
-		playlist = self.add_playlist(media_title, auto_next=False, auto_resume=True)
+		playlist = self.add_playlist(media_title, variant=True)
 		try:
 			playlist.add_play(titles[idx], self.webshare.resolve(ident), **play_params)
 		except (WebshareLoginFail, ResolveException) as e:
@@ -968,7 +968,7 @@ class SccContentProvider(CommonContentProvider):
 		
 	# ##################################################################################################################
 
-	def webshare_resolve(self, media_title, ident, play_params={}):
+	def webshare_resolve(self, media_title, ident, settings, play_params={}):
 		try:
 			self.add_play(media_title, self.webshare.resolve(ident), **play_params)
 		except (WebshareLoginFail, ResolveException) as e:
