@@ -589,7 +589,7 @@ class SccContentProvider(CommonContentProvider):
 		# this is needed for trakt - we need unique id's of parent for seasons and episodes
 		prehrajto_primary = self.get_setting('prehrajto-primary')
 		services_parent = services
-		title_hint = folder[3:] if folder is not None and folder.startswith('az:') else None
+		title_hint = folder[3:].lower() if folder is not None and folder.startswith('az:') else None
 
 		for media in data.get('hits', []):
 			source = media['_source']
