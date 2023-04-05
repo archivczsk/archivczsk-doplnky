@@ -5,6 +5,7 @@ from Plugins.Extensions.archivCZSK.engine import client
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from .exception import LoginException, AddonErrorException, AddonInfoException, AddonWarningException
 from ..string_utils import _B
+from collections import OrderedDict
 
 __addon__ = ArchivCZSK.get_addon('tools.archivczsk')
 
@@ -446,7 +447,7 @@ class ArchivCZSKContentProvider(object):
 	def create_ctx_menu(self):
 		class CtxMenuInterface(object):
 			def __init__(self, aczsk_provider):
-				self.menu = {}
+				self.menu = OrderedDict()
 				self.aczsk_provider = aczsk_provider
 
 			def add_menu_item(self, *args, **kwargs):
