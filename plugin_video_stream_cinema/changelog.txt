@@ -1,3 +1,10 @@
+2023-04-12 3.0
+    - kompletný prepis doplnku postavený nad tools_archivczsk
+    - vylepšené vypĺňanie informácii o epizóde a sérii
+    - možnosť zmeny streamu bez prerušenia cez playlist
+    - nahradenie podpory pre webshare za prehraj.to (pre webshare používajte Stream Cinema Community)
+    - pridaná CZ a EN lokalizácia
+
 2023-04-05 2.1.4
     - pridanie automatického nastavovania audio stôp a titulkov
 

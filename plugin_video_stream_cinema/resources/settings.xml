@@ -1,36 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-	<setting label="Zobraziť žáner v názve položky" id="show-genre" type="bool" default="false" />
-	<setting label="Zobraziť starú štruktúru menu" id="old-menu" type="bool" default="false" />
-	<setting label="Počet zapamätaných vyhľadávaní" id="keep-searches" type="labelenum" values="0|5|10|15|20|25|30|35|40|45|50" default="20"/>
-	<setting label="Počet posledných videných položiek" id="keep-last-seen" type="labelenum" values="0|5|10|15|20|25|30|35|40|45|50" default="20"/>
-	<setting label="Ukladať pozíciu prehrávania u videných položiek" id="save-last-play-pos" type="bool" default="false"/>
-	<setting label="Neukladať ak je pozícia prehrávania viac ako (v %)" id="last-play-pos-limit" type="labelenum" values="80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100" default="95"/>
-	<setting label="Povoliť integráciu s Trakt.tv" id="trakt_enabled" type="bool" default="false"/>
-	<setting label="Automaticky spustiť titulky" id="subs-autostart" type="keyenum" values="always;Vždy|undubbed;U nedabovaných|never;Nikdy" default="undubbed" />
-	<setting label="Automaticky spustiť forced titulky" id="forced-subs-autostart" type="bool" default="true" />
+	<setting label="Show genre in item name" id="show-genre" type="bool" default="false" />
+	<setting label="Show old menu structure" id="old-menu" type="bool" default="false" />
+	<setting label="Number of remembered searches" id="keep-searches" type="labelenum" values="0|5|10|15|20|25|30|35|40|45|50" default="20"/>
+	<setting label="Number of last seen entries" id="keep-last-seen" type="labelenum" values="0|5|10|15|20|25|30|35|40|45|50" default="20"/>
+	<setting label="Store play position of last seen entries" id="save-last-play-pos" type="bool" default="false"/>
+	<setting label="Don't store if play position is more then (in %)" id="last-play-pos-limit" type="labelenum" values="80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100" default="95"/>
+	<setting label="Allow integration with Trakt.tv" id="trakt_enabled" type="bool" default="false"/>
+	<setting label="Start subtitles automatically" id="subs-autostart" type="keyenum" values="always;Always|undubbed;When undubbed|never;Never" default="undubbed" />
+	<setting label="Start forced subtitles automatically" id="forced-subs-autostart" type="bool" default="true" />
 	<setting label="DeviceId" id="deviceid" type="text" default="" visible="false"/>
-	<category label="Účty">
-		<setting label="Prihlasovacie meno (kra.sk)" id="kruser" type="text" default="" />
-		<setting label="Heslo (kra.sk)" id="krpass" type="text" default="" option="true" />
-		<setting label="Zostávajúce dni predplatného (kra.sk)" id="krvipdays" type="number" default="0" />
-		<setting label="Prihlasovacie meno (webshare.cz)" id="wsuser" type="text" default="" />
-		<setting label="Heslo (webshare.cz)" id="wspass" type="text" default="" option="true" />
-		<setting label="Zostávajúce dni predplatného (webshare.cz)" id="wsvipdays" type="number" default="0" />
-		<setting label="Používať primárne webshare vyhľadávanie" id="webshare-primary" type="bool" default="false" />
+	<category label="Accounts">
+		<setting label="Login name (kra.sk)" id="kruser" type="text" default="" />
+		<setting label="Login password (kra.sk)" id="krpass" type="password" default="" />
+		<setting label="VIP days remaining (kra.sk)" id="krvipdays" type="number" default="0" />
+		<setting label="Login name (prehraj.to)" id="ptouser" type="text" default="" />
+		<setting label="Login password (prehraj.to)" id="ptopass" type="password" default="" />
+		<setting label="Use primary prehraj.to search" id="prehrajto-primary" type="bool" default="false" />
 	</category>
-	<category label="Filtre">
-		<setting label="Jazyk dabovaných položiek" id="dubbed-lang" type="keyenum" values="auto;Auto|cs;CZ|sk;SK|cs+sk;CZ &amp; SK|sk+cs;SK &amp; CZ|en;EN" default="auto" />
-		<setting label="Preferovaný jazyk pre položky a vyhľadávanie" id="lang" type="labelenum" values="Auto|CZ|SK|EN" default="Auto" />
-		<setting label="Vekové obmedzenie" id="maturity-rating" type="enum" lvalues="Žiadne|0|6|12|15" default="0" />
-		<setting label="Filter položiek podľa jazyka" id="item-lang-filter" type="enum" lvalues="Všetky|Iba dabing alebo titulky|Iba dabing" default="0" />
-		<setting label="Filter streamov podľa jazyka" id="stream-lang-filter" type="enum" lvalues="301071|301072|301073|301074|301075" default="0" />
-		<setting label="Minimálna ponúkaná kvalita streamu" id="min-quality" type="labelenum" values="Všetko|720p|1080p|4k" default="720p" />
-		<setting label="Maximálna ponúkaná kvalita streamu" id="max-quality" type="labelenum" values="720p|1080p|4k|8k" default="4k" />
-		<setting label="Zobraziť súbory s HDR" id="show-hdr" type="bool" default="true" />
-		<setting label="Zobraziť súbory s Dolby Vision (3D filmy)" id="show-dv" type="bool" default="false" />
-		<setting label="Povoliť h265/hevc kodek" id="enable-hevc" type="bool" default="true" />
-		<setting label="Maximálna veľkosť streamu (v GB)" id="max-file-size" type="number" default="0" />
-		<setting label="30205" id="trakt_filter" type="enum" lvalues="302051|302052|302053" default="0" visible="false"/>
+	<category label="Filters">
+		<setting label="Language of dubbed entries and menu" id="dubbed-lang" type="keyenum" values="auto;Auto|cs;CZ|sk;SK|cs+sk;CZ &amp; SK|sk+cs;SK &amp; CZ|en;EN" default="auto" />
+		<setting label="Maturity rating" id="maturity-rating" type="keyenum" values="-1;None|0;0|6;6|12;12|15;15" default="-1" />
+		<setting label="Filter items by lanuage" id="item-lang-filter" type="keyenum" values="all;All|dubsubs;Only dubbed or subs|dub;Only dubbed" default="all" />
+		<setting label="Filter streams by language" id="stream-lang-filter" type="keyenum" values="all;All|cs+sk;CZ &amp; SK|cs;CZ|sk;SK|en;EN" default="all" />
+		<setting label="Minimal offered stream quality" id="min-quality" type="keyenum" values="0;All|720;720p|1080;1080p|2160;4k" default="720" />
+		<setting label="Maximal offered stream quality" id="max-quality" type="keyenum" values="720;720p|1080;1080p|2160;4k|4320;8k" default="2160" />
+		<setting label="Show HDR streams" id="show-hdr" type="bool" default="true" />
+		<setting label="Show Dolby Vision streams" id="show-dv" type="bool" default="false" />
+		<setting label="Enable h265/hevc codec" id="enable-hevc" type="bool" default="true" />
+		<setting label="Maximum size of stream (in GB)" id="max-file-size" type="number" default="0" />
 	</category>
 </settings>
