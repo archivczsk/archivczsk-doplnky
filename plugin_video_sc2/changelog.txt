@@ -1,3 +1,7 @@
+2023-04-12 [3.2]
+* pridanie vyhľadávania Prehraj.to do seekera
+* vylepšené vypĺňanie informácii o sérii a epizóde
+
 2023-04-03 [3.1]
 * oprava scrobble pre trakt.tv
 * pridanie automatického spustenia titulkov a zmenu audio streamu

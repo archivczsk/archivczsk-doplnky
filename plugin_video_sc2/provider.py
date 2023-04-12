@@ -391,16 +391,19 @@ class SccContentProvider(CommonContentProvider):
 		
 		if media_type == 'episode':
 			title = self._("Episode") + ' %02d' % info['episode']
+			info_labels['episode'] = info['episode']
 
 			if 'season' in info and info['season'] != 0:
 				ep_code = ' %s (%d)' % (int_to_roman(info['season']), info['episode'])
 				ep_code2 = ' S%02dE%02d' % (int(info['season']), int(info['episode']))
+				info_labels['season'] = info['season']
 			else:
 				ep_code = ' (%d)' % info['episode']
-				ep_code2 = ' S%02d' % int(info['season'])
+				ep_code2 = ' E%02d' % int(info['episode'])
 		elif media_type == 'season':
 			if 'season' in info and info['season'] != 0:
 				ep_code = ' %s' % int_to_roman(info['season'])
+				info_labels['season'] = info['season']
 
 		if i18n_info:
 			for l in i18n_info:
@@ -413,6 +416,9 @@ class SccContentProvider(CommonContentProvider):
 							info_title = None
 
 					if info_title:
+						if media_type == 'episode':
+							info_labels['epname'] = info_title
+
 						if title:
 							title += ': ' + info_title
 						else:
@@ -678,7 +684,7 @@ class SccContentProvider(CommonContentProvider):
 					self.add_dir(title, img, info_labels=info_labels, menu=menu, cmd=self.prehrajto_search, keyword=info_labels['search_keyword'])
 				else:
 					root_media_id = source.get('root_parent') if media_type == 'episode' else None
-					self.add_video(title, img, info_labels=info_labels, menu=menu, trakt_item=trakt_item, cmd=self.get_streams, media_title=info_labels['title'], media_id=media['_id'], category=cat, root_media_id=root_media_id, trakt_info=trakt_item)
+					self.add_video(title, img, info_labels=info_labels, menu=menu, trakt_item=trakt_item, cmd=self.get_streams, media_title=info_labels.get('epname') or info_labels['title'], media_id=media['_id'], category=cat, root_media_id=root_media_id, trakt_info=trakt_item)
 			else:
 				self.log_error("Unhandled media type: %s" % media_type)
 
@@ -990,6 +996,9 @@ class SccContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def search(self, keyword, search_id=''):
+		if search_id == 'prehrajto':
+			return self.prehrajto_search(keyword)
+
 		if search_id is not None and search_id.endswith('-all'):
 			search_id = search_id.replace('-all', '-*')
 

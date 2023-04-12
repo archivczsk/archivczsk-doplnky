@@ -206,6 +206,7 @@ class SCWatched(object):
 	# #################################################################################################
 
 	def is_trakt_watched_show(self, unique_ids, season, episode):
+		season = str(season) if season != None else season
 		if self.trakt_need_reload and self.tapi and self.tapi.valid():
 			self.load_trakt_watched()
 
@@ -238,6 +239,7 @@ class SCWatched(object):
 	# #################################################################################################
 
 	def is_trakt_watched_season(self, unique_ids, season, episodes_count=-1):
+		season = str(season) if season != None else season
 		if self.trakt_need_reload and self.tapi and self.tapi.valid():
 			self.load_trakt_watched()
 

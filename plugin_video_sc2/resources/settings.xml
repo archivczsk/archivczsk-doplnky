@@ -13,7 +13,7 @@
 		<setting label="Login name (webshare.cz)" id="wsuser" type="text" default="" />
 		<setting label="Login password (webshare.cz)" id="wspass" type="password" default="" />
 		<setting label="VIP days remaining (webshare.cz)" id="wsvipdays" type="number" default="0" />
-		<setting label="Login name (prehraj.cz)" id="ptouser" type="text" default="" />
+		<setting label="Login name (prehraj.to)" id="ptouser" type="text" default="" />
 		<setting label="Login password (prehraj.to)" id="ptopass" type="password" default="" />
 		<setting label="Use primary prehraj.to search" id="prehrajto-primary" type="bool" default="false" />
 	</category>
