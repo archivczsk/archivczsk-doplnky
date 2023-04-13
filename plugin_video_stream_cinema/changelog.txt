@@ -1,5 +1,6 @@
 2023-04-13 3.1
     - opravená aktualizácia dát z trakt.tv
+    - nastavovanie správneho user agenta do požiadaviek
 
 2023-04-12 3.0
     - kompletný prepis doplnku postavený nad tools_archivczsk

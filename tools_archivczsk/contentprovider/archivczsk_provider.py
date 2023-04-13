@@ -3,6 +3,7 @@
 import sys, os, re, traceback, time, json
 from Plugins.Extensions.archivCZSK.engine import client
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
+from Plugins.Extensions.archivCZSK.version import version as archivczsk_version
 from .exception import LoginException, AddonErrorException, AddonInfoException, AddonWarningException
 from ..string_utils import _B
 from collections import OrderedDict
@@ -134,6 +135,8 @@ class ArchivCZSKContentProvider(object):
 		self.provider._ = addon.get_localized_string
 		self.provider.get_lang_code = addon.language.get_language
 		self.provider.youtube_resolve = client.getVideoFormats
+		self.provider.get_addon_version = lambda: addon.version
+		self.provider.get_engine_version = lambda: archivczsk_version
 		self.initialised_cbk_called = False
 		self.login_tries = 0
 

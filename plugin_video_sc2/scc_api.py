@@ -8,16 +8,9 @@ from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.cache import ExpiringLRUCache
 
 try:
-	from Plugins.Extensions.archivCZSK.version import version as archivczsk_version
-except:
-	archivczsk_version = "2"
-
-try:
 	from urllib import urlencode
 except:
 	from urllib.parse import urlencode
-
-addon_version="1.0"
 
 # ##################################################################################################################
 
@@ -63,7 +56,7 @@ class SCC_API(object):
 
 	def call_api(self, endpoint, params=None, data=None):
 		headers = {
-			'User-Agent': 'archivCZSK/%s (plugin.video.scc/%s)' % (archivczsk_version, addon_version),
+			'User-Agent': 'ArchivCZSK/%s (plugin.video.sc2/%s)' % (self.cp.get_engine_version(), self.cp.get_addon_version()),
 			'X-Uuid': self.device_id
 		}
 

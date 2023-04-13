@@ -6,17 +6,10 @@ from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.cache import ExpiringLRUCache
 
 try:
-	from Plugins.Extensions.archivCZSK.version import version as archivczsk_version
-except:
-	archivczsk_version = "2"
-
-try:
 	from urlparse import urlparse, urlunparse, parse_qsl
 	from urllib import urlencode
 except:
 	from urllib.parse import quote, urlparse, urlunparse, urlencode, parse_qsl
-
-addon_version = "3.0"
 
 # ##################################################################################################################
 
@@ -81,7 +74,7 @@ class SC_API(object):
 			default_params.update({'old': 1 }) # zobrazit povodny typ menu
 
 		headers = {
-			'User-Agent': 'archivCZSK/%s (plugin.video.stream-cinema/%s)' % (archivczsk_version, addon_version),
+			'User-Agent': 'ArchivCZSK/%s (plugin.video.stream-cinema/%s)' % (self.cp.get_engine_version(), self.cp.get_addon_version()),
 			'X-Uuid': self.device_id,
 		}
 

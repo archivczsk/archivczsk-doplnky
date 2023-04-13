@@ -535,3 +535,15 @@ class CommonContentProvider(object):
 		Resolves youtube link to video streams using youtube_dl
 		'''
 		return None
+
+	def get_addon_version(self):
+		'''
+		Returns addon's version
+		'''
+		return '1.0'
+
+	def get_engine_version(self):
+		'''
+		Returns enigne's version (version of ArchivCZSK)
+		'''
+		return '2.2.0'
