@@ -208,11 +208,9 @@ class SCWatched(object):
 	# #################################################################################################
 
 	def is_trakt_watched_show(self, unique_ids, season, episode):
-		season = str(season) if season != None else season
 		if self.trakt_need_reload and self.tapi and self.tapi.valid():
 			self.load_trakt_watched()
 
-		log.debug('Searching %s' % unique_ids)
 		for k, v in unique_ids.items():
 			if k in self.trakt_shows:
 				if v in self.trakt_shows[k]:
@@ -242,7 +240,6 @@ class SCWatched(object):
 	# #################################################################################################
 
 	def is_trakt_watched_season(self, unique_ids, season, episodes_count=-1):
-		season = str(season) if season != None else season
 		if self.trakt_need_reload and self.tapi and self.tapi.valid():
 			self.load_trakt_watched()
 

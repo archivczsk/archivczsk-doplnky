@@ -203,15 +203,13 @@ class StreamCinemaContentProvider(CommonContentProvider):
 							is_watched = self.watched.is_trakt_watched_show(menu_item['unique_ids'], menu_item['info'].get('season', 1), menu_item['info'].get('episode'))
 						else:
 							is_watched = self.watched.is_trakt_watched_movie(menu_item['unique_ids'])
-						self.log_debug("Watched response: %s (%s, %s)" % (is_watched, menu_item['info'].get('season', 1), menu_item['info'].get('episode')))
+
 					elif menu_item['type'] == 'dir':
 						# if there is a season dir or the show has no seasons, then check if we watched all episodes
 						if menu_item['info'].get('mediatype', '') == 'season':
 							is_watched, is_fully_watched = self.watched.is_trakt_watched_season(menu_item['unique_ids'], menu_item['info'].get('season', 1), menu_item['info'].get('episode', -1))
 						else:
 							is_watched, is_fully_watched = self.watched.is_trakt_watched_serie(menu_item['unique_ids'], menu_item['info'].get('season', -1))
-
-						self.log_debug("Watched dir response: %s:%s (%s, %s)" % (is_watched, is_fully_watched, menu_item['info'].get('season', -1), menu_item['info'].get('episode', -1)))
 
 					# this is needed for trakt
 					trakt_item = self.fill_trakt_info(menu_item, is_watched)
@@ -873,41 +871,19 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			self.log_exception()
 
 	# #################################################################################################
-			
-	def trakt(self, item, action, result, msg):
-		# addon must have setting (bool) trakt_enabled ... and must be enabled to show trakt menu 
-		# and must set 'trakt' key with 'ids' dictionary with imdb, tvdb, trakt keys (identify video item in trakt.tv)
-		# addon must add capability 'trakt'
-		# trakt actions are handled directly by archivCZSK core - this callback is used as notification
-		# to perform aditional operations related directly to addon 
 
-		# possible actions:
-		#	- add		add item to watchlist
-		#	- remove	remove item from watchlist
-		#	- watched	add to watched collection
-		#	- unwatched remove from watched collection
-		#	- scrobble  automatic scrobble (add to watched) when >80% of movie was watched
-		#	- reload    reload local cache
-		
-		# result - result of operation from core (success, fail)
-		# msg - description of operation result
-
+	def trakt(self, trakt_item, action, result):
 		if self.get_setting('trakt_enabled'):
-			self.log_debug("Trakt action=%s, result=%s, msg=%s ..." % (action, result, msg))
-			self.log_debug("Trakt item=%s" % item)
+			self.log_debug("Trakt action=%s, result=%s" % (action, result))
+#			self.log_debug("Trakt item=%s" % trakt_item)
 
 			if action == 'watched':
 				self.watched.trakt_need_reload = True
-#				client.add_operation_result("(Trakt) Operácia prebehla úspešne.", False)
 			elif action == 'unwatched':
 				self.watched.trakt_need_reload = True
-#				client.add_operation_result("(Trakt) Operácia prebehla úspešne.", False)
 			elif action == 'scrobble':
 				self.watched.trakt_need_reload = True
-#				client.add_operation_result("(Trakt) Operácia prebehla úspešne.", False)
 			elif action == 'reload':
 				self.watched.force_reload()
-#				client.add_operation_result("(Trakt) Operácia prebehla úspešne.", False)
-				
+
 	# #################################################################################################
-	
