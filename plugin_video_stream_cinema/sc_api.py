@@ -53,10 +53,10 @@ class SC_API(object):
 		if params:
 			default_params.update(params)
 
-		if self.cp.get_setting('item-lang-filter') == '1':
+		if self.cp.get_setting('item-lang-filter') == 'dubsubs':
 			default_params.update({'dub': 1, "tit": 1}) # zobraz len filmy s dabingom alebo titulkami
 
-		elif self.cp.get_setting('item-lang-filter') == '2':
+		elif self.cp.get_setting('item-lang-filter') == 'dub':
 			default_params.update({'dub': 1}) # zobraz len dabovane filmy
 
 		if int(self.cp.get_setting('maturity-rating')) >= 0:

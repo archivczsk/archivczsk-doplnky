@@ -1,3 +1,7 @@
+2023-04-13 3.2
+    - oprava prechodu na ďalšiu stránku vo všetkých sekciách
+    - oprava filtrovania dabovaných položiek
+
 2023-04-13 3.1
     - opravená aktualizácia dát z trakt.tv
     - nastavovanie správneho user agenta do požiadaviek
