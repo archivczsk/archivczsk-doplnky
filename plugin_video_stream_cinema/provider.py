@@ -220,7 +220,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			if menu_item['type'] == 'dir':
 				self.add_sc_dir_item(menu_item, ctx_menu, data_item, trakt_item, (is_watched, is_fully_watched,))
 			elif menu_item['type'] == 'next':
-				self.add_next(cmd=menu_item.get('url'))
+				self.add_next(cmd=self.render_menu, url=menu_item.get('url'))
 			elif menu_item['type'] == 'video':
 				self.add_sc_video_item(menu_item, ctx_menu, data_item, trakt_item, is_watched)
 			elif menu_item['type'] == 'action':
