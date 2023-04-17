@@ -567,7 +567,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 	# #################################################################################################
 	
 	def set_sort(self, url, sort_methods):
-		lang_code = self.self.dubbed_lang_list[0]
+		lang_code = self.dubbed_lang_list[0]
 
 		sm_url = []
 		titles = []

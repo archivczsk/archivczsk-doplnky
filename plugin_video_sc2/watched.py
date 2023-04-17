@@ -39,6 +39,16 @@ class SCWatched(object):
 
 	# #################################################################################################
 
+	def fix_data_types(self):
+		# json store all keys as strings and this breaks seasons, so fix it here
+		for item in self.items.get('trakt', {}).get('s', []):
+			seasons_data = item.get('s', {})
+			for season, episodes in seasons_data.items():
+				del seasons_data[season]
+				seasons_data[int(season)] = episodes
+
+	# #################################################################################################
+
 	def load(self):
 		try:
 			with open(self.watched_file, "r") as f:
@@ -62,6 +72,7 @@ class SCWatched(object):
 				self.items = {}
 
 			self.clean()
+			self.fix_data_types()
 		except:
 			pass
 
