@@ -1,5 +1,6 @@
 1.11 - 17.04.2023
      - added possibility to set filename for download entries using info_labels
+     - changed API for showing info/wearning/error messages
 
 1.10 - 13.04.2023
     - added api to get engine and addon version

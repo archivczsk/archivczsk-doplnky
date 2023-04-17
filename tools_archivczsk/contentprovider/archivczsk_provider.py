@@ -589,25 +589,25 @@ class ArchivCZSKContentProvider(object):
 		
 	# #################################################################################################
 	
-	def show_error(self, msg, noexit=False, timeout=0, can_close=True ):
+	def show_error(self, msg, noexit=False, timeout=0):
 		if noexit:
-			client.add_operation('SHOW_MSG', { 'msg': msg, 'msgType': 'error', 'msgTimeout': timeout, 'canClose': can_close, })
+			client.show_message(self.session, msg, msg_type='error', timeout=timeout)
 		else:
 			client.showError(msg)
 
 	# #################################################################################################
 	
-	def show_warning(self, msg, noexit=False, timeout=0, can_close=True ):
+	def show_warning(self, msg, noexit=False, timeout=0):
 		if noexit:
-			client.add_operation('SHOW_MSG', { 'msg': msg, 'msgType': 'warning', 'msgTimeout': timeout, 'canClose': can_close, })
+			client.show_message(self.session, msg, msg_type='warning', timeout=timeout)
 		else:
 			client.showWarning(msg)
 
 	# #################################################################################################
 	
-	def show_info(self, msg, noexit=False, timeout=0, can_close=True ):
+	def show_info(self, msg, noexit=False, timeout=0):
 		if noexit:
-			client.add_operation('SHOW_MSG', { 'msg': msg, 'msgType': 'info', 'msgTimeout': timeout, 'canClose': can_close, })
+			client.show_message(self.session, msg, msg_type='info', timeout=timeout)
 		else:
 			client.showInfo(msg)
 		

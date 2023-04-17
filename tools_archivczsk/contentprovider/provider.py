@@ -369,19 +369,19 @@ class CommonContentProvider(object):
 
 	# #################################################################################################
 
-	def show_error(self, msg, noexit=False, timeout=0, can_close=True ):
+	def show_error(self, msg, noexit=False, timeout=0):
 		if noexit:
 			self.log_error(msg)
 		else:
 			raise Exception('[ERROR] ' + msg)
 
-	def show_warning(self, msg, noexit=False, timeout=0, can_close=True):
+	def show_warning(self, msg, noexit=False, timeout=0):
 		if noexit:
 			self.log_warning(msg)
 		else:
 			raise Exception('[WARNING] ' + msg)
 
-	def show_info(self, msg, noexit=False, timeout=0, can_close=True):
+	def show_info(self, msg, noexit=False, timeout=0):
 		if noexit:
 			self.log_info(msg)
 		else:
