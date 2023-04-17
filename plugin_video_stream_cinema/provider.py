@@ -253,9 +253,14 @@ class StreamCinemaContentProvider(CommonContentProvider):
 	# #################################################################################################
 	
 	def get_i18n_list(self, i18n_base ):
-		for l in self.lang_list:
-			if l in i18n_base:
-				return i18n_base[l]
+		if isinstance(i18n_base, (type(u''), type(''),)):
+			# hack to solve bad data returned for movies, when i18n_base is not dictionary but directly title name
+			return { 'title': i18n_base }
+
+		if isinstance(i18n_base, type({})):
+			for l in self.lang_list:
+				if l in i18n_base:
+					return i18n_base[l]
 			
 		return None
 		
@@ -368,7 +373,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 		if not title: # hack to skip recursive items in Documentary section
 			self.log_debug("No title for %s" % str(sc_item))
-			return None
+			return
 
 		if is_watched[0]:
 			if is_watched[1]:
