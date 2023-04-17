@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_scc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-12 09:54+0200\n"
-"PO-Revision-Date: 2023-04-12 09:55+0200\n"
+"POT-Creation-Date: 2023-04-17 15:00+0200\n"
+"PO-Revision-Date: 2023-04-17 15:03+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -1272,7 +1272,7 @@ msgstr "Inuitština"
 msgid "No Language"
 msgstr "Žádný jazyk"
 
-#: plugin_video_sc2/scc_api.py:99 plugin_video_sc2/csfd.py:33
+#: plugin_video_sc2/scc_api.py:92 plugin_video_sc2/csfd.py:33
 #: plugin_video_sc2/prehrajto.py:67
 msgid "Unexpected return code from server"
 msgstr "Neočekávaný návratový kód ze serveru"
@@ -1282,8 +1282,8 @@ msgid "Wrong webshare login data provided"
 msgstr "Chybné přihlašovací údaje pro Webshare"
 
 #: plugin_video_sc2/webshare.py:216
-msgid "Webshare subscription expired"
-msgstr "Webshare předplatné vypršelo"
+msgid "Webshare subscription expired. Only very low quality videos will play and seeking forward/backwad will not work at all."
+msgstr "Webshare předplatné vypršelo. Přehrávání bude fungovat jen u videí s velmi nízkou kvalitou a přetáčení vpřed/vzad nebude fungovat vůbec."
 
 #: plugin_video_sc2/webshare.py:224
 msgid "Failed to resolve file"
@@ -1439,27 +1439,27 @@ msgstr "Moje seznamy"
 msgid "History"
 msgstr "Historie"
 
-#: plugin_video_sc2/provider.py:393
+#: plugin_video_sc2/provider.py:394
 msgid "Episode"
 msgstr "Epizoda"
 
-#: plugin_video_sc2/provider.py:628
+#: plugin_video_sc2/provider.py:638
 msgid "Remove from seen"
 msgstr "Vymazat ze sledovaných"
 
-#: plugin_video_sc2/provider.py:631
+#: plugin_video_sc2/provider.py:641
 msgid "Search on prehraj.to"
 msgstr "Vyhledat na prehraj.to"
 
-#: plugin_video_sc2/provider.py:634
+#: plugin_video_sc2/provider.py:644
 msgid "Play trailer"
 msgstr "Přehrát trailer"
 
-#: plugin_video_sc2/provider.py:647
+#: plugin_video_sc2/provider.py:657
 msgid "Related"
 msgstr "Související"
 
-#: plugin_video_sc2/provider.py:648
+#: plugin_video_sc2/provider.py:658
 msgid "Similar"
 msgstr "Podobné"
 
@@ -1594,6 +1594,9 @@ msgstr "Povolit h265/hevc kodek"
 
 msgid "Maximum size of stream (in GB)"
 msgstr "Maximální velikost nabízeného streamu (v GB)"
+
+#~ msgid "Webshare subscription expired"
+#~ msgstr "Webshare předplatné vypršelo"
 
 #~ msgid "Login name (prehraj.cz)"
 #~ msgstr "Přihlašovací jméno (prehraj.to)"

@@ -213,7 +213,7 @@ class Webshare():
 				raise WebshareLoginFail(self.cp._("Wrong webshare login data provided"))
 			
 			if int(time()) > self.login_data.get('expiration', 0):
-				raise WebshareLoginFail(self.cp._("Webshare subscription expired"))
+				self.cp.show_info(self.cp._("Webshare subscription expired. Only very low quality videos will play and seeking forward/backwad will not work at all."), noexit=True)
 
 		data = self.call_ws_api('/api/file_link/', {'ident':ident, 'download_type': dwnType, 'device_uuid': self.device_id } )
 
