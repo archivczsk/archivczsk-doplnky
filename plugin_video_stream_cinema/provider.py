@@ -472,14 +472,12 @@ class StreamCinemaContentProvider(CommonContentProvider):
 				ep_code2 = ' E%02d' % int(info['episode'])
 
 			info_labels['title'] += ep_code
+			info_labels['filename'] = otitle + ep_code2
+			if epname:
+				info_labels['filename'] += ': %s' % epname
 		else:
 			if info_labels['year']:
 				info_labels['title'] += ' (%s)' % info_labels['year']
-
-#		if 'episode' in info and 'season' in info and 'tvshowtitle' in info:
-#			search_query = info['tvshowtitle'].split(' - [B]')[0].replace(' ', '-') + '-S' + str(info['season']).zfill(2) + 'E' + str(info['episode']).zfill(2) + '-' + str(info.get('year', ''))
-#		else:
-#			search_query = sorttitle.split('-b-')[0] + '-' + str(info.get('year', ""))
 
 		search_query = otitle + ep_code2 + ' ' + str(info.get('year', ""))
 		
@@ -487,7 +485,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			self.add_dir(title, img, info_labels, menu=ctx_menu, data_item=data_item, trakt_item=trakt_item, cmd=self.prehrajto_search, keyword=search_query)
 		else:
 			ctx_menu.add_menu_item(self._('Search on prehraj.to'), cmd=self.prehrajto_search, keyword=search_query)
-			self.add_video(title, img, info_labels, menu=ctx_menu, data_item=data_item, trakt_item=trakt_item, cmd=self.resolve_video_streams, url=url, media_title=epname or info_labels['title'])
+			self.add_video(title, img, info_labels, menu=ctx_menu, data_item=data_item, trakt_item=trakt_item, cmd=self.resolve_video_streams, url=url, info=info_labels)
 	
 	# #################################################################################################
 	
@@ -738,7 +736,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 	
 	# #################################################################################################
 
-	def resolve_video_streams(self, url, media_title):
+	def resolve_video_streams(self, url, info):
 		# get info about files from stream cinema
 		result = self.api.call_api(url)
 		
@@ -785,7 +783,8 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		info_item = result.get('info', {})
 		duration = info_item.get('info', {}).get('duration')
 
-		info_labels = { 'title': media_title }
+		media_title = info.get('epname') or info['title']
+		info_labels = { 'title': media_title, 'filename': info.get('filename') }
 		data_item = { 'url': info_item['url'], 'lid': info_item.get('lid'), 'mid': info_item.get('unique_ids', {}).get('sc') }
 		settings = {}
 

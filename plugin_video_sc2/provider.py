@@ -381,7 +381,8 @@ class SccContentProvider(CommonContentProvider):
 		title = ''
 		ep_code = ''
 		ep_code2 = ''
-		ep_title = ''
+		se_title = ''
+		ep_name_postfix = ''
 		info_labels = {}
 		img = None
 
@@ -418,6 +419,7 @@ class SccContentProvider(CommonContentProvider):
 					if info_title:
 						if media_type == 'episode':
 							info_labels['epname'] = info_title
+							ep_name_postfix = ': ' + info_title
 
 						if title:
 							title += ': ' + info_title
@@ -427,7 +429,8 @@ class SccContentProvider(CommonContentProvider):
 
 			for l in i18n_info:
 				if 'parent_titles' in l and len(l['parent_titles']) > 0:
-					ep_title = l['parent_titles'][0]
+					se_title = l['parent_titles'][0]
+					info_labels['sename'] = se_title
 					break
 
 			for l in i18n_info:
@@ -448,8 +451,9 @@ class SccContentProvider(CommonContentProvider):
 		if not title:
 			title = info.get('originaltitle', '')
 
-		info_labels['title'] = (ep_title or title) + ep_code
-		info_labels['search_keyword'] = (ep_title or title) + ep_code2
+		info_labels['title'] = (se_title or title) + ep_code
+		info_labels['search_keyword'] = (se_title or title) + ep_code2
+		info_labels['filename'] = (se_title or title) + ep_code2 + ep_name_postfix
 
 		info_labels['genre'] = ', '.join(self._(g) for g in info.get('genre', []))
 		ratings = media.get('ratings', {})
@@ -684,7 +688,7 @@ class SccContentProvider(CommonContentProvider):
 					self.add_dir(title, img, info_labels=info_labels, menu=menu, cmd=self.prehrajto_search, keyword=info_labels['search_keyword'])
 				else:
 					root_media_id = source.get('root_parent') if media_type == 'episode' else None
-					self.add_video(title, img, info_labels=info_labels, menu=menu, trakt_item=trakt_item, cmd=self.get_streams, media_title=info_labels.get('epname') or info_labels['title'], media_id=media['_id'], category=cat, root_media_id=root_media_id, trakt_info=trakt_item)
+					self.add_video(title, img, info_labels=info_labels, menu=menu, trakt_item=trakt_item, cmd=self.get_streams, info=info_labels, media_id=media['_id'], category=cat, root_media_id=root_media_id, trakt_info=trakt_item)
 			else:
 				self.log_error("Unhandled media type: %s" % media_type)
 
@@ -885,7 +889,7 @@ class SccContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def get_streams(self, media_title, media_id, category=None, root_media_id=None, trakt_info=None):
+	def get_streams(self, info, media_id, category=None, root_media_id=None, trakt_info=None):
 		audios = { 1: '1.0', 2: '2.0', 6: '5.1', 8: '7.1'}
 		data = self.api.call_streams_api(media_id)
 
@@ -943,7 +947,9 @@ class SccContentProvider(CommonContentProvider):
 		if not ident:
 			return
 		
-		info_labels = { 'title': media_title }
+		media_title = info.get('epname') or info['title']
+		info_labels = { 'title': media_title, 'filename': info['filename'] }
+
 		data_item = { 'category': category, 'id': media_id, 'root_id': root_media_id }
 		settings = {}
 

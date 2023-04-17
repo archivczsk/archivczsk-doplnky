@@ -1,3 +1,6 @@
+2023-04-17 3.3
+    - nastavovanie lepšieho názvu súboru pri sťahovaní epizód u seriálov
+
 2023-04-13 3.2
     - oprava prechodu na ďalšiu stránku vo všetkých sekciách
     - oprava filtrovania dabovaných položiek
