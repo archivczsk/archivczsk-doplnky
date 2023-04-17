@@ -185,7 +185,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 				ctx_menu.add_media_menu_item(self._('Play trailer'), cmd=self.play_trailer, media_title="Trailer", url=trailer)
 
 			if '/latest' not in url:
-				self.add_filter_ctx_menu(ctx_menu, url, resp.get('filter'), resp.get('system', {}).get('addSortMethods'))
+				self.add_filter_ctx_menu(ctx_menu, url, resp.get('filter'), resp.get('system', {}).get('addSortMethods'), params=params, data=data)
 
 			is_watched = False
 			is_fully_watched = False
@@ -516,14 +516,15 @@ class StreamCinemaContentProvider(CommonContentProvider):
 	def remove_last_seen(self, lid, mid):
 		self.watched.remove(lid, mid)
 		self.watched.save()
+		self.refresh_screen()
 
-	# #################################################################################################self.refresh_screen()
+	# #################################################################################################
 
 	def prehrajto_search(self, keyword):
 		for item in self.prehrajto.search(keyword):
 			self.add_video(item['title'] + _I(' [' + item['size'] + ']'), item['img'], cmd=self.prehrajto_resolve, video_title=item['title'], video_id=item['id'])
 
-	# ##################################################################################################################
+	# #################################################################################################
 
 	def prehrajto_resolve(self, video_title, video_id):
 		video_url, subs_url = self.prehrajto.resolve_video(video_id)
@@ -545,7 +546,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		
 	# #################################################################################################
 	
-	def add_filter_ctx_menu(self, ctx_menu, url, filter_data, sort_methods):
+	def add_filter_ctx_menu(self, ctx_menu, url, filter_data, sort_methods, params, data):
 		if not filter_data:
 			# nothing to filter
 			return
@@ -553,20 +554,20 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		od = filter_data.get('od', '')
 		if od == 'asc':
 			url2 = self.update_url_filter( url, 'od', 'desc')
-			ctx_menu.add_menu_item(self._("Order descending (Z-A)"), cmd=self.render_menu, url=url2)
+			ctx_menu.add_menu_item(self._("Order descending (Z-A)"), cmd=self.render_menu, url=url2, params=params, data=data)
 		elif od == "desc":
 			url2 = self.update_url_filter( url, 'od', 'asc')
-			ctx_menu.add_menu_item(self._("Order ascending (A-Z)"), cmd=self.render_menu, url=url2)
+			ctx_menu.add_menu_item(self._("Order ascending (A-Z)"), cmd=self.render_menu, url=url2, params=params, data=data)
 		
 		if sort_methods and 0 not in sort_methods:
-			ctx_menu.add_menu_item(self._("Sort"), cmd=self.set_sort, url=url, sort_methods=sort_methods)
+			ctx_menu.add_menu_item(self._("Sort"), cmd=self.set_sort, url=url, sort_methods=sort_methods, params=params, data=data)
 		
 		if od != '':
-			ctx_menu.add_menu_item(self._("Filter by year"), cmd=self.filter_by_year, url=url)
+			ctx_menu.add_menu_item(self._("Filter by year"), cmd=self.filter_by_year, url=url, params=params, data=data)
 	
 	# #################################################################################################
 	
-	def set_sort(self, url, sort_methods):
+	def set_sort(self, url, sort_methods, params, data):
 		lang_code = self.dubbed_lang_list[0]
 
 		sm_url = []
@@ -591,11 +592,11 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		if idx == -1:
 			self.refresh_screen()
 		else:
-			self.render_menu(sm_url[idx])
+			self.render_menu(sm_url[idx], params=params, data=data)
 
 	# #################################################################################################
 
-	def filter_by_year(self, url):
+	def filter_by_year(self, url, params, data):
 		idx = self.get_list_input([self._("Older than"), self._("Younger than"), self._("Exact in year")], self._('Choose by year'))
 		if idx != -1:
 			cur_year = date.today().year
@@ -604,7 +605,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 				year = str(cur_year - idx2)
 				url = self.update_url_filter(url, 'y', [ '<', '>', ''][idx] + year)
 
-			self.render_menu(url)
+			self.render_menu(url, params=params, data=data)
 		else:
 			self.refresh_screen()
 
