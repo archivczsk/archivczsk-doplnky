@@ -56,11 +56,11 @@ def tvseznam_run(session, params):
 	def Most():
 		data = getUrl('https://api.televizeseznam.cz/graphql', '{"operationName":"TagEpisodes","variables":{"id":"VGFnOjEyNDk1OTY","cursor":null,"limit":20},"query":"query TagEpisodes($id: ID, $cursor: String, $limit: Int = 20) {  tag(id: $id) {    __typename    episodesConnection(after: $cursor, first: $limit) {      __typename      ...EpisodeConnector    }  }}fragment EpisodeConnector on EpisodeItemConnection {  __typename  pageInfo {    __typename    hasNextPage    endCursor  }  edges {    __typename    cursor    node {      __typename      ...EpisodeDetail    }  }}fragment EpisodeDetail on Episode {  __typename  id  dotId  name  duration  perex  publishTime {    __typename    timestamp  }  spl  isLive  originTag {    __typename    ...OriginTag  }  images {    __typename    ...Img  }  views  urlName  originUrl  commentsDisabled  downloadable  contextualFields {    __typename    lastVideoPositionSec  }  expirationTime {    __typename    timestamp  }}fragment OriginTag on Tag {  __typename  id  dotId  category  name  favouritesCount  urlName  originTag {    __typename    name  }  images {    __typename    ...Img  }}fragment Img on Image {  __typename  url  usage}"}')
 		if data.status_code != 200:
-			client.add_operation("SHOW_MSG", {'msg': 'Chyba nacitani dat ze serveru', 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
+			client.show_message(session, 'Chyba nacitani dat ze serveru', msg_type='error', timeout=10)
 			return False
 		jso = data.json()
 		if 'data' not in jso or 'tag' not in jso['data'] or 'episodesConnection' not in jso['data']['tag'] or 'edges' not in jso['data']['tag']['episodesConnection']:
-			client.add_operation("SHOW_MSG", {'msg': 'Chyba nacitani dat ze serveru, zkuste to za chvilku', 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
+			client.show_message(session, 'Chyba nacitani dat ze serveru, zkuste to za chvilku', msg_type='error', timeout=10)
 			return False
 		for edge in jso['data']['tag']['episodesConnection']['edges']:
 			if edge['node']:
@@ -71,11 +71,11 @@ def tvseznam_run(session, params):
 	def Latests():
 		data = getUrl('https://api.televizeseznam.cz/graphql', '{"operationName":"TagEpisodes","variables":{"id":"VGFnOjEyNDM2OTc","cursor":null,"limit":50},"query":"query TagEpisodes($id: ID, $cursor: String, $limit: Int = 20) {  tag(id: $id) {    __typename    episodesConnection(after: $cursor, first: $limit) {      __typename      ...EpisodeConnector    }  }}fragment EpisodeConnector on EpisodeItemConnection {  __typename  pageInfo {    __typename    hasNextPage    endCursor  }  edges {    __typename    cursor    node {      __typename      ...EpisodeDetail    }  }}fragment EpisodeDetail on Episode {  __typename  id  dotId  name  duration  perex  publishTime {    __typename    timestamp  }  spl  isLive  originTag {    __typename    ...OriginTag  }  images {    __typename    ...Img  }  views  urlName  originUrl  commentsDisabled  downloadable  contextualFields {    __typename    lastVideoPositionSec  }  expirationTime {    __typename    timestamp  }}fragment OriginTag on Tag {  __typename  id  dotId  category  name  favouritesCount  urlName  originTag {    __typename    name  }  images {    __typename    ...Img  }}fragment Img on Image {  __typename  url  usage}"}')
 		if data.status_code != 200:
-			client.add_operation("SHOW_MSG", {'msg': 'Chyba nacitani dat ze serveru', 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
+			client.show_message(session, 'Chyba nacitani dat ze serveru', msg_type='error', timeout=10)
 			return False
 		jso = data.json()
 		if 'data' not in jso or 'tag' not in jso['data'] or 'episodesConnection' not in jso['data']['tag'] or 'edges' not in jso['data']['tag']['episodesConnection']:
-			client.add_operation("SHOW_MSG", {'msg': 'Chyba nacitani dat ze serveru, zkuste to za chvilku', 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
+			client.show_message(session, 'Chyba nacitani dat ze serveru, zkuste to za chvilku', msg_type='error', timeout=10)
 			return False
 		for edge in jso['data']['tag']['episodesConnection']['edges']:
 			if edge['node']:
@@ -86,11 +86,11 @@ def tvseznam_run(session, params):
 	def LatestsStream():
 		data = getUrl('https://api.televizeseznam.cz/graphql', '{"operationName":"TagEpisodes","variables":{"id":"VGFnOjI","cursor":null,"limit":20},"query":"query TagEpisodes($id: ID, $cursor: String, $limit: Int = 20) {  tag(id: $id) {    __typename    episodesConnection(after: $cursor, first: $limit) {      __typename      ...EpisodeConnector    }  }}fragment EpisodeConnector on EpisodeItemConnection {  __typename  pageInfo {    __typename    hasNextPage    endCursor  }  edges {    __typename    cursor    node {      __typename      ...EpisodeDetail    }  }}fragment EpisodeDetail on Episode {  __typename  id  dotId  name  duration  perex  publishTime {    __typename    timestamp  }  spl  isLive  originTag {    __typename    ...OriginTag  }  images {    __typename    ...Img  }  views  urlName  originUrl  commentsDisabled  downloadable  contextualFields {    __typename    lastVideoPositionSec  }  expirationTime {    __typename    timestamp  }}fragment OriginTag on Tag {  __typename  id  dotId  category  name  favouritesCount  urlName  originTag {    __typename    name  }  images {    __typename    ...Img  }}fragment Img on Image {  __typename  url  usage}"}')
 		if data.status_code != 200:
-			client.add_operation("SHOW_MSG", {'msg': 'Chyba nacitani dat ze serveru', 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
+			client.show_message(session, 'Chyba nacitani dat ze serveru', msg_type='error', timeout=10)
 			return False
 		jso = data.json()
 		if 'data' not in jso or 'tag' not in jso['data'] or 'episodesConnection' not in jso['data']['tag'] or 'edges' not in jso['data']['tag']['episodesConnection']:
-			client.add_operation("SHOW_MSG", {'msg': 'Chyba nacitani dat ze serveru, zkuste to za chvilku', 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
+			client.show_message(session, 'Chyba nacitani dat ze serveru, zkuste to za chvilku', msg_type='error', timeout=10)
 			return False
 		for edge in jso['data']['tag']['episodesConnection']['edges']:
 			if edge['node']:
@@ -101,7 +101,7 @@ def tvseznam_run(session, params):
 	def detailEpisode(id):
 		data = getUrl('https://api.televizeseznam.cz/graphql', '{"operationName":"DetailEpisodeRequest","variables":{"id":"' + id + '"},"query":"query DetailEpisodeRequest($id: ID) {  episode(id: $id) {    __typename    ...EpisodeDetail  }}fragment EpisodeDetail on Episode {  __typename  id  dotId  name  duration  perex  publishTime {    __typename    timestamp  }  spl  isLive  originTag {    __typename    ...OriginTag  }  images {    __typename    ...Img  }  views  urlName  originUrl  commentsDisabled  downloadable  contextualFields {    __typename    lastVideoPositionSec  }  expirationTime {    __typename    timestamp  }}fragment OriginTag on Tag {  __typename  id  dotId  category  name  favouritesCount  urlName  originTag {    __typename    name  }  images {    __typename    ...Img  }}fragment Img on Image {  __typename  url  usage}"}')
 		if data.status_code != 200:
-			client.add_operation("SHOW_MSG", {'msg': 'Chyba nacitani dat ze serveru', 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
+			client.show_message(session, 'Chyba nacitani dat ze serveru', msg_type='error', timeout=10)
 			return False
 		jso = data.json()
 		if 'data' in jso and 'episode' in jso['data']:
@@ -116,11 +116,11 @@ def tvseznam_run(session, params):
 	def Guide():
 		data = getUrl('https://api.televizeseznam.cz/graphql', '{"operationName":"Guide","variables":{},"query":"query Guide {  inGuideTags: tags(orderType: guide, inGuide: true, limit: 30) {    __typename    ...TagPlaylist  }}fragment TagPlaylist on Tag {  __typename  id  dotId  name  episodes {    __typename    name    id    originUrl    commentsDisabled    duration    images {      __typename      ...Img    }  }  images {    __typename    ...Img  }  originTag {    __typename    ...OriginTag  }  category  episodesCount}fragment Img on Image {  __typename  url  usage}fragment OriginTag on Tag {  __typename  id  dotId  category  name  favouritesCount  urlName  originTag {    __typename    name  }  images {    __typename    ...Img  }}"}')
 		if data.status_code != 200:
-			client.add_operation("SHOW_MSG", {'msg': 'Chyba nacitani dat ze serveru', 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
+			client.show_message(session, 'Chyba nacitani dat ze serveru', msg_type='error', timeout=10)
 			return False
 		jso = data.json()
 		if 'data' not in jso or 'inGuideTags' not in jso['data'] or jso['data']['inGuideTags'] == None:
-			client.add_operation("SHOW_MSG", {'msg': 'Chyba nacitani dat ze serveru, zkuste to za chvilku', 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
+			client.show_message(session, 'Chyba nacitani dat ze serveru, zkuste to za chvilku', msg_type='error', timeout=10)
 			return False
 		addDir('[COLOR yellow]Hledat[/COLOR]', 'search', 9, None, 1)
 		addDir('[COLOR yellow]Živě[/COLOR]', 'live', 8, None, 1)
@@ -140,7 +140,7 @@ def tvseznam_run(session, params):
 	def Playlists(id):
 		data = getUrl('https://api.televizeseznam.cz/graphql', '{"operationName":"GuidePlaylists","variables":{"playlistID":"' + id + '","playlistLimit":100,"playlistOffset":0},"query":"query GuidePlaylists($playlistID: ID, $playlistLimit: Int, $playlistOffset: Int) {  tags: tags(id: $playlistID, limit: $playlistLimit, offset: $playlistOffset, listing: direct_children, orderType: guide, category: show) {    __typename    ...TagPlaylist  }}fragment TagPlaylist on Tag {  __typename  id  dotId  name  episodes {    __typename    name    id    originUrl    commentsDisabled    duration    images {      __typename      ...Img    }  }  images {    __typename    ...Img  }  originTag {    __typename    ...OriginTag  }  category  episodesCount}fragment Img on Image {  __typename  url  usage}fragment OriginTag on Tag {  __typename  id  dotId  category  name  favouritesCount  urlName  originTag {    __typename    name  }  images {    __typename    ...Img  }}"}')
 		if data.status_code != 200:
-			client.add_operation("SHOW_MSG", {'msg': 'Chyba nacitani dat ze serveru', 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
+			client.show_message(session, 'Chyba nacitani dat ze serveru', msg_type='error', timeout=10)
 			return False
 		jso = data.json()
 		if 'data' in jso:
@@ -159,7 +159,7 @@ def tvseznam_run(session, params):
 		else:
 			data = getUrl('https://api.televizeseznam.cz/graphql', '{"operationName":"TagEpisodes","variables":{"id":"' + id + '","cursor":' + cursor + ',"limit":50},"query":"query TagEpisodes($id: ID, $cursor: String, $limit: Int = 20) {  tag(id: $id) {    __typename    episodesConnection(after: $cursor, first: $limit) {      __typename      ...EpisodeConnector    }  }}fragment EpisodeConnector on EpisodeItemConnection {  __typename  pageInfo {    __typename    hasNextPage    endCursor  }  edges {    __typename    cursor    node {      __typename      ...EpisodeDetail    }  }}fragment EpisodeDetail on Episode {  __typename  id  dotId  name  duration  perex  publishTime {    __typename    timestamp  }  spl  isLive  originTag {    __typename    ...OriginTag  }  images {    __typename    ...Img  }  views  urlName  originUrl  commentsDisabled  downloadable  contextualFields {    __typename    lastVideoPositionSec  }  expirationTime {    __typename    timestamp  }}fragment OriginTag on Tag {  __typename  id  dotId  category  name  favouritesCount  urlName  originTag {    __typename    name  }  images {    __typename    ...Img  }}fragment Img on Image {  __typename  url  usage}"}')
 		if data.status_code != 200:
-			client.add_operation("SHOW_MSG", {'msg': 'Chyba nacitani dat ze serveru', 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
+			client.show_message(session, 'Chyba nacitani dat ze serveru', msg_type='error', timeout=10)
 			return False
 		jso = data.json()
 		if 'data' in jso:
@@ -173,14 +173,14 @@ def tvseznam_run(session, params):
 	def videoLink(url):
 		data = getUrl(url + 'spl2,3,VOD')
 		if data.status_code != 200:
-			client.add_operation("SHOW_MSG", {'msg': 'Chyba nacitani dat ze serveru', 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
+			client.show_message(session, 'Chyba nacitani dat ze serveru', msg_type='error', timeout=10)
 			return False
 		jso = data.json()
 		if 'Location' in jso:
 			url = jso['Location']
 			data = getUrl(url)
 			if data.status_code != 200:
-				client.add_operation("SHOW_MSG", {'msg': 'Chyba nacitani dat ze serveru', 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
+				client.show_message(session, 'Chyba nacitani dat ze serveru', msg_type='error', timeout=10)
 				return False
 			jso = data.json()
 		if 'data' in jso:
@@ -197,7 +197,7 @@ def tvseznam_run(session, params):
 			return
 		data = getUrl('https://api.televizeseznam.cz/graphql', '{"operationName":"Search","variables":{"query":"' + query + '"},"query":"query Search($query: String) {  searchEpisode(query: $query, originalTagEpisodeLimit: 20) {    __typename    ...EpisodeDetail  }  searchTag(query: $query, originalTagEpisodeLimit: 20) {    __typename    ...OriginTag  }}fragment EpisodeDetail on Episode {  __typename  id  dotId  name  duration  perex  publishTime {    __typename    timestamp  }  spl  isLive  originTag {    __typename    ...OriginTag  }  images {    __typename    ...Img  }  views  urlName  originUrl  commentsDisabled  downloadable  contextualFields {    __typename    lastVideoPositionSec  }  expirationTime {    __typename    timestamp  }}fragment OriginTag on Tag {  __typename  id  dotId  category  name  favouritesCount  urlName  originTag {    __typename    name  }  images {    __typename    ...Img  }}fragment Img on Image {  __typename  url  usage}"}')
 		if data.status_code != 200:
-	#		client.add_operation("SHOW_MSG", {'msg': 'Chyba nacitani dat ze serveru', 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
+	#		client.show_message(session, 'Chyba nacitani dat ze serveru', msg_type='error', timeout=10)
 			client.showInfo('Chyba načítání dat ze serveru')
 			return
 		jso = data.json()
@@ -213,7 +213,7 @@ def tvseznam_run(session, params):
 				datum = datetime.datetime.utcfromtimestamp(episode['publishTime']['timestamp']).strftime('%d.%m.%y %H:%M') + ' - ' if 'publishTime' in episode and 'timestamp' in episode['publishTime'] else ''
 				addDir(episode['name'], episode['spl'], 5, poster, None, None, { 'plot': '[' + episode['originTag']['name'] + '] ' + datum + episode['perex'], 'duration': episode['duration']})
 	#	else:
-	#		client.add_operation("SHOW_MSG", {'msg': 'Nic nenalezeno', 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
+	#		client.show_message(session, 'Nic nenalezeno', msg_type='error', timeout=10)
 		if len(client.GItem_lst[0]) == 0:
 			addDir('Nic nenalezeno nebo chyba', '', 1, None)
 			client.showInfo('Nic nenalezeno')
@@ -225,7 +225,7 @@ def tvseznam_run(session, params):
 		tto = tcur
 		data = getUrl('https://api.televizeseznam.cz/graphql', '{"operationName":"Playout","variables":{"timeFrom":' + str(tfrom) + ',"timeTo":' + str(tto) + '},"query":"query Playout($timeFrom: Int, $timeTo: Int) {  playout(timeFrom: $timeFrom, timeTo: $timeTo) {    __typename    ...Playout  }  playoutConfig {    __typename    status    selfPromo  }}fragment Playout on Playout {  __typename  id  dotId  start  end  epgStart  title  description  link  profile  internetExpiration  ads {    __typename    start    end  }  selfs {    __typename    start    end  }  jingles {    __typename    start    end  }  isRunning  vrplMode  noInternetAds  program  assetId  segB}"}')
 		if data.status_code != 200:
-			client.add_operation("SHOW_MSG", {'msg': 'Chyba nacitani dat ze serveru', 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
+			client.show_message(session, 'Chyba nacitani dat ze serveru', msg_type='error', timeout=10)
 			return False
 		jso = data.json()
 		if 'data' in jso and 'playout' in jso['data']:
@@ -242,14 +242,14 @@ def tvseznam_run(session, params):
 	def playLive(url):
 		data = getUrl(url + 'spl2,4,EVENT')
 		if data.status_code != 200:
-			client.add_operation("SHOW_MSG", {'msg': 'Chyba nacitani dat ze serveru', 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
+			client.show_message(session, 'Chyba nacitani dat ze serveru', msg_type='error', timeout=10)
 			return False
 		jso = data.json()
 		if 'Location' in jso:
 			url = jso['Location']
 			data = getUrl(url)
 			if data.status_code != 200:
-				client.add_operation("SHOW_MSG", {'msg': 'Chyba nacitani dat ze serveru', 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
+				client.show_message(session, 'Chyba nacitani dat ze serveru', msg_type='error', timeout=10)
 				return False
 			jso = data.json()
 		if 'pls' in jso and 'hls' in jso['pls'] and 'url' in jso['pls']['hls']:

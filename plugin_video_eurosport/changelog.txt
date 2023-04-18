@@ -1,5 +1,8 @@
 vvv CESKA VERZE JE UPLNE DOLE vvv
 
+[B]1.9:[/B]
+- update after api change in ArchivCZSK
+
 [B]1.8:[/B]
 - convert to module for archivCZSK >= 2.0.0
 

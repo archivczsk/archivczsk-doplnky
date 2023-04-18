@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.tvseznam" name="Televize Seznam" provider-name="Michal Novotný" version="1.7">
+<addon id="plugin.video.tvseznam" name="Televize Seznam" provider-name="Michal Novotný" version="1.8">
 	<requires>
-		<import addon="enigma2.archivczsk" version="2.0.0"/>
+		<import addon="enigma2.archivczsk" version="2.2.4"/>
 		<import addon="tools.xbmc" version="1.0" />
 	</requires>
 	<extension point="archivczsk.addon.video"/>

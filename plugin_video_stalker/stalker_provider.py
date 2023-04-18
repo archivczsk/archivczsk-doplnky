@@ -45,6 +45,7 @@ class stalkerContentProvider(ContentProvider):
 	def __init__(self, data_dir=None, session=None, tmp_dir='/tmp'):
 		ContentProvider.__init__(self, 'stalker', '/', None, None, None, tmp_dir)
 		self.data_dir = data_dir
+		self.session = session
 		self.max_items_per_page = 200
 		
 	# #################################################################################################
@@ -127,7 +128,7 @@ class stalkerContentProvider(ContentProvider):
 			client.log.error("Stalker Addon ERROR:\n%s" % traceback.format_exc())
 		
 			if "Stalker: " in str(e):
-				client.add_operation('SHOW_MSG', { 'msg': str(e), 'msgType': 'error', 'msgTimeout': 0, 'canClose': True, })
+				client.show_message(self.session, str(e), msg_type='error', timeout=0)
 				item = self.video_item('#')
 				item['title'] = "%s" % str(e)
 				return [ item ]
@@ -466,7 +467,7 @@ class stalkerContentProvider(ContentProvider):
 				else:
 					url = s.cmd_to_url( cmd )
 			except Exception as e:
-				client.add_operation('SHOW_MSG', { 'msg': 'Chyba pri prehrávaní:\n' + str(e), 'msgType': 'error', 'msgTimeout': 3, 'canClose': True, })
+				client.show_message(self.session, 'Chyba pri prehrávaní:\n' + str(e), msg_type='error', timeout=3)
 				return None
 			
 			item['url'] = url

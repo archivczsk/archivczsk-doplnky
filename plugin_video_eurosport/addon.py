@@ -48,11 +48,11 @@ def writeLog(msg, type='INFO'):
 	except:
 		pass
 
-def showInfo(mmsg):
-	client.add_operation("SHOW_MSG", {'msg': mmsg, 'msgType': 'info', 'msgTimeout': 4, 'canClose': True })
+def showInfo(session, mmsg):
+	client.show_message(session, mmsg, msg_type='info', timeout=4)
 
-def showError(mmsg):
-	client.add_operation("SHOW_MSG", {'msg': mmsg, 'msgType': 'error', 'msgTimeout': 4, 'canClose': True })
+def showError(session, mmsg):
+	client.show_message(session, mmsg, msg_type='error', timeout=4)
 
 def parse_date(dt,totime=False):
 	if not dt:
@@ -76,8 +76,9 @@ def is_now(df,dt):
 
 class EPContentProvider(ContentProvider):
 
-	def __init__(self, username=None, password=None, filter=None, tmp_dir='/tmp', token=''):
+	def __init__(self, username=None, password=None, filter=None, tmp_dir='/tmp', token='', session=None):
 		ContentProvider.__init__(self, 'eurosport', 'https://eu3-prod-direct.eurosportplayer.com', username, password, filter, tmp_dir)
+		self.session = session
 		self.cp = HTTPCookieProcessor(cookielib.LWPCookieJar())
 		self.init_urllib()
 		self.token = token
@@ -149,7 +150,7 @@ class EPContentProvider(ContentProvider):
 				if item['type'] != 'video': continue
 				result.append(self.parseVideos(item,adddate=True))
 		except:
-			showInfo('Chyba vyhledávání.')
+			showInfo(self.session, 'Chyba vyhledávání.')
 		return result
 
 	def categories(self):
@@ -210,7 +211,7 @@ class EPContentProvider(ContentProvider):
 			httpdata = util.request(self.base_url+item['url'], headers=self.headers)
 		except HTTPError as e:
 			if e.code == 403:
-				showInfo('Toto video není dostupné.')
+				showInfo(self.session, 'Toto video není dostupné.')
 			return []
 		items = json.loads(httpdata)
 
@@ -291,7 +292,7 @@ def ep_run(session, params):
 		else:
 			token = None
 	if token:
-		provider = EPContentProvider(token=token.strip())
+		provider = EPContentProvider(token=token.strip(), session=session)
 		XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
 	else:
 		client.showInfo('Pro přehrávání pořadů je potřeba účet na eurosportplayer.com\n\nPokud účet máte, musíte vložit dlouhý token z webu.\n\nPřečtěte si prosím Změny nebo soubor readme.md v adresáři doplňku jak na to.', timeout=20)

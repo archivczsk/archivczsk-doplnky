@@ -1,4 +1,7 @@
 v1.4
+- aktualizácia po zmenách api na strane ArchivCZSK
+
+v1.4
 - konverzia na module pre archivCZSK >= 2.0.0
 
 v1.3

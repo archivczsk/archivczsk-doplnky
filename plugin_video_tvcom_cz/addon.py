@@ -48,14 +48,6 @@ def writeLog(msg, type='INFO'):
 	except:
 		pass
 
-def showInfo(mmsg):
-		client.add_operation("SHOW_MSG", {'msg': mmsg, 'msgType': 'info', 'msgTimeout': 4, 'canClose': True })
-#		writeLog(mmsg)
-
-def showError(mmsg):
-		client.add_operation("SHOW_MSG", {'msg': mmsg, 'msgType': 'error', 'msgTimeout': 4, 'canClose': True })
-#		writeLog(mmsg,'ERROR')
-
 class TvcomContentProvider(ContentProvider):
 
 	def __init__(self, username=None, password=None, filter=None, tmp_dir='/tmp'):

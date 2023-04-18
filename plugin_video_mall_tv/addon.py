@@ -13,7 +13,7 @@ import os, re, datetime, requests
 from Components.config import config
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine.tools.util import unescapeHTML
-from Plugins.Extensions.archivCZSK.engine.client import add_video, add_dir, getTextInput, add_operation
+from Plugins.Extensions.archivCZSK.engine.client import add_video, add_dir, getTextInput, show_message
 from Plugins.Extensions.archivCZSK.engine import client
 
 try:
@@ -73,7 +73,7 @@ def get_url(url):
 	headers = {'User-Agent': _UserAgent_, 'Set-Cookie': '_selectedLanguage='+lang}
 	result = requests.get(url, headers=headers, timeout=15, verify=False)
 	if result.status_code != 200:
-		add_operation("SHOW_MSG", {'msg': 'Chyba nacitani dat', 'msgType': 'error', 'msgTimeout': 10, 'canClose': True })
+		show_message('Chyba nacitani dat', msg_type='error', timeout=10)
 		return ""
 	return result.text
 
@@ -176,7 +176,7 @@ def VIDEA(sid, session):
 	if sid==10002: # hledat
 		query = getTextInput(session, "Hledat")
 		if len(query) == 0:
-			add_operation("SHOW_MSG", {'msg': "Je potřeba zadat vyhledávaný řetězec", 'msgType': 'error', 'msgTimeout': 4, 'canClose': True })
+			show_message("Je potřeba zadat vyhledávaný řetězec", msg_type='error', timeout=4)
 			return	 
 	while True:
 		url = '/Serie/Season?seasonId='+str(sid)+'&sortType=3&' # sekce dle data id

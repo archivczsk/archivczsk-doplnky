@@ -1,3 +1,5 @@
+2023-01-27 v1.9
+* aktualizácia po zmenách api na strane ArchivCZSK
 2023-01-27 v1.8
 * konverzia na modul pre archivCZSK >= 2.0.0 
 2022-12-05 v1.7

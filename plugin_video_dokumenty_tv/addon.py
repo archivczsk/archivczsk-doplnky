@@ -51,16 +51,17 @@ def writeLog(msg, type='INFO'):
 	except:
 		pass
 
-def showInfo(mmsg):
-	client.add_operation("SHOW_MSG", {'msg': mmsg, 'msgType': 'info', 'msgTimeout': 4, 'canClose': True })
+def showInfo(session, mmsg):
+	client.show_message(session, mmsg, msg_type='info', timeout=4)
 
-def showError(mmsg):
-	client.add_operation("SHOW_MSG", {'msg': mmsg, 'msgType': 'error', 'msgTimeout': 4, 'canClose': True })
+def showError(session, mmsg):
+	client.show_message(session, mmsg, msg_type='error', timeout=4)
 
 class DokumentyTVContentProvider(ContentProvider):
 
-	def __init__(self, username=None, password=None, filter=None, tmp_dir='/tmp'):
+	def __init__(self, username=None, password=None, filter=None, tmp_dir='/tmp', session=None):
 		ContentProvider.__init__(self, 'Dokumenty.tv', 'https://dokumenty.tv', username, password, filter, tmp_dir)
+		self.session = session
 		self.cp = HTTPCookieProcessor(cookielib.LWPCookieJar())
 		self.init_urllib()
 
@@ -121,7 +122,7 @@ class DokumentyTVContentProvider(ContentProvider):
 			try:
 				html = util.request(url, headers=HEADERS)
 			except HTTPError as e:
-				if e.code == 403: showInfo('Toto video není dostupné.')
+				if e.code == 403: showInfo(self.session, 'Toto video není dostupné.')
 				return []
 			items = re.compile('<iframe.*?src="(.*?)"', re.DOTALL).findall(html)
 			for (url) in items:
@@ -140,7 +141,7 @@ class DokumentyTVContentProvider(ContentProvider):
 						result.append(itm)
 				else:
 					result.append(self.dir_item('None',''))
-					showInfo('Nepodporovany poskytovatel: %s' % url)
+					showInfo(self.session, 'Nepodporovany poskytovatel: %s' % url)
 		return result
 
 	def resolve(self, item, captcha_cb=None, select_cb=None):
@@ -177,7 +178,7 @@ class DokumentyTVContentProvider(ContentProvider):
 					itm['headers'] = HEADERS
 					result.append(itm)
 		else:
-			showInfo('Nepodporovaný poskytovatel: %s' % item['url'])
+			showInfo(self.session, 'Nepodporovaný poskytovatel: %s' % item['url'])
 		if len(result) > 0 and select_cb:
 			return select_cb(result)
 		return result
@@ -188,7 +189,7 @@ addon_userdata_dir = __addon__.getAddonInfo('profile')
 def dokumenty_tv_run(session, params):
 	settings = {'quality':__addon__.getSetting('quality')}
 
-	provider = DokumentyTVContentProvider()
+	provider = DokumentyTVContentProvider(session=session)
 	XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
 
 # #################################################################################################
