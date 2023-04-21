@@ -1,3 +1,6 @@
+1.12 - 21.04.2023
+     - fixed search using seeker when addon was not opened before
+
 1.11 - 17.04.2023
      - added possibility to set filename for download entries using info_labels
      - changed API for showing info/wearning/error messages

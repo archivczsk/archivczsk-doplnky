@@ -89,6 +89,8 @@ class StreamCinemaContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def login(self, silent):
+		self.build_lang_lists()
+		self.kraska_update_vipdays()
 		self.prehrajto.login()
 
 		if self.kraska_update_vipdays() <= 0:

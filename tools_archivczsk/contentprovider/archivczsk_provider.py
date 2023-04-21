@@ -393,7 +393,7 @@ class ArchivCZSKContentProvider(object):
 	# #################################################################################################
 	
 	def search(self, session, keyword, search_id):
-		self.do_search(search_id, keyword, False)
+		self.run(session, self.action(self.do_search, search_id=search_id, what=keyword, save_history=False))
 
 	# #################################################################################################
 
@@ -410,7 +410,7 @@ class ArchivCZSKContentProvider(object):
 				_('Remove'): self.action(self.search_remove, search_id=search_id, what=what),
 				_('Edit'): self.action(self.search_edit, search_id=search_id, what=what)
 			}
-			client.add_dir(what, self.action(self.do_search, search_id=search_id, what=what, save_history=save_history ), menuItems=menu_items )
+			client.add_dir(what, self.action(self.do_search, search_id=search_id, what=what, save_history=save_history), menuItems=menu_items)
 
 	# #################################################################################################
 	
