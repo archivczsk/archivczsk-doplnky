@@ -1,3 +1,6 @@
+2023-04-21 3.4
+    - nastavovanie dát pre preskočenie úvodnej zvučky a záverečných titulkov u seriálov
+
 2023-04-17 3.3
     - nastavovanie lepšieho názvu súboru pri sťahovaní epizód u seriálov
     - workaround pre chybný formát vrátených dát zo servera pre sekciu filmy

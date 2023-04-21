@@ -806,6 +806,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		settings['subs_autostart'] = self.get_setting('subs-autostart') in ('always', 'undubbed')
 		settings['subs_always'] = self.get_setting('subs-autostart') == 'always'
 		settings['subs_forced_autostart'] = self.get_setting('forced-subs-autostart')
+		settings['skip_times'] = self.create_skip_times(stream)
 
 		trakt_info = self.fill_trakt_info(info_item)
 
@@ -819,11 +820,32 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 		for i in range(len(streams)):
 			if i != idx:
-				playlist.add_video(titles[i], cmd=self.kraska_resolve, url=streams[i].get('url'), subs_url=streams[i].get('subs'), media_title=media_title, play_params=play_params, **play_params)
+				playlist.add_video(titles[i], cmd=self.kraska_resolve, url=streams[i].get('url'), subs_url=streams[i].get('subs'), skip_times=self.create_skip_times(streams[i]), media_title=media_title, play_params=play_params, **play_params)
+
+	# #################################################################################################
+
+	def create_skip_times(self, stream):
+		skip_times = []
+		notifications = stream.get('notifications')
+
+		if notifications:
+			skip_start = int(notifications.get('skip_start', 0))
+			skip_end = int(notifications.get('skip_end', 0))
+			skip_end_titles = int(notifications.get('skip_end_titles', 0))
+
+			if skip_end:
+				self.log_debug("Adding skip times: (%d:%d)" % (skip_start, skip_end))
+				skip_times.append((skip_start, skip_end,))
+
+			if skip_end_titles:
+				self.log_debug("Adding skip_end_titles: %d" % skip_end_titles)
+				skip_times.append((skip_end_titles, 0,))
+
+		return skip_times if len(skip_times) > 0 else None
 
 	# #################################################################################################
 	
-	def kraska_resolve(self, media_title, url, subs_url, settings, play_params={}):
+	def kraska_resolve(self, media_title, url, subs_url, skip_times, settings, play_params={}):
 		if subs_url and subs_url.startswith('https://kra.sk/file/'):
 			subs_url = subs_url[20:]
 
@@ -837,6 +859,8 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 		try:
 			ident = self.api.call_api(url).get('ident')
+			play_params['settings'] = play_params['settings'].copy()
+			play_params['settings']['skip_times'] = skip_times
 			self.add_play(media_title, self.kraska.resolve(ident), subs=subs_url, **play_params)
 		except (KraskaLoginFail, KraskaResolveException) as e:
 			self.show_error(str(e))
