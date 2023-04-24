@@ -1,0 +1,11 @@
+1.3
+- update because of api changes in ArchivCZSK
+
+1.2
+- convert to module for archivCZSK >= 2.0.0
+
+1.1
+- make addon python 3.x compatible
+
+1.0
+- initial version
