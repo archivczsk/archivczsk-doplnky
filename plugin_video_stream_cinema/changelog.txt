@@ -1,6 +1,7 @@
-2023-04-21 3.4
+2023-04-24 3.4
     - nastavovanie dát pre preskočenie úvodnej zvučky a záverečných titulkov u seriálov
     - oprava vyhľadávania bez predchádzajúceho spustenia doplnku
+    - oprava kontroly zostávajúcich dni predplatného
 
 2023-04-17 3.3
     - nastavovanie lepšieho názvu súboru pri sťahovaní epizód u seriálov

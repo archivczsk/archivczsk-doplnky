@@ -77,6 +77,8 @@ class StreamCinemaContentProvider(CommonContentProvider):
 	def kraska_update_vipdays(self):
 		try:
 			days_left = self.kraska.refresh_login_data()
+			if days_left == None:
+				days_left = -1
 		except:
 			days_left = -2
 
