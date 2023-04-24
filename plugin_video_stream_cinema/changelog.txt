@@ -1,3 +1,6 @@
+2023-04-24 3.5
+    - oprava zobrazovania bonusových sezón
+
 2023-04-24 3.4
     - nastavovanie dát pre preskočenie úvodnej zvučky a záverečných titulkov u seriálov
     - oprava vyhľadávania bez predchádzajúceho spustenia doplnku

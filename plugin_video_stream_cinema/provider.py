@@ -405,25 +405,25 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		info_labels['rating'] = info.get('rating')
 
 		if info.get('mediatype') == 'episode':
-			info_labels['episode'] = info['episode']
+			info_labels['episode'] = info.get('episode', 0)
 			info_labels['epname'] = info.get('epname')
 
 			if 'season' in info:
 				info_labels['season'] = info['season']
-				ep_code = ' %s (%d)' % (int_to_roman(info['season']), info['episode'])
-				ep_code2 = ' S%02dE%02d' % (int(info['season']), int(info['episode']))
+				ep_code = ' %s (%d)' % (int_to_roman(info['season']), int(info.get('episode', 0)))
+				ep_code2 = ' S%02dE%02d' % (int(info['season']), int(info.get('episode', 0)))
 			else:
-				ep_code = ' (%d)' % info['episode']
-				ep_code2 = ' E%02d' % int(info['episode'])
+				ep_code = ' (%d)' % int(info.get('episode', 0))
+				ep_code2 = ' E%02d' % int(info.get('episode', 0))
 
 			info_labels['title'] += ep_code
 
 			search_query = otitle + ep_code2
 			ctx_menu.add_menu_item(self._('Search on prehraj.to'), cmd=self.prehrajto_search, keyword=search_query)
 		elif info.get('mediatype') == 'season':
-			info_labels['season'] = info['season']
-			ep_code = ' %s' % int_to_roman(info['season'])
-			ep_code2 = ' S%02d' % int(info['season'])
+			info_labels['season'] = info.get('season', 0)
+			ep_code = ' %s' % int_to_roman(info.get('season', 0))
+			ep_code2 = ' S%02d' % int(info.get('season', 0))
 			info_labels['title'] += ep_code
 
 			search_query = otitle + ep_code2
