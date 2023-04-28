@@ -212,8 +212,8 @@ class YTContentProvider(ContentProvider):
 		post = {
 			"context": {
 				"client": {
-					"clientName": "ANDROID",
-					"clientVersion": "16.20",
+					"clientName": "TVLITE",
+					"clientVersion": "2",
 					"clientScreen": "EMBED"
 				}
 			},
@@ -238,18 +238,21 @@ class YTContentProvider(ContentProvider):
 					item['title'] = "[" + item['quality'] + " Orig] " + data.get("videoDetails",[]).get("title")
 					result.append(item)
 		# Externi konverze do MP4 ne live streamu
-		if not data.get("videoDetails",[]).get("isLive"):
-			headers = {"referer": "https://yt1s.com/en23","user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36","x-requested-with": "XMLHttpRequest"}
-			html = util.post('https://yt1s.com/api/ajaxSearch/index', {"q":url, "vt": "home"}, headers=headers)
-			data = json.loads(html)
-			if data["status"] == "ok" and "links" in data and "mp4" in data["links"]:
-				for format in data["links"]["mp4"]:
-					if data["links"]["mp4"][format].get("q") == "auto": continue
-					item = self.video_item()
-					item['url'] = data["vid"]+"|"+data["links"]["mp4"][format].get("k")
-					item['quality'] = data["links"]["mp4"][format].get("q")
-					item['title'] = "[" + data["links"]["mp4"][format].get("q","") + "] " + data["title"]
-					result.append(item)
+		try:
+			if not data.get("videoDetails",[]).get("isLive"):
+				headers = {"referer": "https://yt1s.com/en23","user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36","x-requested-with": "XMLHttpRequest"}
+				html = util.post('https://yt1s.com/api/ajaxSearch/index', {"q":url, "vt": "home"}, headers=headers)
+				data = json.loads(html)
+				if data["status"] == "ok" and "links" in data and "mp4" in data["links"]:
+					for format in data["links"]["mp4"]:
+						if data["links"]["mp4"][format].get("q") == "auto": continue
+						item = self.video_item()
+						item['url'] = data["vid"]+"|"+data["links"]["mp4"][format].get("k")
+						item['quality'] = data["links"]["mp4"][format].get("q")
+						item['title'] = "[" + data["links"]["mp4"][format].get("q","") + "] " + data["title"]
+						result.append(item)
+		except Exception as e:
+			vysledok = "Nic nenaslo"
 		return sorted(result, key=lambda i:(len(i['quality']),i['quality']), reverse = True)
 
 	def resolve(self, item, captcha_cb=None, select_cb=None):
