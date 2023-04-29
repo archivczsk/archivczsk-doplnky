@@ -252,7 +252,7 @@ class YTContentProvider(ContentProvider):
 						item['title'] = "[" + data["links"]["mp4"][format].get("q","") + "] " + data["title"]
 						result.append(item)
 		except Exception as e:
-			vysledok = "Nic nenaslo"
+			client.showInfo("Žiadne video sa nenašlo :-(")
 		return sorted(result, key=lambda i:(len(i['quality']),i['quality']), reverse = True)
 
 	def resolve(self, item, captcha_cb=None, select_cb=None):
