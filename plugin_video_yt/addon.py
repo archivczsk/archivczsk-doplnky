@@ -212,8 +212,8 @@ class YTContentProvider(ContentProvider):
 		post = {
 			"context": {
 				"client": {
-					"clientName": "ANDROID",
-					"clientVersion": "16.20",
+					"clientName": "TVLITE",
+					"clientVersion": "2",
 					"clientScreen": "EMBED"
 				}
 			},
@@ -238,7 +238,7 @@ class YTContentProvider(ContentProvider):
 					item['title'] = "[" + item['quality'] + " Orig] " + data.get("videoDetails",[]).get("title")
 					result.append(item)
 		# Externi konverze do MP4 ne live streamu
-		if not data.get("videoDetails",[]).get("isLive"):
+		if not data.get("videoDetails", {}).get("isLive"):
 			headers = {"referer": "https://yt1s.com/en23","user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36","x-requested-with": "XMLHttpRequest"}
 			html = util.post('https://yt1s.com/api/ajaxSearch/index', {"q":url, "vt": "home"}, headers=headers)
 			data = json.loads(html)
