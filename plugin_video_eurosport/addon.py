@@ -232,7 +232,7 @@ class EPContentProvider(ContentProvider):
 			if audio:
 				audenurl = audio.group(1)
 			# cze lang
-			audio = re.search('#EXT-X-MEDIA:TYPE=AUDIO,.*?,LANGUAGE="cze",.*?,URI="(.*?)"', data, re.S)
+			audio = re.search('#EXT-X-MEDIA:TYPE=AUDIO,.*?,LANGUAGE="(?:cze|ces)",.*?,URI="(.*?)"', data, re.S)
 			if audio:
 				audczurl = audio.group(1)
 

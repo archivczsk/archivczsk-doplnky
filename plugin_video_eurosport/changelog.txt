@@ -1,5 +1,8 @@
 vvv CESKA VERZE JE UPLNE DOLE vvv
 
+[B]1.10:[/B]
+- fixed czech audio
+
 [B]1.9:[/B]
 - update after api change in ArchivCZSK
 
