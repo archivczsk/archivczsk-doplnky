@@ -314,7 +314,7 @@ class SccContentProvider(CommonContentProvider):
 
 		genres = media.get('info_labels', {}).get('genre', [])
 
-		return ('Pornographic' in genres) or ('Erotic' in genres) or ('Adult' in genres)
+		return ('Pornographic' in genres) or ('Erotic' in genres) or ('Adult' in genres) or ('porno' in media.get('tags', []))
 
 	# ##################################################################################################################
 

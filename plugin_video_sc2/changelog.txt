@@ -1,3 +1,6 @@
+2023-05-04 [3.5]
+* vylepšenie filtrovania obsahu pre dospelých
+
 2023-04-17 [3.4]
 * nastavovanie lepšieho názvu súboru pri sťahovaní epizód u seriálov
 * oprava označovania pozretých sezón/epizód u seriálov
