@@ -3,6 +3,7 @@
 import sys, os, re, io, base64
 import threading, requests
 from .lamedb import lameDB
+from twisted.application.strports import service
 
 try:
 	from urllib import quote
@@ -211,6 +212,28 @@ class BouquetGeneratorTemplate:
 
 	# #################################################################################################
 
+	def load_blacklist(self, service_ref_uniq):
+		blacklist = []
+		try:
+			with open('/etc/enigma2/blacklist', 'r') as f:
+				for line in f:
+					if service_ref_uniq not in line:
+						blacklist.append(line.strip())
+		except:
+			pass
+
+		return blacklist
+
+	# #################################################################################################
+
+	def save_blacklist(self, blacklist):
+		with open('/etc/enigma2/blacklist', 'w') as f:
+			f.write('\n'.join(blacklist))
+			if len(blacklist) > 0:
+				f.write('\n')
+
+	# #################################################################################################
+
 	def run(self):
 		# if epg generator is disabled, then try to create service references based on lamedb
 		if self.enable_xmlepg:
@@ -232,12 +255,15 @@ class BouquetGeneratorTemplate:
 		picons = {}
 		
 		service_ref_uniq = ':%X:%X:%X:0:0:0:' % (self.tid, self.onid, self.namespace)
+		blacklist = self.load_blacklist(service_ref_uniq)
+		blacklist_need_save = False
 		
 		with open("/etc/enigma2/" + self.userbouquet_file_name, "w") as f:
 			f.write("#NAME %s\n" % self.name)
 
 			for channel in self.get_channels():
-				if not self.enable_adult and channel.get('adult', False):
+				is_adult = channel.get('adult', False)
+				if not self.enable_adult and is_adult:
 					continue
 
 				if channel.get('is_separator', False):
@@ -251,9 +277,14 @@ class BouquetGeneratorTemplate:
 				if self.user_agent:
 					url += '#User-Agent=%s' % self.user_agent
 
-				url = quote(url)
+#				url = quote(url)
+				url = url.replace(':', '%3a')
 
 				service_ref = self.service_ref_get(lamedb, channel_name, player_id, channel['id'])
+
+				if is_adult and service_ref.endswith(service_ref_uniq) and service_ref not in blacklist:
+					blacklist.append(service_ref)
+					blacklist_need_save = True
 
 				f.write("#SERVICE " + service_ref + url + ":" + channel_name + "\n")
 				f.write("#DESCRIPTION " + channel_name + "\n")
@@ -271,6 +302,9 @@ class BouquetGeneratorTemplate:
 		if first_export:
 			with open("/etc/enigma2/bouquets.tv", "a") as f:
 				f.write('#SERVICE 1:7:1:0:0:0:0:0:0:0:FROM BOUQUET "' + self.userbouquet_file_name + '" ORDER BY bouquet' + "\n")
+
+		if blacklist_need_save:
+			self.save_blacklist(blacklist)
 
 		self.reload_bouquets()
 			

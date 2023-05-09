@@ -1,5 +1,6 @@
-1.13 - 02.05.2023
+1.13 - 09.05.2023
      - added possibility to disable showing archive length
+     - mark exported adult channels as parental control protected 
 
 1.12 - 21.04.2023
      - fixed search using seeker when addon was not opened before
