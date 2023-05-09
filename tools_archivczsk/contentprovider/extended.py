@@ -125,7 +125,7 @@ class CPModuleArchive(CPModuleTemplate):
 
 	# #################################################################################################
 
-	def add_archive_channel(self, title, channel_id, archive_hours, img=None, info_labels={}):
+	def add_archive_channel(self, title, channel_id, archive_hours, img=None, info_labels={}, show_archive_len=True):
 		if archive_hours < 24:
 			tsd = archive_hours
 			tr_map = self.hour_str
@@ -140,7 +140,11 @@ class CPModuleArchive(CPModuleTemplate):
 		else:
 			dtext = tr_map[2]
 
-		self.cp.add_dir(title + _C('green', '  [%d %s]' % (tsd, dtext)), img, info_labels, cmd=self.get_archive_days_for_channels, channel_id=channel_id, archive_hours=archive_hours)
+		if show_archive_len:
+			archive_len = _C('green', '  [%d %s]' % (tsd, dtext))
+		else:
+			archive_len = ''
+		self.cp.add_dir(title + archive_len, img, info_labels, cmd=self.get_archive_days_for_channels, channel_id=channel_id, archive_hours=archive_hours)
 
 	# #################################################################################################
 

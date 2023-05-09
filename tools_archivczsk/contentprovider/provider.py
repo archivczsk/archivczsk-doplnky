@@ -49,15 +49,15 @@ class DummyAddonBackgroundService(object):
 		pass
 
 	@staticmethod
-	def run_task(finish_cbk, fn, *args, **kwargs):
+	def run_task(name, finish_cbk, fn, *args, **kwargs):
 		pass
 
 	@staticmethod
-	def run_in_loop(seconds_to_loop, fn, *args, **kwargs):
+	def run_in_loop(name, seconds_to_loop, fn, *args, **kwargs):
 		pass
 
 	@staticmethod
-	def run_delayed(delay_seconds, cbk, *args, **kwargs):
+	def run_delayed(name, delay_seconds, cbk, *args, **kwargs):
 		pass
 		
 # #################################################################################################
