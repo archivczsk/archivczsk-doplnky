@@ -205,7 +205,7 @@
 	</extension>
 </addon>
 
-<addon id="tools.archivczsk" name="Addons base" version="1.12">
+<addon id="tools.archivczsk" name="Addons base" version="1.13">
 	<requires>
 		<import addon="enigma2.archivczsk" version="2.2.1"/>
 	</requires>
