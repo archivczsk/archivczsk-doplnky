@@ -3,7 +3,20 @@
 import sys, os, re, io, base64
 import threading, requests
 from .lamedb import lameDB
-from twisted.application.strports import service
+try:
+	from Components.ParentalControl import parentalControl
+except:
+	class ParentalControl():
+		def __init__(self):
+			pass
+
+		def open(self):
+			pass
+
+		def save(self):
+			pass
+
+	parentalControl = ParentalControl()
 
 try:
 	from urllib import quote
@@ -72,7 +85,6 @@ class BouquetGeneratorTemplate:
 			eDVBDB.getInstance().reloadBouquets()
 			return
 		except:
-			raise
 			pass
 
 		# fallback - use webinterface to reload bouquets
@@ -213,6 +225,11 @@ class BouquetGeneratorTemplate:
 	# #################################################################################################
 
 	def load_blacklist(self, service_ref_uniq):
+		try:
+			parentalControl.save()
+		except:
+			pass
+
 		blacklist = []
 		try:
 			with open('/etc/enigma2/blacklist', 'r') as f:
@@ -231,6 +248,11 @@ class BouquetGeneratorTemplate:
 			f.write('\n'.join(blacklist))
 			if len(blacklist) > 0:
 				f.write('\n')
+
+		try:
+			parentalControl.open()
+		except:
+			pass
 
 	# #################################################################################################
 
@@ -277,13 +299,12 @@ class BouquetGeneratorTemplate:
 				if self.user_agent:
 					url += '#User-Agent=%s' % self.user_agent
 
-#				url = quote(url)
 				url = url.replace(':', '%3a')
 
 				service_ref = self.service_ref_get(lamedb, channel_name, player_id, channel['id'])
 
 				if is_adult and service_ref.endswith(service_ref_uniq) and service_ref not in blacklist:
-					blacklist.append(service_ref)
+					blacklist.append(service_ref + url)
 					blacklist_need_save = True
 
 				f.write("#SERVICE " + service_ref + url + ":" + channel_name + "\n")

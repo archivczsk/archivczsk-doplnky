@@ -1,3 +1,6 @@
+1.5 - 16.05.2023
+    - pridaná podpora pre priame otvorenie archívu z userbouquetu
+
 1.4 - 09.03.2023
 	- pridanie en/cs/sk lokalizácie
 

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
 import time
 from hashlib import md5
 
@@ -8,7 +7,7 @@ from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPM
 from tools_archivczsk.string_utils import _I, _C, _B
 from .telly import Telly
 from .bouquet import TellyBouquetXmlEpgGenerator
-
+import base64
 
 class TellyModuleLiveTV(CPModuleLiveTV):
 
@@ -118,7 +117,25 @@ class TellyModuleArchive(CPModuleArchive):
 			}
 			self.cp.add_play(archive_title, one['url'], info_labels)
 
+	# #################################################################################################
+
+	def get_archive_hours(self, channel_id):
+		self.cp.load_channel_list()
+		channel = self.cp.channels_by_id.get(channel_id)
+		return channel.timeshift if channel else None
+
+	# #################################################################################################
+
+	def get_channel_id_from_path(self, path):
+		if path.startswith('playlive/'):
+			channel_id = base64.b64decode(path[9:].encode('utf-8')).decode("utf-8")
+			channel = self.cp.channels_by_id.get(int(channel_id))
+			return int(channel_id) if channel.timeshift else None
+
+		return None
+
 # #################################################################################################
+
 
 class TellyContentProvider(ModuleContentProvider):
 

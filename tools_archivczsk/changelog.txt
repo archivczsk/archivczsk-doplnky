@@ -1,3 +1,7 @@
+1.14 - 16.05.2023
+     - added support for shortcuts
+     - fixed parental control blacklist reload
+
 1.13 - 09.05.2023
      - added possibility to disable showing archive length
      - mark exported adult channels as parental control protected 

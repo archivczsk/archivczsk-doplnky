@@ -10,6 +10,8 @@ from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPM
 from tools_archivczsk.string_utils import _I, _C, _B
 from .o2tv import O2TV
 from .bouquet import O2TVBouquetXmlEpgGenerator
+import base64
+
 
 class O2TVModuleLiveTV(CPModuleLiveTV):
 
@@ -167,6 +169,21 @@ class O2TVModuleArchive(CPModuleArchive):
 			self.cp.add_video(title, epg.get('picture'), info_labels, menu, cmd=self.cp.get_video_stream, video_title=str(epg["name"]), channel_key=channel_id, epg_id=epg['epgId'], ts_from=epg['startTimestamp'], ts_to=epg['endTimestamp'])
 
 	# #################################################################################################
+
+	def get_archive_hours(self, channel_id):
+		self.cp.load_channel_list()
+		channel = self.cp.channels_by_key.get(channel_id)
+		return channel['timeshift'] if channel else None
+
+	# #################################################################################################
+
+	def get_channel_id_from_path(self, path):
+		if path.startswith('playlive/'):
+			channel_id = base64.b64decode(path[9:].encode('utf-8')).decode("utf-8")
+			channel = self.cp.channels_by_key.get(channel_id)
+			return channel_id if channel['timeshift'] else None
+
+		return None
 
 # #################################################################################################
 

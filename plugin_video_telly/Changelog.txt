@@ -1,3 +1,6 @@
+1.1.6 - 16.05.2023
+    - pridaná podpora pre priame otvorenie archívu z userbouquetu
+
 1.1.5 - 20.03.2023
     - drobné opravy
 

@@ -8,6 +8,7 @@ from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPM
 from tools_archivczsk.string_utils import _I, _C, _B
 from .orangetv import OrangeTV
 from .bouquet import OrangeTVBouquetXmlEpgGenerator
+import base64
 
 
 class OrangeTVModuleLiveTV(CPModuleLiveTV):
@@ -115,6 +116,23 @@ class OrangeTVModuleArchive(CPModuleArchive):
 			}
 			self.cp.add_play(archive_title, one['url'], info_labels)
 
+	# #################################################################################################
+
+	def get_archive_hours(self, channel_id):
+		self.cp.load_channel_list()
+		channel = self.cp.channels_by_key.get(channel_id)
+		return channel['timeshift'] if channel else None
+
+	# #################################################################################################
+
+	def get_channel_id_from_path(self, path):
+		if path.startswith('playlive/'):
+			channel_id = base64.b64decode(path[9:].encode('utf-8')).decode("utf-8")
+			channel = self.cp.channels_by_key.get(channel_id)
+			return channel_id if channel['timeshift'] else None
+
+		return None
+
 # #################################################################################################
 
 
@@ -214,6 +232,10 @@ class OrangeTVContentProvider(ModuleContentProvider):
 		self.channels = self.orangetv.get_live_channels()
 		self.checksum = self.get_channels_checksum()
 		
+		self.channels_by_key = {}
+		for ch in self.channels:
+			self.channels_by_key[ch['key']] = ch
+
 		# allow channels reload once a hour
 		self.channels_next_load_time = act_time + 3600
 

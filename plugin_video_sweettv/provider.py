@@ -6,6 +6,7 @@ from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPM
 from tools_archivczsk.string_utils import _I, _C, _B
 from .bouquet import SweetTVBouquetXmlEpgGenerator
 from .sweettv import SweetTV
+import base64
 
 # #################################################################################################
 
@@ -107,6 +108,23 @@ class SweetTVModuleArchive(CPModuleArchive):
 			}
 
 			self.cp.add_video(title, event.get('preview_url'), info_labels, cmd=self.cp.get_archive_stream, archive_title=str(event["text"]), channel_id=channel_id, epg_id=event['id'])
+
+	# #################################################################################################
+
+	def get_archive_hours(self, channel_id):
+		self.cp.load_channel_list()
+		channel = self.cp.channels_by_key.get(channel_id)
+		return channel['timeshift'] if channel else None
+
+	# #################################################################################################
+
+	def get_channel_id_from_path(self, path):
+		if path.startswith('playlive/'):
+			channel_id = base64.b64decode(path[9:].encode('utf-8')).decode("utf-8")
+			channel = self.cp.channels_by_key.get(channel_id)
+			return channel_id if channel['timeshift'] else None
+
+		return None
 
 # #################################################################################################
 
@@ -257,6 +275,10 @@ class SweetTVContentProvider(ModuleContentProvider):
 			return
 
 		self.channels, self.checksum = self.sweettv.get_channels()
+
+		self.channels_by_key = {}
+		for ch in self.channels:
+			self.channels_by_key[ch['id']] = ch
 
 		# allow channels reload once a hour
 		self.channels_next_load_time = act_time + 3600

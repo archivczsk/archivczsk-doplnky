@@ -117,7 +117,40 @@ class CPModuleArchive(CPModuleTemplate):
 		self.days_of_week = (_('Monday'), _('Tuesday'), _('Wednesday'), _('Thursday'), 	_('Friday'), _('Saturday'), _('Sunday'))
 		self.day_str = (_('day'), _('days2-4'), _('days5+'))
 		self.hour_str = (_('hour'), _('hours2-4'), _('hours5+'))
+		content_provider.register_shortcut('archive', self.run_archive_shortcut)
 
+	# #################################################################################################
+	
+	def get_archive_hours(self, channel_id):
+		'''
+		Implement this function to get archive hours for channel_id - needed to run shortcuts
+		'''
+		return None
+	
+	# #################################################################################################
+
+	def get_channel_key_from_path(self, path):
+		'''
+		Implement this function to get channel_key from URL path
+		'''
+		return None
+	
+	# #################################################################################################
+	
+	def run_archive_shortcut(self, path, **kwargs):
+		channel_id = self.get_channel_id_from_path(path)
+
+		if channel_id == None:
+			return
+
+		archive_hours = self.get_archive_hours(channel_id)
+
+		if archive_hours == None:
+			# we don't have informations about archive hours, so show only current day from archive
+			return self.get_archive_program(channel_id, 0)
+
+		return self.get_archive_days_for_channels(channel_id, archive_hours)
+	
 	# #################################################################################################
 
 	def root(self):
@@ -250,6 +283,7 @@ class ModuleContentProvider(CommonContentProvider):
 	def __init__(self, name='dummy', settings=None, data_dir=None, bgservice=None, modules=[]):
 		CommonContentProvider.__init__(self, name, settings, data_dir, bgservice)
 		self.modules = modules
+		self.registered_shortcuts = {}
 
 	# #################################################################################################
 
@@ -259,11 +293,19 @@ class ModuleContentProvider(CommonContentProvider):
 
 	# #################################################################################################
 
+	def register_shortcut(self, name, cbk):
+		self.registered_shortcuts[name] = cbk
+
+	# #################################################################################################
+
 	def run_shortcut(self, action, kwargs):
 		'''
 		Tries to search for right module to run shortcut.
 		'''
 		self.log_info("Trying to run shortcut: %s" % action)
+		if action in self.registered_shortcuts:
+			return self.registered_shortcuts[action](**kwargs)
+
 		qualname = None
 
 		if action.startswith('<bound method '):

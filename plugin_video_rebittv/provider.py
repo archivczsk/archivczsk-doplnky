@@ -7,6 +7,7 @@ from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPM
 from tools_archivczsk.string_utils import _I, _C, _B
 from .rebittv import RebitTV
 from .bouquet import RebitTVBouquetXmlEpgGenerator
+import base64
 
 # #################################################################################################
 
@@ -114,6 +115,20 @@ class RebitTVModuleArchive(CPModuleArchive):
 
 	# #################################################################################################
 
+	def get_archive_hours(self, channel_id):
+		self.cp.load_channel_list()
+		channel = self.cp.channels_by_key.get(channel_id)
+		return channel['timeshift'] if channel else None
+
+	# #################################################################################################
+
+	def get_channel_id_from_path(self, path):
+		if path.startswith('playlive/'):
+			channel_id = base64.b64decode(path[9:].encode('utf-8')).decode("utf-8")
+			channel = self.cp.channels_by_key.get(channel_id)
+			return channel_id if channel['timeshift'] else None
+
+		return None
 
 # #################################################################################################
 
@@ -205,6 +220,9 @@ class RebitTVContentProvider(ModuleContentProvider):
 
 		self.channels = self.rebittv.get_channels()
 		self.checksum = self.get_channels_checksum()
+		self.channels_by_key = {}
+		for ch in self.channels:
+			self.channels_by_key[str(ch['id'])] = ch
 
 		# allow channels reload once a hour
 		self.channels_next_load_time = act_time + 3600

@@ -10,6 +10,7 @@ from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPM
 from tools_archivczsk.string_utils import _I, _C, _B
 from .sledovanitv import SledovaniTV
 from .bouquet import SledovaniTVBouquetXmlEpgGenerator
+import base64
 
 # #################################################################################################
 
@@ -195,6 +196,22 @@ class SledovaniTVModuleArchive(CPModuleArchive):
 			self.cp.add_menu_item(menu, self._('Add recording'), cmd=self.cp.add_recording, event_id=epg['eventId'])
 			self.cp.add_video(title, epg.get('poster'), info_labels, menu, cmd=self.cp.get_event_stream, video_title=str(epg["title"]), event_id=epg['eventId'])
 
+	# #################################################################################################
+
+	def get_archive_hours(self, channel_id):
+		self.cp.load_channel_list()
+		channel = self.cp.channels_by_id.get(channel_id)
+		return channel['timeshift'] if channel else None
+
+	# #################################################################################################
+
+	def get_channel_id_from_path(self, path):
+		if path.startswith('playlive/'):
+			channel_id = base64.b64decode(path[9:].encode('utf-8')).decode("utf-8")
+			channel = self.cp.channels_by_id.get(channel_id)
+			return channel_id if channel['timeshift'] else None
+
+		return None
 # #################################################################################################
 
 

@@ -378,6 +378,12 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 
+	def run_shortcut(self, session, action, params):
+		self.log_debug("Run shortcut called: %s" % action)
+		self.run(session, { 'CP_action': action, 'CP_args': params })
+
+	# #################################################################################################
+
 	def trakt(self, session, item, action, result ):
 		if hasattr(self.provider, 'trakt'):
 			self.session = session

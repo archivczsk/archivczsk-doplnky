@@ -83,21 +83,30 @@ def _C(color, s):
 	"""
 	Returns colored text
 	"""
-	return '[COLOR %s]%s[/COLOR]' % (color, s)
+	if s:
+		return '[COLOR %s]%s[/COLOR]' % (color, s)
+	else:
+		return ''
 
 
 def _B(s):
 	"""
 	Returns bold text
 	"""
-	return '[B]%s[/B]' % s
+	if s:
+		return '[B]%s[/B]' % s
+	else:
+		return ''
 
 
 def _I(s):
 	"""
 	Returns italic text
 	"""
-	return '[I]%s[/I]' % s
+	if s:
+		return '[I]%s[/I]' % s
+	else:
+		return ''
 
 # #################################################################################################
 

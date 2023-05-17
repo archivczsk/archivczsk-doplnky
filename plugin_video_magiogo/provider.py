@@ -96,6 +96,23 @@ class MagioGOModuleArchive(CPModuleArchive):
 
 	# #################################################################################################
 
+	def get_archive_hours(self, channel_id):
+		self.cp.load_channel_list()
+		channel = self.cp.channels_by_key.get(channel_id)
+		return channel.timeshift if channel else None
+
+	# #################################################################################################
+
+	def get_channel_id_from_path(self, path):
+		if path.startswith('playlive/'):
+			path = path[9:]
+			path = path[:path.find('/')]
+			channel_id = base64.b64decode(path.encode('utf-8')).decode("utf-8")
+			channel = self.cp.channels_by_key.get(int(channel_id))
+			return int(channel_id) if channel.timeshift else None
+
+		return None
+
 # #################################################################################################
 
 
@@ -214,6 +231,10 @@ class MagioGOContentProvider(ModuleContentProvider):
 
 		self.channels = self.magiogo.get_channel_list(fill_epg)
 		self.checksum = self.get_channels_checksum()
+
+		self.channels_by_key = {}
+		for ch in self.channels:
+			self.channels_by_key[int(ch.id)] = ch
 
 		if fill_epg:
 			# allow channels reload once a hour and epg once a minute
