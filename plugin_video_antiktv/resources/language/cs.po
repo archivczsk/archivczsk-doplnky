@@ -1,0 +1,301 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_antiktv\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-06-22 10:59+0200\n"
+"PO-Revision-Date: 2023-05-10 10:47+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: plugin_video_antiktv/atk_client.py:182
+msgid "Others"
+msgstr "Ostaní"
+
+#: plugin_video_antiktv/atk_client.py:409
+msgid "Wrong communication data received from server"
+msgstr "Nesprávné komunikační data přijatá ze serveru"
+
+#: plugin_video_antiktv/atk_client.py:446
+msgid "Request to remote server failed"
+msgstr "Požadavek na vzdálený server selhal"
+
+#: plugin_video_antiktv/atk_client.py:448
+msgid "Login failed"
+msgstr "Přihlášení selhalo"
+
+#: plugin_video_antiktv/atk_client.py:450
+msgid "Request is blocked by firewall"
+msgstr "Požadavek blokován firewallem"
+
+#: plugin_video_antiktv/atk_client.py:458
+msgid "Unexpected return code from server"
+msgstr "Neočekávaný návratový kód ze serveru"
+
+#: plugin_video_antiktv/atk_client.py:508
+msgid "Wrong login data provided or account doesn't exists."
+msgstr "Nesprávné přihlašovací údaje nebo konto neexistuje."
+
+#: plugin_video_antiktv/atk_client.py:513
+msgid "Account is not yet activated. You need to activate it using instructions in SMS or E-mail entered by registration."
+msgstr "Konto není aktivováno. Musíte ho aktivovat podle instrukcí v SMS nebo E-mailu zadaném při registraci."
+
+#: plugin_video_antiktv/atk_client.py:515
+#, python-brace-format
+msgid "You have reached the limit of maximum registered devices. Go to {my_antik}, section Devices and removed unused one."
+msgstr "Dosáhli jste limit maximálního počtu registrovaných zařízení. Choďte na {my_antik}, sekce Zařízení a vymažte nějaké nepotřebné."
+
+#: plugin_video_antiktv/atk_client.py:517
+msgid "Account is marked as inactive."
+msgstr "Konto je označeno jako neaktivní."
+
+#: plugin_video_antiktv/atk_client.py:519
+msgid "Unsupported login response code received from server"
+msgstr "Ze serveru byla přijata nepodporovaná odpověď na login požadavek"
+
+#: plugin_video_antiktv/atk_client.py:531
+msgid "No username or password provided"
+msgstr "Přihlašovací jméno a heslo není zadané"
+
+#: plugin_video_antiktv/atk_client.py:636
+msgid "Unknown channel type"
+msgstr "Neznámy typ kanálů"
+
+#: plugin_video_antiktv/atk_client.py:704
+msgid "Failed to get stream URL"
+msgstr "Nepodařilo se získat URL streamu"
+
+#: plugin_video_antiktv/atk_client.py:709
+msgid "Not available stream found for this channel"
+msgstr "Pro tento kanál není dostupný žádný stream"
+
+#: plugin_video_antiktv/atk_loader.py:57
+#, python-brace-format
+msgid "Platform of your receiver is currently not supported. Please send log file {log_file} to {email} and we will try to add support for it ..."
+msgstr "Platforma vašeho přijímače není podporovaná. Prosím zašlete log soubor {log_file} na {email} a pokusíme se pro něj podporu přidat ..."
+
+#: plugin_video_antiktv/provider.py:18
+msgid "Television"
+msgstr "Televize"
+
+#: plugin_video_antiktv/provider.py:19
+msgid "Here you will find list of television channels"
+msgstr "Tady najdete seznam televizních kanálů"
+
+#: plugin_video_antiktv/provider.py:21
+msgid "Radios"
+msgstr "Radia"
+
+#: plugin_video_antiktv/provider.py:22
+msgid "Here you will find list of radio channels available with your subscription"
+msgstr "Obsahuje seznam rádií dostupných s vašim předplatným"
+
+#: plugin_video_antiktv/provider.py:24
+msgid "Cameras"
+msgstr "Kamery"
+
+#: plugin_video_antiktv/provider.py:25
+msgid "Cameras from Kosice or other places in Slovakia"
+msgstr "Kamery z Košic a ostatních míst Slovenska"
+
+#: plugin_video_antiktv/provider.py:33
+msgid "All"
+msgstr "Všechny"
+
+#: plugin_video_antiktv/provider.py:82 plugin_video_antiktv/provider.py:249
+msgid "Please enter parental control pin"
+msgstr "Prosím zadejte rodičovský pin"
+
+#: plugin_video_antiktv/provider.py:86 plugin_video_antiktv/provider.py:253
+#: plugin_video_antiktv/provider.py:324
+msgid "Entered pin code is incorrect"
+msgstr "Zadaný pin kód je nesprávný"
+
+#: plugin_video_antiktv/provider.py:110
+msgid "By channels"
+msgstr "Podle kanálů"
+
+#: plugin_video_antiktv/provider.py:111
+msgid "By genres"
+msgstr "Podle žánrů"
+
+#: plugin_video_antiktv/provider.py:281
+msgid "Informations and settings"
+msgstr "Informace a nastavení"
+
+#: plugin_video_antiktv/provider.py:296
+msgid "User account"
+msgstr "Poživatelské konto"
+
+#: plugin_video_antiktv/provider.py:297
+msgid "Purchased packages"
+msgstr "Zakoupené balíky"
+
+#: plugin_video_antiktv/provider.py:298
+msgid "Refresh channel list"
+msgstr "Obnovit seznam kanálů"
+
+#: plugin_video_antiktv/provider.py:299
+msgid "Request device identification code"
+msgstr "Vyžádat identifikaci tohoto zařízení"
+
+#: plugin_video_antiktv/provider.py:300
+msgid "Parental control PIN"
+msgstr "Rodičovský PIN"
+
+#: plugin_video_antiktv/provider.py:300
+msgid "Default PIN is 0000. Please change it to your own value."
+msgstr "Předvolený PIN je 0000. Prosím změňte ho na svojí vlastní hodnotu."
+
+#: plugin_video_antiktv/provider.py:301
+msgid "Logout from this device"
+msgstr "Odhlásit z tohoto zařízení"
+
+#: plugin_video_antiktv/provider.py:308
+msgid "Channel list was updated"
+msgstr "Seznam kanálů byl aktualizován"
+
+#: plugin_video_antiktv/provider.py:314
+#, python-brace-format
+msgid "Device identification code is: {did}"
+msgstr "Identifikační kód tohoto zařízení je: {did}"
+
+#: plugin_video_antiktv/provider.py:319
+msgid "Please enter current parental control pin"
+msgstr "Prosím zadejte aktuální rodičovský pin"
+
+#: plugin_video_antiktv/provider.py:327
+msgid "Please enter new parental control pin"
+msgstr "Prosím zadejte nový rodičovský pin"
+
+#: plugin_video_antiktv/provider.py:331
+msgid "Please repeat new parental control pin"
+msgstr "Prosím zopakujte nový rodičovský pin"
+
+#: plugin_video_antiktv/provider.py:336
+msgid "Parental control pins differs"
+msgstr "Rodičovské pin kódy se liší"
+
+#: plugin_video_antiktv/provider.py:342
+msgid "Parental control pin successfuly changed"
+msgstr "Rodičovský pin byl úspěšně změněn"
+
+#: plugin_video_antiktv/provider.py:360
+#, python-brace-format
+msgid "To order more packages go to {antik_site}"
+msgstr "Pro objednávku dalších balíku choďte na {antik_site}"
+
+#: plugin_video_antiktv/provider.py:367
+msgid "Do you really want to logout from this device?"
+msgstr "Opravdu se chcete odhlásit z tohoto zařízení?"
+
+#: plugin_video_antiktv/provider.py:375
+msgid "You have been logged out from this device"
+msgstr "Byli jste odhlášen z tohoto zařízení"
+
+#: plugin_video_antiktv/provider.py:383
+msgid "Customer"
+msgstr "Zákazník"
+
+#: plugin_video_antiktv/provider.py:384
+msgid "Name"
+msgstr "Jméno"
+
+#: plugin_video_antiktv/provider.py:385
+msgid "E-Mail"
+msgstr "E-Mail"
+
+#: plugin_video_antiktv/provider.py:386
+msgid "Customer key"
+msgstr "Zákaznický klíč"
+
+#: plugin_video_antiktv/provider.py:388
+msgid "This device identification"
+msgstr "Identifikace tohoto zařízení"
+
+#: plugin_video_antiktv/provider.py:391
+msgid "Provider name"
+msgstr "Jméno poskytovatele"
+
+msgid "Login name"
+msgstr "Přihlašovací jméno"
+
+msgid "Login password"
+msgstr "Přihlašovací heslo"
+
+msgid "Enable H.265 video codec"
+msgstr "Povolit H.265 video kodek"
+
+msgid "Prefered stream quality"
+msgstr "Preferovaná kvalita streamu"
+
+msgid "Very low"
+msgstr "Velice nízká"
+
+msgid "Low"
+msgstr "Nízká"
+
+msgid "Middle"
+msgstr "Střední"
+
+msgid "High"
+msgstr "Vysoká"
+
+msgid "Very high"
+msgstr "Velice vysoká"
+
+msgid "Enable adult channels"
+msgstr "Povolit programy pro dospělé"
+
+msgid "Allow informations and settings in main menu"
+msgstr "Povolit informace a nastavení v hlavním menu"
+
+msgid "pin"
+msgstr ""
+
+msgid "Userbouquet"
+msgstr "Userbouquet"
+
+msgid "Automatically export channel list as userbouquet"
+msgstr "Automaticky exportovat seznam stanic jako userbouquet"
+
+msgid "Generate XML EPG for epgimport plugin (if installed)"
+msgstr "Generovat XML EPG pro epgimport plugin (pokud je nainstalován)"
+
+msgid "Directory for XML EPG data (need at least 20MB of free space)"
+msgstr "Adresář pro XML EPG data (potřebujete alespoň 20MB volného místa)"
+
+msgid "For how many days to generate XML EPG"
+msgstr "Pro kolik dni dopředu generovat XML EPG"
+
+msgid "Automatically download picons when exporting userbouquet"
+msgstr "Při exportování userbouquetu automaticky stáhnout picony"
+
+msgid "Player used for userbouquet"
+msgstr "Přehrávač použitý pro userbouquet"
+
+msgid "Default"
+msgstr "Předvolený"
+
+msgid "gstplayer"
+msgstr ""
+
+msgid "exteplayer3"
+msgstr ""
+
+msgid "DMM"
+msgstr ""
+
+msgid "DVB (OE>=2.5)"
+msgstr ""
+
+#~ msgid "Device ID"
+#~ msgstr "ID zařízení"

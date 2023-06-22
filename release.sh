@@ -83,7 +83,7 @@ for addonFile in $addons ; do
         rm "$package"
     fi
     build_lang "$dirname" "$addon_id"
-    zip -FS -q -r "$package" "$dirname" -x '*.py[oc]' -x '*.sw[onp]' -x '*.po' -x '.*'
+    zip -FS -q -r "$package" "$dirname" -x '*.py[oc]' -x '*.sw[onp]' -x '*.po' -x '.*' -x '*/atk_client.py'
     clean_lang "$dirname" "$addon_id"
 
     # copy changelog file

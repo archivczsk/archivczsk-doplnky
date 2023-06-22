@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+	<setting label="Login name" id="username" type="text" default="" />
+	<setting label="Login password" id="password" type="password" default=""/>
+	<setting label="Enable H.265 video codec" id="enable_h265" type="bool" default="true" />
+	<setting label="Prefered stream quality" id="preferred_quality" type="keyenum" values="1;Very low|2;Low|3;Middle|4;High|5;Very high" default="5"/>
+	<setting label="Enable adult channels" id="enable_adult" type="bool" default="true" />
+	<setting label="Allow informations and settings in main menu" id="enable_extra" type="bool" default="true" />
+	<setting label="pin" id="pin" type="number" default="729" visible="false"/>
+	<category label="Userbouquet">
+		<setting label="Automatically export channel list as userbouquet" id="enable_userbouquet" type="bool" default="false" />
+		<setting label="Generate XML EPG for epgimport plugin (if installed)" id="enable_xmlepg" type="bool" default="false" />
+		<setting label="Directory for XML EPG data (need at least 20MB of free space)" id="xmlepg_dir" type="text" default="/media/hdd" />
+		<setting label="For how many days to generate XML EPG" id="xmlepg_days" type="enum" lvalues="1|2|3|4|5|6|7" default="4"/>
+		<setting label="Automatically download picons when exporting userbouquet" id="enable_picons" type="bool" default="false" />
+		<setting label="Player used for userbouquet" id="player_name" type="enum" lvalues="Default|gstplayer|exteplayer3|DMM|DVB (OE>=2.5)" default="0"/>
+	</category>
+</settings>
