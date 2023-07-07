@@ -8,6 +8,7 @@ import requests
 from datetime import datetime
 from time import time, mktime
 import json
+from .stream import nxx
 
 # #################################################################################################
 
@@ -64,6 +65,12 @@ class Webshare():
 
 	# #################################################################################################
 	
+	@staticmethod
+	def get_password_hash(password, salt):
+		return sha1(md5crypt(password.encode('utf-8'), salt.encode('utf-8'))).hexdigest()
+
+	# #################################################################################################
+
 	def login(self):
 		username = self.cp.get_setting('wsuser')
 		password = self.cp.get_setting('wspass')
@@ -84,7 +91,7 @@ class Webshare():
 			if salt is None:
 				salt = ''
 
-			password = sha1(md5crypt(password.encode('utf-8'), salt.encode('utf-8'))).hexdigest()
+			password = self.get_password_hash(password, salt)
 			digest = md5(username.encode('utf-8') + b':Webshare:' + password.encode('utf-8')).hexdigest()
 			# login
 			data = self.call_ws_api('/api/login/', { 'username_or_email':username, 'password':password, 'digest': digest, 'keep_logged_in':1 })
@@ -118,11 +125,11 @@ class Webshare():
 		}
 		
 		response = requests.post(BASE + endpoint, data=data, headers=headers )
-#		with open( "/tmp/ws_request.txt", "a" ) as f:
-#			f.write( "URL: %s\n" % (BASE + endpoint) )
-#			f.write( "DATA: %s\n" % data )
-#			f.write( "RESPONSE: %s\n" % response.text )
-#			f.write( "-----------------------------------\n" )
+#		with open("/tmp/ws_request.txt", "a") as f:
+#			f.write("URL: %s\n" % (BASE + endpoint))
+#			f.write("DATA: %s\n" % data)
+#			f.write("RESPONSE: %s\n" % response.text)
+#			f.write("-----------------------------------\n")
 		
 		if response.status_code != 200:
 			raise WebshareApiError("Wrong response status code: %d" % response.status_code)
@@ -202,7 +209,19 @@ class Webshare():
 	
 	# #################################################################################################
 	
-	def resolve(self, ident, dwnType='video_stream'):
+	def get_file_password_salt(self, ident):
+		data = self.call_ws_api('/api/file_password_salt/', {'ident': ident})
+
+		xml = ET.fromstring(data)
+
+		if xml.find('status').text == 'OK':
+			return xml.find('salt').text
+
+		return None
+
+	# #################################################################################################
+
+	def resolve(self, ident, file_name=''):
 		self.refresh_login_data()
 		
 		if self.login_data.get('checksum') is not None:
@@ -215,7 +234,22 @@ class Webshare():
 			if int(time()) > self.login_data.get('expiration', 0):
 				self.cp.show_info(self.cp._("Webshare subscription expired. Only very low quality videos will play and seeking forward/backwad will not work at all."), noexit=True)
 
-		data = self.call_ws_api('/api/file_link/', {'ident':ident, 'download_type': dwnType, 'device_uuid': self.device_id } )
+		request_data = {
+			'ident': ident,
+			'download_type': 'video_stream',
+			'device_uuid': self.device_id
+		}
+
+		salt = self.get_file_password_salt(ident)
+		if salt:
+			self.cp.log_debug("Salt for password protected file: %s" % salt)
+			self.cp.log_debug("Computing password for ident %s and file name %s" % (ident, file_name))
+			file_password = nxx(ident, file_name)
+			self.cp.log_debug("Computed file password: %s" % file_password)
+			request_data['password'] = self.get_password_hash(file_password, salt)
+			self.cp.log_debug("Computed file password hash: %s" % request_data['password'])
+
+		data = self.call_ws_api('/api/file_link/', request_data)
 
 		xml = ET.fromstring(data)
 

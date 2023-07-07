@@ -1,3 +1,6 @@
+2023-07-07 [3.6]
+* pridanie podpory pre súbory chránené heslom
+
 2023-05-04 [3.5]
 * vylepšenie filtrovania obsahu pre dospelých
 

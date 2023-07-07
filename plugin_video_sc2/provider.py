@@ -942,6 +942,7 @@ class SccContentProvider(CommonContentProvider):
 				return
 
 		ident = data[idx].get('ident')
+		file_name = data[idx].get('name')
 		duration = int(data[idx].get('video', [{}])[0].get('duration', 0))
 		
 		if not ident:
@@ -970,19 +971,19 @@ class SccContentProvider(CommonContentProvider):
 
 		playlist = self.add_playlist(media_title, variant=True)
 		try:
-			playlist.add_play(titles[idx], self.webshare.resolve(ident), **play_params)
+			playlist.add_play(titles[idx], self.webshare.resolve(ident, file_name), **play_params)
 		except (WebshareLoginFail, ResolveException) as e:
 			self.show_error(str(e))
 		
 		for i in range(len(data)):
 			if i != idx:
-				playlist.add_video(titles[i], cmd=self.webshare_resolve, ident=data[i].get('ident'), media_title=media_title, play_params=play_params, **play_params)
+				playlist.add_video(titles[i], cmd=self.webshare_resolve, ident=data[i].get('ident'), file_name=data[i].get('name'), media_title=media_title, play_params=play_params, **play_params)
 		
 	# ##################################################################################################################
 
-	def webshare_resolve(self, media_title, ident, settings, play_params={}):
+	def webshare_resolve(self, media_title, ident, file_name, settings, play_params={}):
 		try:
-			self.add_play(media_title, self.webshare.resolve(ident), **play_params)
+			self.add_play(media_title, self.webshare.resolve(ident, file_name), **play_params)
 		except (WebshareLoginFail, ResolveException) as e:
 			self.show_error(str(e))
 
