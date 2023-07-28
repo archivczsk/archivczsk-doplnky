@@ -1,0 +1,48 @@
+1.11.2:
+- fixed A-Z archive
+1.11.1:
+- fixed bug - addon not started on python3
+1.11.0:
+- convert to module for archivCZSK >= 2.0.0
+1.10.2:
+- fixed stream resoling
+1.10.1:
+- fixed A-Z archive
+- fixed images download
+1.10.0:
+- make addon python 3.x compatible
+1.9.3: (misanov)
+- Live Sport
+1.9.2: (misanov)
+- search
+- fix archiv
+1.9.1: (misanov)
+- fix live
+1.9.0: (misanov)
+- fix live
+- fix archiv dle datumu
+- fix prazdnych epizod
+- a dalsi drobne upravy
+1.8.0:
+- Kodi 18 Leia update
+- streams from archive was stuttering due ffmpeg bug, solved with InputStream Adaptive
+1.0.8:
+- ???
+1.0.7:
+- added all live streams
+- default quality option is set back to always ask
+1.0.6:
+- fix alphabet range to include shows starting with Z/z, thanks to @pokopt
+1.0.5:
+- don't use dynamic streaming
+- added quality option
+- default quality is 480p for smooth playback
+1.0.4:
+- fixed listing
+- fixed video resolving
+- removed top, new categories
+1.0.3:
+- added date listing
+- added related videos listing to context menu
+1.0.0:
+Initial version
