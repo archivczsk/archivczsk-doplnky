@@ -14,6 +14,7 @@ import random
 
 from tools_xbmc.tools import util
 from tools_xbmc.contentprovider.provider import ContentProvider
+from Plugins.Extensions.archivCZSK.engine import client
 from . import ivysilani
 
 try:
@@ -98,50 +99,54 @@ class iVysilaniContentProvider(ContentProvider):
 		return result
 
 	def list(self, url):
-		param = get_params(url)
-		menu = param.get('menu')
-		genre = param.get('genre')
-		letter = param.get('letter')
-		date = param.get('date')
-		channel = param.get('channel')
-		related = param.get('related')
-		episodes = param.get('episodes')
-		bonuses = param.get('bonuses')
-		page = param.get('page', 1)
-		
-		if genre:
-			for g in ivysilani.genres():
-				if g.link == genre:
-					return self.listProgrammelist(g, episodes=True)
-		elif letter:
-			letter = unquote_plus(letter)
-			for l in ivysilani.alphabet():
-				if _toString(l.link) == _toString(letter):
-					return self.listProgrammelist(l, episodes=True)
-		elif date and channel:
-			return self.listProgrammelist(ivysilani.Date(date, self.selectLiveChannel(channel)))
-		else:
-			if date:
-				return self.listChannelsForDate(date)
-			elif related:
-				return self.listContext("related", related, page)
-			elif episodes:
-				return self.listContext("episodes", episodes, page)
-			elif bonuses:
-				return self.listContext("bonuses", bonuses, page)
-			elif menu:
-				if menu == "live":
-					return self.listLiveChannels()
-				elif menu == "byDate":
-					return self.listDates()
-				elif menu == "byLetter":
-					return self.listAlphabet()
-				elif menu == "byGenre":
-					return self.listGenres()
-				else:
-					for spotlight in ivysilani.SPOTLIGHTS:
-						if spotlight.ID == menu:
-							return self.listProgrammelist(spotlight)
+		try:
+			param = get_params(url)
+			menu = param.get('menu')
+			genre = param.get('genre')
+			letter = param.get('letter')
+			date = param.get('date')
+			channel = param.get('channel')
+			related = param.get('related')
+			episodes = param.get('episodes')
+			bonuses = param.get('bonuses')
+			page = param.get('page', 1)
+
+			if genre:
+				for g in ivysilani.genres():
+					if g.link == genre:
+						return self.listProgrammelist(g, episodes=True)
+			elif letter:
+				letter = unquote_plus(letter)
+				for l in ivysilani.alphabet():
+					if _toString(l.link) == _toString(letter):
+						return self.listProgrammelist(l, episodes=True)
+			elif date and channel:
+				return self.listProgrammelist(ivysilani.Date(date, self.selectLiveChannel(channel)))
+			else:
+				if date:
+					return self.listChannelsForDate(date)
+				elif related:
+					return self.listContext("related", related, page)
+				elif episodes:
+					return self.listContext("episodes", episodes, page)
+				elif bonuses:
+					return self.listContext("bonuses", bonuses, page)
+				elif menu:
+					if menu == "live":
+						return self.listLiveChannels()
+					elif menu == "byDate":
+						return self.listDates()
+					elif menu == "byLetter":
+						return self.listAlphabet()
+					elif menu == "byGenre":
+						return self.listGenres()
+					else:
+						for spotlight in ivysilani.SPOTLIGHTS:
+							if spotlight.ID == menu:
+								return self.listProgrammelist(spotlight)
+		except Exception as e:
+			self.error(traceback.format_exc())
+			client.showError(str(e))
 	
 	def listLiveChannels(self):
 		result = []
