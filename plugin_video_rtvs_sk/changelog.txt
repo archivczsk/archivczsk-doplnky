@@ -1,3 +1,5 @@
+1.11.2:
+- fixed A-Z archive
 1.11.1:
 - fixed bug - addon not started on python3
 1.11.0:
