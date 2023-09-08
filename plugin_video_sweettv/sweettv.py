@@ -48,7 +48,7 @@ class SweetTV:
 		}
 
 		self.device_info = {
-			"type": "DT_Web_Browser",
+			"type": "DT_SmartTV",
 			"application": {
 				"type": "AT_SWEET_TV_Player"
 			},

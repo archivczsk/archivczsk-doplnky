@@ -197,6 +197,7 @@ class SweetTVModuleExtra(CPModuleTemplate):
 		self.cp.sweettv.logout()
 		self.cp.sweettv = None
 		self.cp.add_video(_C('red', self._('You have been logged out!')), download=False)
+		self.cp.login_error(self._('You have been logged out!'))
 
 	# #################################################################################################
 
