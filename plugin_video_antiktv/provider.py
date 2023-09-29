@@ -87,7 +87,7 @@ class AntikTVModuleLiveTV(CPModuleLiveTV):
 				return
 
 		url = self.channel_id_to_url(channel_id)
-		self.cp.add_play(epg_title, url, info_labels={'title': channel_title}, settings=self.cp.player_settings)
+		self.cp.add_play(epg_title, url, info_labels={'title': channel_title})
 	
 	# #################################################################################################
 	
@@ -255,7 +255,7 @@ class AntikTVModuleArchive(CPModuleArchive):
 
 		key = '%s$%s$%s$%s' % (self.channel_type, channel_id, epg_start, epg_stop)
 		url = self.cp.http_endpoint + '/playarchive/' + base64.b64encode(key.encode('utf-8')).decode('utf-8')
-		self.cp.add_play(epg_title, url, settings=self.cp.player_settings)
+		self.cp.add_play(epg_title, url)
 
 	# #################################################################################################
 
@@ -427,8 +427,7 @@ class AntikTVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def post_init(self):
-		self.player_settings = { 'user-agent': self.atk.user_agent }
-		self.bxeg = AntikTVBouquetXmlEpgGenerator(self, self.http_endpoint, self.atk.user_agent)
+		self.bxeg = AntikTVBouquetXmlEpgGenerator(self, self.http_endpoint)
 		self.bgservice.run_in_loop("loop(ping)", (int(time.time()) % 900) + 1800, self.do_ping)
 
 	# #################################################################################################

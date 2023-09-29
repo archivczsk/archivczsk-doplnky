@@ -15,14 +15,14 @@ SERVICEREF_NAMESPACE = 0xE010000
 
 class AntikTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
-	def __init__(self, content_provider, http_endpoint, user_agent):
+	def __init__(self, content_provider, http_endpoint):
 		self.prefix = NAME_PREFIX
 		self.name = NAME
 		self.sid_start = SERVICEREF_SID_START
 		self.tid = SERVICEREF_TID
 		self.onid = SERVICEREF_ONID
 		self.namespace = SERVICEREF_NAMESPACE
-		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=('username', 'password'), user_agent=user_agent, channel_types=('tv', 'radio', 'cam'))
+		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=('username', 'password'), channel_types=('tv', 'radio', 'cam'))
 
 	def logged_in(self):
 		return self.cp.atk.is_logged()

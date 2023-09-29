@@ -9,6 +9,8 @@ from Plugins.Extensions.archivCZSK.engine.httpserver import AddonHttpRequestHand
 
 class AntikTVHTTPRequestHandler( AddonHttpRequestHandler ):
 	getkey_uri = "/getkey/"
+	getsegment_live_uri = "/getslive/"
+	getsegment_archive_uri = "/getsarchive/"
 
 	def __init__(self, content_provider, addon ):
 		AddonHttpRequestHandler.__init__(self, addon)
@@ -19,7 +21,7 @@ class AntikTVHTTPRequestHandler( AddonHttpRequestHandler ):
 	def P_playlive(self, request, path):
 		try:
 			channel_type, channel_id = self.cp.decode_playlive_url(path)
-			data = self.cp.atk.get_hls_playlist(channel_type, channel_id, self.get_endpoint(request, True) + self.getkey_uri)
+			data = self.cp.atk.get_hls_playlist(channel_type, channel_id, self.get_endpoint(request, True) + self.getkey_uri, self.get_endpoint(request, True) + self.getsegment_live_uri)
 		except:
 			self.cp.log_error("Failed for path: %s" % path)
 			self.cp.log_exception()
@@ -32,7 +34,7 @@ class AntikTVHTTPRequestHandler( AddonHttpRequestHandler ):
 	def P_playarchive(self, request, path):
 		try:
 			channel_type, channel_id, epg_start, epg_stop = self.cp.decode_playarchive_url(path)
-			data = self.cp.atk.get_hls_playlist(channel_type, channel_id, self.get_endpoint(request, True) + self.getkey_uri, epg_start, epg_stop)
+			data = self.cp.atk.get_hls_playlist(channel_type, channel_id, self.get_endpoint(request, True) + self.getkey_uri, self.get_endpoint(request, True) + self.getsegment_archive_uri, epg_start, epg_stop)
 		except:
 			self.cp.log_error("Failed for path: %s" % path)
 			self.cp.log_exception()
@@ -51,5 +53,22 @@ class AntikTVHTTPRequestHandler( AddonHttpRequestHandler ):
 			return self.reply_error500(request)
 		
 		return self.reply_ok( request, key, "application/octet-stream", raw=True)
-	
+
+	# #################################################################################################
+
+	def P_getslive(self, request, path, live=True):
+		try:
+			segment_url = base64.b64decode(path.encode('utf-8')).decode("utf-8")
+			data = self.cp.atk.get_segment_data(segment_url, live=True)
+		except:
+			self.cp.log_exception()
+			return self.reply_error500(request)
+		
+		return self.reply_ok( request, data, "video/MP2T", raw=True)
+
+	# #################################################################################################
+
+	def P_getsarchive(self, request, path):
+		return self.P_getslive(request, path, False)
+
 # #################################################################################################
