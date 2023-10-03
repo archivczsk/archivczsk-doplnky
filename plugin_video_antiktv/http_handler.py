@@ -59,12 +59,26 @@ class AntikTVHTTPRequestHandler( AddonHttpRequestHandler ):
 	def P_getslive(self, request, path, live=True):
 		try:
 			segment_url = base64.b64decode(path.encode('utf-8')).decode("utf-8")
-			data = self.cp.atk.get_segment_data(segment_url, live=True)
+
+			def http_data_write( code, header, data ):
+				if code != None:
+					request.setResponseCode(code)
+
+				if header != None:
+					request.setHeader(header[0], header[1])
+
+				if data != None:
+					request.write(data)
+
+				if code == None and header == None and data == None:
+					request.finish()
+
+			self.cp.atk.get_segment_data_async(segment_url, http_data_write, live, request.getHeader(b'Range'))
+			return self.NOT_DONE_YET
+
 		except:
 			self.cp.log_exception()
 			return self.reply_error500(request)
-		
-		return self.reply_ok( request, data, "video/MP2T", raw=True)
 
 	# #################################################################################################
 

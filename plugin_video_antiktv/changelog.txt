@@ -1,3 +1,6 @@
+2.4:
+- vylepšenie spôsobu spracovávania streamov
+
 2.3:
 - oprava prehrávania pre gstplayer a DMM
 
