@@ -1,3 +1,6 @@
+2.5:
+- oprava prehrávania pre python 3.x
+
 2.4:
 - vylepšenie spôsobu spracovávania streamov
 
