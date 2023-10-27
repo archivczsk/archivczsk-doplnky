@@ -115,23 +115,23 @@ class PrehrajTo(object):
 		while True:
 			soup = self.call_api('hledej/' + quote(keyword.encode('utf-8')), params={'vp-page': page})
 
-			for item in soup.find_all('div', attrs={'class': 'column'}):
-				title = item.find('h2', attrs={'class': 'video-item-title'})
-				size = item.find('strong', attrs={'class': 'video-item-info-size'})
+			for item in soup.find_all('div', attrs={'class': 'video__picture--container'}):
+				title_and_link = item.find('a', attrs={'class': 'video video--small video--link'})
+				size = item.find('div', attrs={'class': 'video__tag video__tag--size'})
 				img = item.find('img', attrs={'data-next': '2'})
-#				time = soup.find('strong', attrs={'class': 'video-item-info-time'})
-				link = item.find('a', {'class': 'video-item video-item-link'})
-				if title and size and link:
+#				time = soup.find('div', attrs={'class': 'video__tag video__tag--size'})
+				if title_and_link and size:
 					videos.append({
-						'title': title.text.strip(),
+						'title': title_and_link.get('title').strip(),
 						'size': size.text.strip(),
 						'img': img.get('src') if img else None,
-						'id': link['href'].lstrip('./')
+						'id': title_and_link.get('href').strip().lstrip('./')
 					})
 
 			page += 1
-			if soup.find('div', {'class': 'pagination-more'}) == None or len(videos) > limit:
+			if soup.find('a', {'title': 'Zobrazit další'}) == None or len(videos) > limit:
 				break
+
 		
 		return videos
 
