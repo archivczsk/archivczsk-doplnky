@@ -75,6 +75,9 @@ class MagioGO:
 		("OTT_WIN", "Web Browser"),             # 6
 	]
 
+	app_version = '4.0.6'
+	os_version = '12.0'
+
 	def __init__(self, region=None, username=None, password=None, device_id=None, device_type=None, data_dir=None, log_function=None, tr_function=None):
 		self.username = username
 		self.password = password
@@ -92,7 +95,7 @@ class MagioGO:
 		self.common_headers = {
 			"Content-type": "application/json",
 			"Host": self.region + "go.magio.tv",
-			"User-Agent": "okhttp/3.12.12",
+			"User-Agent": "okhttp/4.8.2",
 		}
 		self.req_session = requests.Session()
 		self.req_session.request = functools.partial(self.req_session.request, timeout=10) # set timeout for all session calls
@@ -129,6 +132,10 @@ class MagioGO:
 						self.refresh_token = login_data['refresh_token']
 						self.access_token_life = login_data['access_token_life']
 						self.log_function("Login data loaded from cache")
+
+						if self.login_data.get('app_version') != self.app_version:
+							# after app version change, there is a needing for access token renew and registration of new version
+							self.access_token_life = 0
 					else:
 						self.access_token = None
 						self.refresh_token = None
@@ -151,6 +158,7 @@ class MagioGO:
 							'access_token': self.access_token,
 							'refresh_token': self.refresh_token,
 							'access_token_life': self.access_token_life,
+							'app_version': self.app_version,
 							'checksum': self.get_chsum()
 						}
 						json.dump( data, f )
@@ -223,8 +231,8 @@ class MagioGO:
 			"dsid": self.device_id,
 			"deviceName": self.device[1],
 			"deviceType": self.device[0],
-			"osVersion": "0.0.0",
-			"appVersion": "0.0.0",
+			"osVersion": self.os_version,
+			"appVersion": self.app_version,
 			"language": "EN"
 		}
 		
@@ -257,14 +265,16 @@ class MagioGO:
 		if self.access_token_life > int(time()):
 			return
 
-		# check if we have newer access token cached by another process
-		self.load_login_data()
-		if self.access_token_life > int(time()):
-			return
-		
 		if self.refresh_token:
 			# access token expired - get new one
-			response = self.call_magiogo_api("v2/auth/tokens", data = { "refreshToken": self.refresh_token }, auth_header=False)
+			data = {
+				"refreshToken": self.refresh_token,
+				"deviceName": self.device[1],
+				"deviceType": self.device[0],
+				"osVersion": self.os_version,
+				"appVersion": self.app_version,
+			}
+			response = self.call_magiogo_api("v2/auth/tokens", data=data, auth_header=False)
 			
 			if response.get("success", False) == True:
 				self.access_token = response["token"]["accessToken"]

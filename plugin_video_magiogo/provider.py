@@ -132,6 +132,8 @@ class MagioGOModuleExtra(CPModuleTemplate):
 	def root(self, section=None):
 		info_labels = {'plot': self._("Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one.") }
 		self.cp.add_dir(self._('Registered devices'), info_labels=info_labels, cmd=self.list_devices)
+		info_labels = {'plot': self._("With this button you can check if playback works OK or it gives some error from the server.") }
+		self.cp.add_dir(self._('Check playback'), info_labels=info_labels, cmd=self.check_playback)
 
 	# #################################################################################################
 
@@ -158,6 +160,22 @@ class MagioGOModuleExtra(CPModuleTemplate):
 			self.cp.add_video(_C('red', self._('Device {device} was removed!').format(device=device_name)), download=False)
 		else:
 			self.cp.add_video(_C('red', self._('Error') + ': %s' % msg), download=False)
+
+	# #################################################################################################
+
+	def check_playback(self):
+		if len(self.cp.channels) > 0:
+			channel = self.cp.channels[0]
+
+			try:
+				self.cp.magiogo.get_stream_link(channel.id)
+			except Exception as e:
+				self.cp.show_error(self._('Playback failed:') + '\n' + str(e))
+			else:
+				self.cp.show_info(self._('No error occured during playback check. Playback should work.'))
+		else:
+			self.cp.show_error(self._("Can't check playback. There are no channels available."))
+
 
 # #################################################################################################
 
