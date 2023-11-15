@@ -1,3 +1,7 @@
+1.12 - 15.11.2023
+    - automatická kontrola najnovšej verzie emulovanej aplikácie pre dlhodobejšiu funčnosť
+    - opravy drobných chýb
+
 1.11 - 3.11.2023
     - oprava po zmenách na serverovej strane
     - pridaná možnosť vyvolať kontrolu prehrávania do špeciálnej sekcie

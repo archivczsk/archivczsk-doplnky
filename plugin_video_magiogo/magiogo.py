@@ -75,8 +75,8 @@ class MagioGO:
 		("OTT_WIN", "Web Browser"),             # 6
 	]
 
-	app_version = '4.0.6'
 	os_version = '12.0'
+	app_version = '4.0.7'
 
 	def __init__(self, region=None, username=None, password=None, device_id=None, device_type=None, data_dir=None, log_function=None, tr_function=None):
 		self.username = username
@@ -88,6 +88,7 @@ class MagioGO:
 		self.log_function = log_function if log_function else _log_dummy
 		self._ = tr_function if tr_function else lambda s: s
 		self.device = MagioGO.magiogo_device_types[device_type]
+		self.app_version_last_check = 0
 		self.devices = None
 		self.settings = None
 		self.data_dir = data_dir
@@ -100,6 +101,7 @@ class MagioGO:
 		self.req_session = requests.Session()
 		self.req_session.request = functools.partial(self.req_session.request, timeout=10) # set timeout for all session calls
 
+		self.get_last_app_version()
 		self.load_login_data()
 		self.refresh_login_data()
 
@@ -118,6 +120,36 @@ class MagioGO:
 		data = "{}|{}|{}|{}|{}".format(self.password, self.username, self.device_id, self.device[0], self.region)
 		return md5( data.encode('utf-8') ).hexdigest()
 	
+	# #################################################################################################
+
+	def get_last_app_version(self):
+		try:
+			if self.app_version_last_check == 0 or (self.app_version_last_check + 7800) < int(time()):
+				self.__get_last_app_version()
+				self.app_version_last_check = int(time())
+		except:
+			self.log_function(traceback.format_exc())
+
+	# #################################################################################################
+
+	def __get_last_app_version(self):
+		from bs4 import BeautifulSoup
+
+		response = requests.get('https://apps.apple.com/sk/app/magio-tv/id550426098', verify=False, timeout=5)
+
+		if response.status_code != 200:
+			self.log_function("Failed to get last app version: response code = %d" % response.status_code )
+			return
+		
+		ver_text = BeautifulSoup(response.content, "html.parser").find('p', {'class': 'whats-new__latest__version'}).get_text()
+
+		if ver_text and ver_text.startswith('Version '):
+			self.app_version = ver_text.split(' ')[1]
+			self.log_function("Detected last app version is: %s" % self.app_version)
+		else:
+			self.log_function("Last app version string is in wrong format. This addon needs update!")
+
+
 	# #################################################################################################
 	
 	def load_login_data(self):
@@ -227,6 +259,8 @@ class MagioGO:
 		if not self.username or not self.password:
 			raise LoginException(self._("Login data not set"))
 		
+		self.get_last_app_version()
+
 		params = {
 			"dsid": self.device_id,
 			"deviceName": self.device[1],
@@ -237,8 +271,12 @@ class MagioGO:
 		}
 		
 		response = self.call_magiogo_api('v2/auth/init', params=params, auth_header=False )
-		self.access_token = response["token"]["accessToken"]
-		
+
+		if response.get("success", False) == True:
+			self.access_token = response["token"]["accessToken"]
+		else:
+			raise LoginException(response.get('errorMessage', self._('Unknown error')))
+
 		params = {
 			"loginOrNickname": self.username,
 			"password": self.password
@@ -266,6 +304,8 @@ class MagioGO:
 			return
 
 		if self.refresh_token:
+			self.get_last_app_version()
+
 			# access token expired - get new one
 			data = {
 				"refreshToken": self.refresh_token,
