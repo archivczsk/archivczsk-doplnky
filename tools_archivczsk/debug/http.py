@@ -27,13 +27,13 @@ def dump_json_request(response):
 		json_response = {}
 		
 	try:
-		json_data = dict(parse_qsl(request.body))
+		json_data = json.loads(request.body)
 	except:
 		json_data = None
 
 	if not json_data:
 		try:
-			json_data = json.loads(request.body)
+			json_data = dict(parse_qsl(request.body.decode('utf-8')))
 		except:
 			json_data = None
 
