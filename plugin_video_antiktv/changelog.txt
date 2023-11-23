@@ -1,4 +1,7 @@
 2.5:
+- oprava registrácie zariadenia - umožňuje prihlásenie aj k zahraničnej verzii služby
+
+2.5:
 - oprava prehrávania pre python 3.x
 
 2.4:

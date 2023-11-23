@@ -420,7 +420,7 @@ class AntikTVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 	
 	def do_ping(self):
-		if self.atk.is_logged():
+		if self.atk and self.atk.is_logged():
 			self.log_debug("Calling PING")
 			self.atk.ping()
 
