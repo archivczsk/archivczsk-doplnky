@@ -358,7 +358,12 @@ class O2TVModuleExtra(CPModuleTemplate):
 
 	def list_devices(self):
 		for pdev in self.cp.o2tv.get_devices():
-			title = pdev['type'] + '(' + pdev["name"] + ')' + " - " + self.cp.timestamp_to_str(pdev["activatedOn"], format='%d.%m.%Y %H:%M') + " - " + pdev["id"]
+			name = pdev["name"]
+
+			if pdev['this_one']:
+				name += _C('yellow', '*')
+
+			title = pdev['type'] + '(' + name + ')' + " - " + self.cp.timestamp_to_str(pdev["activatedOn"], format='%d.%m.%Y %H:%M') + " - " + pdev["id"]
 			info_labels = { 'plot': self._('In menu you can remove device using Remove device!')}
 
 			menu = {}

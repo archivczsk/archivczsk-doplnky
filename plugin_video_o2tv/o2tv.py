@@ -160,6 +160,7 @@ class O2TV:
 					return {}
 			else:
 				err_msg = self._("Unexpected return code from server") + ": %d" % resp.status_code
+
 		except Exception as e:
 			self.cp.log_exception()
 			err_msg = str(e)
@@ -249,7 +250,7 @@ class O2TV:
 		}
 		response = self.call_o2_api('apptoken/action/add', data=post)
 
-		if response.get('result', {}).get('objectType') != 'KalturaAppToken':
+		if 'err' in response or response.get('result', {}).get('objectType') != 'KalturaAppToken':
 			raise LoginException("Failed to register access token for {service_name} service".format(service_name=service['name']))
 
 		service['token'] = response['result']['token']
@@ -421,7 +422,8 @@ class O2TV:
 					'name': device['name'],
 					'type': dev_family['name'],
 					'id': device['udid'],
-					'activatedOn': device['activatedOn']
+					'activatedOn': device['activatedOn'],
+					'this_one': device['udid'] == self.deviceid
 				})
 
 		return ret
