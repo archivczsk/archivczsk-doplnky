@@ -159,8 +159,8 @@ class O2TV:
 				except:
 					return {}
 			else:
-				err_msg = self._("Unexpected return code from server") + ": %d" % resp.status_code
-
+				return { 'err': self._("Unexpected return code from server") + ": %d" % resp.status_code }
+			
 		except Exception as e:
 			self.cp.log_exception()
 			err_msg = str(e)
