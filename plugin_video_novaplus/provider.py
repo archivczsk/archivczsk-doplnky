@@ -349,6 +349,7 @@ class TVNovaContentProvider(CommonContentProvider):
 
 	def resolve_video(self, video_title, url):
 		resolved_url = None
+		use_fallback = False
 
 		if url.startswith('#live#'):
 			url = url[6:]
@@ -362,34 +363,53 @@ class TVNovaContentProvider(CommonContentProvider):
 					resolved_url = plr["tracks"]["HLS"][0]["src"]
 		else:
 			soup = self.call_api(url)
-			try:
-				embeded_url = soup.find("div", {"class": "js-login-player"}).find("iframe")["data-src"]
-			except:
-				try:
-					embeded_url = soup.find("div", {"class": "js-player-detach-container"}).find("iframe")["src"]
-				except:
+			embeded_url = soup.find('iframe', src=re.compile(r"/embed/")).get('src')
+
+			if not embeded_url:
+				use_fallback = True
+				# fallback, but currently it returns only links with DRM, so will not work on enigma2
+				json_stream = json.loads(soup.find("script", type="application/ld+json", text=re.compile(r"embedUrl")).string)
+				if "video" in json_stream:
+					embeded_url = json_stream["video"]["embedUrl"]
+				elif "embedUrl" in json_stream:
+					embeded_url = json_stream["embedUrl"]
+				else:
 					self.show_info(self._("Video not found."))
 
 #			self.log_info("Embedded url: %s" % embeded_url)
 			embeded = self.call_api(embeded_url)
 
 			try:
-				json_data = json.loads(
-					re.compile('{"tracks":(.+?),"duration"').findall(str(embeded))[0]
-				)
+				if use_fallback:
+					json_data = json.loads(
+						re.compile('{"tracks":(.+?),"duration"').findall(str(embeded))[0]
+					)
+				else:
+					json_data = json.loads(
+						re.compile('"sources":(.+?),"ads"').findall(str(embeded))[0]
+					)
 			except:
 				self.log_exception()
 				json_data = None
 
 			if json_data:
 #				self.log_info("json_data: %s" % json_data)
-				stream_data = json_data['HLS'][0]
 
-				if not "drm" in stream_data:
-					resolved_url = stream_data["src"]
+				if use_fallback:
+					stream_data = json_data['HLS'][0]
+
+					if not "drm" in stream_data:
+						resolved_url = stream_data["src"]
+				else:
+					for s in json_data:
+						if s['type'] == 'application/x-mpegurl':
+							resolved_url = s['src']
+							break
+
 			else:
 				embeded_text = embeded.get_text()
-#					self.log_info(embeded_text)
+#				self.log_info(embeded_text)
+
 				if 'Error' in embeded_text:
 					embeded_text = embeded_text.replace('Error', '').strip()
 					if '\n' in embeded_text:
