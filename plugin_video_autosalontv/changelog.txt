@@ -1,3 +1,6 @@
+29.11.2023 - 1.5
+- fixed autosalon.tv after site changes
+
 25.02.2023 - 1.4
 - fixed autosalon.tv playback
 
