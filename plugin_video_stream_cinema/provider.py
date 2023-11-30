@@ -843,6 +843,11 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 			if skip_end_titles:
 				self.log_debug("Adding skip_end_titles: %d" % skip_end_titles)
+
+				if len(skip_times) == 0:
+					# add dummy intro skip times
+					skip_times.append((-1, -1,))
+
 				skip_times.append((skip_end_titles, 0,))
 
 		return skip_times if len(skip_times) > 0 else None
