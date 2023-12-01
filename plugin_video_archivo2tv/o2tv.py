@@ -341,7 +341,10 @@ class O2TV:
 				if item['channelType'] != 'TV':
 					continue
 
-				picon = item['logo'].replace('https://', 'http://').replace('64x64', '220x220').replace('38x38', '220x220')
+				picon = item.get('logo', '')
+				if picon != None:
+					picon = picon.replace('https://', 'http://').replace('64x64', '220x220').replace('38x38', '220x220')
+
 				channels.append({
 						'key': item['channelKey'],
 						'id': item['channelId'],
@@ -409,7 +412,7 @@ class O2TV:
 		data = self.call_o2_api(url = "https://app.o2tv.cz/sws/subscription/settings/get-user-pref.json?name=nangu.channelListUserChannelNumbers", header=self.header)
 		
 		result = {}
-		if "listUserChannelNumbers" in data and len(data["listUserChannelNumbers"]) > 0:
+		if data and len(data.get("listUserChannelNumbers", '')) > 0:
 			data = data["listUserChannelNumbers"]
 			for list_name in data:
 				result[list_name.replace('user::', '')] = list(x[0] for x in sorted(data[list_name].items(), key=lambda x : x[1]))

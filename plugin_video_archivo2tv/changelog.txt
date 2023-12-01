@@ -1,3 +1,7 @@
+v1.9.1 (01.12.2023)
+- oprava pádu ak kanál neobsahuje logo
+- oprava pádu pri načítavaní užívateľského zoznamu kanálov
+
 v1.9.0 (16.05.2023)
 - pridaná podpora pre priame otvorenie archívu z userbouquetu
 

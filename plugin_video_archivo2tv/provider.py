@@ -413,7 +413,7 @@ class O2TVContentProvider(ModuleContentProvider):
 				'id': ch['id'],
 				'name': ch['name'],
 				'type': ch['type'],
-				'picon': ch['picon'],
+				'picon': ch['picon'] or '',
 				'adult': ch['adult']
 			}
 
