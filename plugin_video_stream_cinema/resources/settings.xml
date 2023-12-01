@@ -25,6 +25,7 @@
 		<setting label="Filter streams by language" id="stream-lang-filter" type="keyenum" values="all;All|cs+sk;CZ &amp; SK|cs;CZ|sk;SK|en;EN" default="all" />
 		<setting label="Minimal offered stream quality" id="min-quality" type="keyenum" values="0;All|720;720p|1080;1080p|2160;4k" default="720" />
 		<setting label="Maximal offered stream quality" id="max-quality" type="keyenum" values="720;720p|1080;1080p|2160;4k|4320;8k" default="2160" />
+		<setting label="Show 3D streams" id="show-3d" type="bool" default="false" />
 		<setting label="Show HDR streams" id="show-hdr" type="bool" default="true" />
 		<setting label="Show Dolby Vision streams" id="show-dv" type="bool" default="false" />
 		<setting label="Enable h265/hevc codec" id="enable-hevc" type="bool" default="true" />

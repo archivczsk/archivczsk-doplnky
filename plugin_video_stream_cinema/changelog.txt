@@ -1,5 +1,8 @@
-2023-11-30 3.7
+2023-12-01 3.7
     - oprava nastavenia časov pre preskočenie záverečných titulkov
+    - oprava filtrovania >1080p streamov
+    - vylepšenie filtrov pre HDR a Dolby Vision
+    - pridanie filtra pre 3D streamy
 
 2023-10-27 3.6
     - oprava vyhľadania na prehraj.to

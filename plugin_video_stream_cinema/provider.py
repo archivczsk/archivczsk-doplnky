@@ -660,6 +660,9 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		result = []
 		max_file_size = int(self.get_setting('max-file-size')) * (2 ** 30)
 		enable_hevc = self.get_setting('enable-hevc')
+		enable_hdr = self.get_setting('show-hdr')
+		enable_dv = self.get_setting('show-dv')
+		enable_3d = self.get_setting('show-3d')
 		min_quality = int(self.get_setting('min-quality'))
 		max_quality = int(self.get_setting('max-quality'))
 		item_lang_filter = self.get_setting('item-lang-filter')
@@ -683,24 +686,51 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			if not enable_hevc and strm.get('stream_info', {}).get('HEVC', 0) == 1:
 				self.log_debug("Stream filtered due HEVC")
 				continue
-			
-			strm_quality = strm.get('quality')
+
+			# hdr filter
+			if not enable_hdr and strm.get('stream_info', {}).get('HDR', 0) == 1:
+				self.log_debug("Stream filtered due HDR")
+				continue
+
+			# dolby vision filter
+			if not enable_dv and strm.get('stream_info', {}).get('DV', 0) == 1:
+				self.log_debug("Stream filtered due dolby vision")
+				continue
+
+			strm_quality = strm.get('quality','').lower()
 			if strm_quality:
+				# 3D filter
+				if not enable_3d and strm_quality.startswith('3d-'):
+					self.log_debug("Stream filtered due 3D")
+					continue
+
 				try:
-					strm_quality = int(strm_quality.replace('p','').replace('i','').replace('k', '000').replace('K', '000'))
+					# convert string representing stream quality (720p, 1080i, 4k, ...) to vertical resolution
+					if strm_quality.endswith('p') or strm_quality.endswith('i'):
+						strm_quality = int(strm_quality[:-1])
+					elif strm_quality.endswith('k'):
+						strm_quality = int(strm_quality[:-1]) * 540
+					elif strm_quality.startswith('3d-'):
+						# 3D movie, but we have no quality info - assuming 1080p
+						strm_quality = 1080
+					elif strm_quality == 'sd':
+						strm_quality = 640
+					else:
+						raise Exception('Unsupported stream quality format: "%s"' % strm_quality)
 				except:
+					self.log_exception()
 					# SD quality
 					strm_quality = 640
 
 				# min quality filter: Všetko|720p|1080p|4k
 				if strm_quality < min_quality:
-					self.log_debug("Stream filtered due min quality")
+					self.log_debug("Stream filtered due min quality (%d < %d)" % (strm_quality, min_quality))
 					continue
 				
 			
 				# max quality filter: 720p|1080p|4k|8k
 				if strm_quality > max_quality:
-					self.log_debug("Stream filtered due max quality")
+					self.log_debug("Stream filtered due max quality (%d > %d)" % (strm_quality, max_quality))
 					continue
 			
 			#lang filter
