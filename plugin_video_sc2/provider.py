@@ -456,6 +456,10 @@ class SccContentProvider(CommonContentProvider):
 		info_labels['filename'] = (se_title or title) + ep_code2 + ep_name_postfix
 
 		info_labels['genre'] = ', '.join(self._(g) for g in info.get('genre', []))
+		if info_labels['genre']:
+			# prefix list of genres to plot
+			info_labels['plot'] = '[' + ' / '.join(self._(g) for g in info['genre']) + ']\n' + (info_labels.get('plot','') or '')
+
 		ratings = media.get('ratings', {})
 		ratings = ratings.get('csfd', ratings.get('tmdb', ratings.get('trakt', {})))
 		info_labels['rating'] = ratings.get('rating')

@@ -1,3 +1,6 @@
+2023-12-01 [3.8]
+* pridanie žánrov do popisu filmu
+
 2023-10-27 [3.7]
 * oprava vyhľadania na prehraj.to
 
