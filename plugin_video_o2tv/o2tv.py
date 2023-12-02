@@ -462,7 +462,9 @@ class O2TV:
 		ret = []
 		for one in self.call_list_api(filer_data):
 			if 'linearAssetId' in one:
-				ret.append(self.convert_epg_entry(one))
+				epg = self.convert_epg_entry(one)
+				if epg != None:
+					ret.append(epg)
 
 		return ret
 	
@@ -485,7 +487,9 @@ class O2TV:
 		
 		ret = []
 		for one in resp:
-			ret.append(self.convert_epg_entry(one))
+			epg = self.convert_epg_entry(one)
+			if epg != None:
+				ret.append(epg)
 
 		return ret
 
@@ -516,7 +520,9 @@ class O2TV:
 
 		ret = {}
 		for one in resp:
-			ret[one['linearAssetId']] = self.convert_epg_entry(one)
+			epg = self.convert_epg_entry(one)
+			if epg != None:
+				ret[one['linearAssetId']] = epg
 
 		return ret
 	
@@ -776,6 +782,10 @@ class O2TV:
 
 	def convert_epg_entry(self, epg_entry):
 		img = None
+		if epg_entry.get("startDate") == None or epg_entry.get("endDate") == None:
+			self.cp.log_error("Invalid epg_entry: %s" % str(epg_entry))
+			return None
+
 		for i in epg_entry.get('images', []):
 			img = i.get('url')
 
@@ -794,8 +804,8 @@ class O2TV:
 		return {
 			"start": epg_entry["startDate"],
 			"end": epg_entry["endDate"],
-			"title": str(epg_entry["name"]),
-			"desc": epg_entry["description"],
+			"title": str(epg_entry.get("name", '')),
+			"desc": epg_entry.get("description",''),
 			'img': img,
 			'id': epg_entry['id'],
 			'channel_id': epg_entry['linearAssetId'],
@@ -813,6 +823,9 @@ class O2TV:
 
 		for epg_entry in self.call_list_api(filer_data):
 			ret = self.convert_epg_entry(epg_entry)
+			if ret == None:
+				continue
+
 			ret['mosaic_info'] = []
 			for minfo in epg_entry.get('tags',{}).get('MosaicChannelsInfo',{}).get('objects',[]):
 				title = None
