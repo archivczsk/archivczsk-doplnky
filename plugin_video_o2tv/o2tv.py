@@ -112,7 +112,10 @@ class O2TV:
 
 	# #################################################################################################
 
-	def call_o2_api(self, url, data=None, params=None, header=None):
+	def call_o2_api(self, url, data=None, params=None, header=None, recover_ks=True):
+		if recover_ks:
+			self.refresh_configuration()
+
 		err_msg = None
 		headers = {
 			"User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:98.0) Gecko/20100101 Firefox/98.0',
@@ -155,9 +158,23 @@ class O2TV:
 			
 			if resp.status_code >= 200 and resp.status_code < 400:
 				try:
-					return resp.json()
+					json_response = resp.json()
 				except:
-					return {}
+					self.cp.log_exception()
+					json_response = {}
+
+				# check for 'ks expired' error and recover if possible
+				if recover_ks and '/api_v3/' in url and json_response.get('result', {}).get('error', {}).get('code') == '500016':
+					self.refresh_configuration(True)
+
+					# fill new ks in request data
+					if 'ks' in data:
+						data['ks'] = self.get_active_service_ks()
+
+					return self.call_o2_api(url, data, params, header, False)
+				else:
+					return json_response
+
 			else:
 				return { 'err': self._("Unexpected return code from server") + ": %d" % resp.status_code }
 			
@@ -166,7 +183,7 @@ class O2TV:
 			err_msg = str(e)
 		
 		if err_msg:
-			self.cp.log_error( "O2API error for URL %s: %s" % (url, traceback.format_exc()))
+			self.cp.log_error( "O2TV 2.0 API error for URL %s: %s" % (url, traceback.format_exc()))
 			self.showError(err_msg)
 
 	# #################################################################################################
@@ -177,7 +194,7 @@ class O2TV:
 			'partnerId' : PARTNER_ID,
 		}
 
-		response = self.call_o2_api( 'ottuser/action/anonymousLogin', data=post)
+		response = self.call_o2_api( 'ottuser/action/anonymousLogin', data=post, recover_ks=False)
 
 		# request Kaltura session ID
 		if 'err' in response or response.get('result',{}).get('objectType') != 'KalturaLoginSession':
@@ -194,7 +211,7 @@ class O2TV:
 			'service' : 'https://www.new-o2tv.cz/'
 		}
 
-		response = self.call_o2_api('https://login-a-moje.o2.cz/cas-external/v1/login', params={}, data=post)
+		response = self.call_o2_api('https://login-a-moje.o2.cz/cas-external/v1/login', params={}, data=post, recover_ks=False)
 		if 'err' in response or not 'jwt' in response or not 'refresh_token' in response:
 			raise LoginException(self._("Login to O2 TV 2.0 failed. Have you been already migrated?"))
 
@@ -230,7 +247,7 @@ class O2TV:
 			},
 			'udid' : self.deviceid,
 		}
-		response = self.call_o2_api('ottuser/action/login', data=post)
+		response = self.call_o2_api('ottuser/action/login', data=post, recover_ks=False)
 
 		if 'err' in response or response.get('result', {}).get('objectType') != 'KalturaLoginResponse' or not 'loginSession' in response.get('result', {}):
 			raise LoginException("Failed to login to {service_name} service".format(service_name=service['name']))
@@ -248,7 +265,7 @@ class O2TV:
 			'language' : 'ces',
 			'ks' : login_session['ks']
 		}
-		response = self.call_o2_api('apptoken/action/add', data=post)
+		response = self.call_o2_api('apptoken/action/add', data=post, recover_ks=False)
 
 		if 'err' in response or response.get('result', {}).get('objectType') != 'KalturaAppToken':
 			raise LoginException("Failed to register access token for {service_name} service".format(service_name=service['name']))
@@ -309,7 +326,7 @@ class O2TV:
 						],
 						"ks": self.session_data.get('ks'),
 					}
-					response = self.call_o2_api('/api/p/%d/service/CZ/action/Invoke' % PARTNER_ID, data=post)
+					response = self.call_o2_api('/api/p/%d/service/CZ/action/Invoke' % PARTNER_ID, data=post, recover_ks=False)
 
 					if 'err' in response or not 'service_list' in response.get('result', {}).get('adapterData', {}):
 						raise LoginException("Failed to get service list")
@@ -406,8 +423,6 @@ class O2TV:
 	# #################################################################################################
 
 	def get_devices(self):
-		self.refresh_configuration()
-
 		post = {
 			"language":"ces",
 			"ks": self.get_active_service_ks(),
@@ -435,8 +450,6 @@ class O2TV:
 		if not did:
 			return
 		
-		self.refresh_configuration()
-
 		post = {
 			"language":"ces",
 			"ks": self.get_active_service_ks(),
@@ -450,8 +463,6 @@ class O2TV:
 	# #################################################################################################
 	
 	def search(self, query ):
-		self.refresh_configuration()
-		
 		filer_data = {
 			"objectType":"KalturaChannelFilter",
 			"orderBy":"NAME_ASC",
@@ -471,8 +482,6 @@ class O2TV:
 	# #################################################################################################
 	
 	def get_channel_epg(self, channel_id, fromts, tots):
-		self.refresh_configuration()
-
 		filer_data = {
 			"objectType": "KalturaSearchAssetFilter",
 			"orderBy": "START_DATE_ASC",
@@ -496,8 +505,6 @@ class O2TV:
 	# #################################################################################################
 
 	def get_current_epg(self, channels=None):
-		self.refresh_configuration()
-
 		cur_ts = int(time.time())
 
 		if channels:
@@ -573,8 +580,6 @@ class O2TV:
 	# #################################################################################################
 	
 	def get_recordings(self):
-		self.refresh_configuration()
-
 		additional_data = {
 			"responseProfile": {
 				"objectType":"KalturaOnDemandResponseProfile",
@@ -608,8 +613,6 @@ class O2TV:
 	# #################################################################################################
 
 	def get_future_recordings(self):
-		self.refresh_configuration()
-
 		filer_data = {
 			"objectType":"KalturaScheduledRecordingProgramFilter",
 			"orderBy":"START_DATE_ASC",
@@ -621,8 +624,6 @@ class O2TV:
 	# #################################################################################################
 	
 	def delete_recording( self, rec_id, future=False ):
-		self.refresh_configuration()
-
 		post = {
 			"language": "ces",
 			"ks": self.get_active_service_ks(),
@@ -691,8 +692,6 @@ class O2TV:
 	# #################################################################################################	
 
 	def get_stream_url(self, asset_id, asset_type, context):
-		self.refresh_configuration()
-
 		post = {
 			"assetId":asset_id,
 			"assetType":asset_type,
@@ -706,11 +705,6 @@ class O2TV:
 		}
 
 		data = self.call_o2_api('asset/action/getPlaybackContext',data=post)
-
-		if data.get('result', {}).get('error', {}).get('code') == '500016':
-			# auto recover from 'ks expired' error
-			self.refresh_configuration(True)
-			data = self.call_o2_api('asset/action/getPlaybackContext',data=post)
 
 		if 'sources' not in data.get('result', {}):
 			raise Exception("Failed to resolve stream address")
@@ -775,7 +769,6 @@ class O2TV:
 	# #################################################################################################
 
 	def get_recording_link(self, rec_id):
-		self.refresh_configuration()
 		return self.get_stream_url(int(rec_id), 'recording', 'PLAYBACK')
 
 	# #################################################################################################
