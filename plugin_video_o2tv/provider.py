@@ -61,6 +61,8 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 				continue
 
 			epg = epg_data.get(channel['id'])
+			if epg and epg.get('mosaic_id'):
+				epg = self.cp.o2tv.get_mosaic_info(epg['mosaic_id'], True)
 
 			if epg:
 				epg_str = '  ' + _I(epg["title"])
@@ -100,7 +102,7 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 
 		if mosaic_id:
 			# this is mosaic event - extract mosaic streams and add it to playlist
-			for mi in self.cp.o2tv.get_mosaic_info(mosaic_id).get('mosaic_info', []):
+			for mi in self.cp.o2tv.get_mosaic_info(mosaic_id, True).get('mosaic_info', []):
 				url = self.cp.o2tv.get_proxy_live_link(mi['id'])
 				self.cp.add_play(mi['title'], url, download=enable_download)
 				mi_set = True

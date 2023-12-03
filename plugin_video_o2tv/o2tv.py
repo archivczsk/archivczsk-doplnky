@@ -814,7 +814,7 @@ class O2TV:
 	
 	# #################################################################################################
 
-	def get_mosaic_info(self, mosaic_id):
+	def get_mosaic_info(self, mosaic_id, live=False):
 		filer_data = {
 			"objectType":"KalturaSearchAssetFilter",
 			"orderBy": "START_DATE_ASC",
@@ -829,13 +829,18 @@ class O2TV:
 			ret['mosaic_info'] = []
 			for minfo in epg_entry.get('tags',{}).get('MosaicChannelsInfo',{}).get('objects',[]):
 				title = None
-				epg_id = None
+				prog_ext_id = None
+				ch_ext_id = None
 				for item in minfo['value'].split(','):
 					key, val = item.split('=')
 					if key == 'Title':
 						title = val
-					elif key in ('ChannelExternalId', 'ProgramExternalID'):
-						epg_id = self.get_external_resource_info(val).get('id')
+					elif key == 'ChannelExternalId' and live:
+						ch_ext_id = val
+					elif key == 'ProgramExternalID' and not live:
+						prog_ext_id = val
+
+				epg_id = self.get_external_resource_info(ch_ext_id or prog_ext_id).get('id')
 
 				if title and epg_id:
 					ret['mosaic_info'].append({
