@@ -1,3 +1,11 @@
+1.13 - 14.12.2023
+    - pridanie proxy pre HLS streamy - opravuje problém s nízkou kvalitou vyberaných streamov
+    - vylepšená proxy pre MPD streamy - už by nemala spomaľovať gui tak ako doteraz
+    - možnosť manuálneho nastavenia profilu pre výber streamu
+    - oprava sťahovania z archívu
+    - oddelenie VOD kanálov do samostatnej sekcie
+    - odstránenie VOD kanálov z bouquetu kvôli nekompatibilite
+
 1.12 - 15.11.2023
     - automatická kontrola najnovšej verzie emulovanej aplikácie pre dlhodobejšiu funčnosť
     - opravy drobných chýb

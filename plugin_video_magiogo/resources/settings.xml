@@ -17,8 +17,7 @@
 	<category label="Advanced">
 		<setting label="Enable special section in main menu" id="enable_extra" type="bool" default="false" />
 		<setting label="Allow downloading of live broadcasting" id="download_live" type="bool" default="false" />
-		<setting label="Use preprocessing for HLS streams" id="preprocess_hls" type="bool" default="false" />
-		<setting label="Use preprocessing for MPEG-DASH streams" id="preprocess_mpd" type="bool" default="true" />
+		<setting label="Requested stream profile" id="stream_profile" type="enum" lvalues="p0|p1|p2|p3|p4|p4|p5" default="3" />
 		<setting label="Maximum bandwidth of the offered stream" id="max_bitrate" type="keyenum" values="0;Unlimited|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
 	</category>
 </settings>

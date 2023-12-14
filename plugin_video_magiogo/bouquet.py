@@ -53,11 +53,12 @@ class MagioGOBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
 	def get_xmlepg_channels(self):
 		for channel in self.cp.channels:
-			yield {
-				'name': channel.name,
-				'id': int(channel.id),
-				'key': str(channel.id),
-			}
+			if channel.type == 'TV':
+				yield {
+					'name': channel.name,
+					'id': int(channel.id),
+					'key': str(channel.id),
+				}
 
 	def get_epg(self, channel, fromts, tots):
 		# don't request data too quickly - magio servers have requests limit

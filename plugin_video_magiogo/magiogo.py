@@ -392,7 +392,7 @@ class MagioGO:
 
 	# #################################################################################################
 	
-	def get_stream_link(self, stream_id, service='LIVE'):
+	def get_stream_link(self, stream_id, service='LIVE', prof='p3'):
 		self.refresh_login_data()
 		
 		params = {
@@ -400,7 +400,8 @@ class MagioGO:
 			"name": self.device[1],
 			"devtype": self.device[0],
 			"id": stream_id,
-			"prof": 'p5',   # 'p4', 'p3'
+#			"prof": 'p5',   # 'p4', 'p3'
+			"prof": prof,
 			"ecid": "",
 			"drm": "verimatrix"
 		}
@@ -499,3 +500,7 @@ class MagioGO:
 	
 	# #################################################################################################
 
+	def stream_type_by_device(self):
+		return 'm3u8' if self.device[0] == 'OTT_IPAD' else 'mpd'
+
+	# #################################################################################################

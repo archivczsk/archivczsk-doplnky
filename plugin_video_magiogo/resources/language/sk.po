@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_magiogo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-03 08:56+0100\n"
-"PO-Revision-Date: 2023-11-03 08:59+0100\n"
+"POT-Creation-Date: 2023-12-14 16:51+0100\n"
+"PO-Revision-Date: 2023-12-14 16:52+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -16,64 +16,64 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_magiogo/provider.py:122
+#: plugin_video_magiogo/provider.py:125
 msgid "Special section"
 msgstr "Špeciálna sekcia"
 
-#: plugin_video_magiogo/provider.py:133
+#: plugin_video_magiogo/provider.py:136
 msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
 msgstr "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočné zariadenia, aby ste sa mohli znova inde prihlásiť."
 
-#: plugin_video_magiogo/provider.py:134
+#: plugin_video_magiogo/provider.py:137
 msgid "Registered devices"
 msgstr "Zaregistrované zariadenia"
 
-#: plugin_video_magiogo/provider.py:135
+#: plugin_video_magiogo/provider.py:138
 msgid "With this button you can check if playback works OK or it gives some error from the server."
 msgstr "Týmto tlačidlom môžete skontrolovať, či prehrávanie funguje alebo server vracia nejakú chybovú správu."
 
-#: plugin_video_magiogo/provider.py:136
+#: plugin_video_magiogo/provider.py:139
 msgid "Check playback"
 msgstr "Kontrola prehrávania"
 
-#: plugin_video_magiogo/provider.py:149
+#: plugin_video_magiogo/provider.py:152
 msgid "Remove device!"
 msgstr "Zmazať zariadenie!"
 
-#: plugin_video_magiogo/provider.py:150
+#: plugin_video_magiogo/provider.py:153
 msgid "In menu you can remove device using Remove device!"
 msgstr "V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!"
 
-#: plugin_video_magiogo/provider.py:160
+#: plugin_video_magiogo/provider.py:163
 #, python-brace-format
 msgid "Device {device} was removed!"
 msgstr "Zariadenie {device} bolo vymazané!"
 
-#: plugin_video_magiogo/provider.py:162
+#: plugin_video_magiogo/provider.py:165
 msgid "Error"
 msgstr "Chyba"
 
-#: plugin_video_magiogo/provider.py:173
+#: plugin_video_magiogo/provider.py:176
 msgid "Playback failed:"
 msgstr "Prehrávanie zlyhalo:"
 
-#: plugin_video_magiogo/provider.py:175
+#: plugin_video_magiogo/provider.py:178
 msgid "No error occured during playback check. Playback should work."
 msgstr "Pri kontrole prehrávania nenastala žiadna chyba. Prehrávanie by malo fungovať."
 
-#: plugin_video_magiogo/provider.py:177
+#: plugin_video_magiogo/provider.py:180
 msgid "Can't check playback. There are no channels available."
 msgstr "Nemôžem skontrolovať prehrávanie. Nie je dostupný žiadny kanál."
 
-#: plugin_video_magiogo/magiogo.py:212
+#: plugin_video_magiogo/magiogo.py:244
 msgid "Unexpected return code from server"
 msgstr "Neočakávaný návratový kód zo servera"
 
-#: plugin_video_magiogo/magiogo.py:228
+#: plugin_video_magiogo/magiogo.py:260
 msgid "Login data not set"
 msgstr "Nezadané prihlasovacie údaje"
 
-#: plugin_video_magiogo/magiogo.py:255
+#: plugin_video_magiogo/magiogo.py:278 plugin_video_magiogo/magiogo.py:293
 msgid "Unknown error"
 msgstr "Neznáma chyba"
 
@@ -166,6 +166,27 @@ msgstr "Povoliť špeciálnu sekciu v hlavnom menu"
 
 msgid "Allow downloading of live broadcasting"
 msgstr "Povoliť sťahovanie u živého vysielania"
+
+msgid "Requested stream profile"
+msgstr "Požadovaný profil streamu"
+
+msgid "p0"
+msgstr ""
+
+msgid "p1"
+msgstr ""
+
+msgid "p2"
+msgstr ""
+
+msgid "p3"
+msgstr ""
+
+msgid "p4"
+msgstr ""
+
+msgid "p5"
+msgstr ""
 
 msgid "Use preprocessing for HLS streams"
 msgstr "Použiť predspracovanie HLS streamov"

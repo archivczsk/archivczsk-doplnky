@@ -14,18 +14,29 @@ from .bouquet import MagioGOBouquetXmlEpgGenerator
 
 class MagioGOModuleLiveTV(CPModuleLiveTV):
 
-	def __init__(self, content_provider):
-		CPModuleLiveTV.__init__(self, content_provider)
+	def __init__(self, content_provider, channel_type):
+		if channel_type == 'VOD':
+			name = content_provider._('VOD Channels')
+			plot = content_provider._('Here you will find list of channels broadcasting video on demand')
+		else:
+			name = None
+			plot = None
+
+		CPModuleLiveTV.__init__(self, content_provider, name, img=None, plot=plot)
+		self.channel_type = channel_type
 
 	# #################################################################################################
 
-	def get_live_tv_channels(self):
+	def get_live_tv_channels(self, cat_id=None):
 		self.cp.load_channel_list(True)
 
 		enable_adult = self.cp.get_setting('enable_adult')
 		enable_download = self.cp.get_setting('download_live')
 
 		for channel in self.cp.channels:
+			if channel.type != self.channel_type:
+				continue
+
 			if not enable_adult and channel.adult:
 				continue
 
@@ -42,13 +53,26 @@ class MagioGOModuleLiveTV(CPModuleLiveTV):
 				epg_str = ""
 				info_labels = {}
 
-			self.cp.add_video(channel.name + epg_str, img=channel.preview, info_labels=info_labels, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel.name, channel_id=channel.id)
+			if channel.type == 'VOD':
+				event_start = channel.epg_start
+			else:
+				event_start = None
+			self.cp.add_video(channel.name + epg_str, img=channel.preview, info_labels=info_labels, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel.name, channel_id=channel.id, event_start=event_start)
 
 	# #################################################################################################
 
-	def get_livetv_stream(self, channel_title, channel_id):
-		url = self.cp.http_endpoint + '/playlive/' + base64.b64encode(str(channel_id).encode("utf-8")).decode("utf-8") + '/index'
-		self.cp.add_play(channel_title, url, download=self.cp.get_setting('download_live'), playlist_autogen=False)
+	def get_livetv_stream(self, channel_title, channel_id, event_start):
+		url = self.cp.http_endpoint + '/playlive/' + base64.b64encode(str(channel_id).encode("utf-8")).decode("utf-8") + '/index.' + self.cp.magiogo.stream_type_by_device()
+
+		play_settings = {
+			"resume_time_sec": int(time.time()) - event_start if event_start != None else None,
+			"resume_popup": False
+		}
+
+		self.cp.add_play(channel_title, url, download=self.cp.get_setting('download_live'), settings=play_settings)
+
+#		for p in ('p0', 'p1', 'p2', 'p3', 'p4', 'p5'):
+#			self.cp.add_play(channel_title + ' ' + p, url + '?p=' + p, download=self.cp.get_setting('download_live'))
 
 # #################################################################################################
 
@@ -91,7 +115,7 @@ class MagioGOModuleArchive(CPModuleArchive):
 	# #################################################################################################
 
 	def get_archive_stream(self, archive_title, event_id):
-		url = self.cp.http_endpoint + '/playarchive/' + base64.b64encode(str(event_id).encode("utf-8")).decode("utf-8") + '/index'
+		url = self.cp.http_endpoint + '/playarchive/' + base64.b64encode(str(event_id).encode("utf-8")).decode("utf-8") + '/index.' + self.cp.magiogo.stream_type_by_device()
 		self.cp.add_play(archive_title, url, playlist_autogen=False)
 
 	# #################################################################################################
@@ -201,7 +225,8 @@ class MagioGOContentProvider(ModuleContentProvider):
 		self.bxeg = MagioGOBouquetXmlEpgGenerator(self, http_endpoint, None)
 
 		self.modules = [
-			MagioGOModuleLiveTV(self),
+			MagioGOModuleLiveTV(self, channel_type='TV'),
+			MagioGOModuleLiveTV(self, channel_type='VOD'),
 			MagioGOModuleArchive(self),
 			MagioGOModuleExtra(self)
 		]
