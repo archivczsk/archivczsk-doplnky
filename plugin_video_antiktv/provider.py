@@ -69,9 +69,9 @@ class AntikTVModuleLiveTV(CPModuleLiveTV):
 			}
 
 			if not channel["adult"] or self.cp.pin_entered:
-				img = channel.get("snapshot") or channel.get("logo").replace('.png', '_608x608.png')
+				img = channel.get("snapshot") or channel.get("logo").replace('.png', '_608x608.png').replace('&w=50', '&w=608')
 			else:
-				img = channel.get("logo").replace('.png', '_608x608.png')
+				img = channel.get("logo").replace('.png', '_608x608.png').replace('&w=50', '&w=608')
 
 			self.cp.add_video(channel["name"] + epg_str, img, info_labels=info_labels, download=False, cmd=self.resolve_play_url, channel_title=channel['name'], channel_id=channel['id'], epg_title=title, adult=channel['adult'])
 
@@ -92,8 +92,14 @@ class AntikTVModuleLiveTV(CPModuleLiveTV):
 	# #################################################################################################
 	
 	def channel_id_to_url(self, channel_id):
-		key = '%s:%d' % (self.channel_type, channel_id)
-		return self.cp.http_endpoint + '/playlive/' + base64.b64encode(key.encode('utf-8')).decode('utf-8')
+		url = self.cp.atk.get_direct_stream_url(self.channel_type, channel_id)
+
+		if url != None:
+			return url
+		else:
+			# direct stream not available - use a local proxy
+			key = '%s:%d' % (self.channel_type, channel_id)
+			return self.cp.http_endpoint + '/playlive/' + base64.b64encode(key.encode('utf-8')).decode('utf-8') + '.m3u8'
 
 # #################################################################################################
 
@@ -127,7 +133,7 @@ class AntikTVModuleArchive(CPModuleArchive):
 				continue
 
 			if channel["archive"]:
-				self.add_archive_channel(channel['name'], channel["id"], 480, img=channel.get('logo').replace('.png', '_608x608.png'), show_archive_len=False)
+				self.add_archive_channel(channel['name'], channel["id"], 480, img=channel.get('logo').replace('.png', '_608x608.png').replace('&w=50', '&w=608'), show_archive_len=False)
 
 	# #################################################################################################
 
@@ -254,7 +260,7 @@ class AntikTVModuleArchive(CPModuleArchive):
 				return
 
 		key = '%s$%s$%s$%s' % (self.channel_type, channel_id, epg_start, epg_stop)
-		url = self.cp.http_endpoint + '/playarchive/' + base64.b64encode(key.encode('utf-8')).decode('utf-8')
+		url = self.cp.http_endpoint + '/playarchive/' + base64.b64encode(key.encode('utf-8')).decode('utf-8')+ '.m3u8'
 		self.cp.add_play(epg_title, url)
 
 	# #################################################################################################
@@ -480,11 +486,16 @@ class AntikTVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def decode_playlive_url(self, url):
+		if url.endswith('.m3u8'):
+			url = url[:-5]
+
 		return base64.b64decode(url.encode("utf-8")).decode("utf-8").split(':')
 
 	# #################################################################################################
 
 	def decode_playarchive_url(self, url):
+		if url.endswith('.m3u8'):
+			url = url[:-5]
 		return base64.b64decode(url.encode("utf-8")).decode("utf-8").split('$')
 
 # #################################################################################################

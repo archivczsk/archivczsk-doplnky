@@ -59,7 +59,7 @@ class AntikTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 				yield {
 					'name': channel['name'],
 					'adult': channel['adult'],
-					'picon': (channel['logo'].replace('.png', '_100x100.png'), channel['logo']),
+					'picon': (channel['logo'].replace('.png', '_100x100.png'), channel['logo']) if channel['logo'].endswith('.png') else (channel['logo'].replace('&w=50', '&w=100'), channel['logo']),
 					'id': channel['id'],
 					'key': '%s:%d' % (channel_type, channel['id']),
 				}

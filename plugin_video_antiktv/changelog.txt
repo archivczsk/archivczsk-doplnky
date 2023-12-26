@@ -1,4 +1,8 @@
-2.5:
+2.7:
+- oprava kamier
+- oprava kvality pre logá a picony
+
+2.6:
 - oprava registrácie zariadenia - umožňuje prihlásenie aj k zahraničnej verzii služby
 
 2.5:
