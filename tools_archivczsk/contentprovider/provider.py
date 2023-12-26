@@ -406,7 +406,8 @@ class CommonContentProvider(object):
 			'genre': 'Zaner',
 			'rating': 'Hodnotenie', # float
 			'year': 'Rok ako int',
-			'duration': 'Dlzka v sekundach ako int'
+			'duration': 'Dlzka v sekundach ako int',
+			'adult': "True if it's an adult content'
 		}
 		"""
 		pass
@@ -547,3 +548,9 @@ class CommonContentProvider(object):
 		Returns enigne's version (version of ArchivCZSK)
 		'''
 		return '2.2.0'
+
+	def get_profile_name(self):
+		'''
+		Returns name of current addon virtual profile or empty string if running in main profile
+		'''
+		return ''
