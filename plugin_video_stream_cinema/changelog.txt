@@ -1,3 +1,6 @@
+2023-12-30 3.8
+    - aplikovanie zmeny timeoutu bez reštartu
+
 2023-12-01 3.7
     - oprava nastavenia časov pre preskočenie záverečných titulkov
     - oprava filtrovania >1080p streamov

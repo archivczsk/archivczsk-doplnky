@@ -1,3 +1,6 @@
+2023-12-30 [3.9]
+* aplikovanie zmeny timeoutu protokolu pre komunikáciu s API bez reštartu
+
 2023-12-01 [3.8]
 * pridanie žánrov do popisu filmu
 

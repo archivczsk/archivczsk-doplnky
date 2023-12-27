@@ -38,10 +38,6 @@ class PrehrajTo(object):
 		self.password = None
 		self.is_premium = False
 
-		self.timeout = int(self.cp.get_setting('loading_timeout'))
-		if self.timeout == 0:
-			self.timeout = None
-		
 		self.req_session = requests.Session()
 		self.req_session.headers.update({
 			'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0'
@@ -50,13 +46,17 @@ class PrehrajTo(object):
 	# ##################################################################################################################
 
 	def call_api(self, endpoint, params=None, data=None, raw=False, allow_redirects=True):
+		timeout = int(self.cp.get_setting('loading_timeout'))
+		if timeout == 0:
+			timeout = None
+
 		if not endpoint.startswith('http'):
 			endpoint = 'https://prehraj.to/' + endpoint
 
 		if data:
-			response = self.req_session.post(url=endpoint, params=params, data=data, timeout=self.timeout, allow_redirects=allow_redirects)
+			response = self.req_session.post(url=endpoint, params=params, data=data, timeout=timeout, allow_redirects=allow_redirects)
 		else:
-			response = self.req_session.get(url=endpoint, params=params, timeout=self.timeout, allow_redirects=allow_redirects)
+			response = self.req_session.get(url=endpoint, params=params, timeout=timeout, allow_redirects=allow_redirects)
 
 #		dump_request(response)
 

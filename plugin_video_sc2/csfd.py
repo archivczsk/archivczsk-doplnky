@@ -13,22 +13,22 @@ class Csfd(object):
 	def __init__(self, content_provider):
 		self.cp = content_provider
 
-		self.timeout = int(self.cp.get_setting('loading_timeout'))
-		if self.timeout == 0:
-			self.timeout = None
-
 		self.req_session = requests.Session()
 		self.req_session.headers.update({
 			'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0'
 		})
 
 	def call_csfd_api(self, endpoint, params=None, tv_cookies=False):
+		timeout = int(self.cp.get_setting('loading_timeout'))
+		if timeout == 0:
+			timeout = None
+
 		if tv_cookies:
 			cookies = {'tv_stations':'2%2C3%2C4%2C5%2C24%2C19%2C26%2C33%2C16%2C78%2C1%2C8%2C93%2C13%2C22%2C14%2C41%2C88', 'tv_tips_order':'2'}
 		else:
 			cookies = None
 
-		response = self.req_session.get('https://www.csfd.cz/' + endpoint, params=params, cookies=cookies, timeout=self.timeout, verify=False)
+		response = self.req_session.get('https://www.csfd.cz/' + endpoint, params=params, cookies=cookies, timeout=timeout, verify=False)
 		if response.status_code != 200:
 			raise AddonErrorException(self.cp._("Unexpected return code from server") + ": %d" % response.status_code)
 

@@ -18,9 +18,6 @@ class SC_API(object):
 		self.cp = content_provider
 		
 		self.device_id = self.cp.get_setting('deviceid')
-		self.timeout = int(self.cp.get_setting('loading_timeout'))
-		if self.timeout == 0:
-			self.timeout = None
 		
 		self.req_session = requests.Session()
 		self.cache = ExpiringLRUCache(30, 1800)
@@ -35,6 +32,9 @@ class SC_API(object):
 	# ##################################################################################################################
 
 	def call_api(self, url, data=None, params=None):
+		timeout = int(self.cp.get_setting('loading_timeout'))
+		if timeout == 0:
+			timeout = None
 
 		if not url.startswith("https://"):
 			url = "https://stream-cinema.online/kodi" + url
@@ -79,7 +79,7 @@ class SC_API(object):
 		}
 
 		if data:
-			resp = self.req_session.post(url, data=data, params=default_params, headers=headers, timeout=self.timeout)
+			resp = self.req_session.post(url, data=data, params=default_params, headers=headers, timeout=timeout)
 		else:
 			rurl = url + '?' + urlencode(sorted(default_params.items(), key=lambda val: val[0]))
 
@@ -88,7 +88,7 @@ class SC_API(object):
 				self.cp.log_debug("Request found in cache")
 				return resp
 
-			resp = self.req_session.get(url, params=default_params, headers=headers, timeout=self.timeout)
+			resp = self.req_session.get(url, params=default_params, headers=headers, timeout=timeout)
 #		dump_json_request(resp)
 
 		if resp.status_code == 200:

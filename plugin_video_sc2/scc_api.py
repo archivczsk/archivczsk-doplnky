@@ -35,12 +35,7 @@ class SCC_API(object):
 		self.cp = content_provider
 		
 		self.token = "asb6mnn72mqruo4v81tn"
-
-		self.protocol = self.cp.get_setting("api-protocol")
 		self.device_id = self.cp.get_setting('deviceid')
-		self.timeout = int(self.cp.get_setting('loading_timeout'))
-		if self.timeout == 0:
-			self.timeout = None
 		
 		self.req_session = requests.Session()
 		self.cache = ExpiringLRUCache(30, 1800)
@@ -55,13 +50,18 @@ class SCC_API(object):
 	# ##################################################################################################################
 
 	def call_api(self, endpoint, params=None, data=None):
+		timeout = int(self.cp.get_setting('loading_timeout'))
+
+		if timeout == 0:
+			timeout = None
+
 		headers = {
 			'User-Agent': 'ArchivCZSK/%s (plugin.video.sc2/%s)' % (self.cp.get_engine_version(), self.cp.get_addon_version()),
 			'X-Uuid': self.device_id
 		}
 
 		if not endpoint.startswith('http'):
-			endpoint = self.protocol + '://plugin.sc2.zone/api/' + endpoint
+			endpoint = self.cp.get_setting("api-protocol") + '://plugin.sc2.zone/api/' + endpoint
 
 		if params == None:
 			params = {}
@@ -81,9 +81,9 @@ class SCC_API(object):
 			self.cp.log_debug("Request found in cache")
 		else:
 			if data:
-				response = self.req_session.post(url=endpoint, headers=headers, params=params, json=data, timeout=self.timeout)
+				response = self.req_session.post(url=endpoint, headers=headers, params=params, json=data, timeout=timeout)
 			else:
-				response = self.req_session.get(url=endpoint, headers=headers, params=params, timeout=self.timeout)
+				response = self.req_session.get(url=endpoint, headers=headers, params=params, timeout=timeout)
 
 #			dump_json_request(response)
 			self.cache.put(rurl, response)
