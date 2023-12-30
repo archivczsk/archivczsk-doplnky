@@ -25,7 +25,7 @@
 	</extension>
 </addon>
 
-<addon id="plugin.video.sc2" name="Stream Cinema Community" version="3.8">
+<addon id="plugin.video.sc2" name="Stream Cinema Community" version="3.9">
 	<requires>
 		<import addon="enigma2.archivczsk" version="2.2.1"/>
 		<import addon="tools.archivczsk" version="1.9" />
@@ -416,7 +416,7 @@
 	</extension>
 </addon>
 
-<addon id="plugin.video.stream-cinema" name="Stream Cinema" provider-name="archivczsk" version="3.7">
+<addon id="plugin.video.stream-cinema" name="Stream Cinema" provider-name="archivczsk" version="3.8">
 	<requires>
 		<import addon="enigma2.archivczsk" version="2.2.1"/>
 		<import addon="tools.archivczsk" version="1.9" />
