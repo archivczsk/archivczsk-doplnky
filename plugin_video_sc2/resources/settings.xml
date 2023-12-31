@@ -6,7 +6,7 @@
 	<setting label="Don't store if play position is more then (in %)" id="last-play-pos-limit" type="labelenum" values="80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100" default="95"/>
 	<setting label="Allow integration with Trakt.tv" id="trakt_enabled" type="bool" default="false"/>
 	<setting label="DeviceId" id="deviceid" type="text" default="" visible="false"/>
-	<setting label="Protocol used for API communication" id="api-protocol" type="labelenum" values="http|https" default="http" />
+	<setting label="Protocol used for API communication" id="api-protocol" type="labelenum" values="http|https" default="https" />
 	<setting label="Start subtitles automatically" id="subs-autostart" type="keyenum" values="always;Always|undubbed;When undubbed|never;Never" default="undubbed" />
 	<setting label="Start forced subtitles automatically" id="forced-subs-autostart" type="bool" default="true" />
 	<category label="Accounts">

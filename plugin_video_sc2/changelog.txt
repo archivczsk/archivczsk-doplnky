@@ -1,3 +1,6 @@
+2023-12-31 [3.10]
+* zmena predvoleného protokolu pre komunikáciu s API na https
+
 2023-12-30 [3.9]
 * aplikovanie zmeny timeoutu protokolu pre komunikáciu s API bez reštartu
 
