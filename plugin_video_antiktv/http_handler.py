@@ -15,12 +15,16 @@ class AntikTVHTTPRequestHandler( AddonHttpRequestHandler ):
 	def __init__(self, content_provider, addon ):
 		AddonHttpRequestHandler.__init__(self, addon)
 		self.cp = content_provider
-		
+
 	# #################################################################################################
-	
+
 	def P_playlive(self, request, path):
 		try:
 			channel_type, channel_id = self.cp.decode_playlive_url(path)
+			url = self.cp.atk.get_direct_stream_url(channel_type, channel_id)
+			if url != None:
+				return self.reply_redirect(request, url)
+
 			data = self.cp.atk.get_hls_playlist(channel_type, channel_id, self.get_endpoint(request, True) + self.getkey_uri, self.get_endpoint(request, True) + self.getsegment_live_uri)
 		except:
 			self.cp.log_error("Failed for path: %s" % path)
@@ -43,7 +47,7 @@ class AntikTVHTTPRequestHandler( AddonHttpRequestHandler ):
 		return self.reply_ok(request, data, "application/x-mpegURL; charset=UTF-8")
 
 	# #################################################################################################
-	
+
 	def P_getkey(self, request, path):
 		try:
 			key = self.cp.atk.get_content_key(path)
@@ -51,7 +55,7 @@ class AntikTVHTTPRequestHandler( AddonHttpRequestHandler ):
 		except:
 			self.cp.log_exception()
 			return self.reply_error500(request)
-		
+
 		return self.reply_ok( request, key, "application/octet-stream", raw=True)
 
 	# #################################################################################################
