@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_stream_cinema\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-01 10:01+0100\n"
+"POT-Creation-Date: 2024-01-07 21:09+0100\n"
 "PO-Revision-Date: 2023-12-01 10:02+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,8 +16,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_stream_cinema/sc_api.py:106
 #: plugin_video_stream_cinema/prehrajto.py:67
+#: plugin_video_stream_cinema/sc_api.py:106
 msgid "Unexpected return code from server"
 msgstr "Neočakávaný návratový kód zo servera"
 
@@ -65,82 +65,82 @@ msgstr "Prehrať trailer"
 msgid "Remove from seen"
 msgstr "Odstrániť z videných"
 
-#: plugin_video_stream_cinema/provider.py:320
+#: plugin_video_stream_cinema/provider.py:336
 msgid "Trakt.tv"
 msgstr "Trakt.tv"
 
-#: plugin_video_stream_cinema/provider.py:322
+#: plugin_video_stream_cinema/provider.py:338
 msgid "My lists"
 msgstr "Moje zoznamy"
 
-#: plugin_video_stream_cinema/provider.py:323
+#: plugin_video_stream_cinema/provider.py:339
 msgid "History"
 msgstr "História"
 
-#: plugin_video_stream_cinema/provider.py:324
+#: plugin_video_stream_cinema/provider.py:340
 msgid "Trending"
 msgstr "Trendy"
 
-#: plugin_video_stream_cinema/provider.py:325
+#: plugin_video_stream_cinema/provider.py:341
 msgid "Popular"
 msgstr "Populárne"
 
-#: plugin_video_stream_cinema/provider.py:327
+#: plugin_video_stream_cinema/provider.py:343
 msgid "Movies"
 msgstr "Filmy"
 
-#: plugin_video_stream_cinema/provider.py:328
+#: plugin_video_stream_cinema/provider.py:344
 msgid "Series"
 msgstr "Seriály"
 
-#: plugin_video_stream_cinema/provider.py:422
-#: plugin_video_stream_cinema/provider.py:430
-#: plugin_video_stream_cinema/provider.py:496
+#: plugin_video_stream_cinema/provider.py:442
+#: plugin_video_stream_cinema/provider.py:450
+#: plugin_video_stream_cinema/provider.py:520
 msgid "Search on prehraj.to"
 msgstr "Vyhľadať na prehraj.to"
 
-#: plugin_video_stream_cinema/provider.py:561
+#: plugin_video_stream_cinema/provider.py:585
 msgid "Order descending (Z-A)"
 msgstr "Zoradiť zostupne (Z-A)"
 
-#: plugin_video_stream_cinema/provider.py:564
+#: plugin_video_stream_cinema/provider.py:588
 msgid "Order ascending (A-Z)"
 msgstr "Zoradiť vzostupne (A-Z)"
 
-#: plugin_video_stream_cinema/provider.py:567
+#: plugin_video_stream_cinema/provider.py:591
 msgid "Sort"
 msgstr "Triedenie"
 
-#: plugin_video_stream_cinema/provider.py:570
+#: plugin_video_stream_cinema/provider.py:594
 msgid "Filter by year"
 msgstr "Filtrovať podľa roku"
 
-#: plugin_video_stream_cinema/provider.py:593
+#: plugin_video_stream_cinema/provider.py:617
 msgid "Random"
 msgstr "Náhodne"
 
-#: plugin_video_stream_cinema/provider.py:595
+#: plugin_video_stream_cinema/provider.py:619
 msgid "Sort by"
 msgstr "Triediť podľa"
 
-#: plugin_video_stream_cinema/provider.py:604
+#: plugin_video_stream_cinema/provider.py:628
 msgid "Older than"
 msgstr "Staršie ako"
 
-#: plugin_video_stream_cinema/provider.py:604
+#: plugin_video_stream_cinema/provider.py:628
 msgid "Younger than"
 msgstr "Mladšie ako"
 
-#: plugin_video_stream_cinema/provider.py:604
+#: plugin_video_stream_cinema/provider.py:628
 msgid "Exact in year"
 msgstr "Presne v roku"
 
-#: plugin_video_stream_cinema/provider.py:604
-#: plugin_video_stream_cinema/provider.py:607
+#: plugin_video_stream_cinema/provider.py:628
+#: plugin_video_stream_cinema/provider.py:631
 msgid "Choose by year"
 msgstr "Voľba podľa roku"
 
-#: plugin_video_stream_cinema/provider.py:803
+#: plugin_video_stream_cinema/provider.py:827
 msgid "Please select a stream"
 msgstr "Prosím zvoľte stream"
 
@@ -273,6 +273,9 @@ msgstr ""
 
 msgid "15"
 msgstr ""
+
+msgid "Enable adult content"
+msgstr "Povoliť obsah pre dospelých"
 
 msgid "Filter items by lanuage"
 msgstr "Filter položiek podľa jazyka"

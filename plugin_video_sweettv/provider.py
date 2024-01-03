@@ -35,13 +35,16 @@ class SweetTVModuleLiveTV(CPModuleLiveTV):
 
 				info_labels = {
 					'plot': '%s - %s' % (self.cp.timestamp_to_str(int(epgdata["time_start"])), self.cp.timestamp_to_str(int(epgdata["time_stop"]))),
-					'title': epgdata["text"]
+					'title': epgdata["text"],
+					'adult': channel['adult']
 				}
 				epg_str = "  " + _I(epgdata["text"])
 				img = epgdata.get('preview_url')
 			else:
 				epg_str = ""
-				info_labels = {}
+				info_labels = {
+					'adult': channel['adult']
+				}
 				img = None
 
 			self.cp.add_video(channel['name'] + epg_str, img=img, info_labels=info_labels, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_id=channel['id'])
@@ -56,11 +59,11 @@ class SweetTVModuleLiveTV(CPModuleLiveTV):
 				'quality': one.get('name', '???').replace('"', ''),
 				'bandwidth': one['bandwidth']
 			}
-			
+
 			data_item = {
 				'stream_id': one.get('stream_id')
 			}
-			
+
 			settings = {
 				'user-agent' : self.cp.sweettv.get_user_agent(),
 			}
@@ -85,7 +88,7 @@ class SweetTVModuleArchive(CPModuleArchive):
 				continue
 
 			if channel['timeshift'] > 0:
-				self.add_archive_channel(channel['name'], channel['id'], channel['timeshift'], img=channel['picon'])
+				self.add_archive_channel(channel['name'], channel['id'], channel['timeshift'], img=channel['picon'], info_labels={'adult': channel['adult']})
 
 	# #################################################################################################
 
@@ -101,7 +104,7 @@ class SweetTVModuleArchive(CPModuleArchive):
 
 			if ts_to <= int(startts):
 				break
-			
+
 			title = '%s - %s - %s' % (self.cp.timestamp_to_str(startts), self.cp.timestamp_to_str(endts), _I(event["text"]))
 			info_labels = {
 				'title': event["text"]
@@ -142,7 +145,7 @@ class SweetTVModuleVOD(CPModuleTemplate):
 			return
 
 		data = self.cp.sweettv.get_movie_configuration()
-		
+
 		if cat == 'collections':
 			data = data['collections'] + self.cp.sweettv.get_movie_collections()
 			prefix = '#movie_collection#'
@@ -321,7 +324,7 @@ class SweetTVContentProvider(ModuleContentProvider):
 				self.add_video(title, movie.get('poster'), info_labels=info_labels, menu=menu, cmd=self.get_raw_stream, stream_title='Trailer: ' + movie['title'], url=movie.get('trailer'))
 
 	# #################################################################################################
-	
+
 	def get_movie_stream(self, movie_name, movie_id, owner_id):
 		for one in self.sweettv.get_movie_link(movie_id, owner_id):
 			info_labels = {
@@ -343,7 +346,7 @@ class SweetTVContentProvider(ModuleContentProvider):
 	def get_raw_stream(self, stream_title, url):
 		if url:
 			self.add_play(stream_title, url)
-	
+
 	# #################################################################################################
 
 	def get_archive_stream(self, archive_title, channel_id, epg_id):

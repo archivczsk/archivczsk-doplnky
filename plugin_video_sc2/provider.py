@@ -39,7 +39,7 @@ class SccContentProvider(CommonContentProvider):
 
 		if not self.get_setting('deviceid'):
 			self.set_setting('deviceid', SCC_API.create_device_id())
-			
+
 		self.watched = SCWatched(self.data_dir, trakttv, int(self.get_setting('keep-last-seen')))
 
 		# init SCC Api - will be good to cache its settings and reinit it when some of them change
@@ -55,13 +55,13 @@ class SccContentProvider(CommonContentProvider):
 			days_left = self.webshare.refresh_login_data()
 		except:
 			days_left = -2
-			
+
 		# update remaining vip days
 		if self.get_setting('wsvipdays') != str(days_left):
 			self.set_setting('wsvipdays', str(days_left))
 
 		return days_left
-	
+
 	# ##################################################################################################################
 
 	def login(self, silent):
@@ -71,7 +71,7 @@ class SccContentProvider(CommonContentProvider):
 			# no username/password provided or vip expired - continue with free account
 			if self.get_setting('wsuser') and self.get_setting('wspass'):
 				self.log_info("Webshare VIP account expired - continuing with free account")
-				
+
 				if not silent:
 					self.show_info(self._("Webshare VIP account expired"), noexit=True)
 				else:
@@ -168,7 +168,7 @@ class SccContentProvider(CommonContentProvider):
 		self.add_dir(self._("Last seen"), cmd=check_and_call_filter_api, filter_name='ids', params={ 'id': ids, 'type': media_type }, render_params={'category': category, 'folder': 'last_seen'})
 
 	# ##################################################################################################################
-	
+
 	def show_thematic_lists(self):
 		lists_info = [
 			{ 'name': _('Fairy Tales'), 'id': 'rozpravky'},
@@ -277,13 +277,13 @@ class SccContentProvider(CommonContentProvider):
 		data = self.api.call_filter_count_api(filter_name, count_name, req_params).get('data', [])
 
 		self.render_count_dir(data, params, **render_params)
-		
+
 		if len(data) >= page_size:
 			page += 1
 			self.add_next(cmd=self.call_filter_count_api, page_info=(page + 1), filter_name=filter_name, count_name=count_name, page=page, params=params, render_params=render_params)
 
 	# ##################################################################################################################
-	
+
 	def call_filter_api(self, filter_name='all', params={}, render_params={}, page=0):
 		# build query
 		req_params = {
@@ -293,7 +293,7 @@ class SccContentProvider(CommonContentProvider):
 		req_params.update(params)
 
 		data = self.api.call_filter_api(filter_name, req_params).get('hits', {})
-		
+
 		self.render_media_dir(data, **render_params)
 
 		if 'total' in data:
@@ -306,9 +306,6 @@ class SccContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def is_adult_content(self, media):
-		if self.get_setting('enable-adult'):
-			return False
-
 		if media.get('adult', False) == True:
 			return True
 
@@ -319,23 +316,20 @@ class SccContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def is_adult_dir(self, name):
-		if self.get_setting('enable-adult'):
-			return False
-
 		return name in ('Adult', 'Pornographic', 'Erotic')
-	
+
 	# ##################################################################################################################
-	
+
 	def lang_filter_passed(self, media):
 		item_filter = self.get_setting('item-lang-filter')
 		stream_filter = self.get_setting('stream-lang-filter').split('+')
-		
+
 		if item_filter == 'all':
 			return True
-		
+
 		if stream_filter[0] == 'all':
 			return True
-		
+
 		alangs = media.get("available_streams", {}).get("languages", {}).get("audio", {}).get("map", [])
 
 		if item_filter == 'dub':
@@ -348,11 +342,11 @@ class SccContentProvider(CommonContentProvider):
 			for l in stream_filter:
 				if l in subs:
 					return True
-		
+
 		return False
 
 	# ##################################################################################################################
-	
+
 	def get_i18n_list(self, i18n_base ):
 		lang = self.get_lang_code()
 
@@ -368,11 +362,11 @@ class SccContentProvider(CommonContentProvider):
 			for lb in i18n_base:
 				if lb.get('lang') == l:
 					ll.append(lb)
-			
+
 		return ll
 
 	# ##################################################################################################################
-	
+
 	def get_media_info(self, media, title_hint=None):
 		# build title, img and info_labels dictionary
 
@@ -389,7 +383,7 @@ class SccContentProvider(CommonContentProvider):
 		i18n_info = self.get_i18n_list(media.get('i18n_info_labels', []))
 		info = media.get('info_labels', {})
 		media_type = info.get('mediatype')
-		
+
 		if media_type == 'episode':
 			title = self._("Episode") + ' %02d' % info['episode']
 			info_labels['episode'] = info['episode']
@@ -447,7 +441,7 @@ class SccContentProvider(CommonContentProvider):
 
 		info_labels['duration'] = info.get('duration')
 		info_labels['year'] = info.get('year')
-		
+
 		if not title:
 			title = info.get('originaltitle', '')
 
@@ -468,7 +462,7 @@ class SccContentProvider(CommonContentProvider):
 
 		alangs = media.get("available_streams", {}).get("languages", {}).get("audio", {}).get("map", [])
 		subs_available = self.get_lang_code() in media.get("available_streams", {}).get("languages", {}).get("subtitles", {}).get("map", [])
-		
+
 		# mark that there are subtitles available
 		alangs_upper = []
 		for l in alangs:
@@ -476,7 +470,7 @@ class SccContentProvider(CommonContentProvider):
 				alangs_upper.append(l.upper() + '+tit')
 			else:
 				alangs_upper.append(l.upper())
-		
+
 		if alangs_upper:
 			title += ' - ' + _I(', '.join(sorted(set(alangs_upper))))
 
@@ -484,7 +478,7 @@ class SccContentProvider(CommonContentProvider):
 			title += ' (%d)' % info_labels['year']
 
 		return title, img, info_labels, media_type
-	
+
 	# ##################################################################################################################
 
 	def fill_trakt_info(self, menu_item, is_watched=None):
@@ -536,6 +530,8 @@ class SccContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def render_count_dir(self, data, params, category=None, folder=None):
+		enable_adult = self.get_setting('enable-adult')
+
 		render_params = {
 			'category': category,
 			'folder': folder
@@ -572,8 +568,14 @@ class SccContentProvider(CommonContentProvider):
 
 				title = item['key']
 
-				if folder == 'genre' and self.is_adult_dir(title):
-					continue
+
+				if folder == 'genre':
+					is_adult = self.is_adult_dir(title)
+
+					if is_adult and enable_adult == False:
+						continue
+				else:
+					is_adult = False
 
 				if folder == 'language':
 					if len(title) != 2:
@@ -594,16 +596,17 @@ class SccContentProvider(CommonContentProvider):
 					'sort': 'year',
 					'order': 'desc'
 				}
-				self.add_dir(title, cmd=self.call_filter_api, filter_name=folder, params=params2, render_params=render_params)
+				self.add_dir(title, info_labels={'adult': is_adult}, cmd=self.call_filter_api, filter_name=folder, params=params2, render_params=render_params)
 			self.sort_content_items(reverse=(folder == 'year'), use_diacritics=False, ignore_case=True)
 
 	# ##################################################################################################################
-	
+
 	def render_media_dir(self, data, category=None, services=None, folder=None):
 		# this is needed for trakt - we need unique id's of parent for seasons and episodes
 		prehrajto_primary = self.get_setting('prehrajto-primary')
 		services_parent = services
 		title_hint = folder[3:].lower() if folder is not None and folder.startswith('az:') else None
+		enable_adult = self.get_setting('enable-adult')
 
 		for media in data.get('hits', []):
 			source = media['_source']
@@ -629,13 +632,15 @@ class SccContentProvider(CommonContentProvider):
 			else:
 				cat = category
 
-			if self.is_adult_content(source):
+			is_adult = self.is_adult_content(source)
+			if is_adult and enable_adult == False:
 				continue
 
 			if self.lang_filter_passed(source) == False:
 				continue
-			
+
 			title, img, info_labels, media_type = self.get_media_info(source, title_hint)
+			info_labels['adult'] = is_adult
 			menu = self.create_ctx_menu()
 
 			if folder == 'last_seen':
@@ -705,7 +710,7 @@ class SccContentProvider(CommonContentProvider):
 
 	def play_trailer(self, media_id):
 		media = self.api.call_filter_api('ids', params={'id': media_id }).get('hits', {}).get('hits',[{}])
-		
+
 		for video in sorted(media[0].get('_source', {}).get('videos', []), key=lambda i: i.get('lang', '') in ('cs', 'sk'), reverse=True):
 			if video.get('type', '').lower() != 'trailer':
 				continue
@@ -901,7 +906,7 @@ class SccContentProvider(CommonContentProvider):
 			return
 
 		streams_filtered = self.filter_streams(data)
-		
+
 		idx = None
 		if len(streams_filtered) > 0:
 			data = streams_filtered
@@ -910,7 +915,7 @@ class SccContentProvider(CommonContentProvider):
 		else:
 			# no stream passed filtering - let the user decide what now
 			pass
-		
+
 		# sort streams by quality and language
 		self.sort_streams(data)
 
@@ -948,10 +953,10 @@ class SccContentProvider(CommonContentProvider):
 		ident = data[idx].get('ident')
 		file_name = data[idx].get('name')
 		duration = int(data[idx].get('video', [{}])[0].get('duration', 0))
-		
+
 		if not ident:
 			return
-		
+
 		media_title = info.get('epname') or info['title']
 		info_labels = { 'title': media_title, 'filename': info['filename'] }
 
@@ -978,11 +983,11 @@ class SccContentProvider(CommonContentProvider):
 			playlist.add_play(titles[idx], self.webshare.resolve(ident, file_name), **play_params)
 		except (WebshareLoginFail, ResolveException) as e:
 			self.show_error(str(e))
-		
+
 		for i in range(len(data)):
 			if i != idx:
 				playlist.add_video(titles[i], cmd=self.webshare_resolve, ident=data[i].get('ident'), file_name=data[i].get('name'), media_title=media_title, play_params=play_params, **play_params)
-		
+
 	# ##################################################################################################################
 
 	def webshare_resolve(self, media_title, ident, file_name, settings, play_params={}):
@@ -1027,7 +1032,7 @@ class SccContentProvider(CommonContentProvider):
 		self.call_filter_api('search', params, render_params)
 
 	# ##################################################################################################################
-	
+
 	def stats(self, data_item, action, duration=None, position=None, **extra_params):
 		self.log_info("Stats command called: %s" % action)
 		if data_item:
@@ -1061,7 +1066,7 @@ class SccContentProvider(CommonContentProvider):
 			self.log_exception()
 
 	# ##################################################################################################################
-	
+
 	def trakt(self, trakt_item, action, result):
 		if self.get_setting('trakt_enabled'):
 			self.log_debug("Trakt action=%s, result=%s" % (action, result))

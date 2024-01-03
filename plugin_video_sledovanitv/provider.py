@@ -7,6 +7,7 @@ import random
 from hashlib import md5
 
 from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPModuleLiveTV, CPModuleArchive, CPModuleTemplate, CPModuleSearch
+from tools_archivczsk.contentprovider.exception import LoginException
 from tools_archivczsk.string_utils import _I, _C, _B
 from .sledovanitv import SledovaniTV
 from .bouquet import SledovaniTVBouquetXmlEpgGenerator
@@ -30,7 +31,7 @@ class SledovaniTVModuleHome(CPModuleTemplate):
 				'duration': event.get('duration'),
 				'title': event['title'],
 			}
-			
+
 			day_name = self.cp.day_nane_short[datetime.fromtimestamp(event['start']).weekday()]
 			title = day_name + ' ' + self.cp.timestamp_to_str(event['start'], format='%d.%m. %H:%M') + ' - ' + self.cp.timestamp_to_str(event['end'], format='%H:%M') + ' ' + _I(event['title']) + ' '
 
@@ -50,7 +51,7 @@ class SledovaniTVModuleLiveTV(CPModuleLiveTV):
 		CPModuleLiveTV.__init__(self, content_provider)
 
 	# #################################################################################################
-	
+
 	def get_live_tv_channels(self, cat_id=None):
 		self.cp.load_channel_list()
 		enable_adult = self.cp.get_setting('enable_adult')
@@ -87,12 +88,15 @@ class SledovaniTVModuleLiveTV(CPModuleLiveTV):
 					'plot': "%s - %s\n%s" % (self.cp.timestamp_to_str(start_ts), self.cp.timestamp_to_str(end_ts), plot),
 					'title': epg["title"],
 					'duration': epg.get('duration') * 60,
-					'year': epg.get('year')
+					'year': epg.get('year'),
+					'adult': channel['adult']
 				}
 				img = epg.get('poster')
 			else:
 				epg_str = ''
-				info_labels = {}
+				info_labels = {
+					'adult': channel['adult']
+				}
 				img = None
 
 			self.cp.add_video(title + epg_str, img, info_labels, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_url=channel['url'])
@@ -173,9 +177,9 @@ class SledovaniTVModuleArchive(CPModuleArchive):
 		for channel in self.cp.channels:
 			if not enable_adult and channel['adult']:
 				continue
-			
+
 			if channel['type'] == 'tv' and channel['timeshift'] > 0:
-				self.add_archive_channel(channel['name'], channel['id'], channel['timeshift'], img=channel['picon'])
+				self.add_archive_channel(channel['name'], channel['id'], channel['timeshift'], img=channel['picon'], info_labels={'adult': channel['adult']})
 
 	# #################################################################################################
 
@@ -186,7 +190,7 @@ class SledovaniTVModuleArchive(CPModuleArchive):
 			start_ts = self.cp.sledovanitv.convert_time(epg["startTime"])
 			end_ts = self.cp.sledovanitv.convert_time(epg["endTime"])
 			title = '%s - %s - %s' % (self.cp.timestamp_to_str(start_ts), self.cp.timestamp_to_str(end_ts), _I(epg["title"]))
-			
+
 			info_labels = {
 				'plot': epg.get('description'),
 				'title': epg['title']
@@ -227,7 +231,7 @@ class SledovaniTVModuleRecordings(CPModuleTemplate):
 		self.cp.add_dir(self._("Plan recording"), cmd=self.plan_recordings)
 		self.cp.add_dir(self._("Futures - planed"), cmd=self.show_recordings, only_finished=False)
 		self.cp.add_dir(self._("Existing"), cmd=self.show_recordings, only_finished=True)
-	
+
 	# #################################################################################################
 
 	def show_recordings(self, only_finished=True):
@@ -244,7 +248,9 @@ class SledovaniTVModuleRecordings(CPModuleTemplate):
 			return t[8:10] + "." + t[5:7] + ". " + t[11:16]
 
 		for record in self.cp.sledovanitv.get_recordings():
-			if not enable_adult and record.get('channelLocked', '') == 'pin':
+			is_adult = record.get('channelLocked', '') == 'pin'
+
+			if not enable_adult and is_adult:
 				continue
 
 			if check_recording_state(record["enabled"], 1):
@@ -261,18 +267,19 @@ class SledovaniTVModuleRecordings(CPModuleTemplate):
 					'title': record["title"],
 					'plot': desc + '\n' + event.get('description', ''),
 					'year': event.get("year"),
-					'duration': record.get("eventDuration", 0) * 60
+					'duration': record.get("eventDuration", 0) * 60,
+					'adult': is_adult
 				}
-				
+
 				menu = {}
 				self.cp.add_menu_item(menu, self._('Delete recording'), cmd=self.del_recording, pvr_id=record["id"])
-				
+
 				if record["enabled"] != 1:
 					self.cp.add_video(title, event.get("poster"), info_labels, menu)
 				else:
 					self.cp.add_video(title, event.get("poster"), info_labels, menu, cmd=self.play_recording, pvr_title=record["title"], pvr_id=record["id"])
 
-	
+
 	# #################################################################################################
 
 	def play_recording(self, pvr_title, pvr_id):
@@ -290,7 +297,7 @@ class SledovaniTVModuleRecordings(CPModuleTemplate):
 		self.cp.refresh_screen()
 
 	# #################################################################################################
-	
+
 	def plan_recordings(self):
 		self.cp.load_channel_list()
 		enable_adult = self.cp.get_setting('enable_adult')
@@ -299,7 +306,7 @@ class SledovaniTVModuleRecordings(CPModuleTemplate):
 			if not enable_adult and channel['adult']:
 				continue
 
-			self.cp.add_dir(channel['name'], img=channel['picon'], cmd=self.show_future_days, channel_id=channel['id'])
+			self.cp.add_dir(channel['name'], img=channel['picon'], info_labels={'adult': channel['adult']}, cmd=self.show_future_days, channel_id=channel['id'])
 
 	# #################################################################################################
 
@@ -315,9 +322,9 @@ class SledovaniTVModuleRecordings(CPModuleTemplate):
 				day_name = self.cp.day_name[day.weekday()] + " " + day.strftime("%d.%m.%Y")
 
 			self.cp.add_dir(day_name, cmd=self.plan_recordings_for_channel, channel_id=channel_id, day=i)
-	
+
 	# #################################################################################################
-	
+
 	def plan_recordings_for_channel(self, channel_id, day):
 		if day == 0:
 			from_datetime = datetime.now()
@@ -347,7 +354,7 @@ class SledovaniTVModuleRecordings(CPModuleTemplate):
 			menu = {}
 			self.cp.add_menu_item(menu, self._('Record the event'), cmd=self.cp.add_recording, event_id=event_id)
 			self.cp.add_video(title, img, info_labels, menu, cmd=self.cp.add_recording, event_id=event_id)
-		
+
 # #################################################################################################
 
 
@@ -384,7 +391,7 @@ class SledovaniTVModuleExtra(CPModuleTemplate):
 			self.cp.add_video(title, info_labels=info_labels, menu=menu, download=False)
 
 	# #################################################################################################
-	
+
 	def delete_device(self, device_id):
 		self.cp.sledovanitv.device_remove(device_id)
 #		self.cp.add_video(_C('red', self._('Device {device} was removed!').format(device=device_id)), download=False)
@@ -425,7 +432,7 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 		]
 
 	# #################################################################################################
-	
+
 	def login(self, silent):
 		self.sledovanitv = None
 		self.channels = []
@@ -440,7 +447,7 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 		return True
 
 	# #################################################################################################
-	
+
 	def get_channels_checksum(self):
 		ctx = md5()
 		for ch in self.channels:
@@ -455,7 +462,7 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 			ctx.update(str(frozenset(item)).encode('utf-8'))
 
 		return ctx.hexdigest()
-	
+
 	# #################################################################################################
 
 	def load_channel_list(self):
@@ -463,10 +470,10 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 
 		if self.channels and self.channels_next_load_time > act_time:
 			return
-		
+
 		self.channels = self.sledovanitv.get_channels()
 		self.checksum = self.get_channels_checksum()
-		
+
 		self.channels_by_id = {}
 		for ch in self.channels:
 			self.channels_by_id[ch['id']] = ch

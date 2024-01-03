@@ -19,7 +19,7 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 		CPModuleLiveTV.__init__(self, content_provider, categories=True)
 
 	# #################################################################################################
-	
+
 	def get_live_tv_categories(self, section=None):
 		if section == None:
 			self.add_live_tv_category(self._('All channels'), None)
@@ -32,7 +32,7 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 			user_lists = self.cp.o2tv.get_user_channel_lists()
 			for name, keys in user_lists.items():
 				self.cp.add_dir(name, cmd=self.show_my_list, keys=keys)
-		
+
 	# #################################################################################################
 
 	def show_my_list(self, keys, fav=False):
@@ -85,11 +85,14 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 				info_labels = {
 					'plot': epg['desc'],
 					'title': epg["title"],
-					'img': epg['img']
+					'img': epg['img'],
+					'adult': channel['adult']
 				}
 			else:
 				epg_str = ''
-				info_labels = {}
+				info_labels = {
+					'adult': channel['adult']
+				}
 
 			menu = {}
 			if fav:
@@ -147,9 +150,9 @@ class O2TVModuleArchive(CPModuleArchive):
 		for channel in self.cp.channels:
 			if not enable_adult and channel['adult']:
 				continue
-			
+
 			if channel['timeshift'] > 0:
-				self.add_archive_channel(channel['name'], channel['key'], channel['timeshift'], img=channel['logo'])
+				self.add_archive_channel(channel['name'], channel['key'], channel['timeshift'], img=channel['logo'], info_labels={ 'adult': channel['adult']})
 
 	# #################################################################################################
 
@@ -158,7 +161,7 @@ class O2TVModuleArchive(CPModuleArchive):
 
 		for epg in self.cp.o2tv.get_channel_epg(channel_id, ts_from, ts_to):
 			title = '%s - %s - %s' % (self.cp.timestamp_to_str(epg["startTimestamp"] / 1000), self.cp.timestamp_to_str(epg["endTimestamp"] / 1000), _I(epg["name"]))
-			
+
 			info_labels = {
 				'plot': epg.get('shortDescription'),
 				'title': epg['name']
@@ -199,7 +202,7 @@ class O2TVModuleRecordings(CPModuleTemplate):
 		self.cp.add_dir(self._("Plan recording"), cmd=self.plan_recordings)
 		self.cp.add_dir(self._("Futures - planed"), cmd=self.show_recordings, only_finished=False)
 		self.cp.add_dir(self._("Existing"), cmd=self.show_recordings, only_finished=True)
-	
+
 	# #################################################################################################
 
 	def show_recordings(self, only_finished=True):
@@ -256,7 +259,7 @@ class O2TVModuleRecordings(CPModuleTemplate):
 					self.cp.add_video(title, thumb, info_labels, menu, cmd=self.play_recording, pvr_title=title, pvr_id=recordings[recording]["pvrProgramId"])
 				else:
 					self.cp.add_video(title, thumb, info_labels, menu)
-	
+
 	# #################################################################################################
 
 	def play_recording(self, pvr_title, pvr_id):
@@ -274,7 +277,7 @@ class O2TVModuleRecordings(CPModuleTemplate):
 		self.cp.refresh_screen()
 
 	# #################################################################################################
-	
+
 	def plan_recordings(self):
 		self.cp.load_channel_list()
 		enable_adult = self.cp.get_setting('enable_adult')
@@ -283,10 +286,10 @@ class O2TVModuleRecordings(CPModuleTemplate):
 			if not enable_adult and channel['adult']:
 				continue
 
-			self.cp.add_dir(channel['name'], img=channel['logo'], cmd=self.plan_recordings_for_channel, channel_key=channel['key'])
-	
+			self.cp.add_dir(channel['name'], img=channel['logo'], info_labels={'adult': channel['adult']}, cmd=self.plan_recordings_for_channel, channel_key=channel['key'])
+
 	# #################################################################################################
-	
+
 	def plan_recordings_for_channel(self, channel_key):
 		from_datetime = datetime.now()
 		from_ts = int(time.mktime(from_datetime.timetuple()))
@@ -316,7 +319,7 @@ class O2TVModuleRecordings(CPModuleTemplate):
 				menu = {}
 				self.cp.add_menu_item(menu, self._('Record the event'), cmd=self.cp.add_recording, epg_id=epg_id)
 				self.cp.add_video(title, img, info_labels, menu, cmd=self.cp.add_recording, epg_id=epg_id)
-		
+
 # #################################################################################################
 
 
@@ -351,7 +354,7 @@ class O2TVModuleExtra(CPModuleTemplate):
 			self.cp.add_video(title, info_labels=info_labels, menu=menu, download=False)
 
 	# #################################################################################################
-	
+
 	def delete_device(self, device_id):
 		self.cp.o2tv.device_remove(device_id)
 		self.cp.add_video(_C('red', self._('Device {device} was removed!').format(device=device_id)), download=False)
@@ -391,7 +394,7 @@ class O2TVContentProvider(ModuleContentProvider):
 		self.load_favourites()
 
 	# #################################################################################################
-	
+
 	def login(self, silent):
 		self.o2tv = None
 		self.channels = []
@@ -405,7 +408,7 @@ class O2TVContentProvider(ModuleContentProvider):
 		return True
 
 	# #################################################################################################
-	
+
 	def get_channels_checksum(self):
 		ctx = md5()
 		for ch in self.channels:
@@ -420,7 +423,7 @@ class O2TVContentProvider(ModuleContentProvider):
 			ctx.update(str(frozenset(item)).encode('utf-8'))
 
 		return ctx.hexdigest()
-	
+
 	# #################################################################################################
 
 	def load_channel_list(self):
@@ -428,10 +431,10 @@ class O2TVContentProvider(ModuleContentProvider):
 
 		if self.channels and self.channels_next_load_time > act_time:
 			return
-		
+
 		self.channels = self.o2tv.get_channels()
 		self.checksum = self.get_channels_checksum()
-		
+
 		self.channels_by_key = {}
 		for ch in self.channels:
 			self.channels_by_key[ch['key']] = ch

@@ -1,3 +1,6 @@
+2024-01-04 [3.12]
+* úpravy kvôli zmene spôsobu fungovania rodičovskej kontroly
+
 2024-01-03 [3.11]
 * vypnutie otvorenia SSL certifikátov
 

@@ -51,11 +51,14 @@ class OrangeTVModuleLiveTV(CPModuleLiveTV):
 				info_labels = {
 					'plot':epg['desc'],
 					'title': epg["title"],
-					'img': epg['img']
+					'img': epg['img'],
+					'adult': channel['adult']
 				}
 			else:
 				epg_str = ''
-				info_labels = {}
+				info_labels = {
+					'adult': channel['adult']
+				}
 
 			self.cp.add_video(channel['name'] + epg_str, img=channel['snapshot'], info_labels=info_labels, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_key=channel['key'])
 
@@ -88,9 +91,9 @@ class OrangeTVModuleArchive(CPModuleArchive):
 		for channel in self.cp.channels:
 			if not enable_adult and channel['adult']:
 				continue
-			
+
 			if channel['timeshift'] > 0:
-				self.add_archive_channel(channel['name'], channel['key'], channel['timeshift'], img=channel['logo'])
+				self.add_archive_channel(channel['name'], channel['key'], channel['timeshift'], img=channel['logo'], info_labels={'adult': channel['adult']})
 
 	# #################################################################################################
 
@@ -99,7 +102,7 @@ class OrangeTVModuleArchive(CPModuleArchive):
 
 		for epg in self.cp.orangetv.getArchivChannelPrograms(channel_id, ts_from, ts_to):
 			title = '%s - %s - %s' % (self.cp.timestamp_to_str(epg["start"]), self.cp.timestamp_to_str(epg["stop"]), _I(epg["title"]))
-			
+
 			info_labels = {
 				'plot': epg['plot'],
 				'title': epg["title"]
@@ -167,7 +170,7 @@ class OrangeTVModuleExtra(CPModuleTemplate):
 			self.cp.add_video(title, info_labels=info_labels, menu=menu, download=False)
 
 	# #################################################################################################
-	
+
 	def delete_device(self, device_id):
 		self.cp.orangetv.device_remove(device_id)
 		self.cp.add_video(_C('red', self._('Device {device} was removed!').format(device=device_id)), download=False)
@@ -200,7 +203,7 @@ class OrangeTVContentProvider(ModuleContentProvider):
 		]
 
 	# #################################################################################################
-	
+
 	def login(self, silent):
 		self.orangetv = None
 		self.channels = []
@@ -213,14 +216,14 @@ class OrangeTVContentProvider(ModuleContentProvider):
 		return True
 
 	# #################################################################################################
-	
+
 	def get_channels_checksum(self):
 		ctx = md5()
 		for ch in self.channels:
 			ctx.update(str(frozenset(ch.items())).encode('utf-8'))
 
 		return ctx.hexdigest()
-	
+
 	# #################################################################################################
 
 	def load_channel_list(self):
@@ -228,10 +231,10 @@ class OrangeTVContentProvider(ModuleContentProvider):
 
 		if self.channels and self.channels_next_load_time > act_time:
 			return
-		
+
 		self.channels = self.orangetv.get_live_channels()
 		self.checksum = self.get_channels_checksum()
-		
+
 		self.channels_by_key = {}
 		for ch in self.channels:
 			self.channels_by_key[ch['key']] = ch

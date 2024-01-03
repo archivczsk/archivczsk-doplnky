@@ -24,9 +24,9 @@ class SearchProvider(object):
 	def __init__(self, addon, name):
 		self.data_dir = addon.get_info('profile')
 		self.name = name
-	
+
 	# #################################################################################################
-	
+
 	def _get_searches(self, server):
 		if server == None:
 			server = ''
@@ -37,66 +37,66 @@ class SearchProvider(object):
 				searches = json.load(f)
 		except:
 			searches = []
-		
+
 		return searches
-	
+
 	# #################################################################################################
-	
+
 	def _cleanup_searches(self, server, searches, maximum=10, force_save=False):
 		remove = len(searches) - maximum
 		if remove > 0:
 			for i in range(remove):
 				searches.pop()
-		
+
 		if remove > 0 or force_save:
 			self._save_searches(searches, server)
-			
+
 		return searches
-	
+
 	# #################################################################################################
-	
+
 	def _save_searches(self, searches, server):
 		if server == None:
 			server = ''
 
 		local = os.path.join(self.data_dir, self.name + server)
-		
+
 		with open(local, 'w') as f:
 			json.dump(searches, f)
-			
+
 	# #################################################################################################
-	
+
 	def get_searches(self, server, maximum=10):
 		searches = self._get_searches(server)
 		return self._cleanup_searches(server, searches, maximum)
-	
+
 	# #################################################################################################
-	
+
 	def add_search(self, server, search, maximum=10):
 		searches = self._get_searches(server)
-		
+
 		if search in searches:
 			searches.remove(search)
-			
+
 		searches.insert(0, search)
 		self._cleanup_searches(server, searches, maximum, True)
 
 	# #################################################################################################
-	
+
 	def remove_search(self, server, search):
 		searches = self._get_searches(server)
 		searches.remove(search)
 		self._save_searches(searches, server)
 
 	# #################################################################################################
-	
+
 	def edit_search(self, server, search, replacement):
 		searches = self._get_searches(server)
 		searches.remove(search)
 		searches.insert(0, replacement)
 		self._save_searches(searches, server)
 
-	
+
 # #################################################################################################
 
 class ArchivCZSKContentProvider(object):
@@ -104,7 +104,7 @@ class ArchivCZSKContentProvider(object):
 	Provider should not have direct dependency to archivczsk. Instead of it uses "dummy" functions.
 	This is a interface, that "glues" archivczsk with provider based on CommmonContentProvider
 	"""
-	
+
 	def __init__(self, provider, addon):
 		self.provider = provider
 		self.addon = addon
@@ -113,7 +113,7 @@ class ArchivCZSKContentProvider(object):
 		self.searches = SearchProvider(addon, self.provider.name)
 		self.__playlist = []
 		self.login_refresh_running = False
-		
+
 		# set/overwrite interface methods for provider
 		self.provider.add_dir = self.add_dir
 		self.provider.add_search_dir = self.add_search_dir
@@ -137,6 +137,7 @@ class ArchivCZSKContentProvider(object):
 		self.provider.youtube_resolve = client.getVideoFormats
 		self.provider.get_addon_version = lambda: addon.version
 		self.provider.get_engine_version = lambda: archivczsk_version
+		self.provider.get_parental_settings = client.parental_pin.get_settings
 		self.initialised_cbk_called = False
 		self.login_tries = 0
 
@@ -159,7 +160,7 @@ class ArchivCZSKContentProvider(object):
 			self.login_delayed()
 
 	# #################################################################################################
-	
+
 	def log_debug(self, msg):
 		client.log.debug('[%s] %s' % (self.provider.name, msg))
 
@@ -192,7 +193,7 @@ class ArchivCZSKContentProvider(object):
 				value = self.addon.get_setting(name)
 				if value == "":
 					return False
-		
+
 		# check if we have correct time set - without correct time login process can fail
 		if int(time.time()) < 1678802000:
 			self.log_error("Time is not correct - returning unknown login state")
@@ -200,7 +201,7 @@ class ArchivCZSKContentProvider(object):
 
 		# pre-checks passed - process real login
 		logged_in = None
-		
+
 		try:
 			logged_in = self.provider.login(silent)
 		except LoginException as e:
@@ -215,7 +216,7 @@ class ArchivCZSKContentProvider(object):
 
 			if not silent:
 				self.show_error(_('Login ended with error') + ':\n' + str(e), True)
-		
+
 		return logged_in
 
 	# #################################################################################################
@@ -282,23 +283,23 @@ class ArchivCZSKContentProvider(object):
 			'CP_action': cmd if cmd else lambda *args: None,
 			'CP_args': cmd_args
 		}
-	
+
 	# #################################################################################################
-	
+
 	def __process_playlist(self):
-		# check if there are som playable items in playlist			
+		# check if there are som playable items in playlist
 		if len( self.__playlist ) == 1:
 			# only one item - create one normal video item
 			client.add_item(self.create_play_item(**self.__playlist[0]))
 		elif len( self.__playlist ) > 1:
 			# we have more streams - create playlist and play the first one
 			playlist = client.add_playlist(self.__playlist[0]['title'], variant=True)
-			
+
 			i = 1
 			for pl_item in self.__playlist:
 				# create nice names for streams
 				prefix = '[%d] ' % i
-				
+
 				for key in ('quality', 'bandwidth', 'vcodec', 'acodec', 'lang'):
 					if key in pl_item['info_labels']:
 						if key == 'bandwidth':
@@ -312,14 +313,14 @@ class ArchivCZSKContentProvider(object):
 				pl_item['title'] = prefix + pl_item['title']
 				playlist.add(self.create_play_item(**pl_item))
 				i += 1
-			
+
 		self.__playlist = []
-		
+
 	# #################################################################################################
 
 	def run(self, session, params, silent=False, allow_retry=True):
 		self.session = session
-		
+
 		if self.logged_in != True:
 			# this must be set to prevent calling login refresh when login config option changes during login phase
 			# for example when during login new device id is generated
@@ -388,16 +389,16 @@ class ArchivCZSKContentProvider(object):
 		if hasattr(self.provider, 'trakt'):
 			self.session = session
 			self.provider.trakt(item, action, result)
-		
+
 	# #################################################################################################
-	
+
 	def stats(self, session, item, action, **extra_params ):
 		if hasattr(self.provider, 'stats'):
 			self.session = session
 			self.provider.stats(item, action, **extra_params)
-	
+
 	# #################################################################################################
-	
+
 	def search(self, session, keyword, search_id):
 		self.run(session, self.action(self.do_search, search_id=search_id, what=keyword, save_history=False))
 
@@ -405,12 +406,12 @@ class ArchivCZSKContentProvider(object):
 
 	def search_list(self, search_id=None, save_history=True):
 		client.add_dir(_B(_('New search')), self.action(self.do_search, search_id=search_id, save_history=save_history), image=_icon('search.png'), search_item=True)
-		
+
 		try:
 			maximum = int(self.provider.get_setting('keep-searches'))
 		except:
 			maximum = 10
-		
+
 		for what in self.searches.get_searches(search_id, maximum):
 			menu_items = {
 				_('Remove'): self.action(self.search_remove, search_id=search_id, what=what),
@@ -419,13 +420,13 @@ class ArchivCZSKContentProvider(object):
 			client.add_dir(what, self.action(self.do_search, search_id=search_id, what=what, save_history=save_history), menuItems=menu_items)
 
 	# #################################################################################################
-	
+
 	def search_remove(self, search_id=None, what=''):
 		self.searches.remove_search(search_id, what)
 		client.refresh_screen()
 
 	# #################################################################################################
-	
+
 	def search_edit(self, search_id=None, what=''):
 		replacement = client.getTextInput(self.session, _('Search'), what)
 
@@ -434,13 +435,13 @@ class ArchivCZSKContentProvider(object):
 			client.refresh_screen()
 
 	# #################################################################################################
-	
+
 	def do_search(self, search_id=None, what='', save_history=True):
 		if what == '':
 			what = client.getTextInput(self.session, _('Search'))
-			
+
 		if not what == '':
-			
+
 			try:
 				maximum = int(self.provider.get_setting('keep-searches'))
 			except:
@@ -448,11 +449,11 @@ class ArchivCZSKContentProvider(object):
 
 			if save_history:
 				self.searches.add_search(search_id, what, maximum)
-				
+
 			self.provider.search(what, search_id)
 
 	# #################################################################################################
-	
+
 	def create_ctx_menu(self):
 		class CtxMenuInterface(object):
 			def __init__(self, aczsk_provider):
@@ -472,9 +473,9 @@ class ArchivCZSKContentProvider(object):
 
 	def add_media_menu_item(self, menu, title, cmd=None, **cmd_args):
 		menu[title] = [None, self.action(cmd, **cmd_args), True]
-		
+
 	# #################################################################################################
-	
+
 	def add_dir(self, title, img=None, info_labels={}, menu={}, data_item=None, trakt_item=None, cmd=None, **cmd_args):
 		"""
 		info_labels = {
@@ -488,14 +489,14 @@ class ArchivCZSKContentProvider(object):
 		if not isinstance(menu, dict):
 			menu = menu.menu
 		client.add_dir(title, self.action(cmd, **cmd_args), image=img, infoLabels=info_labels, menuItems=menu, video_item=False, dataItem=data_item, traktItem=trakt_item)
-		
+
 	# #################################################################################################
-	
+
 	def add_search_dir(self, title=None, search_id=None, img=None, info_labels={}, save_history=True):
 		client.add_dir(title if title else _B(_('Search')), self.action(self.search_list, search_id=search_id, save_history=save_history), image=img if img else _icon('search.png'), search_folder=True)
-		
+
 	# #################################################################################################
-	
+
 	def add_next(self, cmd, page_info=None, **cmd_args):
 		title = _B(_('Next'))
 
@@ -512,11 +513,11 @@ class ArchivCZSKContentProvider(object):
 		self.add_dir(title, _icon('next.png'), info_labels=info_labels, cmd=cmd, **cmd_args)
 
 	# #################################################################################################
-	
+
 	def _auto_play_video(self, title, urls, info_labels, data_item, trakt_item, download, **cmd_args):
 		if not isinstance(urls, type([])):
 			urls = [urls]
-		
+
 		for url in urls:
 			if isinstance( url, type({}) ):
 				info = {}
@@ -529,11 +530,11 @@ class ArchivCZSKContentProvider(object):
 				self.add_play(title, url, info_labels=info_labels, data_item=data_item, trakt_item=trakt_item, download=download, **cmd_args)
 
 	# #################################################################################################
-	
+
 	def create_video_item(self, title, img=None, info_labels={}, menu={}, data_item=None, trakt_item=None, download=True, cmd=None, **cmd_args):
 		"""
 		Actually the same as directory, but with different icon - should produce resolved video items using add_play()
-		
+
 		If cmd is callable, then it is called to produce resovled videos
 		If cmd is dictionary, then it can hold informations about resolved video stream
 		If cmd is string, then it holds direct url of resolved video
@@ -552,7 +553,7 @@ class ArchivCZSKContentProvider(object):
 	def add_video(self, *args, **kwargs):
 		item = self.create_video_item(*args, **kwargs)
 		client.add_item(item)
-	
+
 	# #################################################################################################
 
 	def create_play_item(self, title, url, info_labels={}, data_item=None, trakt_item=None, subs=None, settings=None, live=False, download=True):
@@ -592,9 +593,9 @@ class ArchivCZSKContentProvider(object):
 				self.playlist.add(self.aczsk_provider.create_video_item(*args, **kwargs))
 
 		return PlaylistInterface(self, client.add_playlist(title, variant=variant))
-		
+
 	# #################################################################################################
-	
+
 	def show_error(self, msg, noexit=False, timeout=0):
 		if noexit:
 			client.show_message(self.session, msg, msg_type='error', timeout=timeout)
@@ -602,7 +603,7 @@ class ArchivCZSKContentProvider(object):
 			client.showError(msg)
 
 	# #################################################################################################
-	
+
 	def show_warning(self, msg, noexit=False, timeout=0):
 		if noexit:
 			client.show_message(self.session, msg, msg_type='warning', timeout=timeout)
@@ -610,15 +611,15 @@ class ArchivCZSKContentProvider(object):
 			client.showWarning(msg)
 
 	# #################################################################################################
-	
+
 	def show_info(self, msg, noexit=False, timeout=0):
 		if noexit:
 			client.show_message(self.session, msg, msg_type='info', timeout=timeout)
 		else:
 			client.showInfo(msg)
-		
+
 	# #################################################################################################
-	
+
 	def get_yes_no_input(self, msg):
 		return client.getYesNoInput(self.session, msg)
 
@@ -642,7 +643,7 @@ class ArchivCZSKContentProvider(object):
 			return None
 
 	# #################################################################################################
-	
+
 	def refresh_screen(self):
 		client.refresh_screen()
 

@@ -1,3 +1,6 @@
+2.8:
+- úpravy kvôli zmene spôsobu fungovania rodičovskej kontroly
+
 2.7:
 - oprava kamier
 - oprava kvality pre logá a picony

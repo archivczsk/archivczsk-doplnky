@@ -1,3 +1,6 @@
+1.10 - 03.01.2024
+    - úpravy kvôli zmene spôsobu fungovania rodičovskej kontroly
+
 1.9 - 08.09.2023
     - oprava registrácie nového zariadenia (thx 005jon)
     - oprava vynúteného odhásenia
@@ -13,7 +16,7 @@
 
 1.5 - 29.01.2023
     - konverzia na modul pre archivCZSK >= 2.0.0
-    
+
 1.4 - 27.12.2022
     - oprava prehrávania filmov a trailerov
 

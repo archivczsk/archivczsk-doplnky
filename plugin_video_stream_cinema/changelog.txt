@@ -1,3 +1,6 @@
+2023-01-03 3.9
+    - úpravy kvôli zmene spôsobu fungovania rodičovskej kontroly
+
 2023-12-30 3.8
     - aplikovanie zmeny timeoutu bez reštartu
 
@@ -55,7 +58,7 @@
 
 2023-01-27 2.1.0
     - konverzia na modul pre archivCZSK >= 2.0.0
-    
+
 2022-07-12 2.0.4
     - konf. voľba určujúca maximálnu pozíciu pre ukladanie obnovenie prehrávania
 
@@ -65,7 +68,7 @@
 
 2022-06-03 2.0.2
     - oprava refresu prihlasovacieho tokenu pre krasku a webshare
-    
+
 2022-05-13 2.0.1
     - pridanie možnosti prehrať trailer
     - oprava pádu pri filtrovaní streamov
@@ -102,7 +105,7 @@
     - oprava spravania pre DM
     - aktualizacia VIP days tiez pri nacitani zoznamu streamov
     - drobne vylepsenia
-    - oprava nacitavania videnych poloziek 
+    - oprava nacitavania videnych poloziek
     - oprava huste.tv
 
 2018-06-23 verzia 1.3.5
@@ -115,7 +118,7 @@
     - drobne opravy
       ( nutnost mat archivCZSK v1.1 )
     - rozsirena funkcionalita trakt.tv (pridanie, vymazanie, oznacenie ako videne/nevidene)
-    - pri pridavani/vymazani serialu do/z watchlistu je jedno ci vyberiete cely serial, seriu alebo epizodu 
+    - pri pridavani/vymazani serialu do/z watchlistu je jedno ci vyberiete cely serial, seriu alebo epizodu
     - moznost oznacit/schovat videny film/epizodu (oznacenie prida hviezdicku na koniec nazvu)
     - oprava parovania trakt.tv pre OE2.5 (Dreambox,...)
 
@@ -137,13 +140,13 @@
 
 2018-01-28 verzia 1.2.5
     - fix DM crash when too many requests
-  
+
 2018-01-20 verzia 1.2.4
     - functionality improvements
     - redo stream choice (+ not resolving each stream)
     - option to use https protocol
     (usefull for parrents deplyoment)
-    - option to filter streams by size 
+    - option to filter streams by size
     - option to hide HEVC(HDR), 3D streams
 
 2017-12-29 verzia 1.2.3
@@ -179,10 +182,10 @@
     - add info (in setting) about days left of VIP account
     - bit performance enhancment
     - fix now you can enter login or password by virtual keyboard (auto replace XcursorX after save settings and do some action)
-    
+
 2017-09-26 verzia 1.1.2
     - new api 1.2
     - set up order items in Movies & Series category: Country, Quality, Genre
 
-2017-08-03 verzia 1.1.1 
+2017-08-03 verzia 1.1.1
     - new api 1.1

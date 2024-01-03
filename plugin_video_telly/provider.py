@@ -49,11 +49,14 @@ class TellyModuleLiveTV(CPModuleLiveTV):
 					'title': epg["title"],
 					'img': epg['img'],
 					'year': epg['year'],
-					'rating': epg['rating']
+					'rating': epg['rating'],
+					'adult': channel.adult
 				}
 			else:
 				epg_str = ''
-				info_labels = {}
+				info_labels = {
+					'adult': channel.adult
+				}
 
 			self.cp.add_video(channel.name + epg_str, img=channel.preview, info_labels=info_labels, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel.name, channel_url=channel.stream_url)
 
@@ -86,9 +89,9 @@ class TellyModuleArchive(CPModuleArchive):
 		for channel in self.cp.channels:
 			if not enable_adult and channel.adult:
 				continue
-			
+
 			if channel.timeshift > 0:
-				self.add_archive_channel(channel.name, (channel.id, channel.epg_id,), channel.timeshift, img=channel.picon)
+				self.add_archive_channel(channel.name, (channel.id, channel.epg_id,), channel.timeshift, img=channel.picon, info_labels={'adult': channel.adult})
 
 	# #################################################################################################
 
@@ -97,7 +100,7 @@ class TellyModuleArchive(CPModuleArchive):
 
 		for epg in self.cp.telly.get_archiv_channel_programs(channel_id[1], ts_from, ts_to):
 			title = '%s - %s - %s' % (self.cp.timestamp_to_str(epg["start"]), self.cp.timestamp_to_str(epg["end"]), _I(epg["title"]))
-			
+
 			info_labels = {
 				'plot': epg['desc'],
 				'title': epg["title"],
@@ -157,7 +160,7 @@ class TellyContentProvider(ModuleContentProvider):
 		]
 
 	# #################################################################################################
-	
+
 	def login(self, silent):
 		self.telly = None
 		self.channels = []
@@ -182,7 +185,7 @@ class TellyContentProvider(ModuleContentProvider):
 		return True
 
 	# #################################################################################################
-	
+
 	def get_channels_checksum(self):
 		ctx = md5()
 		for ch in self.channels:
@@ -196,7 +199,7 @@ class TellyContentProvider(ModuleContentProvider):
 			ctx.update(str(frozenset(item)).encode('utf-8'))
 
 		return ctx.hexdigest()
-	
+
 	# #################################################################################################
 
 	def load_channel_list(self):
@@ -204,10 +207,10 @@ class TellyContentProvider(ModuleContentProvider):
 
 		if self.channels and self.channels_next_load_time > act_time:
 			return
-		
+
 		self.channels = self.telly.get_channel_list()
 		self.checksum = self.get_channels_checksum()
-		
+
 		self.channels_by_id = {}
 		for ch in self.channels:
 			self.channels_by_id[ch.id] = ch

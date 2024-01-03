@@ -59,7 +59,7 @@ class DummyAddonBackgroundService(object):
 	@staticmethod
 	def run_delayed(name, delay_seconds, cbk, *args, **kwargs):
 		pass
-		
+
 # #################################################################################################
 
 class CommonContentProvider(object):
@@ -228,11 +228,11 @@ class CommonContentProvider(object):
 				return self.settings.get(name)
 			elif callable(self.settings):
 				return self.settings(name)
-		
+
 		return None
 
 	# #################################################################################################
-	
+
 	def set_setting(self, name, value):
 		"""
 		Sets value of a setting with name
@@ -256,9 +256,9 @@ class CommonContentProvider(object):
 			self.log_exception()
 			# fallback
 			pass
-		
+
 	# #################################################################################################
-	
+
 	def load_cached_data(self, name):
 		ret = {}
 		try:
@@ -266,7 +266,7 @@ class CommonContentProvider(object):
 				ret = json.load(f)
 		except:
 			pass
-		
+
 		return ret
 
 	# #################################################################################################
@@ -278,7 +278,7 @@ class CommonContentProvider(object):
 		except:
 			self.log_error(traceback.format_exc())
 			pass
-	
+
 	# #################################################################################################
 
 	def update_cached_data(self, name, data):
@@ -287,7 +287,7 @@ class CommonContentProvider(object):
 		self.save_cached_data(name, data_loaded)
 
 	# #################################################################################################
-	
+
 	def get_settings_checksum(self, names, extra=None):
 		'''
 		Creates checksum of values of settings with provided names + extra parameter. It is usefull when one needs to chceck if cached data (like session, access token, ...) was created
@@ -447,7 +447,7 @@ class CommonContentProvider(object):
 			'acodec'
 			'lang'
 		}
-		
+
 		settings - dictionary with settings for player:
 		{
 			'resume_time_sec': resume time
@@ -554,3 +554,18 @@ class CommonContentProvider(object):
 		Returns name of current addon virtual profile or empty string if running in main profile
 		'''
 		return ''
+
+	def get_parental_settings(self, name=None):
+		'''
+		Returns current parental control configuration
+		'''
+		s = {
+			'unlocked': True,
+			'show_adult': True,
+			'show_posters': True
+		}
+
+		if name != None:
+			return s.get(name)
+		else:
+			return s

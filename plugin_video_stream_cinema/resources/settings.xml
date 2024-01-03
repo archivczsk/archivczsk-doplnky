@@ -21,6 +21,7 @@
 	<category label="Filters">
 		<setting label="Language of dubbed entries and menu" id="dubbed-lang" type="keyenum" values="auto;Auto|cs;CZ|sk;SK|cs+sk;CZ &amp; SK|sk+cs;SK &amp; CZ|en;EN" default="auto" />
 		<setting label="Maturity rating" id="maturity-rating" type="keyenum" values="-1;None|0;0|6;6|12;12|15;15" default="-1" />
+		<setting label="Enable adult content" id="enable-adult" type="bool" default="true" />
 		<setting label="Filter items by lanuage" id="item-lang-filter" type="keyenum" values="all;All|dubsubs;Only dubbed or subs|dub;Only dubbed" default="all" />
 		<setting label="Filter streams by language" id="stream-lang-filter" type="keyenum" values="all;All|cs+sk;CZ &amp; SK|cs;CZ|sk;SK|en;EN" default="all" />
 		<setting label="Minimal offered stream quality" id="min-quality" type="keyenum" values="0;All|720;720p|1080;1080p|2160;4k" default="720" />

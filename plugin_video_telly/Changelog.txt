@@ -1,3 +1,6 @@
+1.2.0 - 03.01.2024
+    - úpravy kvôli zmene spôsobu fungovania rodičovskej kontroly
+
 1.1.6 - 16.05.2023
     - pridaná podpora pre priame otvorenie archívu z userbouquetu
 
@@ -21,13 +24,13 @@
 
 1.0.3 - 01.12.2022
     - podpora pre zapínanie/vypínanie podpornej služby podľa potreby
-    
+
 1.0.2 - 26.07.2022
     - pridaná možnosť vynútiť streamovanie cez http namiesto https
 
 1.0.1 - 22.07.2022
     - oprava behu na python3 a DreamOS
-    
+
 1.0.0 - 18.07.2022
     - úvodná verejná verzia
 	- podpora pre Live TV, archív a userbouquet

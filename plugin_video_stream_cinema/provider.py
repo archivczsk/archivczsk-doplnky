@@ -57,7 +57,7 @@ _KODI_SORT_METHODS = {
 # #################################################################################################
 
 class StreamCinemaContentProvider(CommonContentProvider):
-	
+
 	def __init__(self, settings=None, data_dir=None):
 		CommonContentProvider.__init__(self, 'stream-cinema', settings=settings, data_dir=data_dir)
 		self.login_optional_settings_names = ('kruser', 'krpass', 'ptouser', 'ptopass')
@@ -87,7 +87,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			self.set_setting('krvipdays', str(days_left))
 
 		return days_left
-	
+
 	# ##################################################################################################################
 
 	def login(self, silent):
@@ -114,9 +114,9 @@ class StreamCinemaContentProvider(CommonContentProvider):
 					return False
 
 		return True
-	
+
 	# ##################################################################################################################
-	
+
 	def root(self):
 		self.build_lang_lists()
 		self.kraska_update_vipdays()
@@ -124,7 +124,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		return self.render_menu('/')
 
 	# #################################################################################################
-	
+
 	def build_lang_lists(self):
 		self.dubbed_lang_list = self.get_dubbed_lang_list()
 		self.lang_list = self.dubbed_lang_list[:]
@@ -136,12 +136,12 @@ class StreamCinemaContentProvider(CommonContentProvider):
 	def fill_trakt_info(self, menu_item, is_watched=None ):
 		if not self.get_setting('trakt_enabled') or 'unique_ids' not in menu_item:
 			return None
-		
+
 		mediatype = menu_item.get('info',{}).get('mediatype')
-		
+
 		if mediatype == None:
 			return None
-		
+
 		if mediatype == 'movie':
 			trakt_type = 'movie'
 		else:
@@ -154,11 +154,11 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			'episode' : menu_item['info'].get('episode') if mediatype == 'episode' else None,
 			'season': menu_item['info'].get('season') if mediatype in ('episode', 'season') else None,
 		}
-		
+
 		return { k: v for k, v in trakt_items.items() if v is not None }
 
 	# #################################################################################################
-	
+
 	def play_trailer(self, media_title, url):
 		if not url.startswith('http'):
 			url = "https://" + url.lstrip('./')
@@ -176,9 +176,9 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 	def render_menu(self, url, params=None, data=None):
 		result = []
-		
+
 		resp = self.api.call_api(url, data=data, params=params)
-		
+
 		for menu_item in resp.get('menu', []):
 			ctx_menu = self.create_ctx_menu()
 			data_item = {}
@@ -199,7 +199,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 				lid = menu_item.get('lid')
 				mid = menu_item['unique_ids'].get('sc')
 				data_item.update({ 'url': menu_item['url'], 'lid': lid, 'mid': mid })
-				
+
 				if self.get_setting('trakt_enabled'):
 					# check if this item is watched
 					if menu_item['type'] == 'video':
@@ -239,11 +239,11 @@ class StreamCinemaContentProvider(CommonContentProvider):
 					self.log_info("UNHANDLED ACTION: %s" % menu_item['action'])
 			else:
 				self.log_info("UNHANDLED ITEM TYPE: %s" % menu_item['type'])
-				
+
 		return result
-	
+
 	# #################################################################################################
-	
+
 	def search(self, keyword, search_id):
 		query = {
 			'search': keyword,
@@ -253,23 +253,39 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			query['ms'] = '1'
 
 		return self.render_menu('/Search/' + search_id, params=query)
-	
+
 	# #################################################################################################
-	
-	def get_i18n_list(self, i18n_base ):
+
+	def get_i18n_list(self, i18n_base, lang_list=None ):
 		if isinstance(i18n_base, (type(u''), type(''),)):
 			# hack to solve bad data returned for movies, when i18n_base is not dictionary but directly title name
 			return { 'title': i18n_base }
 
+		if lang_list == None:
+			lang_list = self.lang_list
+
 		if isinstance(i18n_base, type({})):
-			for l in self.lang_list:
+			for l in lang_list:
 				if l in i18n_base:
 					return i18n_base[l]
-			
+
 		return None
-		
+
 	# #################################################################################################
-	
+
+	def is_adult(self, sc_item):
+		info = self.get_i18n_list( sc_item.get('i18n_info', {}), ['en'] )
+		if not info:
+			return False
+
+		for g in info.get('genre', []):
+			if g.lower() in ('erotic', 'adult', 'pornographic', 'porn'):
+				return True
+
+		return False
+
+	# #################################################################################################
+
 	def show_trakt_list(self, user, list_id):
 		@lru_cache(30, timeout=1800)
 		def get_list_items(list_id, user):
@@ -340,10 +356,10 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			self.add_next(cmd=self.add_sc_trakt_dir, page_info=(page + 2), dir_type=dir_type, page=page + 1)
 
 	# #################################################################################################
-	
+
 	def add_sc_dir_item(self, sc_item, ctx_menu, data_item, trakt_item, is_watched):
 		url = sc_item.get('url')
-		
+
 		visible = sc_item.get('visible', '')
 		if visible.startswith('sc://config(stream.dubed') and self.get_setting('item-lang-filter') == 'dub':
 			# do not show this item, if only dubed movies are allowed
@@ -353,14 +369,18 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		if not url:
 			self.log_debug("No url for %s" % str(sc_item))
 			return
-		
+
 #		if url == '/huste': #hack to not show Huste TV dir
 #			return None
-			
+
 		info_labels = {}
-		
+
 		title = sc_item.get('title')
 		otitle = title
+
+		info_labels['adult'] = self.is_adult(sc_item)
+		if self.get_setting('enable-adult') == False and info_labels['adult']:
+			return
 
 		info = self.get_i18n_list( sc_item.get('i18n_info', {}) )
 
@@ -384,7 +404,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 				title += _B(' *')
 			else:
 				title += ' *'
-				
+
 		info = self.get_i18n_list( sc_item.get('i18n_art', {}) )
 		if info:
 			img = self.get_poster_url(info.get('poster'))
@@ -397,7 +417,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 					img = _KODI_IMG_URL + _KODI_IMG_MAP[ img ]
 				else:
 					img = None
-		
+
 		info = sc_item.get('info', {})
 		info_labels['year'] = info.get('year')
 		info_labels['title'] = otitle
@@ -427,7 +447,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			info_labels['title'] += ep_code
 
 			search_query = otitle + ep_code2
-			ctx_menu.add_menu_item(self._('Search on prehraj.to'), cmd=self.prehrajto_search, keyword=search_query)			
+			ctx_menu.add_menu_item(self._('Search on prehraj.to'), cmd=self.prehrajto_search, keyword=search_query)
 		else:
 			if info_labels['year']:
 				info_labels['title'] += ' (%s)' % info_labels['year']
@@ -435,10 +455,10 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		self.add_dir(title, img or self.get_poster_url(None), info_labels, menu=ctx_menu, data_item=data_item, trakt_item=trakt_item, cmd=self.render_menu, url=url)
 
 	# #################################################################################################
-	
+
 	def add_sc_video_item(self, sc_item, ctx_menu, data_item, trakt_item, is_watched):
 		url = sc_item['url']
-		
+
 		info_labels = {}
 
 		info = self.get_i18n_list( sc_item.get('i18n_info') )
@@ -446,7 +466,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		genre = ' / '.join( info.get('genre', []))
 		if len(genre) > 0:
 			genre = '[' + genre + ']\n'
-		
+
 		title = info.get('title', "???").replace('[LIGHT]', '').replace('[/LIGHT]', '')
 		otitle = info.get('otitle') or title
 
@@ -456,10 +476,14 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		info_labels['plot'] = genre + info.get('plot', '')
 		info_labels['genre'] = ', '.join(info.get('genre', []))
 #		sorttitle = info.get('sorttitle','')
-		
-		info = self.get_i18n_list( sc_item.get('i18n_art') )		
+
+		info = self.get_i18n_list( sc_item.get('i18n_art') )
 		img = self.get_poster_url(info.get('poster'))
-		
+
+		info_labels['adult'] = self.is_adult(sc_item)
+		if self.get_setting('enable-adult') == False and info_labels['adult']:
+			return
+
 		info = sc_item.get('info',{})
 		info_labels['year'] = info.get('year')
 		info_labels['title'] = otitle
@@ -489,29 +513,29 @@ class StreamCinemaContentProvider(CommonContentProvider):
 				info_labels['title'] += ' (%s)' % info_labels['year']
 
 		search_query = otitle + ep_code2 + ' ' + str(info.get('year', ""))
-		
+
 		if self.get_setting('prehrajto-primary'):
 			self.add_dir(title, img, info_labels, menu=ctx_menu, data_item=data_item, trakt_item=trakt_item, cmd=self.prehrajto_search, keyword=search_query)
 		else:
 			ctx_menu.add_menu_item(self._('Search on prehraj.to'), cmd=self.prehrajto_search, keyword=search_query)
 			self.add_video(title, img, info_labels, menu=ctx_menu, data_item=data_item, trakt_item=trakt_item, cmd=self.resolve_video_streams, url=url, info=info_labels)
-	
+
 	# #################################################################################################
-	
+
 	def add_sc_search_item(self, sc_item):
 		info = self.get_i18n_list( sc_item.get('i18n_info') )
-		
+
 		self.add_search_dir(info.get('title'), sc_item.get('id'), img=sc_item.get('art', {}).get('icon'))
 
 	# #################################################################################################
 
 	def add_sc_last_seen_dir(self, sc_item):
 		lid = sc_item.get('id')
-		
+
 		# if there are no items in history, then do not show this dir
 		if len(self.watched.get(lid)) == 0:
 			return
-		
+
 		info = self.get_i18n_list( sc_item.get('i18n_info') )
 		self.add_dir(info.get('title'), sc_item.get('art', {}).get('icon'), cmd=self.render_menu, url='/Last', data={ 'ids': json.dumps(self.watched.get(lid)) })
 
@@ -534,9 +558,9 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		video_url, subs_url = self.prehrajto.resolve_video(video_id)
 		if video_url:
 			self.add_play(video_title, video_url, subs=subs_url)
-		
+
 	# #################################################################################################
-	
+
 	def update_url_filter(self, url, key, value ):
 		u = urlparse( url )
 		q = dict(parse_qsl( u.query ))
@@ -544,17 +568,17 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			q.update( { key: value } )
 		elif value in q:
 			del q[value]
-		
+
 		res = urlunparse( ('', '', u.path, '', urlencode(q), '') )
 		return res
-		
+
 	# #################################################################################################
-	
+
 	def add_filter_ctx_menu(self, ctx_menu, url, filter_data, sort_methods, params, data):
 		if not filter_data:
 			# nothing to filter
 			return
-		
+
 		od = filter_data.get('od', '')
 		if od == 'asc':
 			url2 = self.update_url_filter( url, 'od', 'desc')
@@ -562,15 +586,15 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		elif od == "desc":
 			url2 = self.update_url_filter( url, 'od', 'asc')
 			ctx_menu.add_menu_item(self._("Order ascending (A-Z)"), cmd=self.render_menu, url=url2, params=params, data=data)
-		
+
 		if sort_methods and 0 not in sort_methods:
 			ctx_menu.add_menu_item(self._("Sort"), cmd=self.set_sort, url=url, sort_methods=sort_methods, params=params, data=data)
-		
+
 		if od != '':
 			ctx_menu.add_menu_item(self._("Filter by year"), cmd=self.filter_by_year, url=url, params=params, data=data)
-	
+
 	# #################################################################################################
-	
+
 	def set_sort(self, url, sort_methods, params, data):
 		lang_code = self.dubbed_lang_list[0]
 
@@ -614,7 +638,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			self.refresh_screen()
 
 	# #################################################################################################
-	
+
 	def get_dubbed_lang_list(self):
 		dl = self.get_setting('dubbed-lang')
 
@@ -634,7 +658,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 	def get_poster_url(self, url):
 		if not url:
 			return 'https://stream-cinema.online/images/poster_300x200.jpg'
-		
+
 		if 'image.tmdb.org' in url:
 			return url.replace('original', 'w400')
 		elif 'img.csfd.cz' in url:
@@ -647,13 +671,13 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 	def parse_hr_size( self, size ):
 		units = {"B": 1, "KB": 2**10, "MB": 2**20, "GB": 2**30, "TB": 2**40}
-		
+
 		try:
 			number, unit = [string.strip() for string in size.split()]
 			return int(float(number.replace(',','')) * units[unit])
 		except:
 			return None
-	
+
 	# #################################################################################################
 
 	def filter_streams(self, streams ):
@@ -681,7 +705,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 				if file_size and file_size > max_file_size:
 					self.log_debug("Stream filtered due size %s" % strm.get('size', '???'))
 					continue
-			
+
 			# hevc filter
 			if not enable_hevc and strm.get('stream_info', {}).get('HEVC', 0) == 1:
 				self.log_debug("Stream filtered due HEVC")
@@ -726,17 +750,17 @@ class StreamCinemaContentProvider(CommonContentProvider):
 				if strm_quality < min_quality:
 					self.log_debug("Stream filtered due min quality (%d < %d)" % (strm_quality, min_quality))
 					continue
-				
-			
+
+
 				# max quality filter: 720p|1080p|4k|8k
 				if strm_quality > max_quality:
 					self.log_debug("Stream filtered due max quality (%d > %d)" % (strm_quality, max_quality))
 					continue
-			
+
 			#lang filter
 			# ALL|CZ or SK|CZ|SK|EN
 			avail_langs = strm.get('stream_info',{}).get('langs')
-			
+
 			if lang_filter != 'all' and avail_langs:
 				if lang_filter == 'cs+sk': # CZ or SK
 					ll = [ 'CZ', 'SK']
@@ -767,23 +791,23 @@ class StreamCinemaContentProvider(CommonContentProvider):
 					else:
 						self.log_debug("Stream filtered due lang 2")
 						continue
-			
+
 			self.log_debug("Stream added")
 			# strm passed filtering
 			result.append(strm)
-			
+
 		return result
-	
+
 	# #################################################################################################
 
 	def resolve_video_streams(self, url, info):
 		# get info about files from stream cinema
 		result = self.api.call_api(url)
-		
+
 		streams = result.get('strms')
 		if not streams:
 			return
-		
+
 		streams_filtered = self.filter_streams( streams )
 		idx = None
 		if len( streams_filtered ) > 0:
@@ -793,12 +817,12 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		else:
 			# no stream passed filtering - let the user decide what now
 			pass
-		
+
 		titles = []
 		for strm in streams:
 			title = "[%s%s][%s][%s][%s]" % (_I(strm['quality']), strm['vinfo'], strm['size'], _I(strm['lang']), strm['ainfo'][2:].replace('[', '').replace(']', ''))
 			titles.append( title )
-		
+
 		if idx == None:
 			idx = self.get_list_input(titles, self._('Please select a stream'))
 			if idx == -1:
@@ -883,7 +907,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		return skip_times if len(skip_times) > 0 else None
 
 	# #################################################################################################
-	
+
 	def kraska_resolve(self, media_title, url, subs_url, skip_times, settings, play_params={}):
 		if subs_url and subs_url.startswith('https://kra.sk/file/'):
 			subs_url = subs_url[20:]
@@ -915,15 +939,15 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			url = None
 			lid = None
 			mid = None
-			
+
 		try:
 			if action.lower() == 'play':
 				if lid and mid:
 					self.watched.set( lid, mid )
-				
+
 			elif action.lower() == 'watching':
 				pass
-				
+
 			elif action.lower() == 'end':
 				if url and position and self.get_setting('save-last-play-pos'):
 					if not duration or position < (duration * int(self.get_setting('last-play-pos-limit'))) // 100:
@@ -931,9 +955,9 @@ class StreamCinemaContentProvider(CommonContentProvider):
 					else:
 						# remove saved position from database
 						self.watched.set_last_position( url, None )
-					
+
 				self.watched.save()
-				
+
 		except:
 			self.log_error("Stats processing failed")
 			self.log_exception()

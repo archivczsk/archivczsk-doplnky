@@ -32,7 +32,7 @@ class AntikTVModuleLiveTV(CPModuleLiveTV):
 	def get_live_tv_categories(self):
 		self.add_live_tv_category(self.cp._("All"), None)
 		for cat in self.cp.atk.get_categories(self.channel_type):
-			self.add_live_tv_category(cat['name'], cat['id'])
+			self.add_live_tv_category(cat['name'], cat['id'], info_labels={'adult': cat['id'] == 9})
 
 	# #################################################################################################
 
@@ -65,32 +65,25 @@ class AntikTVModuleLiveTV(CPModuleLiveTV):
 
 			info_labels = {
 				'plot': time_prefix + epg.get("desc", ""),
-				'title': title
+				'title': title,
+				'adult': channel['adult']
 			}
 
-			if not channel["adult"] or self.cp.pin_entered:
+			if not channel["adult"] or self.cp.get_parental_settings('show_posters'):
 				img = channel.get("snapshot") or channel.get("logo").replace('.png', '_608x608.png').replace('&w=50', '&w=608')
 			else:
 				img = channel.get("logo").replace('.png', '_608x608.png').replace('&w=50', '&w=608')
 
-			self.cp.add_video(channel["name"] + epg_str, img, info_labels=info_labels, download=False, cmd=self.resolve_play_url, channel_title=channel['name'], channel_id=channel['id'], epg_title=title, adult=channel['adult'])
+			self.cp.add_video(channel["name"] + epg_str, img, info_labels=info_labels, download=False, cmd=self.resolve_play_url, channel_title=channel['name'], channel_id=channel['id'], epg_title=title)
 
 	# #################################################################################################
-	
-	def resolve_play_url(self, channel_title, channel_id, epg_title, adult):
-		if adult and not self.cp.pin_entered:
-			answer = self.cp.get_text_input(self._('Please enter parental control pin'), input_type='pin')
-			if answer == None:
-				return
-			elif not self.cp.check_pin(answer):
-				self.cp.show_info(self._('Entered pin code is incorrect'), noexit=True)
-				return
 
+	def resolve_play_url(self, channel_title, channel_id, epg_title):
 		url = self.channel_id_to_url(channel_id)
 		self.cp.add_play(epg_title, url, info_labels={'title': channel_title})
-	
+
 	# #################################################################################################
-	
+
 	def channel_id_to_url(self, channel_id):
 		url = self.cp.atk.get_direct_stream_url(self.channel_type, channel_id)
 
@@ -133,7 +126,8 @@ class AntikTVModuleArchive(CPModuleArchive):
 				continue
 
 			if channel["archive"]:
-				self.add_archive_channel(channel['name'], channel["id"], 480, img=channel.get('logo').replace('.png', '_608x608.png').replace('&w=50', '&w=608'), show_archive_len=False)
+				info_labels = { 'adult': channel['adult'] }
+				self.add_archive_channel(channel['name'], channel["id"], 480, img=channel.get('logo').replace('.png', '_608x608.png').replace('&w=50', '&w=608'), info_labels=info_labels, show_archive_len=False)
 
 	# #################################################################################################
 
@@ -172,10 +166,11 @@ class AntikTVModuleArchive(CPModuleArchive):
 					'plot': epg.get("description"),
 					'title': epg["title"],
 					'genre': ', '.join(epg.get('genres', [])),
-					'duration': epg['duration']
+					'duration': epg['duration'],
+					'adult': channel['adult']
 				}
-				img = epg.get('image') if not channel['adult'] or self.cp.pin_entered else None
-				self.cp.add_video(title, img, info_labels, cmd=self.get_archive_url, epg_title=str(epg["title"]), channel_id=channel['id_content'], epg_start=epg_start, epg_stop=epg_stop, adult=channel['adult'])
+				img = epg.get('image') if not channel['adult'] or self.cp.get_parental_settings('show_posters') else None
+				self.cp.add_video(title, img, info_labels, cmd=self.get_archive_url, epg_title=str(epg["title"]), channel_id=channel['id_content'], epg_start=epg_start, epg_stop=epg_stop)
 
 	# #################################################################################################
 
@@ -250,15 +245,7 @@ class AntikTVModuleArchive(CPModuleArchive):
 
 	# #################################################################################################
 
-	def get_archive_url(self, epg_title, channel_id, epg_start, epg_stop, adult=False):
-		if adult and not self.cp.pin_entered:
-			answer = self.cp.get_text_input(self._('Please enter parental control pin'), input_type='pin')
-			if answer == None:
-				return
-			elif not self.cp.check_pin(answer):
-				self.cp.show_info(self._('Entered pin code is incorrect'), noexit=True)
-				return
-
+	def get_archive_url(self, epg_title, channel_id, epg_start, epg_stop):
 		key = '%s$%s$%s$%s' % (self.channel_type, channel_id, epg_start, epg_stop)
 		url = self.cp.http_endpoint + '/playarchive/' + base64.b64encode(key.encode('utf-8')).decode('utf-8')+ '.m3u8'
 		self.cp.add_play(epg_title, url)
@@ -303,7 +290,6 @@ class AntikTVModuleExtra(CPModuleTemplate):
 		self.cp.add_dir(self._("Purchased packages"), cmd=self.packages)
 		self.cp.add_video(self._("Refresh channel list"), cmd=self.update_channels)
 		self.cp.add_video(self._("Request device identification code"), cmd=self.get_device_support_id)
-		self.cp.add_video(self._("Parental control PIN"), cmd=self.parental_pin, info_labels={'plot': self._('Default PIN is 0000. Please change it to your own value.')})
 		self.cp.add_video(self._("Logout from this device"), cmd=self.logout)
 
 	# #################################################################################################
@@ -321,34 +307,6 @@ class AntikTVModuleExtra(CPModuleTemplate):
 
 	# #################################################################################################
 
-	def parental_pin(self):
-		answer = self.cp.get_text_input(self._('Please enter current parental control pin'), input_type='pin')
-		if answer == None:
-			return
-
-		if not self.cp.check_pin(answer):
-			self.cp.show_error(self._("Entered pin code is incorrect"), noexit=True)
-			return
-
-		answer = self.cp.get_text_input(self._('Please enter new parental control pin'), input_type='pin')
-		if answer == None:
-			return
-
-		answer2 = self.cp.get_text_input(self._('Please repeat new parental control pin'), input_type='pin')
-		if answer2 == None:
-			return
-
-		if answer != answer2:
-			self.cp.show_error(self._("Parental control pins differs"), noexit=True)
-			return
-
-		self.cp.set_setting('pin', str(int(answer) * 8637 + 729))
-		self.cp.pin_entered = False
-
-		self.cp.show_info(self._("Parental control pin successfuly changed"), noexit=True)
-
-	# #################################################################################################
-
 	def packages(self):
 		for x in self.cp.atk.get_active_packages():
 			if x['from']:
@@ -361,17 +319,17 @@ class AntikTVModuleExtra(CPModuleTemplate):
 				d += date.fromtimestamp(x['to']).strftime('%d.%m.%Y')
 			else:
 				d += '∞'
-				
+
 			info_labels = {
 				'plot': self._("To order more packages go to {antik_site}").format(antik_site='https://antiktv.sk')
 			}
 			self.cp.add_video(_I(x["name"]) + ': ' + d, info_labels=info_labels)
 
 	# #################################################################################################
-	
+
 	def logout(self):
 		answer = self.cp.get_yes_no_input(self.cp._("Do you really want to logout from this device?"))
-		
+
 		if answer:
 			# reset username/password, because without that automatic login will be called again
 			# and this is not what we want
@@ -411,7 +369,6 @@ class AntikTVContentProvider(ModuleContentProvider):
 		self.atk = None
 
 		self.http_endpoint = http_endpoint
-		self.pin_entered = False
 
 		# sometimes it's better to init modules at the end because variables the use are already initialised
 		self.modules = [
@@ -422,9 +379,9 @@ class AntikTVContentProvider(ModuleContentProvider):
 			AntikTVModuleExtra(self)
 		]
 		self.add_initialised_callback(self.post_init)
-		
+
 	# #################################################################################################
-	
+
 	def do_ping(self):
 		if self.atk and self.atk.is_logged():
 			self.log_debug("Calling PING")
@@ -437,29 +394,9 @@ class AntikTVContentProvider(ModuleContentProvider):
 		self.bgservice.run_in_loop("loop(ping)", (int(time.time()) % 900) + 1800, self.do_ping)
 
 	# #################################################################################################
-
-	def root(self):
-		self.pin_entered = False
-		ModuleContentProvider.root(self)
-
-	# #################################################################################################
-	
-	def check_pin(self, answer, unlock=True):
-		if len(answer) < 4:
-			return False
-
-		pin = int(self.get_setting('pin'))
-		if pin == (int(answer) * 8637 + 729):
-			if unlock:
-				self.pin_entered = True
-			return True
-
-		return False
-
-	# #################################################################################################
 	# Provider init and configurations
 	# #################################################################################################
-	
+
 	def convert_time(self, date_str, date2_str=None):
 		d = datetime.strptime(date_str[:19], "%Y-%m-%dT%H:%M:%S")
 		response = "{:02d}:{:02d}".format(d.hour, d.minute)
@@ -471,15 +408,15 @@ class AntikTVContentProvider(ModuleContentProvider):
 		return response
 
 	# #################################################################################################
-	
+
 	def login(self, silent):
 		self.atk = ATKClient(self)
 		self.atk.login()
 
 		return True
-	
+
 	# #################################################################################################
-	
+
 	def stats(self, data_item, action, duration=None, position=None, **extra_params):
 		self.log_debug("Stats received: action=%s, duration=%s, position=%s" % (action, duration, position))
 

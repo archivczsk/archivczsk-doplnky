@@ -1,3 +1,6 @@
+v1.10.0 (03.01.2024)
+- úpravy kvôli zmene spôsobu fungovania rodičovskej kontroly
+
 v1.9.1 (01.12.2023)
 - oprava pádu ak kanál neobsahuje logo
 - oprava pádu pri načítavaní užívateľského zoznamu kanálov
@@ -78,7 +81,7 @@ v1.4.3 (2020-05-25)
 - pridano do kontextoveho menu pridavani a mazani nahravek
 
 v1.4.2 (2020-05-20)
-- u datumů se zobrazuje den v týdnu 
+- u datumů se zobrazuje den v týdnu
 - oprava načítání uživatelského seznamu kanálů, pokud obsahuje diakritiku
 - upravené titulek u položek ve vyhledání (sjednoceno s nahrávkami)
 - opravené zobrazení popisu u nahrávek
@@ -86,7 +89,7 @@ v1.4.2 (2020-05-20)
 v1.4.1 (2020-05-18)
 - přidání mazání a pláonování nahrávek do kontextového menu (c)
 - zobrazení budoucího programu pro nastavení nahrávek (zobrazení detailů je možné samostatně zapnout v nastavení, načtení seznamu je ale výrazně pomalejší)
-- opravy chyb v nahrávkách 
+- opravy chyb v nahrávkách
 
 v1.4.0 (2020-05-16)
 - přejmenování addonu

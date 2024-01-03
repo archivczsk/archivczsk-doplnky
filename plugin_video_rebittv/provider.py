@@ -42,11 +42,14 @@ class RebitTVModuleLiveTV(CPModuleLiveTV):
 
 				info_labels = {
 					'plot': '%s - %s\n%s' % (self.cp.timestamp_to_str(int(epgdata["start"])), self.cp.timestamp_to_str(int(epgdata["stop"])), epgdata.get('description', '')),
-					'title': epg_title
+					'title': epg_title,
+					'adult': channel['adult']
 				}
 			else:
 				epg_str = ""
-				info_labels = {}
+				info_labels = {
+					'adult': channel['adult']
+				}
 
 			self.cp.add_video(channel['name'] + epg_str, img=channel.get('picon'), info_labels=info_labels, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_key=channel['id'])
 
@@ -80,7 +83,7 @@ class RebitTVModuleArchive(CPModuleArchive):
 				continue
 
 			if channel['timeshift'] > 0:
-				self.add_archive_channel(channel['name'], channel['id'], channel['timeshift'], img=channel['picon'])
+				self.add_archive_channel(channel['name'], channel['id'], channel['timeshift'], img=channel['picon'], info_labels={'adult': channel['adult']})
 
 	# #################################################################################################
 

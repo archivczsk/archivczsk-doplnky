@@ -48,10 +48,13 @@ class MagioGOModuleLiveTV(CPModuleLiveTV):
 					'title': channel.epg_name,
 					'year': channel.epg_year,
 					'duration': channel.epg_duration,
+					'adult': channel.adult
 				}
 			else:
 				epg_str = ""
-				info_labels = {}
+				info_labels = {
+					'adult': channel.adult
+				}
 
 			if channel.type == 'VOD':
 				event_start = channel.epg_start
@@ -93,7 +96,7 @@ class MagioGOModuleArchive(CPModuleArchive):
 				continue
 
 			if channel.timeshift > 0:
-				self.add_archive_channel(channel.name, channel.id, channel.timeshift, img=channel.picon)
+				self.add_archive_channel(channel.name, channel.id, channel.timeshift, img=channel.picon, info_labels={'adult': channel.adult})
 
 	# #################################################################################################
 

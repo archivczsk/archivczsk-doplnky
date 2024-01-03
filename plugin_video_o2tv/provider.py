@@ -19,7 +19,7 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 		CPModuleLiveTV.__init__(self, content_provider, categories=True)
 
 	# #################################################################################################
-	
+
 	def get_live_tv_categories(self, section=None):
 		if section == None:
 			self.add_live_tv_category(self._('All channels'), None)
@@ -27,7 +27,7 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 		elif section == 'fav':
 			self.cp.load_favourites()
 			self.show_my_list(self.cp.favourites, fav=True)
-		
+
 	# #################################################################################################
 
 	def show_my_list(self, keys, fav=False):
@@ -69,11 +69,14 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 				info_labels = {
 					'plot': '%s - %s\n%s' % (self.cp.timestamp_to_str(epg["start"]), self.cp.timestamp_to_str(epg["end"]), epg["desc"]),
 					'title': epg["title"],
-					'img': epg['img']
+					'img': epg['img'],
+					'adult': channel['adult']
 				}
 			else:
 				epg_str = ''
-				info_labels = {}
+				info_labels = {
+					'adult': channel['adult']
+				}
 
 			menu = {}
 			if fav:
@@ -81,19 +84,11 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 			else:
 				self.cp.add_menu_item(menu, self._("Add to favourites"), cmd=self.add_fav, key=channel['key'])
 
-			self.cp.add_video(channel['name'] + epg_str, img=channel['logo'], info_labels=info_labels, menu=menu, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_key=channel['key'], channel_id=channel['id'], adult=channel['adult'])
+			self.cp.add_video(channel['name'] + epg_str, img=channel['logo'], info_labels=info_labels, menu=menu, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_key=channel['key'], channel_id=channel['id'])
 
 	# #################################################################################################
 
-	def get_livetv_stream(self, channel_title, channel_key, channel_id, adult):
-		if adult and not self.cp.pin_entered:
-			answer = self.cp.get_text_input(self._('Please enter parental control pin'), input_type='pin')
-			if answer == None:
-				return
-			elif not self.o2tv.check_pin(answer):
-				self.cp.show_info(self._('Entered pin code is incorrect'), noexit=True)
-				return
-
+	def get_livetv_stream(self, channel_title, channel_key, channel_id):
 		enable_download = self.cp.get_setting('download_live')
 		epg_data = self.cp.o2tv.get_current_epg([channel_id])
 
@@ -151,9 +146,9 @@ class O2TVModuleArchive(CPModuleArchive):
 		for channel in self.cp.channels:
 			if not enable_adult and channel['adult']:
 				continue
-			
+
 			if channel['timeshift'] > 0:
-				self.add_archive_channel(channel['name'], channel['key'], channel['timeshift'], img=channel['logo'])
+				self.add_archive_channel(channel['name'], channel['key'], channel['timeshift'], img=channel['logo'], info_labels={'adult': channel['adult']})
 
 	# #################################################################################################
 
@@ -172,15 +167,16 @@ class O2TVModuleArchive(CPModuleArchive):
 				epg = self.cp.o2tv.get_mosaic_info(mosaic_id)
 
 			title = '%s - %s - %s' % (self.cp.timestamp_to_str(epg["start"]), self.cp.timestamp_to_str(epg["end"]), _I(epg["title"]))
-		
+
 			info_labels = {
 				'plot': epg.get('desc'),
-				'title': epg['title']
+				'title': epg['title'],
+				'adult': adult
 			}
 
 			menu = {}
 			self.cp.add_menu_item(menu, self._('Record the event'), cmd=self.cp.add_recording, epg_id=rec_id)
-			self.cp.add_video(title, epg.get('img'), info_labels, menu, cmd=self.get_archive_stream, epg_title=str(epg["title"]), epg_id=epg['id'], mosaic_info=epg.get('mosaic_info',[]), adult=adult)
+			self.cp.add_video(title, epg.get('img'), info_labels, menu, cmd=self.get_archive_stream, epg_title=str(epg["title"]), epg_id=epg['id'], mosaic_info=epg.get('mosaic_info',[]))
 
 	# #################################################################################################
 
@@ -191,15 +187,7 @@ class O2TVModuleArchive(CPModuleArchive):
 
 	# #################################################################################################
 
-	def get_archive_stream(self, epg_title, epg_id, mosaic_info, adult=False):
-		if adult and not self.cp.pin_entered:
-			answer = self.cp.get_text_input(self._('Please enter parental control pin'), input_type='pin')
-			if answer == None:
-				return
-			elif not self.cp.check_pin(answer):
-				self.cp.show_info(self._('Entered pin code is incorrect'), noexit=True)
-				return
-
+	def get_archive_stream(self, epg_title, epg_id, mosaic_info):
 		if len(mosaic_info) > 0:
 			for mi in mosaic_info:
 				url = self.cp.o2tv.get_proxy_archive_link(mi['id'])
@@ -232,7 +220,7 @@ class O2TVModuleRecordings(CPModuleTemplate):
 		self.cp.add_dir(self._("Plan recording"), cmd=self.plan_recordings)
 		self.cp.add_dir(self._("Futures - planed"), cmd=self.show_recordings, only_finished=False)
 		self.cp.add_dir(self._("Existing"), cmd=self.show_recordings, only_finished=True)
-	
+
 	# #################################################################################################
 
 	def show_recordings(self, only_finished=True):
@@ -296,10 +284,10 @@ class O2TVModuleRecordings(CPModuleTemplate):
 			if not enable_adult and channel['adult']:
 				continue
 
-			self.cp.add_dir(channel['name'], img=channel['logo'], cmd=self.plan_recordings_for_channel, channel_key=channel['key'])
-	
+			self.cp.add_dir(channel['name'], img=channel['logo'], info_labels={'adult': channel['adult']}, cmd=self.plan_recordings_for_channel, channel_key=channel['key'])
+
 	# #################################################################################################
-	
+
 	def plan_recordings_for_channel(self, channel_key):
 		from_datetime = datetime.now()
 		from_ts = int(time.mktime(from_datetime.timetuple()))
@@ -329,7 +317,7 @@ class O2TVModuleRecordings(CPModuleTemplate):
 				menu = {}
 				self.cp.add_menu_item(menu, self._('Record the event'), cmd=self.cp.add_recording, epg_id=epg_id)
 				self.cp.add_video(title, img, info_labels, menu, cmd=self.cp.add_recording, epg_id=epg_id)
-		
+
 # #################################################################################################
 
 
@@ -373,7 +361,7 @@ class O2TVModuleExtra(CPModuleTemplate):
 			self.cp.add_video(title, info_labels=info_labels, menu=menu, download=False)
 
 	# #################################################################################################
-	
+
 	def delete_device(self, device_id):
 		ret = self.cp.o2tv.device_remove(device_id)
 
@@ -397,7 +385,7 @@ class O2TVModuleExtra(CPModuleTemplate):
 			else:
 				info_labels = { 'plot': self._('In menu you can activate service using "Make activate"')}
 				self.cp.add_menu_item(menu, self._('Make active'), self.activate_service, service_name=service['name'], service_id=service['id'])
-			
+
 			self.cp.add_video(title, info_labels=info_labels, menu=menu, download=False)
 
 	# #################################################################################################
@@ -452,7 +440,7 @@ class O2TVContentProvider(ModuleContentProvider):
 		self.load_favourites()
 
 	# #################################################################################################
-	
+
 	def login(self, silent):
 		self.o2tv = None
 		self.channels = []
@@ -466,23 +454,13 @@ class O2TVContentProvider(ModuleContentProvider):
 		return True
 
 	# #################################################################################################
-	
+
 	def root(self):
 		self.pin_entered = False
 		ModuleContentProvider.root(self)
 
 	# #################################################################################################
-	
-	def check_pin(self, answer, unlock=True):
-		if self.o2tv.pin_validate(answer):
-			if unlock:
-				self.pin_entered = True
-			return True
 
-		return False
-	
-	# #################################################################################################
-	
 	def get_channels_checksum(self):
 		ctx = md5()
 		for ch in self.channels:
@@ -498,7 +476,7 @@ class O2TVContentProvider(ModuleContentProvider):
 			ctx.update(str(frozenset(item)).encode('utf-8'))
 
 		return ctx.hexdigest()
-	
+
 	# #################################################################################################
 
 	def load_channel_list(self, force=False):
@@ -506,10 +484,10 @@ class O2TVContentProvider(ModuleContentProvider):
 
 		if not force and self.channels and self.channels_next_load_time > act_time:
 			return
-		
+
 		self.channels = self.o2tv.get_channels()
 		self.checksum = self.get_channels_checksum()
-		
+
 		self.channels_by_key = {}
 		for ch in self.channels:
 			self.channels_by_key[ch['key']] = ch
