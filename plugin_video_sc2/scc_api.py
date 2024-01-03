@@ -33,13 +33,13 @@ def datetime_to_str(date, date_format='%Y-%m-%d %H:%M:%S'):
 class SCC_API(object):
 	def __init__(self, content_provider):
 		self.cp = content_provider
-		
+
 		self.token = "asb6mnn72mqruo4v81tn"
 		self.device_id = self.cp.get_setting('deviceid')
-		
+
 		self.req_session = requests.Session()
 		self.cache = ExpiringLRUCache(30, 1800)
-		
+
 	# ##################################################################################################################
 
 	@staticmethod
@@ -81,9 +81,9 @@ class SCC_API(object):
 			self.cp.log_debug("Request found in cache")
 		else:
 			if data:
-				response = self.req_session.post(url=endpoint, headers=headers, params=params, json=data, timeout=timeout)
+				response = self.req_session.post(url=endpoint, headers=headers, params=params, json=data, timeout=timeout, verify=False)
 			else:
-				response = self.req_session.get(url=endpoint, headers=headers, params=params, timeout=timeout)
+				response = self.req_session.get(url=endpoint, headers=headers, params=params, timeout=timeout, verify=False)
 
 #			dump_json_request(response)
 			self.cache.put(rurl, response)

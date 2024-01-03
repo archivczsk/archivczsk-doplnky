@@ -42,9 +42,9 @@ class Webshare():
 		self.device_id = "123456"
 		self.login_data = {}
 		self.load_login_data()
-		
+
 	# #################################################################################################
-	
+
 	def load_login_data(self):
 		if self.data_dir:
 			try:
@@ -57,14 +57,14 @@ class Webshare():
 				pass
 
 	# #################################################################################################
-	
+
 	def save_login_data(self):
 		if self.data_dir:
 				with open(os.path.join(self.data_dir, 'webshare_login.json' ), "w") as f:
 					json.dump(self.login_data, f )
 
 	# #################################################################################################
-	
+
 	@staticmethod
 	def get_password_hash(password, salt):
 		return sha1(md5crypt(password.encode('utf-8'), salt.encode('utf-8'))).hexdigest()
@@ -78,15 +78,15 @@ class Webshare():
 		if not username or not password:
 			self.cp.log_info("Webshare login data not provided - continuing with free account")
 			return False
-		
+
 		try:
 			data = self.call_ws_api('/api/salt/', { 'username_or_email':username })
-			
+
 			xml = ET.fromstring(data)
 			status = xml.find('status').text
 			if status != 'OK':
 				raise WebshareLoginFail( "Wrong response to salt command: %s" % xml.find('message').text )
-			
+
 			salt = xml.find('salt').text
 			if salt is None:
 				salt = ''
@@ -108,13 +108,13 @@ class Webshare():
 
 		self.login_data['token'] = xml.find('token').text
 		return True
-		
+
 	# #################################################################################################
-	
+
 	def call_ws_api(self, endpoint, data=None):
 		if data is None:
 			data = {}
-			
+
 		if 'token' in self.login_data:
 			data.update({'wst': self.login_data['token']})
 
@@ -123,17 +123,17 @@ class Webshare():
 			'Accept':'text/xml; charset=UTF-8',
 			'Referer': BASE
 		}
-		
-		response = requests.post(BASE + endpoint, data=data, headers=headers )
+
+		response = requests.post(BASE + endpoint, data=data, headers=headers, verify=False )
 #		with open("/tmp/ws_request.txt", "a") as f:
 #			f.write("URL: %s\n" % (BASE + endpoint))
 #			f.write("DATA: %s\n" % data)
 #			f.write("RESPONSE: %s\n" % response.text)
 #			f.write("-----------------------------------\n")
-		
+
 		if response.status_code != 200:
 			raise WebshareApiError("Wrong response status code: %d" % response.status_code)
-			
+
 		return response.text
 
 	# #################################################################################################
@@ -141,7 +141,7 @@ class Webshare():
 	def get_expiration(self, subscripted_until ):
 		if not subscripted_until:
 			return 0
-		
+
 		# 2022-09-14 18:43:29
 		return int(mktime(datetime.strptime(subscripted_until, '%Y-%m-%d %H:%M:%S').timetuple()))
 
@@ -170,7 +170,7 @@ class Webshare():
 		subscripted_until = xml.find('vip_until').text
 		if not subscripted_until:
 			subscripted_until = "1990-01-01 00:00:00"
-		
+
 		self.login_data['load_time'] = int(time())
 		self.login_data['days_left'] = int( vip_days )
 		self.login_data['expiration'] = self.get_expiration( subscripted_until )
@@ -186,29 +186,29 @@ class Webshare():
 				self.login_data = {}
 				if self.login():
 					self.login_data["checksum"] = login_checksum
-				
+
 			if 'token' in self.login_data:
 				if 'expiration' not in self.login_data or self.login_data.get('load_time', 0) + (3600 * 24) < int(time()):
 					self.get_user_info()
-				
+
 				if int(time()) > self.login_data['expiration']:
 					self.cp.log_info("Webshare subscription expired")
 
 		except Exception as e:
 			if try_nr == 0 and 'token' in self.login_data:
 				del self.login_data['token']
-			
+
 				# something failed try once more time with fresh login
 				self.refresh_login_data(try_nr+1)
 			else:
 				self.cp.log_error("Webshare login failed: %s" % str(e))
 				self.save_login_data()
 				raise
-		
+
 		return self.login_data.get('days_left', -1)
-	
+
 	# #################################################################################################
-	
+
 	def get_file_password_salt(self, ident):
 		data = self.call_ws_api('/api/file_password_salt/', {'ident': ident})
 
@@ -223,14 +223,14 @@ class Webshare():
 
 	def resolve(self, ident, file_name=''):
 		self.refresh_login_data()
-		
+
 		if self.login_data.get('checksum') is not None:
 			# if there are login data provided, then check valid subscription
 			token = self.login_data.get('token')
-	
+
 			if not token:
 				raise WebshareLoginFail(self.cp._("Wrong webshare login data provided"))
-			
+
 			if int(time()) > self.login_data.get('expiration', 0):
 				self.cp.show_info(self.cp._("Webshare subscription expired. Only very low quality videos will play and seeking forward/backwad will not work at all."), noexit=True)
 
@@ -258,21 +258,21 @@ class Webshare():
 			raise ResolveException(self.cp._("Failed to resolve file") + ": %s" % xml.find('message').text)
 
 		return xml.find('link').text
-		
+
 	# #################################################################################################
-	
+
 	def search( self, title ):
 		self.refresh_login_data()
-		
+
 		data = self.call_ws_api('/api/search/', {'what': title, 'offset': 0, 'limit': 30, 'category': 'video', 'sort': 'rating' } )
 
 		xml = ET.fromstring(data)
 		if not xml.find('status').text == 'OK':
 			self.cp.log_error('Server returned error status, response: %s' % xml.find('message').text)
 			return []
-		
+
 		result = []
-		
+
 #		total = int(xml.find('total').text)
 		for file in xml.findall('file'):
 			item = {}
@@ -284,5 +284,5 @@ class Webshare():
 			result.append(item)
 
 		return result
-	
+
 	# #################################################################################################
