@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import requests
 from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.cache import ExpiringLRUCache
@@ -9,19 +8,19 @@ try:
 	from urlparse import urlparse, urlunparse, parse_qsl
 	from urllib import urlencode
 except:
-	from urllib.parse import quote, urlparse, urlunparse, urlencode, parse_qsl
+	from urllib.parse import urlparse, urlunparse, urlencode, parse_qsl
 
 # ##################################################################################################################
 
 class SC_API(object):
 	def __init__(self, content_provider):
 		self.cp = content_provider
-		
+
 		self.device_id = self.cp.get_setting('deviceid')
-		
-		self.req_session = requests.Session()
+
+		self.req_session = self.cp.get_requests_session()
 		self.cache = ExpiringLRUCache(30, 1800)
-		
+
 	# ##################################################################################################################
 
 	@staticmethod
@@ -32,10 +31,6 @@ class SC_API(object):
 	# ##################################################################################################################
 
 	def call_api(self, url, data=None, params=None):
-		timeout = int(self.cp.get_setting('loading_timeout'))
-		if timeout == 0:
-			timeout = None
-
 		if not url.startswith("https://"):
 			url = "https://stream-cinema.online/kodi" + url
 
@@ -79,7 +74,7 @@ class SC_API(object):
 		}
 
 		if data:
-			resp = self.req_session.post(url, data=data, params=default_params, headers=headers, timeout=timeout)
+			resp = self.req_session.post(url, data=data, params=default_params, headers=headers)
 		else:
 			rurl = url + '?' + urlencode(sorted(default_params.items(), key=lambda val: val[0]))
 
@@ -88,7 +83,7 @@ class SC_API(object):
 				self.cp.log_debug("Request found in cache")
 				return resp
 
-			resp = self.req_session.get(url, params=default_params, headers=headers, timeout=timeout)
+			resp = self.req_session.get(url, params=default_params, headers=headers)
 #		dump_json_request(resp)
 
 		if resp.status_code == 200:

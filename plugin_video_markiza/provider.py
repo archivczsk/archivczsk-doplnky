@@ -5,7 +5,6 @@ from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.string_utils import _I, _C, _B, decode_html
 from tools_archivczsk.debug.http import dump_json_request
 import sys
-import requests
 import re, json
 
 try:
@@ -53,7 +52,7 @@ class MarkizaContentProvider(CommonContentProvider):
 		self.http_endpoint = http_endpoint
 		self.last_hls = None
 		self.login_optional_settings_names = ('username', 'password')
-		self.req_session = requests.Session()
+		self.req_session = self.get_requests_session()
 		self.req_session.headers.update(COMMON_HEADERS)
 		self.login_ok = False
 
@@ -125,8 +124,6 @@ class MarkizaContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def call_api(self, endpoint, params=None, data=None, headers=None, raw_response=False):
-		ssl_verify = self.get_setting('ssl_verify')
-
 		if endpoint.startswith('http'):
 			url = endpoint
 		else:
@@ -138,15 +135,11 @@ class MarkizaContentProvider(CommonContentProvider):
 		if headers:
 			req_headers.update(headers)
 
-		timeout = int(self.get_setting('loading_timeout'))
-		if timeout == 0:
-			timeout = None
-
 		try:
 			if data:
-				response = self.req_session.post(url, params=params, data=data, headers=req_headers, timeout=timeout, verify=ssl_verify)
+				response = self.req_session.post(url, params=params, data=data, headers=req_headers, )
 			else:
-				response = self.req_session.get(url, params=params, headers=req_headers, timeout=timeout, verify=ssl_verify)
+				response = self.req_session.get(url, params=params, headers=req_headers)
 		except Exception as e:
 			raise AddonErrorException(self._('Request to remote server failed. Try to repeat operation.') + '\n%s' % str(e))
 

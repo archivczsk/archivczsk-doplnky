@@ -1,3 +1,6 @@
+2.5: 08.01.2024
+- úpravy kvôli zmene API pre verifikáciu SSL certifikátov nastavovanie timeoutov
+
 2.4: 13.03.2023
 - pridaná možnosť pre vypnutie overovania ssl certifikátov
 - pridanie nastavenia timeoutov pre požiadavky

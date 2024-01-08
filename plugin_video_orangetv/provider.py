@@ -208,7 +208,7 @@ class OrangeTVContentProvider(ModuleContentProvider):
 		self.orangetv = None
 		self.channels = []
 
-		orangetv = OrangeTV(self.get_setting('username'), self.get_setting('password'), self.get_setting('deviceid'), self.data_dir, self.log_info, self._)
+		orangetv = OrangeTV(self)
 		orangetv.refresh_configuration()
 
 		self.orangetv = orangetv

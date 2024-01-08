@@ -3,7 +3,6 @@
 import base64
 from Plugins.Extensions.archivCZSK.engine.httpserver import AddonHttpRequestHandler
 from time import time
-import requests
 import re
 import json
 
@@ -27,7 +26,7 @@ def stream_key_to_hls_url(endpoint, stream_key):
 
 	if stream_key == None:
 		stream_key = ""
-	
+
 	if isinstance( stream_key, (type({}), type([]), type(()),) ):
 		stream_key = '{' + json.dumps(stream_key) + '}'
 
@@ -169,7 +168,7 @@ class HlsHTTPRequestHandler(AddonHttpRequestHandler):
 
 	def P_s(self, request, path):
 		url = base64.b64decode(path.encode('utf-8')).decode('utf-8')
-		
+
 		self.cp.log_debug('Requesting HLS segment: %s' % url)
 		flags = {
 			'finished': False
@@ -193,7 +192,7 @@ class HlsHTTPRequestHandler(AddonHttpRequestHandler):
 		self.request_http_data_async(url, http_code_write, http_header_write, http_data_write, range=request.getHeader(b'Range'))
 		request.notifyFinish().addBoth(request_finished)
 		return self.NOT_DONE_YET
-	
+
 	# #################################################################################################
 
 	def request_http_data_async(self, url, cbk_response_code, cbk_header, cbk_data, headers=None, range=None):
@@ -263,14 +262,14 @@ class HlsHTTPRequestHandler(AddonHttpRequestHandler):
 					self.cp.log_exception()
 			else:
 				response['content'] += data
-		
+
 		return self.request_http_data_async( url, cbk_response_code, cbk_header, cbk_data, headers=headers)
-		
+
 	# #################################################################################################
 
 	def P_p(self, request, path):
 		url = base64.b64decode(path.encode('utf-8')).decode('utf-8')
-		
+
 		self.cp.log_debug('Requesting HLS variant playlist: %s' % url)
 
 		def p_continue(response):
@@ -287,7 +286,7 @@ class HlsHTTPRequestHandler(AddonHttpRequestHandler):
 						surl = redirect_url[:redirect_url[9:].find('/') + 9] + surl
 					else:
 						surl = redirect_url[:redirect_url.rfind('/') + 1] + surl
-					
+
 					surl = self.proxify_segment_url(surl)
 
 				return surl
@@ -338,7 +337,7 @@ class HlsHTTPRequestHandler(AddonHttpRequestHandler):
 					surl = redirect_url[:redirect_url[9:].find('/') + 9] + surl
 				else:
 					surl = redirect_url[:redirect_url.rfind('/') + 1] + surl
-				
+
 				if self.proxy_segments:
 					surl = self.proxify_playlist_url(surl)
 
@@ -371,7 +370,7 @@ class HlsHTTPRequestHandler(AddonHttpRequestHandler):
 					streams.append(stream_info)
 
 			streams = sorted(streams, key=lambda i: int(i['bandwidth']), reverse=True)
-			
+
 			if len(streams) == 0:
 				self.cp.log_error("No streams found for bandwidth %d" % bandwidth)
 				return None
@@ -405,7 +404,7 @@ class HlsHTTPRequestHandler(AddonHttpRequestHandler):
 
 			cbk('\n'.join(resp_data) + '\n')
 			return
-	
+
 		self.request_http_data_async_simple(url, cbk=p_continue, headers=headers, bandwidth=bandwidth)
 
 

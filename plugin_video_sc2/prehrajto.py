@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import requests
 import re
 from tools_archivczsk.contentprovider.exception import AddonErrorException
 try:
@@ -33,12 +32,12 @@ def dump_request(response):
 class PrehrajTo(object):
 	def __init__(self, content_provider):
 		self.cp = content_provider
-		
+
 		self.user = None
 		self.password = None
 		self.is_premium = False
 
-		self.req_session = requests.Session()
+		self.req_session = self.cp.get_requests_session()
 		self.req_session.headers.update({
 			'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0'
 		})
@@ -46,17 +45,13 @@ class PrehrajTo(object):
 	# ##################################################################################################################
 
 	def call_api(self, endpoint, params=None, data=None, raw=False, allow_redirects=True):
-		timeout = int(self.cp.get_setting('loading_timeout'))
-		if timeout == 0:
-			timeout = None
-
 		if not endpoint.startswith('http'):
 			endpoint = 'https://prehraj.to/' + endpoint
 
 		if data:
-			response = self.req_session.post(url=endpoint, params=params, data=data, timeout=timeout, allow_redirects=allow_redirects)
+			response = self.req_session.post(url=endpoint, params=params, data=data, allow_redirects=allow_redirects)
 		else:
-			response = self.req_session.get(url=endpoint, params=params, timeout=timeout, allow_redirects=allow_redirects)
+			response = self.req_session.get(url=endpoint, params=params, allow_redirects=allow_redirects)
 
 #		dump_request(response)
 
@@ -69,7 +64,7 @@ class PrehrajTo(object):
 		return BeautifulSoup(response.content, 'html.parser')
 
 	# ##################################################################################################################
-	
+
 	def login(self):
 		user = self.cp.get_setting("ptouser")
 		password = self.cp.get_setting("ptopass")
@@ -93,7 +88,7 @@ class PrehrajTo(object):
 		title = soup.find('div',attrs={'class': 'user-panel'})
 		if title:
 			title = title.find('span',attrs={'class': 'color-positive'})
-			
+
 		if title == None:
 			self.is_premium = False
 			self.cp.log_error("Prehraj.to premium account is inactive")
@@ -103,7 +98,7 @@ class PrehrajTo(object):
 
 		self.user = user
 		self.password = password
-	
+
 	# ##################################################################################################################
 
 	def search(self, keyword, limit=100):
@@ -132,11 +127,11 @@ class PrehrajTo(object):
 			if soup.find('a', {'title': 'Zobrazit další'}) == None or len(videos) > limit:
 				break
 
-		
+
 		return videos
 
 	# ##################################################################################################################
-	
+
 	def resolve_video(self, video_id):
 		soup = self.call_api(video_id)
 

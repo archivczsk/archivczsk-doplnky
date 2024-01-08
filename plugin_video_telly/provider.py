@@ -166,7 +166,7 @@ class TellyContentProvider(ModuleContentProvider):
 		self.channels = []
 		self.channels_by_id = {}
 
-		telly = Telly(self.data_dir, self.log_info, self._)
+		telly = Telly(self)
 
 		if telly.token_is_valid() == False:
 			if silent:

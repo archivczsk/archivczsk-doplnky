@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-import re, os, datetime, json, requests, traceback
+import re, os, datetime, json, traceback
 from time import time
 import uuid
-import functools
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
 from tools_archivczsk.debug.http import dump_json_request
 
@@ -36,16 +35,16 @@ class TellyChannel:
 		self.adult = channel_info['parental_lock'].get('enabled', False)
 		self.picon = None
 		self.preview = None
-		
+
 		# get only first adaptive stream url
 		for cs in channel_info['content_sources']:
 			self.stream_url = cs.get('stream_profile_urls', {}).get('adaptive')
 			if self.stream_url:
 				break
 
-	
+
 	# #################################################################################################
-	
+
 	def set_picon(self, logo_url):
 		if logo_url:
 			self.picon = logo_url.replace('{channel_id}', str(self.id))
@@ -58,26 +57,19 @@ class TellyChannel:
 
 # #################################################################################################
 
-def _log_dummy(message):
-	print('[TELLY]: ' + message )
-	pass
-
-# #################################################################################################
-
-
 class Telly:
 
-	def __init__(self, data_dir=None, log_function=None, tr_function=None):
+	def __init__(self, content_provider):
+		self.cp = content_provider
 		self.device_token = None
-		self.log_function = log_function if log_function else _log_dummy
-		self._ = tr_function if tr_function else lambda s: s
+		self.log_function = self.cp.log_info
+		self._ = self.cp._
 		self.settings = None
-		self.data_dir = data_dir
+		self.data_dir = self.cp.data_dir
 		self.epg_cache = {}
 		self.cache_need_save = False
 		self.cache_mtime = 0
-		self.req_session = requests.Session()
-		self.req_session.request = functools.partial(self.req_session.request, timeout=10) # set timeout for all session calls
+		self.req_session = self.cp.get_requests_session()
 
 		if self.data_dir:
 			try:
@@ -85,11 +77,11 @@ class Telly:
 				with open(self.data_dir + '/login.json', "r") as f:
 					login_data = json.load(f)
 					self.device_token = login_data['token']
-					
+
 					self.log_function("Login data loaded from cache")
 			except:
 				pass
-			
+
 	# #################################################################################################
 
 	def save_login_data(self):
@@ -104,52 +96,52 @@ class Telly:
 			except:
 				pass
 	# #################################################################################################
-	
+
 	def load_epg_cache(self):
 		try:
 			try:
 				cache_file_mtime = int(os.path.getmtime(self.data_dir + '/epg_cache.json'))
 			except:
 				cache_file_mtime = 0
-			
+
 			if cache_file_mtime > self.cache_mtime:
 				with open(self.data_dir + '/epg_cache.json', "r") as file:
 					self.epg_cache = json.load(file)
 					self.log_function("EPG loaded from cache")
-				
+
 				self.cache_mtime = cache_file_mtime
 				self.cache_need_save = False
 		except:
 			pass
-		
+
 		return True if self.cache_mtime else False
-	
+
 	# #################################################################################################
-	
+
 	def save_epg_cache(self):
 		if self.data_dir and self.cache_need_save:
 			with open(self.data_dir + '/epg_cache.json', 'w') as f:
 				json.dump( self.epg_cache, f)
 				self.log_function("EPG saved to cache")
 				self.cache_need_save = False
-				
+
 	# #################################################################################################
-	
+
 	def call_telly_api(self, endpoint, data=None, params=None ):
 		err_msg = None
 		if endpoint.startswith('http'):
 			url = endpoint
 		else:
 			url = "https://backoffice0-vip.tv.itself.cz/" + endpoint
-		
+
 		try:
 			if data:
 				resp = self.req_session.post(url, data=json.dumps(data, separators=(',', ':')), headers=_COMMON_HEADERS)
 			else:
 				resp = self.req_session.get(url, params=params, headers=_COMMON_HEADERS)
-			
+
 #			dump_json_request(resp)
-			
+
 			if resp.status_code == 200:
 				return resp.json()
 			else:
@@ -157,16 +149,16 @@ class Telly:
 		except Exception as e:
 			self.log_function("TELLY ERROR:\n"+traceback.format_exc())
 			err_msg = str(e)
-		
+
 		if err_msg:
 			self.log_function( "Telly error for URL %s: %s" % (url, traceback.format_exc()))
 			self.log_function( "Telly: %s" % err_msg )
 			raise AddonErrorException(err_msg)
 
 		return None
-	
+
 	# #################################################################################################
-	
+
 	def token_is_valid(self):
 		if not self.device_token:
 			return False
@@ -174,7 +166,7 @@ class Telly:
 		ret = self.call_telly_api('api/device/checkDeviceTokenValidity/', data = { 'device_token': self.device_token })
 		if ret and ret.get('success') and ret.get('subscriber_active') and ret.get('valid'):
 			return True
-		
+
 		self.device_token = None
 		self.save_login_data()
 		self.log_function("Telly device token is invalid: %s" % str(ret))
@@ -198,7 +190,7 @@ class Telly:
 		else:
 			self.log_function("Failed to pair device by pairing code: %s" % str(ret))
 			return False
-		
+
 		# complete device pairing
 		data = {
 			'device_token': self.device_token,
@@ -211,35 +203,35 @@ class Telly:
 		if ret and ret.get('success'):
 			self.save_login_data()
 			return True
-		
+
 		self.log_function("Failed to complete device pairing: %s" % str(ret))
 		return False
-		
+
 	# #################################################################################################
-	
+
 	def refresh_settings(self):
 		if self.settings:
 			return True
-		
+
 		ret = self.call_telly_api('api/device/getSettings/', data = { 'device_token': self.device_token })
 		if not ret or not ret.get('success'):
 			self.check_token()
 			return False
-		
+
 		s = ret.get('settings',{})
 		self.settings = {
 			'channel_logo_url': s.get('channel_logo_source_url','') + s.get('channel_logo_url_suffix_template',''),
 			'channel_preview_url' : s.get('stream_thumbnailer_url','') + s.get('stream_thumbnailer_url_latest_suffix_template',''),
 			'timezone_offset': s.get('timezone_offset', 1) * 60
 		}
-	
-	
+
+
 	# #################################################################################################
 
 	def get_channel_list(self):
 		if not self.device_token:
 			return None
-		
+
 		self.refresh_settings()
 
 		ret = self.call_telly_api('api/device/getSources/', data={ 'device_token': self.device_token })
@@ -253,15 +245,15 @@ class Telly:
 			channel.set_picon(self.settings['channel_logo_url'])
 			channel.set_preview(self.settings['channel_preview_url'])
 			channels.append(channel)
-		
+
 		return channels
 
 	# #################################################################################################
-	
+
 	def get_channels_epg(self, epg_ids, fromts, tots ):
 		if not self.device_token:
 			return None
-		
+
 		data = {
 			'lng_priority': [ 'ces' ],
 			'from': fromts,
@@ -269,17 +261,17 @@ class Telly:
 			'ids_epg': epg_ids,
 			'timezone_offset': self.settings['timezone_offset']
 		}
-		
+
 		ret = self.call_telly_api( 'https://epg.tv.itself.cz/v2/epg', data=data )
-		
+
 		if not ret or ret.get('error', True) == True:
 			self.check_token()
 			return None
-		
+
 		return ret.get('broadcasts')
-		
+
 	# #################################################################################################
-	
+
 	def fill_epg_cache(self, epg_ids, cache_hours=0, epg_data=None ):
 		if not self.device_token or cache_hours == 0:
 			return
@@ -291,23 +283,23 @@ class Telly:
 			if self.cache_mtime and self.cache_mtime < tots - 3600:
 				# no need to refill epg cache
 				return
-			
+
 			epg_data = self.get_channels_epg( epg_ids, fromts, tots )
-		
+
 		if not epg_data:
 			self.log_function("Failed to get EPG for channels from Telly server")
 			return
-		
+
 		for epg_id in epg_ids:
 			if str(epg_id) not in epg_data:
 				continue
-			
+
 			ch_epg = []
-	
+
 			for one in epg_data[str(epg_id)]:
 				if one["name"].startswith('Vysílání od: '):
 					continue
-				
+
 				ch_epg.append({
 					"start": one["timestamp_start"],
 					"end": one["timestamp_end"],
@@ -317,40 +309,40 @@ class Telly:
 					'year': one.get('year'),
 					'rating': float(one['rating']) / 10 if one.get('rating') else None
 				})
-				
+
 				if one["timestamp_start"] > tots:
 					break
-				
+
 			self.epg_cache[str(epg_id)] = ch_epg
-			
+
 		self.cache_need_save = True
-		
+
 	# #################################################################################################
 
 	def get_channel_current_epg(self, epg_id):
 		fromts = int(time())
 		title = ""
 		del_count = 0
-		
+
 		epg_id = str(epg_id)
 		if epg_id in self.epg_cache:
 			for epg in self.epg_cache[epg_id]:
 				if epg["end"] < fromts:
 					# cleanup old events
 					del_count += 1
-				
+
 				if epg["start"] < fromts and epg["end"] > fromts:
 					title = epg["title"]
 					break
-		
+
 		if del_count:
 			# save some memory - remove old events from cache
 			del self.epg_cache[epg_id][:del_count]
 			self.log_function("Deleted %d old events from EPG cache for channell %s" % (del_count, epg_id))
-			
+
 		if title == "":
 			return None
-		
+
 		return epg
 
 	# #################################################################################################
@@ -358,9 +350,9 @@ class Telly:
 	def get_archiv_channel_programs(self, epg_id, fromts, tots):
 		if not self.device_token:
 			return
-		
+
 		epg_data = self.get_channels_epg( [int(epg_id)], fromts, tots)
-		
+
 		for program in epg_data.get(str(epg_id), []):
 			if int(time()) > program["timestamp_start"]:
 				yield {
@@ -372,15 +364,15 @@ class Telly:
 					'year': program.get('year'),
 					'rating': float(program['rating']) / 10 if program.get('rating') else None
 				}
-	
+
 	# #################################################################################################
-	
+
 	def get_video_link(self, url, enable_h265=False, max_bitrate=None, force_http=False):
 		# extract params from url, to set our own request profiles
 		u = urlparse( url )
 		params = dict(parse_qsl( u.query ))
 		url = urlunparse( (u.scheme, u.netloc, u.path, '', '', '') )
-		
+
 		if force_http:
 			url = url.replace('https://', 'http://')
 
@@ -392,13 +384,13 @@ class Telly:
 				'profile32', # H265 profil 1080
 				'profile34', # H265 profil 720
 			]
-			
+
 			# prepend h265 profiles
 			params['stream_profiles'] = ','.join(profiles_h265) + ',' + params['stream_profiles']
-		
+
 		# get master playlist
 		resp = self.req_session.get(url, params=params, headers={'User-Agent': 'tv.fournetwork.android.box.digi/2.0.9 (Linux;Android 6.0) ExoPlayerLib/2.11.7'})
-	
+
 		if resp.status_code != 200:
 			return []
 
@@ -420,35 +412,35 @@ class Telly:
 
 			video_codec = 'h265' if '=profile3' in video_url or '=profile4' in video_url else 'h264'
 			quality = m.group('resolution').split('x')[1] + 'p'
-			
+
 			video_urls.append({
 				'url': video_url,
 				'quality': quality,
 				'bitrate': bandwidth,
 				'vcodec': video_codec
 			})
-		
+
 		return sorted(video_urls, key=lambda u: u['bitrate'], reverse=True)
-			
+
 	# #################################################################################################
-	
+
 	def get_archive_video_link(self, ch, fromts, tots, enable_h265=False, max_bitrate=None, force_http=False):
 		if not self.device_token:
 			return None
-		
+
 		params = {
 			'device_token': self.device_token,
 			'channel_id': ch,
 			'start': fromts,
 			'end': tots
 		}
-		
+
 		ret = self.call_telly_api( 'contentd/api/device/getContent', params=params)
-		
+
 		if not ret or ret.get('success') != True:
 			self.check_token()
 			return None
-		
+
 		return self.get_video_link(ret['stream_uri'], enable_h265, max_bitrate, force_http)
 
 # #################################################################################################

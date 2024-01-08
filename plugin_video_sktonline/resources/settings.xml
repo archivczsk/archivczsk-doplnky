@@ -2,5 +2,4 @@
 <settings>
   <setting label="Login name" id="username" type="text" default=""/>
   <setting label="Login password" id="password" type="password" default=""/>
-  <setting label="Enable server SSL certificate check" id="ssl_verify" type="bool" default="true" />
 </settings>

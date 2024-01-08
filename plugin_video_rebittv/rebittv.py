@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 #
 import time, json, requests, re
-from datetime import datetime, timedelta 
+from datetime import datetime, timedelta
 from datetime import date
 import traceback
-import functools
 
 from hashlib import md5
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
@@ -17,21 +16,21 @@ def _log_dummy(message):
 	pass
 
 class RebitTV:
-	def __init__(self, username, password, device_name, data_dir=None, log_function=None, tr_function=None):
-		self.username = username
-		self.password = password
-		self.device_name = device_name
+	def __init__(self, content_provider):
+		self.cp = content_provider
+		self.username = self.cp.get_setting('username')
+		self.password = self.cp.get_setting('password')
+		self.device_name = self.cp.get_setting('device_name')
 		self.access_token = None
 		self.access_token_life = 0
 		self.refresh_token = None
 		self.user_id = None
 		self.client_id = None
-		self.data_dir = data_dir
-		self.log_function = log_function if log_function else _log_dummy
-		self._ = tr_function if tr_function else lambda s: s
-		self.api_session = requests.Session()
-		self.api_session.request = functools.partial(self.api_session.request, timeout=10) # set timeout for all session calls
-		
+		self.data_dir = self.cp.data_dir
+		self.log_function = self.cp.log_info
+		self._ = self.cp._
+		self.api_session = self.cp.get_requests_session()
+
 		self.common_headers = {
 			"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0",
 			"Origin": "https://rebit.tv",
@@ -41,7 +40,7 @@ class RebitTV:
 
 		self.load_login_data()
 		self.check_login()
-		
+
 	# #################################################################################################
 
 	def get_chsum(self):
@@ -50,16 +49,16 @@ class RebitTV:
 
 		data = "{}|{}|{}".format(self.password, self.username, self.device_name)
 		return md5( data.encode('utf-8') ).hexdigest()
-	
+
 	# #################################################################################################
-	
+
 	def load_login_data(self):
 		if self.data_dir:
 			try:
 				# load access token
 				with open(self.data_dir + '/login.json', "r") as f:
 					login_data = json.load(f)
-					
+
 					if self.get_chsum() == login_data.get('checksum'):
 						self.access_token = login_data['access_token']
 						self.access_token_life = login_data['access_token_life']
@@ -76,7 +75,7 @@ class RebitTV:
 						self.log_function("Not using cached login data - wrong checksum")
 			except:
 				self.access_token = None
-		
+
 	# #################################################################################################
 
 	def save_login_data(self):
@@ -98,9 +97,9 @@ class RebitTV:
 					os.remove(self.data_dir + '/login.json')
 			except:
 				pass
-			
+
 	# #################################################################################################
-	
+
 	def showError(self, msg):
 		self.log_function("REBIT.TV API ERROR: %s" % msg )
 		raise AddonErrorException(msg)
@@ -115,14 +114,14 @@ class RebitTV:
 
 	def call_api(self, url, method='AUTO', params=None, data=None, enable_retry=True, auth_header=True, pin_header=False ):
 		err_msg = None
-		
+
 		log_file = url
-		
+
 		if not url.startswith('http'):
 			url = 'https://bbxnet.api.iptv.rebit.sk/' + url
 
 		headers = self.common_headers
-				
+
 		if auth_header:
 			headers['authorization'] = "Bearer " + self.access_token
 		else:
@@ -131,7 +130,7 @@ class RebitTV:
 
 		if pin_header:
 			headers['x-child-lock-code'] = "0000"
-			
+
 		if method == 'AUTO':
 			if data:
 				method = 'POST'
@@ -144,10 +143,10 @@ class RebitTV:
 			headers["Content-type"] = "application/json;charset=utf-8"
 		else:
 			req_data = None
-		
+
 		if self.client_id:
 			headers["X-Television-Client-Id"] = self.client_id
-		
+
 		try:
 			resp = self.api_session.request(method, url, params=params, data=req_data, headers=headers)
 #			dump_json_request(resp)
@@ -155,26 +154,26 @@ class RebitTV:
 				debug_resp_data = resp.json()
 			except:
 				debug_resp_data = {}
-				
+
 			if resp.status_code >= 200 and resp.status_code <= 210:
 				try:
 					if resp.status_code == 204:
 						return {}
-					
+
 					ret = resp.json()
-					
+
 					if auth_header and enable_retry and (ret.get('code') == 403 or ret.get('message') == 'The access token is invalid.'):
 						if enable_retry:
 							old_access_token = self.access_token
 							self.load_login_data()
-							
+
 							if old_access_token == self.access_token:
 								# we don't have newer access_token, so try to re-login
 								self.refresh_login()
 								enable_retry = False
-							
+
 							return self.call_api( url, method, params, data, enable_retry, auth_header, pin_header )
-					
+
 					return ret
 
 				except:
@@ -185,11 +184,11 @@ class RebitTV:
 					err_msg = resp.json()['message']
 				except:
 					err_msg = self._('Unexpected return code from server') + ': %d' % resp.status_code
-				
+
 		except Exception as e:
 			self.log_function(traceback.format_exc())
 			err_msg = str(e)
-		
+
 		if err_msg:
 			self.log_function( "Rebit.tv error for URL %s: %s" % (url, traceback.format_exc()))
 			self.showError( "%s" % err_msg )
@@ -206,7 +205,7 @@ class RebitTV:
 				}
 			else:
 				data = None
-				
+
 			data = self.call_api('television/client/heartbeat', method='POST', data=data)
 
 		if self.access_token and data == {}:
@@ -214,19 +213,19 @@ class RebitTV:
 		else:
 			if self.login():
 				return True
-		
+
 		return False
 
 	# #################################################################################################
-	
+
 	def login(self):
 		data = {
 			"username": self.username,
 			"password": self.password
 		}
-		
+
 		data = self.call_api('auth/auth', data=data, enable_retry=False, auth_header=False)
-		
+
 		if 'data' not in data:
 			self.access_token = None
 			self.refresh_token_token = None
@@ -235,26 +234,26 @@ class RebitTV:
 			self.save_login_data()
 			self.showLoginError(self._("Login failed") + ": %s" % data.get('message', ''))
 			return False
-	
+
 		data = data['data']
 		self.access_token = data['access_token']
 		self.access_token_life = int(time.time()) + int(data['expire_in'])
 		self.refresh_token = data['refresh_token']
 		self.user_id = data['user_id']
 		self.save_login_data()
-		
+
 		return self.pair()
-		
+
 	# #################################################################################################
-	
+
 	def refresh_login(self):
 		if not self.refresh_token:
 			self.access_token = None
 			return False
-		
+
 		self.access_token = self.refresh_token
 		data = self.call_api('auth/auth', method='POST', enable_retry=False)
-		
+
 		if 'data' not in data:
 			self.access_token = None
 			self.refresh_token_token = None
@@ -263,64 +262,64 @@ class RebitTV:
 			self.save_login_data()
 			self.showLoginError(self._("Error by login token refresh") + ": %s" % data.get('message', ''))
 			return False
-	
+
 		data = data['data']
 		self.access_token = data['access_token']
 		self.access_token_life = int(time.time()) + int(data['expire_in'])
 		self.refresh_token = data['refresh_token']
 		self.user_id = data['user_id']
 		self.save_login_data()
-		
+
 		return True
 
 	# #################################################################################################
-		
+
 	def logout(self):
 		if not self.refresh_token:
 			self.access_token = None
 			self.save_login_data()
 			return True
-		
+
 		self.device_remove(self.client_id)
-		
+
 		self.call_api('auth/auth', method='DELETE', enable_retry=False)
-		
+
 		self.access_token = None
 		self.refresh_token_token = None
 		self.client_id = None
 		self.save_login_data()
-		
+
 		return True
-		
+
 	# #################################################################################################
-	
+
 	def pair(self):
 		data = {
 			'title': self.device_name,
 			'type': 'computer',
 			'child-lock-code': '0000'
 		}
-		
+
 		data = self.call_api('television/client', data=data)
-		
+
 		if 'data' not in data:
 			self.showLoginError(self._("Error by device pairing") + ": %s" % data.get('message', ''))
 			return False
-	
+
 		data = data['data']
 		self.client_id = data['id']
 		self.save_login_data()
-		
+
 		return True
-		
+
 	# #################################################################################################
 
 	def get_devices(self):
 		if not self.check_login():
 			return []
-		
+
 		data = self.call_api('television/clients')
-		
+
 		return data.get('data', [])
 
 	# #################################################################################################
@@ -328,7 +327,7 @@ class RebitTV:
 	def device_remove(self, client_id):
 		if not self.check_login():
 			return
-		
+
 		data = {
 			'title': self.device_name,
 			'type': 'computer',
@@ -336,7 +335,7 @@ class RebitTV:
 		}
 
 		self.call_api('television/clients/' + client_id, method='DELETE', data=data)
-		
+
 		if self.client_id == client_id:
 			self.client_id = None
 
@@ -344,26 +343,26 @@ class RebitTV:
 
 	def get_current_epg(self):
 		data = self.call_api('television/programmes/current')
-		
+
 		epgdata = {}
 		for ch in data.get('data',[]):
 			epgdata[ch['channel_id']] = ch
-			
+
 		return epgdata
-		
+
 	# #################################################################################################
 
 	def get_epg(self, channel_id, time_from, time_to ):
 		time_from = datetime.utcfromtimestamp(time_from).strftime('%Y-%m-%dT%H:%M:%S.000Z')
 		time_to = datetime.utcfromtimestamp(time_to).strftime('%Y-%m-%dT%H:%M:%S.000Z')
-		
+
 		params = {
 			'filter[stop][ge]': time_from,
 			'filter[start][le]': time_to
 		}
-		
+
 		data = self.call_api('television/channels/' + channel_id + '/programmes', params=params )
-		
+
 		if 'data' not in data:
 			self.showError(self._("Error by loading EPG") + ": %s" % data.get('message', ''))
 			return []
@@ -371,7 +370,7 @@ class RebitTV:
 		return sorted(data['data'], key=lambda x: x['start'])
 
 	# #################################################################################################
-	
+
 	def get_channels(self):
 		data = self.call_api('television/channels')
 
@@ -404,7 +403,7 @@ class RebitTV:
 			self.log_function("%s" % traceback.format_exc())
 			self.showError(self._("Error by loading video"))
 			return None
-		
+
 		if req.status_code != 200:
 			self.showError(self._("Error by loading video. HTTP response code") + ": %d" % req.status_code)
 			return None
@@ -422,21 +421,21 @@ class RebitTV:
 			for info in re.split(r''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', m.group('info')):
 				key, val = info.split('=', 1)
 				stream_info[key.lower()] = val
-			
+
 			stream_url = m.group('chunk')
-			
+
 			if not stream_url.startswith('http'):
 				if stream_url.startswith('/'):
 					stream_url = url[:url[9:].find('/') + 9] + stream_url
 				else:
 					stream_url = url[:url.rfind('/') + 1] + stream_url
-				
+
 			stream_info['url'] = stream_url
 			if int(stream_info['bandwidth']) <= max_bitrate:
 				streams.append(stream_info)
-		
+
 		return sorted(streams,key=lambda i: int(i['bandwidth']), reverse = True)
-	
+
 	# #################################################################################################
 
 	def get_live_link(self, channel_key, event_id=None, max_bitrate=None):
@@ -445,21 +444,21 @@ class RebitTV:
 			req_url += '/' + event_id
 
 		data = self.call_api(req_url, pin_header=True)
-		
+
 		if 'data' not in data:
 			self.showError(self._("Error by getting stream address") + ": %s" % data.get('message', ''))
 			return None
-		
+
 		data = data['data']
-		
+
 		if 'protocol' in data and data['protocol'] != 'http-live-stream':
 			self.showError(self._("Unsupported stream type") + ": %s" % data['protocol'])
 			return None
-		
+
 		if 'quality' in data and data['quality'] == 'adaptive':
 			return self.resolve_streams(data['link'].replace('https://', 'http://'), max_bitrate)
-		
+
 		return [{ 'url': data['link'], 'resolution': '1280x720', 'bandwidth': 1}]
 
 	# #################################################################################################
-	
+

@@ -3,12 +3,10 @@
 # addon based on misanov's addon based on waladir plugin :-)
 #
 
-import os, time, json, requests, re
+import os, time, json, re
 from datetime import datetime, date, timedelta
 import traceback
-import functools
 
-import base64
 from hashlib import md5
 
 try:
@@ -33,19 +31,16 @@ _HEADER = {
 	"Content-Type" : "application/x-www-form-urlencoded;charset=UTF-8",
 }
 
-def _log_dummy(message):
-	print('[O2TV]: ' + message )
-	pass
-
 class O2TV:
-	def __init__(self, username, password, deviceid, devicename="tvbox", data_dir=None, log_function=None, tr_function=None):
-		self.username = username
-		self.password = password
-		self.deviceid = deviceid
-		self.devicename = devicename
-		self.data_dir = data_dir
-		self.log_function = log_function if log_function else _log_dummy
-		self._ = tr_function if tr_function else lambda s: s
+	def __init__(self, content_provider):
+		self.cp = content_provider
+		self.username = self.cp.get_setting('username')
+		self.password = self.cp.get_setting('password')
+		self.deviceid = self.cp.get_setting('deviceid')
+		self.devicename = self.cp.get_setting('devicename')
+		self.data_dir = self.cp.data_dir
+		self.log_function = self.cp.log_info
+		self._ = self.cp._
 		self.devices = None
 		self.access_token = None
 		self.access_token_life = 0
@@ -58,24 +53,23 @@ class O2TV:
 		self.epg_cache = {}
 		self.cache_need_save = False
 		self.cache_mtime = 0
-		self.req_session = requests.Session()
-		self.req_session.request = functools.partial(self.req_session.request, timeout=10) # set timeout for all session calls
+		self.req_session = self.cp.get_requests_session()
 
 		self.load_login_data()
-		
+
 		if self.access_token:
 			self.header_unity["x-o2tv-access-token"] = self.access_token
 			self.header["X-NanguTv-Access-Token"] = self.access_token
 
 	# #################################################################################################
-	
+
 	def load_login_data(self):
 		if self.data_dir:
 			try:
 				# load access token
 				with open(self.data_dir + '/login.json', "r") as f:
 					login_data = json.load(f)
-					
+
 					if self.get_chsum() == login_data.get('checksum'):
 						self.access_token = login_data['access_token']
 						self.access_token_life = login_data['access_token_life']
@@ -87,9 +81,9 @@ class O2TV:
 			except:
 				self.access_token = None
 				self.access_token_life = 0
-		
+
 	# #################################################################################################
-		
+
 	def save_login_data(self):
 		if self.data_dir:
 			try:
@@ -106,9 +100,9 @@ class O2TV:
 					os.remove(self.data_dir + '/login.json')
 			except:
 				pass
-			
+
 	# #################################################################################################
-	
+
 	def load_epg_cache(self):
 		try:
 			try:
@@ -154,7 +148,7 @@ class O2TV:
 		return md5( data.encode('utf-8') ).hexdigest()
 
 	# #################################################################################################
-	
+
 	def showError(self, msg):
 		self.log_function("O2TV API ERROR: %s" % msg )
 		raise AddonErrorException(msg)
@@ -169,15 +163,15 @@ class O2TV:
 
 	def call_o2_api(self, url, data=None, params=None, header=None):
 		err_msg = None
-		
+
 		try:
 			if data:
 				resp = self.req_session.post(url, data=data, headers=header)
 			else:
 				resp = self.req_session.get(url, params=data, headers=header)
-			
+
 #			dump_json_request(resp)
-			
+
 			if resp.status_code == 200:
 				try:
 					return resp.json()
@@ -187,7 +181,7 @@ class O2TV:
 				err_msg = self._("Unexpected return code from server") + ": %d" % resp.status_code
 		except Exception as e:
 			err_msg = str(e)
-		
+
 		if err_msg:
 			self.log_function( "O2API error for URL %s: %s" % (url, traceback.format_exc()))
 			self.showError(err_msg)
@@ -198,14 +192,14 @@ class O2TV:
 		if '@' in self.username:
 			post = { "username" : self.username, "password" : self.password }
 			data = self.call_o2_api(url = "https://ottmediator.o2tv.cz:4443/ottmediator-war/login", data=post, header=self.header)
-		
+
 			if "services" in data and "remote_access_token" in data and len(data["remote_access_token"]) > 0 and "service_id" in data["services"][0] and len(data["services"][0]["service_id"]) > 0:
 				remote_access_token = data["remote_access_token"]
 				service_id = data["services"][0]['service_id']
-		
+
 				post = {"service_id" : service_id, "remote_access_token" : remote_access_token}
 				data = self.call_o2_api(url = "https://ottmediator.o2tv.cz:4443/ottmediator-war/loginChoiceService", data=post, header = self.header)
-		
+
 				post = {
 					"grant_type" : "remote_access_token",
 					"client_id" : "tef-web-portal-etnetera",
@@ -216,7 +210,7 @@ class O2TV:
 					"authority" : "tef-sso",
 					"isp_id" : "1"
 				}
-				
+
 				data = self.call_o2_api(url = "https://oauth.o2tv.cz/oauth/token", data=post, header=self.header)
 
 				self.access_token = data["access_token"]
@@ -231,23 +225,23 @@ class O2TV:
 				"username" : self.username,
 				"password" : self.password
 			}
-			
+
 			data = self.call_o2_api(url = "https://oauth.o2tv.cz/oauth/token", data=post, header=self.header)
-			
+
 			self.access_token = data["access_token"]
 			self.access_token_life = (int(time.time()) +  int(data["expires_in"] / 1000)) - 3600
 
 		self.save_login_data()
 
 	# #################################################################################################
-	
+
 	def refresh_configuration(self, force_refresh=False, iter=0):
 		try:
 			if not self.access_token or self.access_token_life < int(time.time()):
 				self.get_access_token()
 				self.header_unity["x-o2tv-access-token"] = self.access_token
 				self.header["X-NanguTv-Access-Token"] = self.access_token
-				
+
 			if not self.tariff or force_refresh:
 				try:
 					data = self.call_o2_api(url = "https://app.o2tv.cz/sws/subscription/settings/subscription-configuration.json", header=self.header)
@@ -258,7 +252,7 @@ class O2TV:
 						return self.refresh_configuration(force_refresh, iter + 1)
 					else:
 						raise
-					
+
 				if "isp" in data and len(data["isp"]) > 0 and "locality" in data and len(data["locality"]) > 0 and "billingParams" in data and len(data["billingParams"]) > 0 and "offers" in data["billingParams"] and len(data["billingParams"]["offers"]) > 0 and "tariff" in data["billingParams"] and len(data["billingParams"]["tariff"]) > 0:
 					self.subscription = data["subscription"]
 					self.isp = data["isp"]
@@ -270,9 +264,9 @@ class O2TV:
 					raise Exception(self._("Failed to load configuration from server"))
 		except Exception as e:
 			self.showLoginError(str(e))
-			
+
 	# #################################################################################################
-	
+
 	def device_remove(self,did):
 		self.refresh_configuration()
 		if did:
@@ -280,21 +274,21 @@ class O2TV:
 			self.call_o2_api('https://app.o2tv.cz/sws/subscription/settings/remove-device.json', data=post, header=self.header )
 
 	# #################################################################################################
-	
+
 	def search(self, query ):
 		self.refresh_configuration()
-		
+
 		max_ts = int(time.mktime(datetime.now().timetuple()))
-		
+
 		data = self.call_o2_api(url = "https://api.o2tv.cz/unity/api/v1/search/tv/depr/?groupLimit=1&maxEnd=" + str(max_ts*1000) + "&q=" + quote(query), header=self.header_unity)
-		
+
 		if "groupedSearch" in data and "groups" in data["groupedSearch"] and len(data["groupedSearch"]["groups"]) > 0:
 			return data["groupedSearch"]["groups"]
 
 		return []
-	
+
 	# #################################################################################################
-	
+
 	def get_channel_epg(self, ch, fromts, tots):
 		self.refresh_configuration()
 
@@ -306,21 +300,21 @@ class O2TV:
 			"offer": self.offers,
 			"toTimestamp": tots * 1000
 		}
-		
+
 		try:
 			resp = self.call_o2_api('https://app.o2tv.cz/sws/server/tv/channel-programs.json', data=post, header=self.header)
 		except:
 			resp = []
-		
+
 		return resp
 
 	# #################################################################################################
-	
+
 	def get_channels(self):
 		self.refresh_configuration()
-		
+
 		channels = []
-			
+
 		post = {
 			"locality": self.locality,
 			"tariff": self.tariff,
@@ -359,21 +353,21 @@ class O2TV:
 						'logo': item.get('logo_hi', picon),
 #						'live': item.get('live')
 					})
-	
+
 		return sorted(channels, key=lambda ch: ch['number'])
-	
+
 	# #################################################################################################
-	
+
 	def update_channels_data(self, channels):
 		data = self.call_o2_api(url = "https://api.o2tv.cz/unity/api/v1/channels/", header=self.header_unity)
-		
+
 		if "result" in data and len(data["result"]) > 0:
 			for channel in data["result"]:
 				try:
 					ch = channels[ channel["channel"]['channelKey'] ]
 				except:
 					continue
-				
+
 				ch['logo_hi'] = "https://www.o2tv.cz/" + channel["channel"]["images"]["color"]["url"]
 #				if 'live' in channel:
 #					ch['live'] = channel['live']
@@ -381,20 +375,20 @@ class O2TV:
 #					ch['live']['end'] = int(ch['live']['end'] / 1000)
 #				else:
 #					ch['live'] = None
-	
+
 	# #################################################################################################
-	
+
 	def get_epg_detail(self, epg_id ):
 		self.refresh_configuration()
-		
+
 		epgdata = self.call_o2_api(url = "https://api.o2tv.cz/unity/api/v1/programs/" + str(epg_id) + "/", header=self.header_unity)
 
 		img = None;
-		if "images" in epgdata and len(epgdata["images"]) > 0:	
+		if "images" in epgdata and len(epgdata["images"]) > 0:
 			img = "https://www.o2tv.cz/" + epgdata["images"][0]["cover"]
 		else:
 			img = None
-		
+
 		return {
 			'img' : img,
 			'name': epgdata.get("name"),
@@ -403,73 +397,73 @@ class O2TV:
 			'start' : int(epgdata['start'] / 1000),
 			'end' : int(epgdata['end'] / 1000)
 		}
-		
+
 	# #################################################################################################
-	
+
 	def get_user_channel_lists(self):
 		self.refresh_configuration()
-		
+
 		data = self.call_o2_api(url = "https://app.o2tv.cz/sws/subscription/settings/get-user-pref.json?name=nangu.channelListUserChannelNumbers", header=self.header)
-		
+
 		result = {}
 		if data and len(data.get("listUserChannelNumbers", '')) > 0:
 			data = data["listUserChannelNumbers"]
 			for list_name in data:
 				result[list_name.replace('user::', '')] = list(x[0] for x in sorted(data[list_name].items(), key=lambda x : x[1]))
-		
+
 		return result
-	
+
 	# #################################################################################################
-	
+
 	def get_recordings(self):
 		self.refresh_configuration()
-		
+
 		header_unity2 = self.header_unity.copy()
 		header_unity2["x-o2tv-device-id"] = self.deviceid
 		header_unity2["x-o2tv-device-name"] = self.devicename
-		
+
 		if not self.sdata:
 			data = self.call_o2_api(url = "https://api.o2tv.cz/unity/api/v1/user/profile/", header = header_unity2)
 			self.sdata = str(data['sdata'])
-		
+
 		header_unity2["x-o2tv-sdata"] = self.sdata
-	
+
 		data_pvr = self.call_o2_api(url = "https://api.o2tv.cz/unity/api/v1/recordings/", header = header_unity2)
-		
+
 		return data_pvr
 
 	# #################################################################################################
-	
+
 	def delete_recording( self, pvrProgramId ):
 		self.refresh_configuration()
-		
+
 		post = {"pvrProgramId" : int(pvrProgramId)}
-		
+
 		try:
 			data = self.call_o2_api(url = "https://app.o2tv.cz/sws/subscription/vod/pvr-remove-program.json", data = post, header = self.header)
 		except:
 			return False
-		
+
 		return True
 
 	# #################################################################################################
-	
+
 	def add_recording( self, epg_id ):
 		self.refresh_configuration()
-		
+
 		post = {"epgId" : int(epg_id) }
 		try:
 			data = self.call_o2_api(url = "https://app.o2tv.cz/sws/subscription/vod/pvr-add-program.json", data = post, header=self.header)
 		except:
 			return False
-		
+
 		return True
 
 	# #################################################################################################
-	
+
 	def resolve_streams(self, post, max_bitrate=None):
 		data = self.call_o2_api(url = "https://app.o2tv.cz/sws/server/streaming/uris.json", data=post, header=self.header)
-	
+
 		playlist = None
 		url = ""
 		if "uris" in data and len(data["uris"]) > 0 and "uri" in data["uris"][0] and len(data["uris"][0]["uri"]) > 0 :
@@ -509,15 +503,15 @@ class O2TV:
 					quality = "1080p"
 				url = m.group('chunklist')
 				result.append( {"url": url, "quality": quality, 'bandwidth': bandwidth } )
-			
+
 			result = sorted( result, key=lambda r: r['bandwidth'], reverse=True )
 		return result
-	
+
 	# #################################################################################################
-	
+
 	def get_video_link(self, channel_key, start, end, epg_id, max_bitrate=None):
 		self.refresh_configuration()
-		
+
 		post = {
 			"serviceType" : "TIMESHIFT_TV",
 			"deviceType" : "STB",
@@ -529,14 +523,14 @@ class O2TV:
 			"id" : epg_id,
 			"encryptionType" : "NONE"
 		}
-		
+
 		return self.resolve_streams(post, max_bitrate)
-	
+
 	# #################################################################################################
-	
+
 	def get_live_link(self, channel_key, max_bitrate=None):
 		self.refresh_configuration()
-		
+
 		post = {
 			"serviceType" : "LIVE_TV",
 			"deviceType" : "STB",
@@ -552,7 +546,7 @@ class O2TV:
 
 	def get_recording_link(self, pvrProgramId, max_bitrate=None):
 		self.refresh_configuration()
-		
+
 		post = {
 			"serviceType" : "NPVR",
 			"deviceType" : "STB",
@@ -561,7 +555,7 @@ class O2TV:
 			"contentId" : pvrProgramId,
 			"encryptionType" : "NONE"
 		}
-		
+
 		return self.resolve_streams(post, max_bitrate)
 
 	# #################################################################################################

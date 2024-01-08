@@ -1,3 +1,5 @@
+2024-01-08 (verze 3.5)
+* úpravy kvôli zmene API pre verifikáciu SSL certifikátov nastavovanie timeoutov
 2023-11-29 (verze 3.4)
 * oprava po zmenách na stránke
 2023-03-13 (verze 3.3)
@@ -9,9 +11,9 @@
 * oprava prehrávania zvuku po zmenách vo formáte streamov
 * pridanie en/cs/sk lokalizácie
 2023-01-27 (verze 3.1)
-* kompletne novy addon kvuli zmenam na strance 
+* kompletne novy addon kvuli zmenam na strance
 2022-09-19 (verze 3.0)
-* kompletne novy addon kvuli zmenam na strance 
+* kompletne novy addon kvuli zmenam na strance
 2022-05-07
 * oprava kompatibility so starsou verziou requests
 2022-04-04
@@ -54,6 +56,6 @@
  * Oprava načítání kategorií
 2014-03-15
  * Oprava prehravani
-2014-02-04: 
+2014-02-04:
  * Nova Plus (alpha) - first release
 

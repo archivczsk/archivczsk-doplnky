@@ -1,3 +1,6 @@
+2.4: 08.01.2024
+- automatic timeout and SSL verification setup
+
 2.3: 09.03.2023
 - added en/cs/sk localisation
 - added setting to disable server SSL certificate check

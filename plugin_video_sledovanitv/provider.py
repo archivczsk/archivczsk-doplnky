@@ -438,7 +438,7 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 		self.channels = []
 		self.channels_by_id = {}
 
-		sledovanitv = SledovaniTV(self.get_setting('username'), self.get_setting('password'), self.get_setting('pin'), self.get_setting('serialid'), self.data_dir, self.log_info, self._)
+		sledovanitv = SledovaniTV(self)
 		if not sledovanitv.check_pairing():
 			raise LoginException(self._('Login failed'))
 

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-import re, sys, os, string, base64, json, requests
-import functools
+import re, sys, os, string, base64, json
 from time import time
 from uuid import getnode as get_mac
 from hashlib import md5
@@ -17,36 +16,32 @@ _COMMON_HEADERS = {
 	"User-Agent": "Dalvik/2.1.0 (Linux; U; Android 9; Nexus 7 Build/LMY47V)",
 }
 
-def _log_dummy(message):
-	print('[ORANGETV]: ' + message )
-	pass
-
 # #################################################################################################
 
 class OrangeTV:
 
-	def __init__(self, username, password, device_id='Nexus7', data_dir=None, log_function=None, tr_function=None):
-		self.username = username
-		self.password = password
+	def __init__(self, content_provider):
+		self.cp = content_provider
+		self.username = self.cp.get_setting('username')
+		self.password = self.cp.get_setting('password')
 		self._live_channels = {}
 		self.access_token = None
 		self.access_token_life = 0
 		self.subscription_code = None
 		self.locality = None
 		self.offer = None
-		self.device_id = device_id
+		self.device_id = self.cp.get_setting('deviceid')
 		self.quality = 'MOBILE'
-		self.log_function = log_function if log_function else _log_dummy
-		self._ = tr_function if tr_function else lambda s: s
+		self.log_function = self.cp.log_info
+		self._ = self.cp._
 		self.devices = None
 		self.epg_cache = {}
-		self.data_dir = data_dir
+		self.data_dir = self.cp.data_dir
 		self.cache_need_save = False
 		self.cache_mtime = 0
-		
+
 		self.load_login_data()
-		self.req_session = requests.Session()
-		self.req_session.request = functools.partial(self.req_session.request, timeout=10) # set timeout for all session calls
+		self.req_session = self.cp.get_requests_session()
 
 	# #################################################################################################
 	@staticmethod
@@ -55,14 +50,14 @@ class OrangeTV:
 		return ('0000000000000000' + hexed[2:-1])[16:]
 
 	# #################################################################################################
-	
+
 	def load_login_data(self):
 		if self.data_dir:
 			try:
 				# load access token
 				with open(self.data_dir + '/login.json', "r") as f:
 					login_data = json.load(f)
-					
+
 					if self.get_chsum() == login_data.get('checksum'):
 						self.access_token = login_data['access_token']
 						self.access_token_life = login_data['access_token_life']
@@ -74,7 +69,7 @@ class OrangeTV:
 			except:
 				self.access_token = None
 				self.access_token_life = 0
-				
+
 	# #################################################################################################
 
 	def save_login_data(self):
@@ -95,7 +90,7 @@ class OrangeTV:
 				pass
 
 	# #################################################################################################
-	
+
 	def call_api(self, endpoint, params=None, headers=None, add_auth=True):
 		if endpoint.startswith('http'):
 			# full URL
@@ -119,15 +114,15 @@ class OrangeTV:
 
 		response = self.req_session.get(url, params=params, headers=req_headers, cookies=cookies)
 #		dump_json_request(response)
-		
+
 		if response.status_code != 200:
 			self.log_function('HTTP response status code: %d\n%s' % (response.status_code, response.text))
-			raise AddonErrorException(self._('Unexpected return code from server') + ': %d' % req.status_code)
+			raise AddonErrorException(self._('Unexpected return code from server') + ': %d' % response.status_code)
 
 		return response.json()
 
 	# #################################################################################################
-	
+
 	def get_chsum(self):
 		if not self.username or not self.password or len(self.username) == 0 or len( self.password) == 0:
 			return None
@@ -136,7 +131,7 @@ class OrangeTV:
 		return md5( data.encode('utf-8') ).hexdigest()
 
 	# #################################################################################################
-			
+
 	def loadEpgCache(self):
 		try:
 			try:
@@ -169,12 +164,12 @@ class OrangeTV:
 
 	def get_access_token_password(self):
 		self.log_function('Getting Token via password...')
-		
+
 		if not self.username or not self.password:
 			self.log_function('No username or password provided...')
 			self.save_login_data()
 			raise LoginException(self._("Login data not set"))
-		
+
 		headers = _COMMON_HEADERS.copy()
 		headers["Content-Type"] = "application/x-www-form-urlencoded;charset=UTF-8"
 
@@ -190,7 +185,7 @@ class OrangeTV:
 			'response_type': 'token'
 		}
 
-		response = self.req_session.post('https://oauth01.gtm.orange.sk/oauth/token', data=data, headers=headers, verify=False)
+		response = self.req_session.post('https://oauth01.gtm.orange.sk/oauth/token', data=data, headers=headers)
 
 		j = response.json()
 		if 'error' in j:
@@ -200,7 +195,7 @@ class OrangeTV:
 				self.log_function('Authentication Error')
 
 			raise LoginException(self._("Failed to autentificate - probably wrong username/password"))
-			
+
 		self.access_token = j["access_token"]
 		self.refresh_token = j["refresh_token"]
 		self.access_token_life = (int(time()) +  int(j["expires_in"] / 1000)) - 3600
@@ -231,11 +226,11 @@ class OrangeTV:
 
 	def refresh_configuration(self, force_reload=False):
 		self.refresh_access_token()
-		
+
 		if not force_reload and self.subscription_code:
 			# configuration already loaded
 			return
-		
+
 		response = self.call_api('subscription/settings/subscription-configuration.json')
 
 		if 'errorMessage' in response:
@@ -251,7 +246,7 @@ class OrangeTV:
 
 	def get_live_channels(self):
 		self.refresh_configuration()
-		
+
 		channels = []
 
 		params = {
@@ -270,7 +265,7 @@ class OrangeTV:
 
 		for channel in response['channels'].values():
 			channel_key = channel['channelKey']
-			
+
 			if channel_key not in purchased_channels:
 				continue
 
@@ -335,13 +330,13 @@ class OrangeTV:
 				"desc": '%s - %s\n%s' % (self.timestamp_to_str(one["startTimestamp"]), self.timestamp_to_str(one["endTimestamp"]), one["shortDescription"]),
 				'img': one.get('picture')
 			})
-			
+
 			if last_timestamp and one["startTimestamp"] > last_timestamp:
 				break
 
 		self.epg_cache[ch] = ch_epg
 		self.cache_need_save = True
-	
+
 	# #################################################################################################
 
 	def getChannelCurrentEpg(self,ch,cache_hours=0):
@@ -351,47 +346,47 @@ class OrangeTV:
 		desc = ""
 		img = None
 		del_count = 0
-		
+
 		if ch in self.epg_cache:
 			for epg in self.epg_cache[ch]:
 				if epg["end"] < fromts:
 					# cleanup old events
 					del_count += 1
-				
+
 				if epg["start"] < fromts and epg["end"] > fromts:
 					title = epg["title"]
 					desc = epg["desc"]
 					img = epg.get("img")
 					break
-		
+
 		if del_count:
 			# save some memory - remove old events from cache
 			del self.epg_cache[ch][:del_count]
 			self.log_function("Deleted %d old events from EPG cache for channell %s" % (del_count, ch))
-			
+
 		# if we haven't found event in cache and epg refresh is enabled (cache_hours > 0)
 		if title == "" and cache_hours > 0:
 			# event not found in cache, so request fresh info from server (can be slow)
 			self.log_function("Requesting EPG for channel %s from %d to %d" % (ch, fromts, tots))
-			
+
 			j = self.getChannelEpg(ch,fromts,tots)
 			self.fillChannelEpgCache(ch, j)
-			
+
 			# cache already filled with fresh entries, so the first one is current event
 			title = self.epg_cache[ch][0]['title']
 			desc = self.epg_cache[ch][0]['desc']
 			img = self.epg_cache[ch][0].get('img')
-		
+
 		if title == "":
 			return None
-		
+
 		return {"title": title, "desc": desc, 'img': img}
 
 	# #################################################################################################
 
 	def getArchivChannelPrograms(self, channel_key, ts_from, ts_to):
 		self.refresh_configuration()
-		
+
 		params = {
 			"channelKey": channel_key,
 			"fromTimestamp": ts_from * 1000,
@@ -444,7 +439,7 @@ class OrangeTV:
 		playlist = None
 		while self.access_token:
 			json_data = self.call_api('server/streaming/uris.json', params=params)
-			
+
 			if 'statusMessage' in json_data:
 				status = json_data['statusMessage']
 				if status == 'bad-credentials':
@@ -487,10 +482,10 @@ class OrangeTV:
 				quality = "1080p"
 			url = m.group('chunklist')
 			result.append( {"url": url, "quality": quality, 'bandwidth': bandwidth } )
-		
+
 		result = sorted( result, key=lambda r: r['bandwidth'], reverse=True )
 		return result
 
 # #################################################################################################
 
-	
+

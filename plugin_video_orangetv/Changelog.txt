@@ -1,5 +1,6 @@
-2024-01-03 - 2.14
+2024-01-08 - 2.14
 - úpravy kvôli zmene spôsobu fungovania rodičovskej kontroly
+- automatické nastavovanie timeoutu a možnosť zapnúť/vypnúť verifikáciu SSL certifikátov
 2023-05-16 - 2.13
 - pridaná podpora pre priame otvorenie archívu z userbouquetu
 2023-03-09 - 2.12

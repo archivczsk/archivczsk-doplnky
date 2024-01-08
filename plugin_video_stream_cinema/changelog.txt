@@ -1,5 +1,6 @@
-2023-01-03 3.9
+2023-01-08 3.9
     - úpravy kvôli zmene spôsobu fungovania rodičovskej kontroly
+    - automatické nastavovanie timeoutu a možnosť zapnúť/vypnúť verifikáciu SSL certifikátov
 
 2023-12-30 3.8
     - aplikovanie zmeny timeoutu bez reštartu

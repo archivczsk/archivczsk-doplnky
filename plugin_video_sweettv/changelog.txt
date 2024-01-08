@@ -1,5 +1,6 @@
-1.10 - 03.01.2024
+1.10 - 08.01.2024
     - úpravy kvôli zmene spôsobu fungovania rodičovskej kontroly
+    - automatické nastavovanie timeoutu a možnosť zapnúť/vypnúť verifikáciu SSL certifikátov
 
 1.9 - 08.09.2023
     - oprava registrácie nového zariadenia (thx 005jon)

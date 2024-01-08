@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import requests
 import re
 from tools_archivczsk.contentprovider.exception import AddonErrorException
 
@@ -13,7 +12,7 @@ class Csfd(object):
 	def __init__(self, content_provider):
 		self.cp = content_provider
 
-		self.req_session = requests.Session()
+		self.req_session = self.cp.get_requests_session()
 		self.req_session.headers.update({
 			'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0'
 		})
@@ -28,7 +27,7 @@ class Csfd(object):
 		else:
 			cookies = None
 
-		response = self.req_session.get('https://www.csfd.cz/' + endpoint, params=params, cookies=cookies, timeout=timeout, verify=False)
+		response = self.req_session.get('https://www.csfd.cz/' + endpoint, params=params, cookies=cookies)
 		if response.status_code != 200:
 			raise AddonErrorException(self.cp._("Unexpected return code from server") + ": %d" % response.status_code)
 
@@ -36,13 +35,13 @@ class Csfd(object):
 
 	def _get_similar_related(self, cid, selector):
 		html = self.call_csfd_api('film/' + str(cid))
-		
+
 		vals = []
-		
+
 		data = re.search('<section.*?<h3>[\s]*?{}(.*?)</section>'.format(selector), html, re.S)
 		if data:
 			articles = re.findall('<article.*?href="/film/([0-9]+?)\-.*?".*?</article>', data.group(1), re.S)
-			
+
 			for article in articles:
 				vals.append(article)
 
@@ -81,14 +80,14 @@ class Csfd(object):
 				Csfd.TOP100_SK: 'rlW0rKOyVwbmYPWipzyanJ4vBwVfVzqyoaWyVwcoKFjvrJIupy9zpz9gVwchqJkfYPW5MJSlK3EiVwchqJkfYPWuL3EipvV6J10fVzEcpzIwqT9lVwcoKK0=',
 			},
 		}
-		
+
 		self.cp.log_debug("get_top(%s, %s)" % (media_type, filter_type))
 		# dont' check for errors here - we want to know it there is a typo somewhere in code, so here it will crash
 		f = filters[media_type][filter_type]
 
 		html = self.call_csfd_api('zebricky/vlastni-vyber', params={'show': 1, 'filter': f})
 		vals = []
-			
+
 		articles = re.findall('<article.*?href="/film/([0-9]+?)-.*?</article>', html, re.S)
 		if articles:
 			for article in articles:

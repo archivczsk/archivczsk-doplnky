@@ -400,7 +400,7 @@ class O2TVContentProvider(ModuleContentProvider):
 		self.channels = []
 		self.channels_by_key = {}
 
-		o2tv = O2TV(self.get_setting('username'), self.get_setting('password'), self.get_setting('deviceid'), self.get_setting('devicename'), self.data_dir, self.log_info, self._)
+		o2tv = O2TV(self)
 		o2tv.refresh_configuration()
 
 		self.o2tv = o2tv

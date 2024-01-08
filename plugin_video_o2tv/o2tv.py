@@ -3,18 +3,11 @@
 # based on waladir's KODI addon
 #
 
-import os, time, json, requests, re
-from datetime import datetime, date, timedelta
+import os, time, json
 import traceback
-import functools
 
 import base64
 from hashlib import md5
-
-try:
-	from urllib import quote
-except:
-	from urllib.parse import quote
 
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
 from tools_archivczsk.debug.http import dump_json_request
@@ -37,20 +30,19 @@ class O2TV:
 		self.services = []
 		self.active_service = None
 
-		self.req_session = requests.Session()
-		self.req_session.request = functools.partial(self.req_session.request, timeout=10) # set timeout for all session calls
+		self.req_session = self.cp.get_requests_session()
 
 		self.load_login_data()
-		
+
 	# #################################################################################################
-	
+
 	def load_login_data(self):
 		try:
 			# load access token
 			if os.path.exists(self.cp.data_dir + '/login2.json'):
 				with open(self.cp.data_dir + '/login2.json', "r") as f:
 					login_data = json.load(f)
-					
+
 					if self.get_chsum() == login_data.get('checksum'):
 						self.session_data = login_data['session_data']
 						self.services = login_data.get('services', [])
@@ -62,9 +54,9 @@ class O2TV:
 		except:
 			self.session_data = {}
 			self.cp.log_exception()
-		
+
 	# #################################################################################################
-		
+
 	def save_login_data(self):
 		try:
 			if self.session_data:
@@ -81,9 +73,9 @@ class O2TV:
 				os.remove(self.cp.data_dir + '/login2.json')
 		except:
 			self.cp.log_exception()
-			
+
 	# #################################################################################################
-	
+
 	@staticmethod
 	def create_device_id():
 		import random, string
@@ -99,7 +91,7 @@ class O2TV:
 		return md5( data.encode('utf-8') ).hexdigest()
 
 	# #################################################################################################
-	
+
 	def showError(self, msg):
 		self.cp.log_error("O2TV API ERROR: %s" % msg )
 		raise AddonErrorException(msg)
@@ -131,7 +123,7 @@ class O2TV:
 				'format': 1,
 				'clientTag': CLIENT_TAG
 			}
-		
+
 		if not url.startswith('http'):
 			if url.startswith('/'):
 				url = self.base_api_url + url
@@ -150,12 +142,12 @@ class O2TV:
 				resp = self.req_session.post(url, params=params, json=data, headers=headers)
 			else:
 				resp = self.req_session.get(url, params=params, headers=headers)
-			
+
 #			try:
 #				dump_json_request(resp)
 #			except:
 #				pass
-			
+
 			if resp.status_code >= 200 and resp.status_code < 400:
 				try:
 					json_response = resp.json()
@@ -177,11 +169,11 @@ class O2TV:
 
 			else:
 				return { 'err': self._("Unexpected return code from server") + ": %d" % resp.status_code }
-			
+
 		except Exception as e:
 			self.cp.log_exception()
 			err_msg = str(e)
-		
+
 		if err_msg:
 			self.cp.log_error( "O2TV 2.0 API error for URL %s: %s" % (url, traceback.format_exc()))
 			self.showError(err_msg)
@@ -199,7 +191,7 @@ class O2TV:
 		# request Kaltura session ID
 		if 'err' in response or response.get('result',{}).get('objectType') != 'KalturaLoginSession':
 			raise LoginException(response.get('err', self._('Failed to get login session')))
-		
+
 		self.session_data['ks'] = response['result']['ks'] # store Kaltura session ID
 		self.session_data['ks_expiry'] = response['result']['expiry']
 
@@ -251,7 +243,7 @@ class O2TV:
 
 		if 'err' in response or response.get('result', {}).get('objectType') != 'KalturaLoginResponse' or not 'loginSession' in response.get('result', {}):
 			raise LoginException("Failed to login to {service_name} service".format(service_name=service['name']))
-		
+
 		login_session = response['result']['loginSession']
 
 		service['ks_expiry'] = login_session['expiry']
@@ -275,7 +267,7 @@ class O2TV:
 		return service
 
 	# #################################################################################################
-	
+
 	def refresh_configuration(self, force_refresh=False, iter=0):
 		try:
 			if not self.session_data.get('jwt') or not self.session_data.get('ks') or self.session_data.get('ks_expiry', 0) < int(time.time()):
@@ -288,7 +280,7 @@ class O2TV:
 						self.login_to_service(service)
 						need_save = True
 					break
-		
+
 			if need_save:
 				self.save_login_data()
 
@@ -340,7 +332,7 @@ class O2TV:
 						raise
 				else:
 					services = json.loads(response['result']['adapterData']['service_list']['value'])
-					
+
 					# store services and get access token for each one
 					for one in services['ServicesList']:
 						for service_name, service_id in one.items():
@@ -360,7 +352,7 @@ class O2TV:
 						service = self.services[0]
 						self.active_service = service['id']
 						self.login_to_service(service)
-				
+
 				self.save_login_data()
 
 		except Exception as e:
@@ -373,7 +365,7 @@ class O2TV:
 	def activate_service(self, service_id):
 		if service_id == self.active_service:
 			return
-		
+
 		for service in self.services:
 			if service['id'] == service_id:
 				self.active_service = service_id
@@ -445,11 +437,11 @@ class O2TV:
 
 
 	# #################################################################################################
-	
+
 	def device_remove(self, did):
 		if not did:
 			return
-		
+
 		post = {
 			"language":"ces",
 			"ks": self.get_active_service_ks(),
@@ -457,11 +449,11 @@ class O2TV:
 		}
 
 		response = self.call_o2_api('householddevice/action/delete', data=post)
-		
+
 		return response.get('result', False)
 
 	# #################################################################################################
-	
+
 	def search(self, query ):
 		filer_data = {
 			"objectType":"KalturaChannelFilter",
@@ -478,22 +470,22 @@ class O2TV:
 					ret.append(epg)
 
 		return ret
-	
+
 	# #################################################################################################
-	
+
 	def get_channel_epg(self, channel_id, fromts, tots):
 		filer_data = {
 			"objectType": "KalturaSearchAssetFilter",
 			"orderBy": "START_DATE_ASC",
 			"kSql": "(and linear_media_id:'%s' end_date >= '%s' start_date  <= '%s' asset_type='epg' auto_fill= true)" % (channel_id, str(fromts), str(tots)),
 		}
-		
+
 		try:
 			resp = self.call_list_api(filer_data)
 		except:
 			self.cp.log_exception()
 			resp = []
-		
+
 		ret = []
 		for one in resp:
 			epg = self.convert_epg_entry(one)
@@ -517,13 +509,13 @@ class O2TV:
 			"orderBy": "START_DATE_ASC",
 			"kSql": "(and %s start_date <= '%s' end_date  >= '%s' asset_type='epg' auto_fill= true)" % (channels_query, str(cur_ts), str(cur_ts)),
 		}
-		
+
 		try:
 			resp = self.call_list_api(filer_data)
 		except:
 			self.cp.log_exception()
 			resp = []
-		
+
 
 		ret = {}
 		for one in resp:
@@ -532,12 +524,12 @@ class O2TV:
 				ret[one['linearAssetId']] = epg
 
 		return ret
-	
+
 	# #################################################################################################
-	
+
 	def get_channels(self):
 		self.refresh_configuration()
-		
+
 		channels = []
 		service = self.get_service_by_id(self.active_service)
 
@@ -576,9 +568,9 @@ class O2TV:
 				})
 
 		return sorted(channels, key=lambda ch: ch['number'])
-	
+
 	# #################################################################################################
-	
+
 	def get_recordings(self):
 		additional_data = {
 			"responseProfile": {
@@ -609,7 +601,7 @@ class O2TV:
 		}
 
 		return self.call_list_api(filter_data, additional_data)
-	
+
 	# #################################################################################################
 
 	def get_future_recordings(self):
@@ -622,7 +614,7 @@ class O2TV:
 		return self.call_list_api(filer_data)
 
 	# #################################################################################################
-	
+
 	def delete_recording( self, rec_id, future=False ):
 		post = {
 			"language": "ces",
@@ -639,7 +631,7 @@ class O2TV:
 		return response.get('result',{}).get('status') in ('DELETED', 'CANCELED')
 
 	# #################################################################################################
-	
+
 	def add_recording( self, epg_id ):
 		post = {
 			"language": "ces",
@@ -660,7 +652,7 @@ class O2TV:
 		for service in self.services:
 			if service['id'] == service_id:
 				return service
-		
+
 		return None
 
 	# #################################################################################################
@@ -670,7 +662,7 @@ class O2TV:
 
 		if service:
 			return service.get('ks')
-		
+
 		return None
 
 	# #################################################################################################
@@ -686,10 +678,10 @@ class O2TV:
 		response = self.call_o2_api('pin/action/validate', data=post)
 		if response.get('result', False) != True:
 			return False
-		
+
 		return True
 
-	# #################################################################################################	
+	# #################################################################################################
 
 	def get_stream_url(self, asset_id, asset_type, context):
 		post = {
@@ -723,9 +715,9 @@ class O2TV:
 			raise AddonErrorException(self._("Unsupported stream type") + ': %s' % ', '.join(stream_types) )
 
 		return url
-	
+
 	# #################################################################################################
-	
+
 	def get_proxy_live_link(self, channel_key):
 		url = self.cp.http_endpoint + '/playlive/' + base64.b64encode(str(channel_key).encode("utf-8")).decode("utf-8") + '/index.mpd'
 		return url
@@ -745,7 +737,7 @@ class O2TV:
 
 	def get_archive_link(self, epg_id):
 		return self.get_stream_url(int(epg_id), 'epg', 'CATCHUP')
-		
+
 	# #################################################################################################
 
 	def get_proxy_startover_link(self, channel_key):
@@ -759,7 +751,7 @@ class O2TV:
 		epg = self.get_current_epg([channel_id])
 
 		return self.get_stream_url(epg[channel_id]['id'], 'epg', 'START_OVER')
-	
+
 	# #################################################################################################
 
 	def get_proxy_recording_link(self, rec_id):
@@ -804,7 +796,7 @@ class O2TV:
 			'channel_id': epg_entry['linearAssetId'],
 			'mosaic_id': mosaic_id
 		}
-	
+
 	# #################################################################################################
 
 	def get_mosaic_info(self, mosaic_id, live=False):
@@ -840,11 +832,11 @@ class O2TV:
 						'title': title,
 						'id': epg_id
 					})
-			
+
 			return ret
-		
+
 		return {}
-			
+
 	#################################################################################################
 
 	def get_external_resource_info(self, ext_id):
@@ -856,7 +848,7 @@ class O2TV:
 
 		for epg_entry in self.call_list_api(filer_data):
 			return epg_entry
-		
+
 		return {}
-	
+
 	#################################################################################################

@@ -1,3 +1,7 @@
+1.16 - 08.01.2024
+    - added parental control API
+    - added wrapper for requests Session() with automatic timeout and ssl verification settings
+
 1.15 - 14.12.2023
     - added support for cookies, asynchronous processing and segment proxy to HLS handler
 
@@ -7,7 +11,7 @@
 
 1.13 - 09.05.2023
      - added possibility to disable showing archive length
-     - mark exported adult channels as parental control protected 
+     - mark exported adult channels as parental control protected
 
 1.12 - 21.04.2023
      - fixed search using seeker when addon was not opened before

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_markiza\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-13 19:21+0100\n"
+"POT-Creation-Date: 2024-01-08 19:17+0100\n"
 "PO-Revision-Date: 2023-03-13 19:21+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,23 +16,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_novaplus/provider.py:100
+#: plugin_video_novaplus/provider.py:99
 msgid "Login failed - check login name and password"
 msgstr "Prihlásenie zlyhalo - skontrolujte prihlasovacie meno a heslo"
 
-#: plugin_video_novaplus/provider.py:107
+#: plugin_video_novaplus/provider.py:106
 msgid "Failed to create login session. Maybe login page has changed."
 msgstr "Nepodarilo sa vytvoriť prihlasovaciu session. Možno nastala zmena spôsobu prihásenia."
 
-#: plugin_video_novaplus/provider.py:151
+#: plugin_video_novaplus/provider.py:144
 msgid "Request to remote server failed. Try to repeat operation."
 msgstr "Požiadavka na vzdialený server zlyhala. Skúste operáciu zopakovať."
 
-#: plugin_video_novaplus/provider.py:161
+#: plugin_video_novaplus/provider.py:154
 msgid "HTTP response code"
 msgstr "HTTP návratový kód"
 
-#: plugin_video_novaplus/provider.py:167
+#: plugin_video_novaplus/provider.py:160
 #, python-brace-format
 msgid ""
 "In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\n"
@@ -41,39 +41,39 @@ msgstr ""
 "K fungovaniu doplnku si musíte pomocou svojho správcu balíkov doinštalovať BeautifulSoup4. Hľadajte balík se menom:\n"
 "python{0}-beautifulsoup4 alebo python{0}-bs4"
 
-#: plugin_video_novaplus/provider.py:175
+#: plugin_video_novaplus/provider.py:168
 msgid "Latest episodes"
 msgstr "Posledné epizódy"
 
-#: plugin_video_novaplus/provider.py:176
+#: plugin_video_novaplus/provider.py:169
 msgid "TOP programs"
 msgstr "TOP programy"
 
-#: plugin_video_novaplus/provider.py:237
+#: plugin_video_novaplus/provider.py:230
 msgid "Go to show"
 msgstr "Prejsť na reláciu"
 
-#: plugin_video_novaplus/provider.py:243
+#: plugin_video_novaplus/provider.py:236
 msgid "Best"
 msgstr "Nejlepšie"
 
-#: plugin_video_novaplus/provider.py:244
+#: plugin_video_novaplus/provider.py:237
 msgid "Latest"
 msgstr "Najnovšie"
 
-#: plugin_video_novaplus/provider.py:245
+#: plugin_video_novaplus/provider.py:238
 msgid "All"
 msgstr "Všetky"
 
-#: plugin_video_novaplus/provider.py:267
+#: plugin_video_novaplus/provider.py:260
 msgid "Categories"
 msgstr "Kategórie"
 
-#: plugin_video_novaplus/provider.py:371
+#: plugin_video_novaplus/provider.py:370
 msgid "Video not found."
 msgstr "Video nebolo nájdené."
 
-#: plugin_video_novaplus/provider.py:398
+#: plugin_video_novaplus/provider.py:411
 msgid "Failed to play video"
 msgstr "Nepodarilo sa prehrať video"
 
@@ -107,8 +107,8 @@ msgstr ""
 msgid "2 Mbit/s"
 msgstr ""
 
-msgid "Enable server SSL certificate check"
-msgstr "Povoliť kontrolu SSL certifikátu servera"
+#~ msgid "Enable server SSL certificate check"
+#~ msgstr "Povoliť kontrolu SSL certifikátu servera"
 
 #~ msgid "Login failed - check login username and password"
 #~ msgstr "Prihlásenie zlyhalo - skontrolujte prihlasovacie meno a heslo"

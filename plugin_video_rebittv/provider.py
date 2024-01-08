@@ -199,7 +199,7 @@ class RebitTVContentProvider(ModuleContentProvider):
 	def login(self, silent):
 		self.rebittv = None
 
-		rebittv = RebitTV(self.get_setting('username'), self.get_setting('password'), self.get_setting('device_name'), self.data_dir, self.log_info, self._)
+		rebittv = RebitTV(self)
 		self.rebittv = rebittv
 
 		return True

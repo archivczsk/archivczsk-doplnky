@@ -43,6 +43,7 @@ except:
 		def error(msg):
 			pass
 
+# #################################################################################################
 
 class DummyAddonBackgroundService(object):
 	def __init__(self):
@@ -59,6 +60,28 @@ class DummyAddonBackgroundService(object):
 	@staticmethod
 	def run_delayed(name, delay_seconds, cbk, *args, **kwargs):
 		pass
+
+# #################################################################################################
+
+class CCPRequestsSession(requests.Session):
+	'''
+	Wrapper on requests Session() object, that automaticaly sets up timeout and SSL verification
+	based on content provider settings
+	'''
+	def __init__(self, content_provider):
+		requests.Session.__init__(self)
+		self.cp = content_provider
+
+	def request(self, method, url, **kwargs):
+		if 'timeout' not in kwargs:
+			timeout = int(self.cp.get_setting('loading_timeout'))
+			kwargs['timeout'] = None if timeout == 0 else timeout
+
+		if 'verify' not in kwargs:
+			kwargs['verify'] = self.cp.get_setting('verify_ssl')
+
+		return requests.Session.request(self, method, url, **kwargs)
+
 
 # #################################################################################################
 
@@ -311,6 +334,14 @@ class CommonContentProvider(object):
 
 	# #################################################################################################
 
+	def get_requests_session(self):
+		'''
+		Returns configured Session() from requests library. Timeout and SSL verification is set automaticaly based on addons settings
+		'''
+		return CCPRequestsSession(self)
+
+	# #################################################################################################
+
 	def get_hls_streams(self, url, requests_session=None, headers=None, max_bitrate=None):
 		'''
 		Returns streams from hls master playlist. Only EXT-X-STREAM-INF addresses are returned.
@@ -323,10 +354,10 @@ class CommonContentProvider(object):
 		returns list of stream informations sorted by bitrate (from max)
 		'''
 		try:
-			if requests_session:
-				response = requests_session.get(url, headers=headers)
-			else:
-				response = requests.get(url, headers=headers)
+			if requests_session == None:
+				requests_session = self.get_requests_session()
+
+			response = requests_session.get(url, headers=headers)
 		except:
 			self.log_exception()
 			return None

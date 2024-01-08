@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 #
-import time, json, requests, re
+import time, json, re
 from datetime import datetime
 import traceback
-import functools
 
 from hashlib import md5
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
@@ -15,25 +14,21 @@ _HEADERS = {
 	"User-Agent": "okhttp/3.12.0"
 }
 
-def _log_dummy(message):
-	print('[SLEDOVANI.TV]: ' + message )
-	pass
-
 class SledovaniTV:
-	def __init__(self, username, password, pin, serialid, data_dir=None, log_function=None, tr_function=None):
-		self.username = username
-		self.password = password
-		self.pin = pin
-		self.serialid = serialid
+	def __init__(self, content_provider):
+		self.cp = content_provider
+		self.username = self.cp.get_setting('username')
+		self.password = self.cp.get_setting('password')
+		self.pin = self.cp.get_setting('pin')
+		self.serialid = self.cp.get_setting('serialid')
 		self.sessionid = None
-		self.data_dir = data_dir
-		self.log_function = log_function if log_function else _log_dummy
-		self._ = tr_function if tr_function else lambda s: s
+		self.data_dir = self.cp.data_dir
+		self.log_function = self.cp.log_info
+		self._ = self.cp._
 		self.headers = _HEADERS
-	
+
 		self.load_login_data()
-		self.req_session = requests.Session()
-		self.req_session.request = functools.partial(self.req_session.request, timeout=10) # set timeout for all session calls
+		self.req_session = self.cp.get_requests_session()
 
 	# #################################################################################################
 	@staticmethod
@@ -49,16 +44,16 @@ class SledovaniTV:
 
 		data = "{}|{}|{}".format(self.password, self.username, self.serialid)
 		return md5( data.encode('utf-8') ).hexdigest()
-	
+
 	# #################################################################################################
-	
+
 	def load_login_data(self):
 		if self.data_dir:
 			try:
 				# load access token
 				with open(self.data_dir + '/login.json', "r") as f:
 					login_data = json.load(f)
-					
+
 					if self.get_chsum() == login_data.get('checksum'):
 						self.sessionid = login_data['access_token']
 						self.log_function("Login data loaded from cache")
@@ -67,7 +62,7 @@ class SledovaniTV:
 						self.log_function("Not using cached login data - wrong checksum")
 			except:
 				self.sessionid = None
-		
+
 	# #################################################################################################
 
 	def save_login_data(self):
@@ -85,9 +80,9 @@ class SledovaniTV:
 					os.remove(self.data_dir + '/login.json')
 			except:
 				pass
-			
+
 	# #################################################################################################
-	
+
 	def showError(self, msg):
 		self.log_function("SLEDOVANI.TV API ERROR: %s" % msg )
 		raise AddonErrorException(msg)
@@ -102,20 +97,20 @@ class SledovaniTV:
 
 	def call_api(self, url, data=None, params=None, enable_retry=True ):
 		err_msg = None
-		
+
 		log_file = url
-		
+
 		if not url.startswith('http'):
 			url = 'https://sledovanitv.cz/api/' + url
-		
+
 		try:
 			if data:
 				resp = self.req_session.post(url, data=data, params=params, headers=self.headers)
 			else:
 				resp = self.req_session.get(url, params=params, headers=self.headers)
-			
+
 #			dump_json_request(resp)
-			
+
 			if resp.status_code == 200:
 				ret = resp.json()
 
@@ -138,7 +133,7 @@ class SledovaniTV:
 				err_msg = self._('Unexpected return code from server') + ': %d' % resp.status_code
 		except Exception as e:
 			err_msg = str(e)
-		
+
 		if err_msg:
 			self.log_function("Sledovani.tv error for URL %s:\n%s" % (url, traceback.format_exc()))
 			self.showError(err_msg)
@@ -155,35 +150,35 @@ class SledovaniTV:
 				return True
 		else:
 			return True
-		
+
 		return False
 
 	# #################################################################################################
-	
+
 	def pin_unlock(self):
 		params = {
 			'PHPSESSID' : self.sessionid
 		}
-		
+
 		data = self.call_api("is-pin-locked", params = params )
-		
+
 		if data.get('pinLocked', 0) == 1 and self.pin != "":
 			params = {
 				'pin': str(self.pin),
 				'whiteLogo': True,
 				'PHPSESSID': self.sessionid
 			}
-			
+
 			data = self.call_api( "pin-unlock", params = params )
-			
+
 			if data.get('error'):
 				self.showLoginError(self._("Wrong PIN code"))
 				return False
-			
+
 		return True
 
 	# #################################################################################################
-	
+
 	def pair_device(self):
 		params = {
 			'username': self.username,
@@ -194,15 +189,15 @@ class SledovaniTV:
 			'unit': 'default',
 			'checkLimit': 1,
 		}
-		
+
 		data = self.call_api("create-pairing", params = params, enable_retry=False)
-		
+
 		if "status" not in data or data['status'] == 0:
 			self.sessionid = None
 			self.save_login_data()
 			self.showLoginError(self._("Login failed") + ": %s" % data['error'])
 			return False
-	
+
 		if 'deviceId' in data and 'password' in data:
 			params = {
 				'deviceId': data['deviceId'],
@@ -211,22 +206,22 @@ class SledovaniTV:
 				'lang': 'cs',
 				'unit': 'default',
 			}
-			
+
 			data = self.call_api("device-login", params = params, enable_retry=False )
 			if "status" not in data or data['status'] == 0:
 				self.sessionid = None
 				self.save_login_data()
 				self.showLoginError(self._("Login failed") + ": %s" % data['error'])
 				return False
-	
+
 			if "PHPSESSID" in data:
 				self.sessionid = data["PHPSESSID"]
 				self.save_login_data()
-				
+
 				params = {
 					"PHPSESSID": self.sessionid
 				}
-				
+
 				self.call_api("keepalive", params = params, enable_retry=False )
 			else:
 				self.sessionid = None
@@ -239,36 +234,36 @@ class SledovaniTV:
 			self.showLoginError(self._("Login failed") + ": no deviceid")
 
 			return False
-		
+
 		return True
 
 	# #################################################################################################
-	
+
 	def get_devices(self):
 		params = {
 			'PHPSESSID': self.sessionid,
 		}
-		
+
 		data = self.call_api('get-devices', params = params )
-		
+
 		if "status" not in data or data['status'] == 0:
 			self.showError(self._("Error by loading list of devices") + ": %s" % data['error'])
 			return []
-		
+
 		return data.get('devices', [])
 
 	# #################################################################################################
-	
+
 	def get_time(self):
 		data = self.call_api('time' )
-		
+
 		timestamp = data.get("timestamp")
 		zone = data.get("zone")
-		
+
 		return (timestamp, zone)
 
 	# #################################################################################################
-	
+
 	def compare_time(self, t):
 		d = (t.replace(" ", "-").replace(":", "-")).split("-")
 		now = datetime.now()
@@ -284,7 +279,7 @@ class SledovaniTV:
 		return time.mktime(start_time.timetuple())
 
 	# #################################################################################################
-	
+
 	def get_home(self):
 		params = {
 			'category': 'box-homescreen',
@@ -292,23 +287,23 @@ class SledovaniTV:
 			'eventCount': 1,
 			'PHPSESSID': self.sessionid,
 		}
-		
+
 		data = self.call_api("show-category", params = params )
-		
+
 		if "status" not in data or data['status'] == 0:
 			self.showError(self._("Error by loading channel list") + ": %s" % data['error'])
 			return False
-		
+
 		channels = []
 		if 'info' in data and 'items' in data['info']:
 			catitle = "["+data['info']['title']+"] " if 'title' in data['info'] else ""
 			for item in data['info']['items']:
 				if item['events'][0]['availability'] != "timeshift":
 					continue
-				
+
 				desc = item["description"] if 'description' in item else ""
 				thumb = item["poster"] if 'poster' in item else None
-				
+
 				channels.append({
 					'title': item["title"],
 					'channel': item['events'][0]["channel"].upper(),
@@ -318,8 +313,8 @@ class SledovaniTV:
 					'thumb': thumb,
 					'plot': catitle+desc,
 				})
-				
-	
+
+
 		if 'subcategories' in data:
 			for category in data['subcategories']:
 				catitle = "["+category['title']+"] " if 'title' in category else ""
@@ -327,11 +322,11 @@ class SledovaniTV:
 					for item in category['items']:
 						if item['events'][0]['availability'] != "timeshift":
 							continue
-						
+
 						desc = item.get("description","")
 						thumb = item.get("poster")
 						duration = item['events'][0].get('duration')
-						
+
 						channels.append({
 							'title': item["title"],
 							'channel': item['events'][0]["channel"].upper(),
@@ -346,7 +341,7 @@ class SledovaniTV:
 		return channels
 
 	# #################################################################################################
-	
+
 	def device_remove(self, did):
 		params = {
 			'deviceId': did,
@@ -355,7 +350,7 @@ class SledovaniTV:
 
 		# WRONG API - NEED TO INVESTIGATE
 #		data = self.call_api("device-remove", params=params)
-		
+
 		return { 'status': 0 }
 
 	# #################################################################################################
@@ -367,17 +362,17 @@ class SledovaniTV:
 			'allowOrder': True,
 			'PHPSESSID': self.sessionid
 		}
-		
+
 		epgdata = self.call_api("epg-search", params=params)
-		
+
 		if "status" not in epgdata or epgdata['status'] == 0:
 			self.showError(self._("Error by loading EPG") + ": %s" % epgdata['error'])
 			epgdata = []
 
 		return epgdata.get('events', [])
-	
+
 	# #################################################################################################
-	
+
 	def epg_event_is_garbage(self, event):
 		tr = event['startTime'][11:] + ' - ' + event['endTime'][11:]
 
@@ -386,13 +381,13 @@ class SledovaniTV:
 	# #################################################################################################
 
 	def get_epg(self, ts_from=None, ts_to=None):
-		
+
 		if ts_from == None:
 			ts_from = int(time.time())
 
 		if ts_to == None:
 			ts_to = ts_from + 3600
-		
+
 		params = {
 			'time': datetime.fromtimestamp(ts_from).strftime("%Y-%m-%d %H:%M"),
 			'duration': int((ts_to - ts_from) // 60),
@@ -400,17 +395,17 @@ class SledovaniTV:
 			'allowOrder': True,
 			'PHPSESSID': self.sessionid
 		}
-		
+
 		epgdata = self.call_api("epg", params=params)
-		
+
 		if "status" not in epgdata or epgdata['status'] == 0:
 			self.showError(self._("Error by loading EPG") + ": %s" % epgdata['error'])
 			epgdata = {}
-		
+
 		return epgdata.get('channels',{})
 
 	# #################################################################################################
-	
+
 	def get_channels(self):
 		params = {
 			'uuid': self.serialid,
@@ -443,7 +438,7 @@ class SledovaniTV:
 				'picon': channel['logoUrl'],
 				'timeshift': channel['timeshiftDuration'] // 3600 if channel.get('timeshiftDuration') else 0
 			})
-			
+
 		return channels
 
 	# #################################################################################################
@@ -473,7 +468,7 @@ class SledovaniTV:
 		if "status" not in data or data['status'] == 0:
 			self.showError(self._("Error by deleting recording") + ": %s" % data['error'])
 			return False
-		
+
 		return True
 	# #################################################################################################
 
@@ -487,18 +482,18 @@ class SledovaniTV:
 		if "status" not in data or data['status'] == 0:
 			self.showError(self._("Error by setting recording") + ": %s" % data['error'])
 			return False
-		
+
 		return True
 
 	# #################################################################################################
-	
+
 	def resolve_streams(self, url, max_bitrate=None ):
 		try:
 			req = self.req_session.get(url)
 		except:
 			self.showError(self._("Error by loading video. If it's red, the check PIN code."))
 			return
-		
+
 		if req.status_code != 200:
 			self.showError(self._("Error by loading video"))
 			return
@@ -515,24 +510,24 @@ class SledovaniTV:
 			for info in re.split(r''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', m.group('info')):
 				key, val = info.split('=', 1)
 				stream_info[key.lower()] = val
-			
+
 			stream_url = m.group('chunk')
-			
+
 			if not stream_url.startswith('http'):
 				if stream_url.startswith('/'):
 					stream_url = url[:url[9:].find('/') + 9] + stream_url
 				else:
 					stream_url = url[:url.rfind('/') + 1] + stream_url
-				
+
 			stream_info['url'] = stream_url
 			stream_info['quality'] = stream_info.get('resolution', 'x720').split('x')[1] + 'p'
 			if int(stream_info['bandwidth']) <= max_bitrate:
 				streams.append(stream_info)
-		
+
 		return sorted(streams, key=lambda i: int(i['bandwidth']), reverse=True)
-	
+
 	# #################################################################################################
-	
+
 	def get_live_link(self, url, max_bitrate=None):
 		return self.resolve_streams(url, max_bitrate)
 
@@ -549,7 +544,7 @@ class SledovaniTV:
 		if "status" not in data or data['status'] == 0:
 			self.showError(self._("Error by loading event") + ": %s" % data['error'])
 			return None
-		
+
 		return self.resolve_streams(data['url'], max_bitrate)
 
 	# #################################################################################################
@@ -565,7 +560,7 @@ class SledovaniTV:
 		if "status" not in data or data['status'] == 0:
 			self.showError(self._("Error by loading recording") + "%s" % data['error'])
 			return None
-		
+
 		return self.resolve_streams(data['url'], max_bitrate)
 
 	# #################################################################################################

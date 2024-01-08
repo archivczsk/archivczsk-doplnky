@@ -3,7 +3,6 @@ from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.string_utils import _I, _C, _B, decode_html
 from tools_archivczsk.debug.http import dump_json_request
-import requests
 import re
 
 try:
@@ -22,7 +21,7 @@ class SkTContentProvider(CommonContentProvider):
 	def __init__(self, settings=None, data_dir=None):
 		CommonContentProvider.__init__(self, 'SkTonline', settings=settings, data_dir=data_dir)
 		self.login_optional_settings_names = ('username', 'password')
-		self.req_session = requests.Session()
+		self.req_session = self.get_requests_session()
 		self.req_session.headers.update(COMMON_HEADERS)
 		self.free_login = True
 
@@ -83,8 +82,6 @@ class SkTContentProvider(CommonContentProvider):
 			return True
 
 	def call_api(self, endpoint, params=None, data=None, raw_response=False):
-		ssl_verify = self.get_setting('ssl_verify')
-
 		if endpoint.startswith('http'):
 			url = endpoint
 		else:
@@ -93,11 +90,11 @@ class SkTContentProvider(CommonContentProvider):
 		headers = {
 			'Accept-Encoding': 'identity',
 		}
-		
+
 		if data:
-			response = self.req_session.post(url, params=params, data=data, headers=headers, verify=ssl_verify)
+			response = self.req_session.post(url, params=params, data=data, headers=headers)
 		else:
-			response = self.req_session.get(url, params=params, headers=headers, verify=ssl_verify)
+			response = self.req_session.get(url, params=params, headers=headers)
 
 #		dump_json_request(response)
 

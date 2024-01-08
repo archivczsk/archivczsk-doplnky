@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import base64
-import requests
 import binascii
 from Plugins.Extensions.archivCZSK.engine.httpserver import AddonHttpRequestHandler
 

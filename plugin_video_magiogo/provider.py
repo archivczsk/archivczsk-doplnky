@@ -240,7 +240,7 @@ class MagioGOContentProvider(ModuleContentProvider):
 		self.magiogo = None
 		self.channels = []
 
-		magiogo = MagioGO(self.get_setting('region'), self.get_setting('username'), self.get_setting('password'), self.get_setting('deviceid'), int(self.get_setting('devicetype')), self.data_dir, self.log_info, self._)
+		magiogo = MagioGO(self)
 
 		self.magiogo = magiogo
 

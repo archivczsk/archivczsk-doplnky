@@ -9,7 +9,7 @@ from Plugins.Extensions.archivCZSK.engine.tools import util
 from Plugins.Extensions.archivCZSK.engine.tools.util import download_to_file
 from Components.config import config
 
-ATKClient_API_VER = 3
+ATKClient_API_VER = 4
 
 
 def have_client_module(name):

@@ -4,7 +4,6 @@ from tools_xbmc.tools.md5crypt import md5crypt
 import xml.etree.ElementTree as ET
 from hashlib import md5, sha1
 import traceback
-import requests
 from datetime import datetime
 from time import time, mktime
 import json
@@ -41,6 +40,7 @@ class Webshare():
 		self.data_dir = content_provider.data_dir
 		self.device_id = "123456"
 		self.login_data = {}
+		self.req_session = self.cp.get_requests_session()
 		self.load_login_data()
 
 	# #################################################################################################
@@ -124,7 +124,7 @@ class Webshare():
 			'Referer': BASE
 		}
 
-		response = requests.post(BASE + endpoint, data=data, headers=headers, verify=False )
+		response = self.req_session.post(BASE + endpoint, data=data, headers=headers)
 #		with open("/tmp/ws_request.txt", "a") as f:
 #			f.write("URL: %s\n" % (BASE + endpoint))
 #			f.write("DATA: %s\n" % data)

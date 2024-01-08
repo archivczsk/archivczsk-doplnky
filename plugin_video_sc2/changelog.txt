@@ -1,5 +1,6 @@
-2024-01-04 [3.12]
+2024-01-08 [3.12]
 * úpravy kvôli zmene spôsobu fungovania rodičovskej kontroly
+* automatické nastavovanie timeoutu a možnosť zapnúť/vypnúť verifikáciu SSL certifikátov
 
 2024-01-03 [3.11]
 * vypnutie otvorenia SSL certifikátov
