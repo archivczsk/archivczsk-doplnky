@@ -1,0 +1,32 @@
+2.4: 08.01.2024
+- automatic timeout and SSL verification setup
+
+2.3: 09.03.2023
+- added en/cs/sk localisation
+- added setting to disable server SSL certificate check
+
+2.2: 24.02.2023
+- reset login session if login data changes
+- show message when no login data are set
+
+2.1: 20.02.2023
+- remove debug data dumped to /tmp
+
+2.0: 13.02.2023
+- convert to new archivCZSK interface
+- added possiblity set login data
+
+1.4: 28.01.2023
+- convert to module for archivCZSK >= 2.0.0
+
+1.3: 15.12.2022
+- some small changes
+
+1.2: 08.04.2022
+- fixed module loading addon dependencies
+
+1.1: 04.04.2022
+- make addon python 3.x compatible
+
+1.0: 15.12.2020
+- initial simple version (misanov)
