@@ -1,9 +1,0 @@
-1.2 - 02.12.2023
-    - oprava pádu pri nevalídnych EPG dátach
-
-1.1 - 01.12.2023
-    - vylepšené vypisovanie chýb pri zlyhaní komunikácie so serverom
-    - označenie aktuálneho zariadenia vo výpise prihlásených zariadení
-
-1.0 - 22.11.2023
-    - prvá verzia

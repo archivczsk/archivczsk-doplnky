@@ -1,8 +1,0 @@
-2.3:
-- oprava prehrávania pre gstplayer a DMM
-
-2.2:
-- oprava prehrávania
-
-2.1:
-- úvodná verzia

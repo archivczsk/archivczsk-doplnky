@@ -1,5 +1,0 @@
-2.2:
-- oprava prehrávania
-
-2.1:
-- úvodná verzia
