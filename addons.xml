@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <addons>
-<addon id="plugin.video.aktualne" name="Aktuálně (DVTV)" version="1.3" hash="cda42df9c9229a121e1ec64a9ef8b4c5" />
+<addon id="plugin.video.aktualne" name="Aktuálně (DVTV)" version="1.4" hash="64dac3d17014cd01a0eab398ffc79aa5" />
 <addon id="plugin.video.antiktv" name="Antik TV" version="2.8" hash="e1a6afd86a6360af72df8f615752088e" />
 <addon id="plugin.video.archivo2tv" name="Sledování O2TV" version="1.10.0" hash="5312b5d45a3a0905193b699aa673bfa1" />
 <addon id="plugin.video.autosalontv" name="Autosalon" version="1.5" hash="5a5f698bc12da67935790c40901efc02" />
