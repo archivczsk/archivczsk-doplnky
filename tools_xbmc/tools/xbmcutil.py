@@ -35,7 +35,7 @@ try:
 	from urllib2 import urlopen, Request, HTTPCookieProcessor, build_opener, install_opener
 	from urllib import urlencode
 	is_py3 = False
-	
+
 	def py2_decode_utf8( text ):
 		return text.decode('utf-8', 'ignore')
 
@@ -163,7 +163,7 @@ def error(text):
 
 
 def get_searches(addon, server, maximum=10):
-	local = addon.get_info('profile')
+	local = addon.get_info('data_path')
 	if not os.path.exists(local):
 		os.makedirs(local)
 	local = os.path.join(local, server)
@@ -179,7 +179,7 @@ def get_searches(addon, server, maximum=10):
 	if remove > 0:
 		for i in range(remove):
 			searches.pop()
-			
+
 		with open(local, 'w') as f:
 			json.dump(searches, f)
 
@@ -188,7 +188,7 @@ def get_searches(addon, server, maximum=10):
 
 def add_search(addon, server, search, maximum):
 	searches = []
-	local = addon.get_info('profile')
+	local = addon.get_info('data_path')
 	if not os.path.exists(local):
 		os.makedirs(local)
 	local = os.path.join(local, server)
@@ -206,13 +206,13 @@ def add_search(addon, server, search, maximum):
 	if remove > 0:
 		for i in range(remove):
 			searches.pop()
-			
+
 	with open(local, 'w') as f:
 		json.dump(searches, f)
 
 
 def remove_search(addon, server, search):
-	local = addon.get_info('profile')
+	local = addon.get_info('data_path')
 	if not os.path.exists(local):
 		return
 	local = os.path.join(local, server)
@@ -228,7 +228,7 @@ def remove_search(addon, server, search):
 
 
 def edit_search(addon, server, search, replacement):
-	local = addon.get_info('profile')
+	local = addon.get_info('data_path')
 	if not os.path.exists(local):
 		return
 	local = os.path.join(local, server)
@@ -305,10 +305,10 @@ def add_play(title, provider_name, quality, url, subs=None, filename=None, image
 	infoLabels['title'] = replace_diacritic2(title)
 
 	settings = {"extra-headers":headers}
-	
+
 	if player_settings:
 		settings.update( player_settings )
-		
+
 	title = replace_diacritic2(title)
 	quality = replace_diacritic2(quality)
 	provider_name = replace_diacritic2(provider_name)
@@ -331,7 +331,7 @@ def add_play(title, provider_name, quality, url, subs=None, filename=None, image
 					name = '[%s][%s] %s - %s'%(quality, lang, provider_name, title)
 				else:
 					name = '[%s] %s - %s' % (quality,provider_name, title)
-			
+
 			if addonDataItem is None:
 				client.add_video(name, url, subs=subs, filename=filename, image=image, infoLabels=infoLabels, menuItems=menuItems, settings=settings, traktItem=traktItem)
 			else: # back compatibility

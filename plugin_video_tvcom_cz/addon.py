@@ -19,16 +19,11 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
-import os
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
-from Plugins.Extensions.archivCZSK.engine import client
 import re, datetime, json
 from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
 from tools_xbmc.contentprovider.provider import ContentProvider
 from tools_xbmc.tools import util
 from tools_xbmc.compat import XBMCCompatInterface
-
-from Components.config import config
 
 try:
 	import cookielib
@@ -38,15 +33,6 @@ except:
 	from urllib.parse import quote
 	import http.cookiejar as cookielib
 
-LOG_FILE = os.path.join(config.plugins.archivCZSK.logPath.getValue(),'tvcom.log')
-
-def writeLog(msg, type='INFO'):
-	try:
-		with open(LOG_FILE, 'a') as f:
-			dtn = datetime.datetime.now()
-			f.write(dtn.strftime("%d.%m.%Y %H:%M:%S.%f")[:-3] + " [" + type + "] %s\n" % msg)
-	except:
-		pass
 
 class TvcomContentProvider(ContentProvider):
 
@@ -136,15 +122,10 @@ class TvcomContentProvider(ContentProvider):
 			return select_cb(result)
 		return result
 
-__scriptid__ = 'plugin.video.tvcom.cz'
-__scriptname__ = 'tvcom.cz'
-__addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
-__language__ = __addon__.getLocalizedString
-
-def tvcom_run(session, params):
-	settings = {'quality':__addon__.getSetting('quality')}
+def tvcom_run(session, params, addon):
+	settings = {'quality':addon.getSetting('quality')}
 	provider = TvcomContentProvider()
-	XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
+	XBMCMultiResolverContentProvider(provider, settings, addon, session).run(params)
 
 def main(addon):
-	return XBMCCompatInterface(tvcom_run)
+	return XBMCCompatInterface(tvcom_run, addon)

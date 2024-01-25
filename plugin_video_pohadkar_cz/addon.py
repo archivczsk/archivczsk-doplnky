@@ -19,27 +19,16 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
-import sys, os
-
 from tools_xbmc.contentprovider import xbmcprovider
 from tools_xbmc.contentprovider.provider import ResolveException
 from tools_xbmc.tools import xbmcutil
 from tools_xbmc.compat import XBMCCompatInterface
 from . import pohadkar
 
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
-__scriptid__ = 'plugin.video.pohadkar.cz'
-__scriptname__ = 'Pohádkář.cz'
-__addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
-__language__ = __addon__.getLocalizedString
-__settings__ = __addon__.getSetting
-
-settings = {'downloads':__addon__.getSetting('downloads'), 'quality':__addon__.getSetting('quality')}
-
 def vp8_youtube_filter(stream):
 	# some embedded devices running xbmc doesnt have vp8 support, so we
 	# provide filtering ability for youtube videos
-	
+
 	#======================================================================
 	#		5: "240p h263 flv container",
 	#	   18: "360p h264 mp4 container | 270 for rtmpe?",
@@ -84,12 +73,12 @@ class PohadkarContentProvider(xbmcprovider.XBMCMultiResolverContentProvider):
 			for s in stream:
 				if s['surl'] not in sdict:
 					sdict[s['surl']] = s
-					
+
 				if len(sdict) > 1:
 					break
 			else:
 				return xbmcprovider.XBMCMultiResolverContentProvider.play(self,params)
-				
+
 			# resolved to mutliple files, we'll feed playlist and play the first one
 			playlist = []
 			i = 0
@@ -110,12 +99,12 @@ class PohadkarContentProvider(xbmcprovider.XBMCMultiResolverContentProvider):
 		def select_cb(resolved):
 			stream_parts = []
 			stream_parts_dict = {}
-			
+
 			for stream in resolved:
 				if stream['surl'] not in stream_parts_dict:
 					stream_parts_dict[stream['surl']] = []
 					stream_parts.append(stream['surl'])
-				if __settings__('filter_vp8') and vp8_youtube_filter(stream):
+				if self.addon.getSetting('filter_vp8') and vp8_youtube_filter(stream):
 					continue
 				stream_parts_dict[stream['surl']].append(stream)
 
@@ -132,9 +121,9 @@ class PohadkarContentProvider(xbmcprovider.XBMCMultiResolverContentProvider):
 			self._handle_exc(e)
 
 
-def pohadkar_run(session, params):
-	PohadkarContentProvider(pohadkar.PohadkarContentProvider(tmp_dir=__addon__.getAddonInfo('profile')), settings, __addon__, session).run(params)
-
+def pohadkar_run(session, params, addon):
+	settings = {'downloads':addon.getSetting('downloads'), 'quality':addon.getSetting('quality')}
+	PohadkarContentProvider(pohadkar.PohadkarContentProvider(tmp_dir=addon.getAddonInfo('data_path')), settings, addon, session).run(params)
 
 def main(addon):
-	return XBMCCompatInterface(pohadkar_run)
+	return XBMCCompatInterface(pohadkar_run, addon)

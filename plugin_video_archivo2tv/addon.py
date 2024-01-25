@@ -8,6 +8,6 @@ from .provider import O2TVContentProvider
 # #################################################################################################
 
 def main(addon):
-	cp = O2TVContentProvider(addon.settings, data_dir=addon.get_info('profile'), http_endpoint=archivCZSKHttpServer.getAddonEndpoint(addon.id), bgservice=addon.bgservice)
+	cp = O2TVContentProvider(addon.settings, data_dir=addon.get_info('data_path'), http_endpoint=archivCZSKHttpServer.getAddonEndpoint(addon.id), bgservice=addon.bgservice)
 	archivCZSKHttpServer.registerRequestHandler(PlayliveTVHTTPRequestHandler(cp, addon))
 	return ArchivCZSKContentProvider(cp, addon)

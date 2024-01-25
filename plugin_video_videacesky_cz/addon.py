@@ -19,8 +19,6 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
-import os
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
 from tools_xbmc.contentprovider.provider import ResolveException
 from tools_xbmc.resolver import resolver
@@ -28,20 +26,10 @@ from tools_xbmc.tools import xbmcutil
 from tools_xbmc.compat import XBMCCompatInterface
 from .videacesky import VideaceskyContentProvider
 
-__scriptid__ = 'plugin.video.videacesky.cz'
-__scriptname__ = 'videacesky.cz'
-__addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
-
-__language__ = __addon__.getLocalizedString
-__settings__ = __addon__.getSetting
-
-settings = {'quality':__addon__.getSetting('quality')}
-
-
 def vp8_youtube_filter(stream):
 	# some embedded devices running xbmc doesnt have vp8 support, so we
 	# provide filtering ability for youtube videos
-	
+
 	#======================================================================
 	#	  5: "240p h263 flv container",
 	#	   18: "360p h264 mp4 container | 270 for rtmpe?",
@@ -77,7 +65,7 @@ def vp8_youtube_filter(stream):
 
 
 class VideaceskyXBMCContentProvider(XBMCMultiResolverContentProvider):
-	
+
 	def play(self, params):
 		stream = self.resolve(params['play'])
 		print( type(stream) )
@@ -90,7 +78,7 @@ class VideaceskyXBMCContentProvider(XBMCMultiResolverContentProvider):
 					break
 			else:
 				return XBMCMultiResolverContentProvider.play(self, params)
-				
+
 			# resolved to mutliple files, we'll feed playlist and play the first one
 			playlist = []
 			i = 0
@@ -111,12 +99,12 @@ class VideaceskyXBMCContentProvider(XBMCMultiResolverContentProvider):
 		def select_cb(resolved):
 			stream_parts = []
 			stream_parts_dict = {}
-			
+
 			for stream in resolved:
 				if stream['surl'] not in stream_parts_dict:
 					stream_parts_dict[stream['surl']] = []
 					stream_parts.append(stream['surl'])
-				if __settings__('filter_vp8') and vp8_youtube_filter(stream):
+				if self.addon.getSetting('filter_vp8') == 'true' and vp8_youtube_filter(stream):
 					continue
 				stream_parts_dict[stream['surl']].append(stream)
 
@@ -138,8 +126,9 @@ class VideaceskyXBMCContentProvider(XBMCMultiResolverContentProvider):
 			self._handle_exc(e)
 
 
-def videacesky_run(session, params):
-	VideaceskyXBMCContentProvider(VideaceskyContentProvider(), settings, __addon__, session).run(params)
+def videacesky_run(session, params, addon):
+	settings = {'quality':addon.getSetting('quality')}
+	VideaceskyXBMCContentProvider(VideaceskyContentProvider(), settings, addon, session).run(params)
 
 def main(addon):
-	return XBMCCompatInterface(videacesky_run)
+	return XBMCCompatInterface(videacesky_run, addon)

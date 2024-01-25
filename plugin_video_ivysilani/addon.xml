@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.ivysilani" name="iVysílání — Česká televize" provider-name="Michal Novotny, Štěpán Ort" version="1.5.1">
+<addon id="plugin.video.ivysilani" name="iVysílání — Česká televize" provider-name="Michal Novotny, Štěpán Ort" version="1.6.0">
 	<requires>
-		<import addon="enigma2.archivczsk" version="2.0.0"/>
-		<import addon="tools.xbmc" version="1.0" />
+		<import addon="enigma2.archivczsk" version="2.5.0"/>
+		<import addon="tools.xbmc" version="1.2" />
 	</requires>
 	<extension point="archivczsk.addon.video"/>
 	<extension point="archivczsk.addon.metadata">

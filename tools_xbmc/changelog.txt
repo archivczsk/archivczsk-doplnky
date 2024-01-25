@@ -1,3 +1,6 @@
+1.2:
+    - added support for virtual profiles in ArchivCZSK >= 2.5.0
+
 1.1 - 15.03.2023
     - added support for silent run mode
 

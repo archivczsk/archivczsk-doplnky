@@ -19,7 +19,6 @@
 # *
 # */
 import os
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine import client
 import re,datetime,time,json
 
@@ -27,7 +26,6 @@ from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProv
 from tools_xbmc.contentprovider.provider import ContentProvider
 from tools_xbmc.tools import util
 from tools_xbmc.compat import XBMCCompatInterface
-from Components.config import config
 
 try:
 	import cookielib
@@ -37,16 +35,7 @@ except:
 	import http.cookiejar as cookielib
 	from urllib.error import HTTPError
 
-LOG_FILE = os.path.join(config.plugins.archivCZSK.logPath.getValue(),'eurosport.log')
 letters = "aábcčdďeéěfghiíjklmnňoóöpqrřsštťuúůvwxyýzžAÁBCČDĎEÉĚFGHIÍJKLMNŇOÓÖPQRŘSŠTŤUÚŮVWXYÝZŽ"
-
-def writeLog(msg, type='INFO'):
-	try:
-		with open(LOG_FILE, 'a') as f:
-			dtn = datetime.datetime.now()
-			f.write(dtn.strftime("%d.%m.%Y %H:%M:%S.%f")[:-3] + " [" + type + "] %s\n" % msg)
-	except:
-		pass
 
 def showInfo(session, mmsg):
 	client.show_message(session, mmsg, msg_type='info', timeout=4)
@@ -270,21 +259,16 @@ class EPContentProvider(ContentProvider):
 			return select_cb(result)
 		return result
 
-__addon__ = ArchivCZSK.get_xbmc_addon('plugin.video.eurosport')
-addon_userdata_dir = __addon__.getAddonInfo('profile')
-
 # #################################################################################################
 
-def ep_run(session, params):
-	settings = {'quality':__addon__.getSetting('quality')}
-	cookie_file = addon_userdata_dir + "/" + "cookie"
-
-	#print("PARAMS: %s"%params)
+def ep_run(session, params, addon):
+	settings = {'quality':addon.getSetting('quality')}
+	cookie_file = os.path.join(addon.getAddonInfo('data_path'), "cookie")
 
 	try:
 		token = open(cookie_file, "r").read()
 	except:
-		token = __addon__.getSetting('eurosporttoken')
+		token = addon.getSetting('eurosporttoken')
 		if token:
 			f = open(cookie_file, 'w')
 			f.write(token)
@@ -293,13 +277,13 @@ def ep_run(session, params):
 			token = None
 	if token:
 		provider = EPContentProvider(token=token.strip(), session=session)
-		XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
+		XBMCMultiResolverContentProvider(provider, settings, addon, session).run(params)
 	else:
 		client.showInfo('Pro přehrávání pořadů je potřeba účet na eurosportplayer.com\n\nPokud účet máte, musíte vložit dlouhý token z webu.\n\nPřečtěte si prosím Změny nebo soubor readme.md v adresáři doplňku jak na to.', timeout=20)
 
 # #################################################################################################
 
 def main(addon):
-	return XBMCCompatInterface(ep_run)
+	return XBMCCompatInterface(ep_run, addon)
 
 # #################################################################################################

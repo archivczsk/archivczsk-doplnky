@@ -7,6 +7,6 @@ from .provider import MarkizaContentProvider
 # #################################################################################################
 
 def main(addon):
-	cp = MarkizaContentProvider(addon.settings, data_dir=addon.get_info('profile'), http_endpoint=archivCZSKHttpServer.getAddonEndpoint(addon.id))
+	cp = MarkizaContentProvider(addon.settings, data_dir=addon.get_info('data_path'), http_endpoint=archivCZSKHttpServer.getAddonEndpoint(addon.id))
 	archivCZSKHttpServer.registerRequestHandler(HlsHTTPRequestHandler(cp, addon))
 	return ArchivCZSKContentProvider(cp, addon)

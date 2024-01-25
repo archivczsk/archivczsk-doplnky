@@ -21,7 +21,6 @@
 # */
 
 import re, os, traceback
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine import client
 
 try:
@@ -30,62 +29,14 @@ except:
 	from urllib.request import urlopen, Request
 	from urllib.error import HTTPError
 
-__scriptid__ = 'plugin.video.online-files'
-__scriptname__ = 'Soubory Online'
-__addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
-__language__ = __addon__.getLocalizedString
-__settings__ = __addon__.getSetting
-
 from threading import Lock
 
 from tools_xbmc.contentprovider import xbmcprovider
 from tools_xbmc.contentprovider.provider import ResolveException
 from tools_xbmc.tools import util, search, xbmcutil
 from tools_xbmc.compat import XBMCCompatInterface
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 
 from .providers import hellspy, ulozto, fastshare, webshare
-
-def search_cb(what):
-
-	def paralel_search(search):
-		def do_search(p,what):
-			res = []
-			try:
-				result = p.provider.search(what)
-				for item in result:
-					item['title'] = '[%s] %s' % (p.provider.name,item['title'])
-					if item['type'] == 'next':
-						item['type'] = 'dir'
-						item['title'] = '[%s] %s >>' % (p.provider.name,__language__(30063))
-			except:
-				traceback.print_exc()
-			with lock:
-				p.list(result)
-		lock = Lock()
-		util.run_parallel_in_threads(do_search, search)
-
-	searches = []
-	for key in list(providers.keys()):
-		p = providers[key]
-		searches.append((p,what))
-	paralel_search(searches)
-
-def ulozto_filter(item):
-		ext_filter = __settings__('ulozto_ext-filter').split(',')
-		ext_filter = ['.' + f.strip() for f in ext_filter]
-		extension = os.path.splitext(item['title'])[1]
-		if extension in ext_filter:
-				return False
-		return True
-
-def webshare_filter(item):
-	ext_filter = __settings__('webshare_ext-filter').split(',')
-	ext_filter =  ['.'+f.strip() for f in ext_filter]
-	extension = os.path.splitext(item['title'])[1]
-	if extension in ext_filter:
-		return False
-	return True
 
 class XBMCUloztoContentProvider(xbmcprovider.XBMCLoginOptionalContentProvider):
 
@@ -115,7 +66,7 @@ class XBMCUloztoContentProvider(xbmcprovider.XBMCLoginOptionalContentProvider):
 			self._handle_exc(e)
 
 	def solve_captcha(self,params):
-		snd = os.path.join(self.addon.getAddonInfo('profile'),'sound.wav')
+		snd = os.path.join(self.addon.getAddonInfo('data_path'),'sound.wav')
 		util.save_to_file(params['snd'], snd)
 		try:
 			sndfile = open(snd, 'rb').read()
@@ -143,7 +94,7 @@ class XBMCHellspyContentProvider(xbmcprovider.XBMCLoginRequiredContentProvider):
 	def render_video(self, item):
 		params = self.params()
 		params.update({'to-downloads':item['url']})
-		item['menu'] = {__language__(30056):params}
+		item['menu'] = {self.addon.getLocalizedString(30056):params}
 		return xbmcprovider.XBMCLoginRequiredContentProvider.render_video(self, item)
 
 	def run_custom(self, params):
@@ -153,60 +104,100 @@ class XBMCHellspyContentProvider(xbmcprovider.XBMCLoginRequiredContentProvider):
 settings = {}
 providers = {}
 
-def icon(provider):
-	icon_file = os.path.join(__addon__.get_info('path'), 'resources', 'icons', provider + '.png')
-	if not os.path.isfile(icon_file):
-		return 'DefaultFolder.png'
-	return icon_file
-
-def root():
-	search.item()
-	for provider in list(providers.keys()):
-		xbmcutil.add_dir(provider, {'cp':provider}, icon(provider))
-	return
-
-
-def online_files_run(session, params):
+def online_files_run(session, params, addon):
 	global settings, providers
 	settings = {}
 	providers = {}
 
-	if __settings__('ulozto_enabled'):
-		p = ulozto.UloztoContentProvider(__settings__('ulozto_user'), __settings__('ulozto_pass'), filter=ulozto_filter)
+	def search_cb(what):
+		def paralel_search(search):
+			def do_search(p,what):
+				res = []
+				try:
+					result = p.provider.search(what)
+					for item in result:
+						item['title'] = '[%s] %s' % (p.provider.name,item['title'])
+						if item['type'] == 'next':
+							item['type'] = 'dir'
+							item['title'] = '[%s] %s >>' % (p.provider.name,addon.getLocalizedString(30063))
+				except:
+					traceback.print_exc()
+				with lock:
+					p.list(result)
+			lock = Lock()
+			util.run_parallel_in_threads(do_search, search)
+
+		searches = []
+		for key in list(providers.keys()):
+			p = providers[key]
+			searches.append((p,what))
+		paralel_search(searches)
+
+	def icon(provider):
+		icon_file = os.path.join(addon.get_info('path'), 'resources', 'icons', provider + '.png')
+		if not os.path.isfile(icon_file):
+			return 'DefaultFolder.png'
+		return icon_file
+
+	def root():
+		search.item()
+		for provider in list(providers.keys()):
+			xbmcutil.add_dir(provider, {'cp':provider}, icon(provider))
+		return
+
+	def ulozto_filter(item):
+		ext_filter = addon.getSetting('ulozto_ext-filter').split(',')
+		ext_filter = ['.' + f.strip() for f in ext_filter]
+		extension = os.path.splitext(item['title'])[1]
+		if extension in ext_filter:
+				return False
+		return True
+
+	def webshare_filter(item):
+		ext_filter = addon.getSetting('webshare_ext-filter').split(',')
+		ext_filter =  ['.'+f.strip() for f in ext_filter]
+		extension = os.path.splitext(item['title'])[1]
+		if extension in ext_filter:
+			return False
+		return True
+
+
+	if addon.getSetting('ulozto_enabled'):
+		p = ulozto.UloztoContentProvider(addon.getSetting('ulozto_user'), addon.getSetting('ulozto_pass'), filter=ulozto_filter)
 		extra = {
-				'vip':__settings__('ulozto_usevip'),
-				'keep-searches':__settings__('ulozto_keep-searches'),
-				'search-type':__settings__('ulozto_search-type')
+				'vip':addon.getSetting('ulozto_usevip'),
+				'keep-searches':addon.getSetting('ulozto_keep-searches'),
+				'search-type':addon.getSetting('ulozto_search-type')
 		}
 		extra.update(settings)
-		providers[p.name] = XBMCUloztoContentProvider(p, extra, __addon__, session)
+		providers[p.name] = XBMCUloztoContentProvider(p, extra, addon, session)
 
-	if __settings__('hellspy_enabled'):
-		p = hellspy.HellspyContentProvider(__settings__('hellspy_user'), __settings__('hellspy_pass'), site_url=__settings__('hellspy_site_url'))
+	if addon.getSetting('hellspy_enabled'):
+		p = hellspy.HellspyContentProvider(addon.getSetting('hellspy_user'), addon.getSetting('hellspy_pass'), site_url=addon.getSetting('hellspy_site_url'))
 		extra = {
-				'keep-searches':__settings__('hellspy_keep-searches')
+				'keep-searches':addon.getSetting('hellspy_keep-searches')
 		}
 		extra.update(settings)
-		providers[p.name] = XBMCHellspyContentProvider(p, extra, __addon__, session)
+		providers[p.name] = XBMCHellspyContentProvider(p, extra, addon, session)
 
-	if __settings__('fastshare_enabled'):
-		p = fastshare.FastshareContentProvider(username='', password='', tmp_dir=__addon__.getAddonInfo('profile'))
+	if addon.getSetting('fastshare_enabled'):
+		p = fastshare.FastshareContentProvider(username='', password='', tmp_dir=addon.getAddonInfo('data_path'))
 		extra = {
 					'vip':'0',
-					'keep-searches':__settings__('fastshare_keep-searches')
+					'keep-searches':addon.getSetting('fastshare_keep-searches')
 		}
 		extra.update(settings)
-		providers[p.name] = xbmcprovider.XBMCLoginOptionalContentProvider(p, extra, __addon__, session)
+		providers[p.name] = xbmcprovider.XBMCLoginOptionalContentProvider(p, extra, addon, session)
 
-	if __settings__('webshare_enabled'):
-		p = webshare.WebshareContentProvider(username=__settings__('webshare_user'), password=__settings__('webshare_pass'), filter=webshare_filter)
+	if addon.getSetting('webshare_enabled'):
+		p = webshare.WebshareContentProvider(username=addon.getSetting('webshare_user'), password=addon.getSetting('webshare_pass'), filter=webshare_filter)
 		extra = {
 				'vip':'0',
-				'keep-searches':__settings__('webshare_keep-searches')
+				'keep-searches':addon.getSetting('webshare_keep-searches')
 		}
 		extra.update(settings)
-		providers[p.name] = xbmcprovider.XBMCLoginOptionalContentProvider(p, extra, __addon__, session)
-	
+		providers[p.name] = xbmcprovider.XBMCLoginOptionalContentProvider(p, extra, addon, session)
+
 	if params == {}:
 		root()
 	elif 'cp' in list(params.keys()):
@@ -214,7 +205,7 @@ def online_files_run(session, params):
 		if cp in list(providers.keys()):
 			providers[cp].run(params)
 	else:
-		search.main(session, __addon__, 'search_history', params, search_cb)
+		search.main(session, addon, 'search_history', params, search_cb)
 
 def main(addon):
-	return XBMCCompatInterface(online_files_run)
+	return XBMCCompatInterface(online_files_run, addon)

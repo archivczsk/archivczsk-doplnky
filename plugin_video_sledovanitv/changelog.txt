@@ -1,3 +1,6 @@
+2.10 - 2024-01-27
+- priadnie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
+
 2.9 - 2024-01-08
 - úpravy kvôli zmene spôsobu fungovania rodičovskej kontroly
 - automatické nastavovanie timeoutu a možnosť zapnúť/vypnúť verifikáciu SSL certifikátov

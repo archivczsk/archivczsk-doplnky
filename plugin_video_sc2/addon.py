@@ -5,5 +5,5 @@ from .provider import SccContentProvider
 # #################################################################################################
 
 def main(addon):
-	cp = SccContentProvider(addon.settings, data_dir=addon.get_info('profile'))
+	cp = SccContentProvider(addon.settings, data_dir=addon.get_info('data_path'))
 	return ArchivCZSKContentProvider(cp, addon)

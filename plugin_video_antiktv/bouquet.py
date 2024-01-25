@@ -25,7 +25,7 @@ class AntikTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=('username', 'password'), channel_types=('tv', 'radio', 'cam'))
 
 	def logged_in(self):
-		return self.cp.atk.is_logged()
+		return self.cp.atk and self.cp.atk.is_logged()
 
 	def get_channels_checksum(self, channel_type):
 		return self.cp.atk.get_channels_checksum(channel_type)

@@ -17,6 +17,6 @@ def main(addon):
 			addon.set_setting(new_name, old_value)
 			addon.set_setting(old_name, '')
 
-	cp = OrangeTVContentProvider(addon.settings, data_dir=addon.get_info('profile'), http_endpoint=archivCZSKHttpServer.getAddonEndpoint(addon.id), bgservice=addon.bgservice)
+	cp = OrangeTVContentProvider(addon.settings, data_dir=addon.get_info('data_path'), http_endpoint=archivCZSKHttpServer.getAddonEndpoint(addon.id), bgservice=addon.bgservice)
 	archivCZSKHttpServer.registerRequestHandler(PlayliveTVHTTPRequestHandler(cp, addon))
 	return ArchivCZSKContentProvider(cp, addon)

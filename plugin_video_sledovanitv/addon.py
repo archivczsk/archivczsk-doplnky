@@ -8,7 +8,7 @@ from .provider import SledovaniTVContentProvider
 # #################################################################################################
 
 def main(addon):
-	cp = SledovaniTVContentProvider(addon.settings, data_dir=addon.get_info('profile'), http_endpoint=archivCZSKHttpServer.getAddonEndpoint(addon.id), bgservice=addon.bgservice)
+	cp = SledovaniTVContentProvider(addon.settings, data_dir=addon.get_info('data_path'), http_endpoint=archivCZSKHttpServer.getAddonEndpoint(addon.id), bgservice=addon.bgservice)
 	archivCZSKHttpServer.registerRequestHandler(PlayliveTVHTTPRequestHandler(cp, addon))
 	return ArchivCZSKContentProvider(cp, addon)
 

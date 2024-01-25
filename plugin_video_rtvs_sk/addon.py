@@ -19,24 +19,12 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
-import os
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
-
 from tools_xbmc.contentprovider import xbmcprovider
 from tools_xbmc.contentprovider.provider import ResolveException
 from tools_xbmc.tools import xbmcutil
 from tools_xbmc.resolver import resolver
 from tools_xbmc.compat import XBMCCompatInterface
-
-__scriptid__ = 'plugin.video.rtvs.sk'
-__scriptname__ = 'rtvs.sk'
-__addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
-
-__language__ = __addon__.getLocalizedString
-__settings__ = __addon__.getSetting
-
 from . import rtvs
-settings = {'quality':__addon__.getSetting('quality')}
 
 
 class RtvsXBMCContentProvider(xbmcprovider.XBMCMultiResolverContentProvider):
@@ -99,9 +87,10 @@ class RtvsXBMCContentProvider(xbmcprovider.XBMCMultiResolverContentProvider):
 			self._handle_exc(e)
 
 
-def rtvs_run(session, params):
-	RtvsXBMCContentProvider(rtvs.RtvsContentProvider(), settings, __addon__, session).run(params)
+def rtvs_run(session, params, addon):
+	settings = {'quality':addon.getSetting('quality')}
+	RtvsXBMCContentProvider(rtvs.RtvsContentProvider(), settings, addon, session).run(params)
 
 
 def main(addon):
-	return XBMCCompatInterface(rtvs_run)
+	return XBMCCompatInterface(rtvs_run, addon)

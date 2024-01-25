@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 # /*
 # *	 Copyright (C) 2022 Michal Novotny https://github.com/misanov
-# * 
+# *
 # *	 This Program is free software; you can redistribute it and/or modify
 # *	 it under the terms of the GNU General Public License as published by
 # *	 the Free Software Foundation; either version 2, or (at your option)
@@ -18,11 +18,8 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
-import os
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine import client
 import re,datetime,json
-from Components.config import config
 
 from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
 from tools_xbmc.contentprovider.provider import ContentProvider
@@ -38,18 +35,9 @@ except:
 	import http.cookiejar as cookielib
 
 BASE = 'http://dokumenty.tv/'
-SORT = 'orderby='
 HEADERS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36', 'Referer': BASE}
-LOG_FILE = os.path.join(config.plugins.archivCZSK.logPath.getValue(),'dokumentytv.log')
 CLEANR = re.compile('<.*?>|&lt;.*?&gt;')
 
-def writeLog(msg, type='INFO'):
-	try:
-		with open(LOG_FILE, 'a') as f:
-			dtn = datetime.datetime.now()
-			f.write(dtn.strftime("%d.%m.%Y %H:%M:%S.%f")[:-3] + " [" + type + "] %s\n" % msg)
-	except:
-		pass
 
 def showInfo(session, mmsg):
 	client.show_message(session, mmsg, msg_type='info', timeout=4)
@@ -59,9 +47,10 @@ def showError(session, mmsg):
 
 class DokumentyTVContentProvider(ContentProvider):
 
-	def __init__(self, username=None, password=None, filter=None, tmp_dir='/tmp', session=None):
+	def __init__(self, username=None, password=None, filter=None, tmp_dir='/tmp', session=None, addon=None):
 		ContentProvider.__init__(self, 'Dokumenty.tv', 'https://dokumenty.tv', username, password, filter, tmp_dir)
 		self.session = session
+		self.addon = addon
 		self.cp = HTTPCookieProcessor(cookielib.LWPCookieJar())
 		self.init_urllib()
 
@@ -94,17 +83,17 @@ class DokumentyTVContentProvider(ContentProvider):
 
 	def categories(self):
 		result = []
-		result.append(self.dir_item(__addon__.getLocalizedString(30201), 'cat#'))
-		result.append(self.dir_item(__addon__.getLocalizedString(30202), 'cat#category/historie/'))
-		result.append(self.dir_item(__addon__.getLocalizedString(30203), 'cat#category/katastroficke/'))
-		result.append(self.dir_item(__addon__.getLocalizedString(30204), 'cat#category/konspirace/'))
-		result.append(self.dir_item(__addon__.getLocalizedString(30205), 'cat#category/krimi/'))
-		result.append(self.dir_item(__addon__.getLocalizedString(30206), 'cat#category/mysleni/'))
-		result.append(self.dir_item(__addon__.getLocalizedString(30207), 'cat#category/prirodovedny-dokument/'))
-		result.append(self.dir_item(__addon__.getLocalizedString(30208), 'cat#category/technika/'))
-		result.append(self.dir_item(__addon__.getLocalizedString(30209), 'cat#category/vesmir/'))
-		result.append(self.dir_item(__addon__.getLocalizedString(30210), 'cat#category/zahady/'))
-		result.append(self.dir_item(__addon__.getLocalizedString(30211), 'cat#category/zivotni-styl/'))
+		result.append(self.dir_item(self.addon.getLocalizedString(30201), 'cat#'))
+		result.append(self.dir_item(self.addon.getLocalizedString(30202), 'cat#category/historie/'))
+		result.append(self.dir_item(self.addon.getLocalizedString(30203), 'cat#category/katastroficke/'))
+		result.append(self.dir_item(self.addon.getLocalizedString(30204), 'cat#category/konspirace/'))
+		result.append(self.dir_item(self.addon.getLocalizedString(30205), 'cat#category/krimi/'))
+		result.append(self.dir_item(self.addon.getLocalizedString(30206), 'cat#category/mysleni/'))
+		result.append(self.dir_item(self.addon.getLocalizedString(30207), 'cat#category/prirodovedny-dokument/'))
+		result.append(self.dir_item(self.addon.getLocalizedString(30208), 'cat#category/technika/'))
+		result.append(self.dir_item(self.addon.getLocalizedString(30209), 'cat#category/vesmir/'))
+		result.append(self.dir_item(self.addon.getLocalizedString(30210), 'cat#category/zahady/'))
+		result.append(self.dir_item(self.addon.getLocalizedString(30211), 'cat#category/zivotni-styl/'))
 		return result
 
 	def list(self, url):
@@ -147,7 +136,7 @@ class DokumentyTVContentProvider(ContentProvider):
 	def resolve(self, item, captcha_cb=None, select_cb=None):
 		result = []
 		self.info("URL: %s" % item['url'] )
-		
+
 		if 'ok.ru' in item['url']:
 			html = util.request(item['url'], headers=HEADERS)
 			item = re.search('data-options="(.*?)"', html, re.DOTALL)
@@ -183,18 +172,15 @@ class DokumentyTVContentProvider(ContentProvider):
 			return select_cb(result)
 		return result
 
-__addon__ = ArchivCZSK.get_xbmc_addon('plugin.video.dokumenty.tv')
-addon_userdata_dir = __addon__.getAddonInfo('profile')
+def dokumenty_tv_run(session, params, addon):
+	settings = {'quality':addon.getSetting('quality')}
 
-def dokumenty_tv_run(session, params):
-	settings = {'quality':__addon__.getSetting('quality')}
-
-	provider = DokumentyTVContentProvider(session=session)
-	XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
+	provider = DokumentyTVContentProvider(session=session, addon=addon)
+	XBMCMultiResolverContentProvider(provider, settings, addon, session).run(params)
 
 # #################################################################################################
 
 def main(addon):
-	return XBMCCompatInterface(dokumenty_tv_run)
+	return XBMCCompatInterface(dokumenty_tv_run, addon)
 
 # #################################################################################################

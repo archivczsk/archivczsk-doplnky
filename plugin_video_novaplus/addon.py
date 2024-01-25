@@ -8,6 +8,6 @@ from .provider import TVNovaContentProvider
 
 
 def main(addon):
-	cp = TVNovaContentProvider(addon.settings, data_dir=addon.get_info('profile'), http_endpoint=archivCZSKHttpServer.getAddonEndpoint(addon.id))
+	cp = TVNovaContentProvider(addon.settings, data_dir=addon.get_info('data_path'), http_endpoint=archivCZSKHttpServer.getAddonEndpoint(addon.id))
 	archivCZSKHttpServer.registerRequestHandler(HlsHTTPRequestHandler(cp, addon))
 	return ArchivCZSKContentProvider(cp, addon)

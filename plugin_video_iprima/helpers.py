@@ -7,9 +7,7 @@ import json
 import sys
 from string import Template
 
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine import client
-addon = ArchivCZSK.get_xbmc_addon('plugin.video.iprima')
 
 def getResourceUrl(resource, replacements):
 	url = lookups.resources[resource]['path']
@@ -33,7 +31,7 @@ def getJSONPath(data, keys):
 def isPlayable(itemType):
 	return lookups.item_types[itemType]['playable']
 
-def requestResource(resource, count=0, page=0, replace={}, postOptions={}, retrying=False):
+def requestResource(addon, resource, count=0, page=0, replace={}, postOptions={}, retrying=False):
 	url = getResourceUrl(resource, replace)
 	method = getResourceMethod(resource)
 	options = {
@@ -41,7 +39,7 @@ def requestResource(resource, count=0, page=0, replace={}, postOptions={}, retry
 		'offset': str(page * lookups.shared['pagination'])
 	}
 	options.update(postOptions)
-	authorization = auth.getAccessToken(refresh=retrying)
+	authorization = auth.getAccessToken(addon, refresh=retrying)
 	common_headers = {
 		'Authorization': 'Bearer ' + authorization['token'],
 		'x-prima-access-token': authorization['token'],
@@ -50,7 +48,7 @@ def requestResource(resource, count=0, page=0, replace={}, postOptions={}, retry
 		'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.35 Safari/537.36'
 		}
 	cookies = {
-		'prima_device_id': auth.getDeviceId(),
+		'prima_device_id': auth.getDeviceId(addon),
 		'prima_sso_logged_in': authorization['user_id']
 	}
 	if method == 'POST':
@@ -65,12 +63,11 @@ def requestResource(resource, count=0, page=0, replace={}, postOptions={}, retry
 	if request.ok:
 		return getJSONPath(request.json(), contentPath) if method == 'POST' else request.json()
 	elif request.status_code in {401, 403}:
-		if retrying: 
+		if retrying:
 			client.showError('K tomuto obsahu nemáte přístup')
 			sys.exit(1)
-		return requestResource(resource, count, page, replace, postOptions, retrying=True)
+		return requestResource(addon, resource, count, page, replace, postOptions, retrying=True)
 	client.showError('Server neodpovídá správně')
-	sys.exit(1)
 
 def getUrl(url, headers, cookies):
 #	print('Requesting: ' + url)

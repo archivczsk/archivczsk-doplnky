@@ -19,7 +19,6 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine.tools.util import toString
 from Plugins.Extensions.archivCZSK.engine import client
 
@@ -195,15 +194,10 @@ class TVSMEContentProvider(ContentProvider):
 		return result
 
 
-__scriptid__ = 'plugin.video.tv.sme.sk'
-__scriptname__ = 'TV SME.sk'
-__addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
-__language__ = __addon__.getLocalizedString
-
-def sme_run(session, params):
-	settings = {'quality':__addon__.getSetting('quality')}
+def sme_run(session, params, addon):
+	settings = {'quality':addon.getSetting('quality')}
 	provider = TVSMEContentProvider(tmp_dir='/tmp', session=session)
-	XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
+	XBMCMultiResolverContentProvider(provider, settings, addon, session).run(params)
 
 def main(addon):
-	return XBMCCompatInterface(sme_run)
+	return XBMCCompatInterface(sme_run, addon)

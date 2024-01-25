@@ -28,7 +28,6 @@ try:
 except ImportError:
 	from urllib.parse import urlparse, parse_qs, urlencode
 
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine.client import add_dir, add_video
 from Plugins.Extensions.archivCZSK.engine import client
 from Components.config import config
@@ -36,22 +35,15 @@ from Components.config import config
 from . import helpers, lookups, auth
 
 ############### init ################
-addon = ArchivCZSK.get_xbmc_addon('plugin.video.iprima')
-addon_userdata_dir = addon.getAddonInfo('profile')
-home = addon.getAddonInfo('path')
-icon = os.path.join(home, 'icon.png')
 
-LOG_FILE = os.path.join(config.plugins.archivCZSK.logPath.getValue(),'iprima.log')
-
-
-def iprima_run(session, params):
+def iprima_run(addon, session, params):
 	base_url = ""
 	chlive = {}
 	chlivethm = {}
 
 	def writeLog(msg, type='INFO'):
 		try:
-			f = open(LOG_FILE, 'a')
+			f = open(os.path.join(config.plugins.archivCZSK.logPath.getValue(),'iprima.log'), 'a')
 			dtn = datetime.now()
 			f.write(dtn.strftime("%d.%m.%Y %H:%M:%S.%f")[:-3] + " [" + type + "] %s\n" % msg)
 			f.close()
@@ -77,7 +69,7 @@ def iprima_run(session, params):
 				if chan[1] == "cnn": chid = "cnn_news"
 				chlivethm[chid] = chan[0]
 				chlive[chid] = ' [COLOR YELLOW](' + chan[3].replace("&nbsp;", " ").strip() + ' ' + chan[2] + ' - ' + chan[4] + ')[/COLOR]'
-		items = helpers.requestResource(resource, page=page)
+		items = helpers.requestResource(addon, resource, page=page)
 		if 'subsections' in lookups.resources[resource] and page == 0:
 			for item in lookups.resources[resource]['subsections']:
 				addDir(item['title'], '/section/{0}/'.format(item['resource']), 1, None)
@@ -86,11 +78,11 @@ def iprima_run(session, params):
 			addDir('>> Další strana', '/section/{0}/?page={1}'.format(resource, page + 1), 1, None)
 
 	def program(nid):
-		programDetail = helpers.requestResource('program_by_id', page=page, postOptions={'nid': nid})
+		programDetail = helpers.requestResource(addon, 'program_by_id', page=page, postOptions={'nid': nid})
 		if page == 0:
 			for season in programDetail['seasons'] or []:
 				addDir(season, '/sublisting/{0}/{1}/'.format(nid, season.replace('/', '%2F')), 1, None)
-			bonuses = helpers.requestResource('bonus', postOptions={'programId': nid, 'count': 1})
+			bonuses = helpers.requestResource(addon, 'bonus', postOptions={'programId': nid, 'count': 1})
 			if len(bonuses) > 0:
 				addDir('Bonusy', '/sublisting/{0}/bonus/'.format(nid), 1, None)
 		episodes = programDetail.get('episodes')
@@ -101,9 +93,9 @@ def iprima_run(session, params):
 
 	def sublisting(programId, season):
 		if season == 'bonus':
-			items = helpers.requestResource('bonus', page=page, postOptions={'programId': programId})
+			items = helpers.requestResource(addon, 'bonus', page=page, postOptions={'programId': programId})
 		else:
-			items = helpers.requestResource('season', page=page, postOptions={'programId': programId, 'season': season.replace('%2F', '/')})
+			items = helpers.requestResource(addon, 'season', page=page, postOptions={'programId': programId, 'season': season.replace('%2F', '/')})
 		renderItems(items)
 		if len(items) == lookups.shared['pagination']:
 			addDir('>> Další strana', '/sublisting/{0}/{1}?page={2}'.format(programId, season, page + 1), 1, None)
@@ -113,13 +105,13 @@ def iprima_run(session, params):
 		if len(query) == 0:
 			client.showError("Je potřeba zadat vyhledávaný řetězec")
 			return
-		items = helpers.requestResource('search_movies', page=page, postOptions={'keyword': query})
+		items = helpers.requestResource(addon, 'search_movies', page=page, postOptions={'keyword': query})
 		renderItems(items, 'Filmy: ')
-		items = helpers.requestResource('search_series', page=page, postOptions={'keyword': query})
+		items = helpers.requestResource(addon, 'search_series', page=page, postOptions={'keyword': query})
 		renderItems(items, 'Seriály: ')
-		items = helpers.requestResource('search_episodes', page=page, postOptions={'keyword': query})
+		items = helpers.requestResource(addon, 'search_episodes', page=page, postOptions={'keyword': query})
 		renderItems(items, 'Epizody: ')
-		items = helpers.requestResource('search_bonus', page=page, postOptions={'keyword': query})
+		items = helpers.requestResource(addon, 'search_bonus', page=page, postOptions={'keyword': query})
 		renderItems(items, 'Bonusy: ')
 
 	def renderItems(items, mtitle=None):
@@ -195,7 +187,7 @@ def iprima_run(session, params):
 
 	def play(name):
 		videoId = adr[1]
-		videoDetail = helpers.requestResource('play', replace={'id': videoId})
+		videoDetail = helpers.requestResource(addon, 'play', replace={'id': videoId})
 		url = None
 		title = ''
 		thumb = None
@@ -214,7 +206,7 @@ def iprima_run(session, params):
 
 		for s in resolve_streams(url):
 			add_video('[' + s.get('resolution', 'x???').split('x')[1] + 'p] ' + title, s['url'], None, thumb, filename=title, infoLabels={'title': title})
-			if addon.getSetting("useBestQuality") == 'true':
+			if addon.get_setting("useBestQuality"):
 				break
 
 	def router(paramstring):
@@ -244,13 +236,12 @@ def iprima_run(session, params):
 	#print('ADR: ',adr)
 	#print('PAGE: ',page)
 
-	lookups.shared['pagination'] = lookups.settings['pagination_options'][int(addon.getSetting('pagination'))]
-	credentialsAvailable = auth.performCredentialCheck()
+	lookups.shared['pagination'] = lookups.settings['pagination_options'][int(addon.get_setting('pagination'))]
+	credentialsAvailable = auth.performCredentialCheck(addon)
 	if credentialsAvailable:
 		router(url)
 	else:
-		from Plugins.Extensions.archivCZSK.gsession import GlobalSession
-		addon.open_settings(GlobalSession.getSession())
+		addon.open_settings(session)
 
 	if len(client.GItem_lst[0]) == 0:
 		addDir('Nic nenalezeno nebo chyba', '', 1, None)

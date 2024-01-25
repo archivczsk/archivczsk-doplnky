@@ -45,7 +45,6 @@ except:
 	unicode = str
 
 from Plugins.Extensions.archivCZSK.engine import client
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 
 LOG = 2
 
@@ -113,7 +112,7 @@ def _solve_http_errors(url, err):
 	else:
 		err.close() # throw exception
 		raise err
-	
+
 	return data
 def request(url, headers={}, binary=False):
 	try:
@@ -128,7 +127,7 @@ def request(url, headers={}, binary=False):
 			data = data.decode('utf-8')
 		response.close()
 		debug('len(data) %s' % len(data))
-		
+
 	except HTTPError as err:
 		debug('Request error (%s)\n%s' % (err.code,traceback.format_exc()))
 		data = _solve_http_errors(url, err)
@@ -234,7 +233,7 @@ def decode_html(data):
 		return data
 
 def debug(text):
-		
+
 		text = "xbmc_doplnky: debug " + (str([text]))
 		print( "############## RESOLVER ############## [DEBUG] %s" % text )
 		client.log.debug(text)

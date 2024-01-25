@@ -19,15 +19,9 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
 from tools_xbmc.compat import XBMCCompatInterface
 from .joj import JojContentProvider
-
-__scriptid__   = 'plugin.video.joj.sk'
-__scriptname__ = 'joj.sk'
-__addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
-__language__   = __addon__.getLocalizedString
 
 class XBMCJojContentProvider(XBMCMultiResolverContentProvider):
 	def render_default(self, item):
@@ -41,11 +35,10 @@ class XBMCJojContentProvider(XBMCMultiResolverContentProvider):
 			self.render_dir(item)
 
 
-def joj_run(session, params):
-	settings = {'quality':__addon__.getSetting('quality')}
+def joj_run(session, params, addon):
+	settings = {'quality':addon.getSetting('quality')}
 	provider = JojContentProvider()
-	XBMCJojContentProvider(provider, settings, __addon__, session).run(params)
+	XBMCJojContentProvider(provider, settings, addon, session).run(params)
 
 def main(addon):
-	return XBMCCompatInterface(joj_run)
-
+	return XBMCCompatInterface(joj_run, addon)

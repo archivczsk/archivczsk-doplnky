@@ -24,7 +24,6 @@ from ..tools import util
 from ..tools import xbmcutil
 from ..resolver import resolver
 from Plugins.Extensions.archivCZSK.engine import client
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 
 from .provider import ResolveException
 from ..resolver.resolver import rslog
@@ -35,7 +34,7 @@ try:
 except NameError:
 	unicode = str
 	is_py3 = True
-	
+
 class XBMContentProvider(object):
 	'''
 	ContentProvider class provides an internet content. It should NOT have any xbmc-related imports
@@ -94,11 +93,11 @@ class XBMContentProvider(object):
 
 				if 'duration' in params:
 					extra_params['duration'] = params['duration']
-					
+
 				rslog.logDebug("XBMC run stats '%s'"%params['stats'])
 				if 'stats' in self.provider.capabilities():
 					self.provider.stats(itm, params['stats'])
-				
+
 				if 'stats-ext' in self.provider.capabilities():
 					self.provider.stats_ext(itm, params['stats'], extra_params)
 			else:
@@ -242,7 +241,7 @@ class XBMContentProvider(object):
 			msg = e.message
 		except:
 			msg = str(e)
-			
+
 		if msg.find('$') == 0:
 			try:
 				msg = self.addon.getLocalizedString(int(msg[1:]))
@@ -290,7 +289,7 @@ class XBMContentProvider(object):
 
 	def render_default(self, item):
 		raise Exception("Unable to render item " + item)
-	
+
 	def _localize(self, text):
 		def _localize(m):
 			try:
@@ -314,10 +313,10 @@ class XBMContentProvider(object):
 			for ctxtitle, value in item['menu'].items():
 				ctxtitle = self._localize(ctxtitle)
 				menuItems[ctxtitle] = value
-		xbmcutil.add_dir(title, 
-						 params, 
-						 img, 
-						 infoLabels=self._extract_infolabels(item), 
+		xbmcutil.add_dir(title,
+						 params,
+						 img,
+						 infoLabels=self._extract_infolabels(item),
 						 menuItems=menuItems,
 						 addonDataItem = item.get('customDataItem',''),
 						 traktItem = item.get('trakt'))
@@ -454,4 +453,3 @@ class XBMCLoginOptionalDelayedContentProvider(XBMCLoginOptionalContentProvider):
 			return self.provider.resolve(item, captcha_cb=self.ask_for_captcha, wait_cb=self.wait_cb)
 		except ResolveException as e:
 			self._handle_exc(e)
-

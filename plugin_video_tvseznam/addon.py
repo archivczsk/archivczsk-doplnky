@@ -10,9 +10,7 @@
 # Credits must be used
 
 import re,sys,os,string,time,datetime,requests,unicodedata
-from Components.config import config
 from Plugins.Extensions.archivCZSK.engine.client import add_dir, add_video
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine import client
 
 try:
@@ -20,25 +18,8 @@ try:
 except:
 	from urllib.parse import unquote_plus
 
-addon =	 ArchivCZSK.get_xbmc_addon('plugin.video.tvseznam')
-profile = addon.getAddonInfo('profile')
-__settings__ = addon
-home = __settings__.getAddonInfo('path')
-icon =	os.path.join( home, 'icon.png' )
-nexticon =	os.path.join( home, 'next.png' )
-LOG_FILE = os.path.join(config.plugins.archivCZSK.logPath.getValue(),'tvs.log')
-
-
-def tvseznam_run(session, params):
-
-	def writeLog(msg, type='INFO'):
-		try:
-			f = open(LOG_FILE, 'a')
-			dtn = datetime.datetime.now()
-			f.write(dtn.strftime("%d.%m.%Y %H:%M:%S.%f")[:-3] + " [" + type + "] %s\n" % msg)
-			f.close()
-		except:
-			pass
+def tvseznam_run(addon, session, params):
+	nexticon =	os.path.join( addon.get_info('path'), 'next.png' )
 
 	def strip_accents(s):
 		return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
@@ -277,11 +258,6 @@ def tvseznam_run(session, params):
 			page = unquote_plus(params["page"])
 	except:
 			pass
-
-	#writeLog('PAGE: '+str(page))
-	#writeLog('URL: '+str(url))
-	#writeLog('NAME: '+str(name))
-	#writeLog('MODE: '+str(mode))
 
 	if mode == None or url == None or len(url) < 1:
 			Guide()

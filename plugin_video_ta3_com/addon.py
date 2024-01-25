@@ -20,7 +20,6 @@
 # */
 
 import sys, os
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
 from tools_xbmc.contentprovider.provider import ContentProvider
 from tools_xbmc.tools import util
@@ -43,11 +42,6 @@ except:
 	from urllib.parse import quote_plus, urljoin
 
 
-__scriptid__ = 'plugin.video.ta3.com'
-__scriptname__ = 'ta3.com'
-__addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
-__language__ = __addon__.getLocalizedString
-
 class TA3ContentProvider(ContentProvider):
 
 	def __init__(self, username=None, password=None, filter=None, tmp_dir='/tmp', session=None):
@@ -57,7 +51,7 @@ class TA3ContentProvider(ContentProvider):
 		self.cnt = 5
 		self.session = session
 
-	def showInfo(msg, timeout=20):
+	def showInfo(self, msg, timeout=20):
 		self.session.open(MessageBox, text=msg, timeout=timeout, type=MessageBox.TYPE_INFO, close_on_any_key=False, enable_input=True)
 
 	def init_urllib(self):
@@ -106,7 +100,7 @@ class TA3ContentProvider(ContentProvider):
 	def search(self,keyword):
 		result = []
 		try:
-			data = util.request(self.base_url + 'archiv?s=%s' % urllib.quote_plus(keyword))
+			data = util.request(self.base_url + 'archiv?s=%s' % quote_plus(keyword))
 			data = re.search(r'<section id="broadcast-categories-list">(.*?)</section>', data, re.S).group(1)
 			for m in re.findall(r'<article.*?>(.*?)</article', data, re.DOTALL):
 				try:
@@ -212,7 +206,7 @@ class TA3ContentProvider(ContentProvider):
 			data = util.substr(page, start, '</section>')
 			for m in re.finditer('<a\ href=\"(?P<url>[^\"]+)\"\ title=\"(?P<title>[^\"]+)\"', data):
 				item = self.dir_item()
-				item['url'] = self.base_url + m.group('url') 
+				item['url'] = self.base_url + m.group('url')
 				item['title'] = m.group('title')
 				self._filter(result, item)
 			pager_data = util.substr(page,'<div class="pagination-wrap"', '</div>')
@@ -265,15 +259,15 @@ class TA3ContentProvider(ContentProvider):
 		return result
 
 	def resolve(self, item, captcha_cb=None, select_cb=None):
-	   item = item.copy()
-	   if 'live.html' in item['url']:
-		   result = self._resolve_live(item)
-		   result = sorted(result, key=lambda x:x['quality'], reverse=True)
-	   else:
-		   result = self._resolve_vod(item)
-	   if len(result) > 0 and select_cb:
-		   return select_cb(result)
-	   return result
+		item = item.copy()
+		if 'live.html' in item['url']:
+			result = self._resolve_live(item)
+			result = sorted(result, key=lambda x:x['quality'], reverse=True)
+		else:
+			result = self._resolve_vod(item)
+		if len(result) > 0 and select_cb:
+			return select_cb(result)
+		return result
 
 	def _resolve_vod(self, item):
 		resolved = []
@@ -316,7 +310,7 @@ class TA3ContentProvider(ContentProvider):
 			for m_manifest in re.finditer(r'\{"src"\s*:\s*"([^"]+)"\s*\}', player_data, re.DOTALL):
 				manifest_url = m_manifest.group(1)
 				if manifest_url.startswith('//'):
-				   manifest_url = 'http:'+ manifest_url
+					manifest_url = 'http:'+ manifest_url
 				#print( "manifest_url: %s" % manifest_url )
 				req = Request(manifest_url)
 				resp = urlopen(req)
@@ -336,11 +330,10 @@ class TA3ContentProvider(ContentProvider):
 		return resolved
 
 
-def ta3_run(session, params):
-	settings = {'quality':__addon__.getSetting('quality')}
+def ta3_run(session, params, addon):
+	settings = {'quality':addon.getSetting('quality')}
 	provider = TA3ContentProvider(tmp_dir='/tmp', session=session)
-	XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
+	XBMCMultiResolverContentProvider(provider, settings, addon, session).run(params)
 
 def main(addon):
-	return XBMCCompatInterface(ta3_run)
-
+	return XBMCCompatInterface(ta3_run, addon)

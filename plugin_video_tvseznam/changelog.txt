@@ -1,3 +1,6 @@
+2024-01-27 [1.9]
+* added support for virtual profiles in ArchivCZSK >= 2.5.0
+
 2023-04-18 [1.8]
 * update because of api changes in ArchivCZSK
 

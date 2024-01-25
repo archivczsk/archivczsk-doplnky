@@ -452,6 +452,9 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			if info_labels['year']:
 				info_labels['title'] += ' (%s)' % info_labels['year']
 
+			if info.get('mediatype') == 'tvshow':
+				ctx_menu.add_menu_item(self._('Search on prehraj.to'), cmd=self.prehrajto_search, keyword=otitle)
+
 		self.add_dir(title, img or self.get_poster_url(None), info_labels, menu=ctx_menu, data_item=data_item, trakt_item=trakt_item, cmd=self.render_menu, url=url)
 
 	# #################################################################################################

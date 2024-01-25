@@ -19,20 +19,14 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
 from tools_xbmc.compat import XBMCCompatInterface
 from .mtrsk import MtrSkContentProvider
 
-__scriptid__   = 'plugin.video.mtr.sk'
-__scriptname__ = 'mtr.sk'
-__addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
-__language__   = __addon__.getLocalizedString
-
-def mtr_run(session, params):
-	settings = {'downloads':__addon__.getSetting('downloads'), 'quality':__addon__.getSetting('quality')}
-	XBMCMultiResolverContentProvider(MtrSkContentProvider(), settings, __addon__, session).run(params)
+def mtr_run(session, params, addon):
+	settings = {'downloads':addon.getSetting('downloads'), 'quality':addon.getSetting('quality')}
+	XBMCMultiResolverContentProvider(MtrSkContentProvider(), settings, addon, session).run(params)
 
 
 def main(addon):
-	return XBMCCompatInterface(mtr_run)
+	return XBMCCompatInterface(mtr_run, addon)

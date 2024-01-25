@@ -23,7 +23,6 @@
 import re
 import random
 from xml.etree.ElementTree import fromstring
-from Plugins.Extensions.archivCZSK.engine import client
 
 from tools_xbmc.tools import util
 from tools_xbmc.contentprovider.provider import ContentProvider
@@ -415,4 +414,3 @@ class JojContentProvider(ContentProvider):
 		if select_cb:
 			return select_cb(result)
 		return result
-

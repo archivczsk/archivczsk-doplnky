@@ -1,6 +1,11 @@
-[B]1.2.0:[/B]
-Convert addon to module for archivCZSK >= 2.0.0
-[B]1.1.0:[/B]
-Make addon python 3.x compatible
-[B]1.0.0:[/B]
-Initial version
+1.3.0:
+- added support for virtual profiles in ArchivCZSK >= 2.5.0
+
+1.2.0:
+- Convert addon to module for archivCZSK >= 2.0.0
+
+1.1.0:
+- Make addon python 3.x compatible
+
+1.0.0:
+- Initial version

@@ -10,11 +10,8 @@
 # Credits must be used
 
 import os, re, datetime, requests
-from Components.config import config
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine.tools.util import unescapeHTML
 from Plugins.Extensions.archivCZSK.engine.client import add_video, add_dir, getTextInput, show_message
-from Plugins.Extensions.archivCZSK.engine import client
 
 try:
 	from urllib import unquote_plus, quote
@@ -22,51 +19,12 @@ except:
 	from urllib.parse import unquote_plus, quote
 
 _UserAgent_ = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0'
-addon =	 ArchivCZSK.get_xbmc_addon('plugin.video.mall.tv')
-profile = addon.getAddonInfo('profile')
-__settings__ = addon
-home = __settings__.getAddonInfo('path')
-icon =	os.path.join( home, 'icon.png' )
-lang = 'sk' if addon.getSetting('country') is '1' else 'cz'
-__baseurl__ = 'https://sk.mall.tv' if lang is 'sk' else 'https://www.mall.tv'
 
-class loguj(object):
-	ERROR = 0
-	INFO = 1
-	DEBUG = 2
-	mode = INFO
+def mall_tv_run(addon, session, params):
+	lang = 'sk' if addon.get_setting('country') is '1' else 'cz'
+	baseurl = 'https://sk.mall.tv' if lang is 'sk' else 'https://www.mall.tv'
+	icon =	os.path.join( addon.get_info('path'), 'icon.png' )
 
-	logEnabled = True
-	logDebugEnabled = False
-	LOG_FILE = os.path.join(config.plugins.archivCZSK.logPath.getValue(),'malltv.log')
-
-	@staticmethod
-	def logDebug(msg):
-		if loguj.logDebugEnabled:
-			loguj.writeLog(msg, 'DEBUG')
-
-	@staticmethod
-	def logInfo(msg):
-		loguj.writeLog(msg, 'INFO')
-
-	@staticmethod
-	def logError(msg):
-		loguj.writeLog(msg, 'ERROR')
-
-	@staticmethod
-	def writeLog(msg, type):
-		try:
-			if not loguj.logEnabled:
-				return
-			f = open(loguj.LOG_FILE, 'a')
-			dtn = datetime.datetime.now()
-			f.write(dtn.strftime("%d.%m.%Y %H:%M:%S.%f")[:-3] + " [" + type + "] %s\n" % msg)
-			f.close()
-		except:
-			pass
-
-
-def mall_tv_run(session, params):
 	def addDir(name, url, mode, image, page=None, kanal=None, infoLabels={}, menuItems={}):
 		params = {'name':name, 'url':url, 'mode':mode, 'page':page, 'kanal':kanal}
 		add_dir(name, params, image, infoLabels=infoLabels, menuItems=menuItems)
@@ -80,12 +38,6 @@ def mall_tv_run(session, params):
 		return result.text
 
 	def OBSAH():
-		# this needs to be set when entering the addon
-		global lang
-		global __baseurl__
-		lang = 'sk' if addon.getSetting('country') is '1' else 'cz'
-		__baseurl__ = 'https://sk.mall.tv' if lang is 'sk' else 'https://www.mall.tv'
-
 		addDir('Hledat', "#", 5, icon, 10002)
 		addDir('Živá vysílání', "#", 7, icon, 2)
 		addDir('SlowTV - Nonstop živě', "#", 7, icon, 4)
@@ -100,7 +52,7 @@ def mall_tv_run(session, params):
 		pocet = 0
 		celkem = 0
 		while True:
-			html = get_url(__baseurl__ + '/Live/LiveSectionVideos?sectionId=' + str(sid) + '&page=' + str(strana))
+			html = get_url(baseurl + '/Live/LiveSectionVideos?sectionId=' + str(sid) + '&page=' + str(strana))
 			if not html:
 				break
 			if sid != 3: data = re.findall('<div.*?video-card.*?<a.*?href=(.*?) .*?title="(.*?)".*?data-img=(.*?) .*?_info', html, re.S)
@@ -120,21 +72,21 @@ def mall_tv_run(session, params):
 				break
 
 	def KATEGORIE():
-		html = get_url(__baseurl__ + '/kategorie')
+		html = get_url(baseurl + '/kategorie')
 
 		hlavni = re.findall('<div.*?video-card.*?<a.*?href=(.*?) .*?data-src=(.*?)>.*?<h2.*?>(.*?)</h2>', html, re.S)
 		if hlavni:
 			hlavni.pop()
 			for item in hlavni:
-				addDir(unescapeHTML(item[2]), __baseurl__ + item[0], 6, item[1], 1)
+				addDir(unescapeHTML(item[2]), baseurl + item[0], 6, item[1], 1)
 		vedlejsi = re.findall('col-sm-auto.*?href=(.*?) class="badge.*?>(.*?)</a>', html, re.S)
 		if vedlejsi:
 			for item in vedlejsi:
-				addDir(unescapeHTML(item[1]), __baseurl__ + item[0], 6, icon, 1)
+				addDir(unescapeHTML(item[1]), baseurl + item[0], 6, icon, 1)
 
 	def PODKATEGORIE(url):
-		if __baseurl__ not in url:
-			url = __baseurl__ + url
+		if baseurl not in url:
+			url = baseurl + url
 		html = get_url(url)
 
 		data = re.search('<section.*?isSerie(.*?)</section>', html, re.S)
@@ -142,14 +94,14 @@ def mall_tv_run(session, params):
 			hlavni = re.findall('<div.*?video-card.*?<a.*?href=(.*?) .*?data-src=(.*?)>.*?<h4.*?>(.*?)</h4>', data.group(1), re.S)
 			if hlavni:
 				for item in hlavni:
-					addDir(unescapeHTML(item[2]), __baseurl__ + item[0], 4, item[1], 1)
+					addDir(unescapeHTML(item[2]), baseurl + item[0], 4, item[1], 1)
 
 	def PORADY():
 		strana = 0
 		pocet = 0
 		celkem = 0
 		while True:
-			html = get_url(__baseurl__ + '/Serie/CategorySortedSeries?categoryId=0&sortType=1&page=' + str(strana))
+			html = get_url(baseurl + '/Serie/CategorySortedSeries?categoryId=0&sortType=1&page=' + str(strana))
 			if not html:
 				break
 			data = re.findall('data-src=(.*?)>.*?href=(.*?) .*?<h4.*?>(.*?)</h4>', html, re.S)
@@ -165,8 +117,8 @@ def mall_tv_run(session, params):
 			strana += 1
 
 	def VYBERY(url):
-		if __baseurl__ not in url:
-			url = __baseurl__ + url
+		if baseurl not in url:
+			url = baseurl + url
 		html = get_url(url)
 
 		# zalozky TODO
@@ -192,7 +144,7 @@ def mall_tv_run(session, params):
 				url = '/sekce/nejnovejsi?' if lang is 'cz' else '/sekcia/najnovsie?'
 			if sid == 10002: # hledat
 				url = '/Search/Videos?q=' + quote(query) + '&sortType=3&'
-			html = get_url(__baseurl__ + url + 'page=' + str(strana))
+			html = get_url(baseurl + url + 'page=' + str(strana))
 			if not html:
 				break
 	#		 data = re.findall('video-card .*?href=(.*?) .*?title="(.*?)".*?data-img=(.*?) ', html, re.S)
@@ -206,8 +158,8 @@ def mall_tv_run(session, params):
 			strana += 1
 
 	def VIDEOLINK(url):
-		if __baseurl__ not in url:
-			url = __baseurl__ + url
+		if baseurl not in url:
+			url = baseurl + url
 		html = get_url(url)
 
 		try:
@@ -263,12 +215,6 @@ def mall_tv_run(session, params):
 		thumb = unquote_plus(params["thumb"])
 	except:
 		pass
-
-	#loguj.logInfo('URL: '+str(url))
-	#loguj.logInfo('NAME: '+str(name))
-	#loguj.logInfo('MODE: '+str(mode))
-	#loguj.logInfo('PAGE: '+str(page))
-	#loguj.logInfo('IMG: '+str(thumb))
 
 	if mode == None or url == None or len(url) < 1:
 		OBSAH()

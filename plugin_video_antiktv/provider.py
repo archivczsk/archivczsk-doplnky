@@ -409,6 +409,13 @@ class AntikTVContentProvider(ModuleContentProvider):
 
 	# #################################################################################################
 
+	def get_profile_name(self):
+		# needed for backward compatibility with ATKClient module
+		profile_info = self.get_profile_info()
+		return '' if profile_info == None else profile_info[0]
+
+	# #################################################################################################
+
 	def login(self, silent):
 		self.atk = ATKClient(self)
 		self.atk.login()

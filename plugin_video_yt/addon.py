@@ -19,8 +19,6 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
-from Plugins.Extensions.archivCZSK.engine.tools.util import toString
 from Plugins.Extensions.archivCZSK.engine import client
 
 from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
@@ -28,7 +26,7 @@ from tools_xbmc.contentprovider.provider import ContentProvider, ResolveExceptio
 from tools_xbmc.tools import util
 from tools_xbmc.compat import XBMCCompatInterface
 
-import re, time, json, datetime
+import os, re, time, json, datetime
 
 try:
 	import cookielib
@@ -43,16 +41,6 @@ except:
 api_url = "https://www.googleapis.com/youtube/v3/"
 api_key = "AIzaSyCNReMvKLnaWRR5T5uGWpvn4I2VYc78Gy4"
 max_res = 30
-
-def writeLog(msg, type='INFO'):
-	try:
-		from Components.config import config
-		f = open(os.path.join(config.plugins.archivCZSK.logPath.getValue(),'yt.log'), 'a')
-		dtn = datetime.datetime.now()
-		f.write(dtn.strftime("%d.%m.%Y %H:%M:%S.%f")[:-3] + " [" + type + "] %s\n" % msg)
-		f.close()
-	except:
-		pass
 
 def jsonPost(url, jsonData, headers={}):
 	req = Request(url, json.dumps(jsonData).encode('utf-8'), headers)
@@ -80,10 +68,12 @@ def yt_time(duration="P1W2DT6H21M32S"):
 
 class YTContentProvider(ContentProvider):
 
-	def __init__(self, username=None, password=None, filter=None, tmp_dir='/tmp'):
+	def __init__(self, username=None, password=None, filter=None, tmp_dir='/tmp', data_path=None, max_history=0):
 		ContentProvider.__init__(self, 'YouTube', 'https://www.youtube.com/', username, password, filter, tmp_dir)
 		self.cp = HTTPCookieProcessor(cookielib.LWPCookieJar())
 		self.init_urllib()
+		self.data_path = data_path
+		self.max_history = max_history or 10
 
 	def init_urllib(self):
 		opener = build_opener(self.cp)
@@ -103,10 +93,9 @@ class YTContentProvider(ContentProvider):
 		return result
 
 	def save_channel(self,name,url):
-		max_history = __addon__.getSetting("channels") or 10
 		cnt = 0
 		history = []
-		filename = addon_userdata_dir + "channels.txt"
+		filename = os.path.join(self.data_path, "channels.txt")
 		try:
 			with open(filename, "r") as file:
 				for line in file:
@@ -118,13 +107,13 @@ class YTContentProvider(ContentProvider):
 		with open(filename, "w") as file:
 			for item in history:
 				cnt = cnt + 1
-				if cnt <= max_history:
+				if cnt <= self.max_history:
 					file.write('%s\n' % item)
 		client.refresh_screen()
 
 	def load_channels(self):
 		history = []
-		filename = addon_userdata_dir + "channels.txt"
+		filename = os.path.join(self.data_path, "channels.txt")
 		try:
 			with open(filename, "r") as file:
 				for line in file:
@@ -278,17 +267,11 @@ class YTContentProvider(ContentProvider):
 			result.append(item)
 		return result
 
-__scriptid__ = 'plugin.video.yt'
-__scriptname__ = 'YouTube'
-__addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
-__language__ = __addon__.getLocalizedString
-addon_userdata_dir = __addon__.getAddonInfo('profile')+'/'
-
-def yt_run(session, params):
-	settings = {'quality':__addon__.getSetting('quality')}
-	provider = YTContentProvider(tmp_dir='/tmp')
-	XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
+def yt_run(session, params, addon):
+	settings = {'quality':addon.getSetting('quality')}
+	provider = YTContentProvider(tmp_dir='/tmp', data_path=addon.getAddonInfo('data_path'), max_history=addon.getSetting('channels'))
+	XBMCMultiResolverContentProvider(provider, settings, addon, session).run(params)
 
 
 def main(addon):
-	return XBMCCompatInterface(yt_run)
+	return XBMCCompatInterface(yt_run, addon)

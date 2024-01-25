@@ -1,8 +1,14 @@
-[B]1.4:[/B]
-Convert to module for archivCZSK >= 2.0.0
-[B]1.3:[/B]
-Fixed crash when video is not available
-[B]1.2:[/B]
-Make addon python 3.x compatible
-[B]1.1:[/B]
-Initial version (rewrite by misanov)
+1.5:
+- added support for virtual profiles in ArchivCZSK >= 2.5.0
+
+1.4:
+- Convert to module for archivCZSK >= 2.0.0
+
+1.3:
+- Fixed crash when video is not available
+
+1.2:
+- Make addon python 3.x compatible
+
+1.1:
+- Initial version (rewrite by misanov)

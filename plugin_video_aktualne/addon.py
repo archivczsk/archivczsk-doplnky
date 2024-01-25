@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 # /*
 # *	 Copyright (C) 2022 Michal Novotny https://github.com/misanov
-# * 
+# *
 # *	 This Program is free software; you can redistribute it and/or modify
 # *	 it under the terms of the GNU General Public License as published by
 # *	 the Free Software Foundation; either version 2, or (at your option)
@@ -18,11 +18,7 @@
 # *	 http://www.gnu.org/copyleft/gpl.html
 # *
 # */
-import os
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
-from Plugins.Extensions.archivCZSK.engine import client
-import re,datetime,json
-from Components.config import config
+import re,json
 
 from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
 from tools_xbmc.contentprovider.provider import ContentProvider
@@ -38,24 +34,7 @@ except:
 	import http.cookiejar as cookielib
 
 BASE = 'https://video.aktualne.cz'
-SORT = 'orderby='
 HEADERS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36', 'Referer': BASE}
-LOG_FILE = os.path.join(config.plugins.archivCZSK.logPath.getValue(),'video-aktualne.log')
-CLEANR = re.compile('<.*?>|&lt;.*?&gt;')
-
-def writeLog(msg, type='INFO'):
-	try:
-		with open(LOG_FILE, 'a') as f:
-			dtn = datetime.datetime.now()
-			f.write(dtn.strftime("%d.%m.%Y %H:%M:%S.%f")[:-3] + " [" + type + "] %s\n" % msg)
-	except:
-		pass
-
-def showInfo(session, mmsg):
-	client.show_message(session, mmsg, msg_type='info', timeout=4)
-
-def showError(session, mmsg):
-	client.show_message(session, mmsg, msg_type='error', timeout=4)
 
 class VideoAktualneContentProvider(ContentProvider):
 
@@ -142,18 +121,15 @@ class VideoAktualneContentProvider(ContentProvider):
 			return select_cb(result)
 		return result
 
-__addon__ = ArchivCZSK.get_xbmc_addon('plugin.video.aktualne')
-addon_userdata_dir = __addon__.getAddonInfo('profile')
-
-def video_aktualne_run(session, params):
-	settings = {'quality':__addon__.getSetting('quality')}
+def video_aktualne_run(session, params, addon):
+	settings = {'quality':addon.getSetting('quality')}
 
 	provider = VideoAktualneContentProvider(session=session)
-	XBMCMultiResolverContentProvider(provider, settings, __addon__, session).run(params)
+	XBMCMultiResolverContentProvider(provider, settings, addon, session).run(params)
 
 # #################################################################################################
 
 def main(addon):
-	return XBMCCompatInterface(video_aktualne_run)
+	return XBMCCompatInterface(video_aktualne_run, addon)
 
 # #################################################################################################

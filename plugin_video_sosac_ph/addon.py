@@ -20,7 +20,6 @@
 # *
 # */
 
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine import client
 
 from tools_xbmc.contentprovider import xbmcprovider
@@ -30,12 +29,6 @@ from tools_xbmc.compat import XBMCCompatInterface
 
 import re
 from .sosac import SosacContentProvider
-
-__scriptid__   = 'plugin.video.sosac.ph'
-__scriptname__ = 'sosac.ph'
-__addon__	   = ArchivCZSK.get_xbmc_addon(__scriptid__)
-__language__   = __addon__.getLocalizedString
-__set__		  = __addon__.getSetting
 
 class SosacProvider(xbmcprovider.XBMContentProvider):
 
@@ -50,7 +43,7 @@ class SosacProvider(xbmcprovider.XBMContentProvider):
 				return resolved[0]
 			else:
 				stream_list = ['[%s]%s'%(s['quality'],s['lang']) for s in resolved]
-				idx = client.getListInput(self.session, stream_list, _("Select stream"))
+				idx = client.getListInput(self.session, stream_list, self.addon.getLocalizedString("Select stream"))
 				if idx == -1:
 					return None
 				return resolved[idx]
@@ -63,16 +56,16 @@ class SosacProvider(xbmcprovider.XBMContentProvider):
 			self._handle_exc(e)
 
 
-def sosac_run(session, params):
-	settings = {'quality':__addon__.getSetting('quality'), 'subs':__set__('subs') == 'true'}
-	reverse_eps = __set__('order-episodes') == '0'
+def sosac_run(session, params, addon):
+	settings = {'quality':addon.getSetting('quality'), 'subs':addon.getSetting('subs') == 'true'}
+	reverse_eps = addon.getSetting('order-episodes') == '0'
 
 	sosac = SosacContentProvider(reverse_eps=reverse_eps)
-	sosac.streamujtv_user = __set__('streamujtv_user')
-	sosac.streamujtv_pass = __set__('streamujtv_pass')
-	sosac.streamujtv_location = __set__('streamujtv_location')
+	sosac.streamujtv_user = addon.getSetting('streamujtv_user')
+	sosac.streamujtv_pass = addon.getSetting('streamujtv_pass')
+	sosac.streamujtv_location = addon.getSetting('streamujtv_location')
 
-	SosacProvider(sosac, settings, __addon__, session).run(params)
+	SosacProvider(sosac, settings, addon, session).run(params)
 
 def main(addon):
-	return XBMCCompatInterface(sosac_run)
+	return XBMCCompatInterface(sosac_run, addon)

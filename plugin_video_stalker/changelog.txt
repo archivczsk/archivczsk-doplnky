@@ -1,3 +1,6 @@
+1.6 - 27.01.2024
+    - priadnie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
+
 1.5 - 18.04.2023
 	- aktualizácia po zmenách api na strane ArchivCZSK
 
@@ -9,10 +12,10 @@
     - nastavovanie správneho user agenta pre prehrávač
     - zvýšenie počtu záznamov na jednej stránke pre VOD
     - konverzia na modul pre archivCZKS >= 2.0.0
-	
+
 1.2 - 15.12.2022
     - drobné opravy
-    
+
 1.1 - 20.11.2022
     - zobrazenie chybového hlásenia pri nesprávnom konf. súbore
 

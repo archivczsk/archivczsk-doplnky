@@ -14,13 +14,11 @@ try:
 except ImportError:
 	from urllib.parse import urlparse, parse_qs
 
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine import client
-addon = ArchivCZSK.get_xbmc_addon('plugin.video.iprima')
 
-def performCredentialCheck():
-	username = addon.getSetting('username')
-	password = addon.getSetting('password')
+def performCredentialCheck(addon):
+	username = addon.get_setting('username')
+	password = addon.get_setting('password')
 	if not username or not password:
 		client.showInfo('Pro přehrávání pořadů je potřeba účet na iPrima.cz\n\nPokud účet nemáte, zaregistrujte se na auth.iprima.cz/user/register a pak zde Menu -> Nastavení vyplňte přihlašovací údaje.')
 		return False
@@ -42,32 +40,32 @@ def generateDeviceId():
 
 	return(device_id)
 
-def getDeviceId():
-	device_id = addon.getSetting('deviceId')
+def getDeviceId(addon):
+	device_id = addon.get_setting('deviceId')
 	if not device_id:
 #		log('Generating new device id', 2)
 		device_id = generateDeviceId()
-		addon.setSetting('deviceId', device_id)
-		getAccessToken(refresh=True, device=device_id)
+		addon.set_setting('deviceId', device_id)
+		getAccessToken(addon, refresh=True, device=device_id)
 	return device_id
 
-def getAccessToken(refresh=False, device=None):
-	access_token = addon.getSetting('accessToken')
-	user_id = addon.getSetting('userId')
+def getAccessToken(addon, refresh=False, device=None):
+	access_token = addon.get_setting('accessToken')
+	user_id = addon.get_setting('userId')
 
 	if not access_token or refresh:
 #		log('Getting new access token', 2)
-		username = addon.getSetting('username')
-		password = addon.getSetting('password')
-		device_id = device or getDeviceId()
+		username = addon.get_setting('username')
+		password = addon.get_setting('password')
+		device_id = device or getDeviceId(addon)
 
 		authentication = login(username, password, device_id)
 
 		access_token = authentication['access_token']
 		user_id = authentication['user_uuid']
 
-		addon.setSetting('accessToken', access_token)
-		addon.setSetting('userId', user_id)
+		addon.set_setting('accessToken', access_token)
+		addon.set_setting('userId', user_id)
 
 	return {'token': access_token, 'user_id': user_id}
 

@@ -1,20 +1,23 @@
 # -*- coding: utf-8 -*-
 
-class XBMCCompatInterface():
+from Plugins.Extensions.archivCZSK.engine.addon import XBMCAddon
 
-	def __init__(self, xbmc_run_cbk):
+class XBMCCompatInterface(object):
+
+	def __init__(self, xbmc_run_cbk, addon):
 		self.xbmc_run_cbk = xbmc_run_cbk
+		self.addon = XBMCAddon(addon)
 
 	# #################################################################################################
 
 	def run(self, session, params):
-		self.xbmc_run_cbk(session, params)
+		self.xbmc_run_cbk(session, params, self.addon)
 
 	# #################################################################################################
 
 	def run_silent(self, session, params):
 		params['silent_mode'] = True
-		self.xbmc_run_cbk(session, params)
+		self.xbmc_run_cbk(session, params, self.addon)
 
 	# #################################################################################################
 

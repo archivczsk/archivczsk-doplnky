@@ -34,7 +34,7 @@ from Plugins.Extensions.archivCZSK.engine.client import showInfo
 import json
 
 try:
-	from urllib2 import urlopen, Request, HTTPCookieProcessor, build_opener, install_opener
+	from urllib2 import urlopen, Request, HTTPCookieProcessor, build_opener, install_opener, HTTPError
 	import cookielib
 	from urllib import quote
 	is_py3 = False
@@ -42,6 +42,7 @@ except:
 	from urllib.request import urlopen, Request, HTTPCookieProcessor, build_opener, install_opener
 	import http.cookiejar as cookielib
 	from urllib.parse import quote
+	from urllib.error import HTTPError
 	is_py3 = True
 	unicode = str
 	unichr = chr

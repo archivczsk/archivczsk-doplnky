@@ -1,3 +1,6 @@
+2.5: 27.01.2024
+- added support for virtual profiles in ArchivCZSK >= 2.5.0
+
 2.4: 08.01.2024
 - automatic timeout and SSL verification setup
 

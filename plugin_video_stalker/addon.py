@@ -5,7 +5,6 @@ import sys, os, uuid
 from tools_xbmc.contentprovider.xbmcprovider import XBMCLoginRequiredContentProvider
 from tools_xbmc.compat import XBMCCompatInterface
 
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.engine.httpserver import archivCZSKHttpServer
 from Plugins.Extensions.archivCZSK.engine.client import log
 from .stalker_provider import stalkerContentProvider
@@ -14,21 +13,16 @@ from .stalker import StalkerCache
 
 # #################################################################################################
 
-__scriptid__ = 'plugin.video.stalker'
-__addon__ = ArchivCZSK.get_xbmc_addon(__scriptid__)
-
-# #################################################################################################
-
-def stalker_run(session, params):
+def stalker_run(session, params, addon):
 	settings = {}
-	provider = stalkerContentProvider(data_dir=__addon__.getAddonInfo('profile'), session=session)
-	XBMCLoginRequiredContentProvider(provider, settings, __addon__, session).run(params)
+	provider = stalkerContentProvider(data_dir=addon.getAddonInfo('data_path'), session=session, addon=addon)
+	XBMCLoginRequiredContentProvider(provider, settings, addon, session).run(params)
 
 # #################################################################################################
 
-def init_all_portals():
+def init_all_portals(addon):
 	portals = StalkerCache.load_portals_cfg()
-	data_dir = __addon__.getAddonInfo('profile')
+	data_dir = addon.get_info('data_path')
 
 	for portal in portals:
 		StalkerCache.get(portal[1], data_dir, log.info)
@@ -36,9 +30,9 @@ def init_all_portals():
 # #################################################################################################
 
 def main(addon):
-	request_handler = StalkerHTTPRequestHandler()
+	request_handler = StalkerHTTPRequestHandler(addon)
 
 	archivCZSKHttpServer.registerRequestHandler(request_handler)
 	log.info("Stalker http endpoint: %s" % archivCZSKHttpServer.getAddonEndpoint(request_handler))
-	init_all_portals()
-	return XBMCCompatInterface(stalker_run)
+	init_all_portals(addon)
+	return XBMCCompatInterface(stalker_run, addon)

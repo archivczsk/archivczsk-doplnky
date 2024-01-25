@@ -13,7 +13,6 @@ import re,sys,os,datetime,json
 from Components.config import config
 
 from tools_xbmc.dmd_czech.util import addDir, addLink, addSearch, getSearch
-from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 
 try:
 	from urllib2 import urlopen, Request
@@ -24,15 +23,8 @@ except:
 
 __baseurl__ = 'https://tv.idnes.cz/'
 _UserAgent_ = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0'
-addon =	 ArchivCZSK.get_xbmc_addon('plugin.video.idnestv')
-profile = addon.getAddonInfo('profile')
-__settings__ = addon
-home = __settings__.getAddonInfo('path')
-icon =	os.path.join( home, 'icon.png' )
-fanart = os.path.join( home, 'fanart.jpg' )
 
-
-def idnes_run(session, params):
+def idnes_run(addon, session, params):
 
 	class loguj(object):
 		ERROR = 0
@@ -134,7 +126,7 @@ def idnes_run(session, params):
 
 	def VIDEOLINK(url):
 		html = get_url(url)
-	
+
 		try:
 			title = re.search('<meta property="og:title" content="(.*?)"', html, re.S).group(1)
 		except:

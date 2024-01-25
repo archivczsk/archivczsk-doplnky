@@ -1,9 +1,12 @@
+1.6.0
+- added support for virtual profiles in ArchivCZSK >= 2.5.0
+
 1.5.1
 - merge latest changes from https://github.com/jastrab/plugin.video.joj.sk
 - add JOJ24 live
 - add info tv live
 - add logos tv live
-- upd high quality images 
+- upd high quality images
 - upd listing shows in archive
 - fix listing shows in archive
 - (all changes by @jastrab)
