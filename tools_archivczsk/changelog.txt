@@ -1,3 +1,6 @@
+1.17 - 25.01.2024
+    - added support for virtual addon profiles
+
 1.16 - 08.01.2024
     - added parental control API
     - added wrapper for requests Session() with automatic timeout and ssl verification settings

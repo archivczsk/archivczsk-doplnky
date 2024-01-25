@@ -17,6 +17,11 @@ class BouquetGenerator(BouquetGeneratorTemplate):
 			self.prefix = bxeg.prefix
 			self.name = bxeg.name
 
+		profile_info = bxeg.get_profile_info()
+		if profile_info != None:
+			self.prefix = self.prefix + '_' + profile_info[0]
+			self.name = self.name + ' - ' + profile_info[1]
+
 		self.bxeg = bxeg
 		self.sid_start = bxeg.sid_start
 		self.tid = bxeg.tid
@@ -45,7 +50,7 @@ class XmlEpgGenerator(XmlEpgGeneratorTemplate):
 		XmlEpgGeneratorTemplate.__init__(self, log_info=bxeg.cp.log_info, log_error=bxeg.cp.log_error)
 
 	# #################################################################################################
-		
+
 	def get_channels(self):
 		return self.bxeg.get_xmlepg_channels()
 
@@ -67,7 +72,7 @@ class BouquetXmlEpgGenerator:
 	This is a base for bouquet + xml epg generator. You need to create your own class and inherit from this one. Then in your
 	class implement at least mandatory functions bellow. After initialisation this class will monitor settings change and will
 	automaticaly run the generation of bouquet and xml epg or delete it. It will also run periodic check and refresh when
-	something changes. Check will be run every 4 hour by default and xml epg data are refreshed every 20 hours. 
+	something changes. Check will be run every 4 hour by default and xml epg data are refreshed every 20 hours.
 	'''
 	def __init__(self, content_provider, http_endpoint, login_settings_names=('username', 'password'), user_agent=None, channel_types=('tv',)):
 		''' content_provider shoould be based on CommonContentProvider '''
@@ -159,6 +164,10 @@ class BouquetXmlEpgGenerator:
 	def get_setting(self, name):
 		# optional: overwrite this function if don't use "standard" setting names
 		return self.cp.get_setting(name)
+
+	def get_profile_info(self):
+		# optional: overwrite this function if don't use "standard" profiles
+		return self.cp.get_profile_info()
 
 	# #################################################################################################
 

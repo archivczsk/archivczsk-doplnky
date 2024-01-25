@@ -580,11 +580,11 @@ class CommonContentProvider(object):
 		'''
 		return '2.2.0'
 
-	def get_profile_name(self):
+	def get_profile_info(self):
 		'''
-		Returns name of current addon virtual profile or empty string if running in main profile
+		If addon runs in virtual configuration profile, then it returns profile info as touple (profile_id, profile_name). If addon runs in main profile, then it returns None
 		'''
-		return ''
+		return None
 
 	def get_parental_settings(self, name=None):
 		'''

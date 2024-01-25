@@ -22,7 +22,7 @@ def _icon(name):
 
 class SearchProvider(object):
 	def __init__(self, addon, name):
-		self.data_dir = addon.get_info('profile')
+		self.data_dir = addon.get_info('data_path')
 		self.name = name
 
 	# #################################################################################################
@@ -135,6 +135,7 @@ class ArchivCZSKContentProvider(object):
 		self.provider._ = addon.get_localized_string
 		self.provider.get_lang_code = addon.language.get_language
 		self.provider.youtube_resolve = client.getVideoFormats
+		self.provider.get_profile_info = self.get_profile_info
 		self.provider.get_addon_version = lambda: addon.version
 		self.provider.get_engine_version = lambda: archivczsk_version
 		self.provider.get_parental_settings = client.parental_pin.get_settings
@@ -646,5 +647,13 @@ class ArchivCZSKContentProvider(object):
 
 	def refresh_screen(self):
 		client.refresh_screen()
+
+	# #################################################################################################
+
+	def get_profile_info(self):
+		if self.addon.is_virtual():
+			return (self.addon.profile_id, self.addon.profile_name)
+
+		return None
 
 	# #################################################################################################
