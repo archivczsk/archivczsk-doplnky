@@ -214,6 +214,29 @@ class Addon(XmlOnlyAddon):
 
 	# ###########################################################################################################
 
+	def check_changelog(self):
+		ret = None
+		for name in ('changelog.txt', 'Changelog.txt'):
+			changelog_file = os.path.join(self.addon_dir, name)
+			log_debug("Checking for changelog file %s" % changelog_file)
+			if os.path.isfile(changelog_file):
+				with open(changelog_file, 'r') as f:
+					i = 0
+					for l in f.readlines():
+						if self.version in l:
+							log_debug("Version %s found on line %d" % (self.version, i))
+							ret = True
+							break
+						i += 1
+						if i > 10:
+							ret = False
+							break
+				break
+
+		return ret
+
+	# ###########################################################################################################
+
 # ###########################################################################################################
 
 class ArchivczskAddonsReleaser(object):
@@ -244,6 +267,12 @@ class ArchivczskAddonsReleaser(object):
 			self.check_git_status(updated_addons)
 
 		for addon in updated_addons:
+			ck = addon.check_changelog()
+			if ck == None:
+				log_warning("There is no changelog file for addon %s (%s)" % (addon.name, addon.addon_id) )
+			elif ck == False:
+				log_warning("There is no info about version %s in the changelog file of addon %s (%s)" % (addon.version, addon.name, addon.addon_id) )
+
 			if self.check_only:
 				log_info("New release zip file for addon %s (%s) version %s will be created" % (addon.name, addon.addon_id, addon.version))
 			else:
