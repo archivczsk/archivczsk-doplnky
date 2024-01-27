@@ -10,22 +10,6 @@
 		<setting label="30008" id="webshare_pass" type="text" default="" option="true" />
 		<setting label="30051" id="webshare_ext-filter" type="text" default="exe,rar,srt,zip" />
 	</category>
-	<category label="30010">
-		<setting label="30002" id="ulozto_enabled" type="bool" default="true" />
-		<setting label="30000" id="ulozto_keep-searches" type="text" default="20" />
-		<setting label="30007" id="ulozto_user" type="text" default="" />
-		<setting label="30008" id="ulozto_pass" type="text" default="" option="true" />
-		<setting label="30003" id="ulozto_usevip" type="enum" lvalues="30004|30005|30006" default="0" />
-		<setting label="30057" id="ulozto_search-type" type="enum" lvalues="30058|30059|30060|30061|30062" default="1" />
-		<setting label="30051" id="ulozto_ext-filter" type="text" default="exe,rar,srt,zip" />
-	</category>
-	<category label="30011">
-		<setting label="30002" id="hellspy_enabled" type="bool" default="true" />
-    <setting label="30013" id="hellspy_site_url" type="text" default="http://hellspy.cz" />
-		<setting label="30000" id="hellspy_keep-searches" type="text" default="20" />
-		<setting label="30007" id="hellspy_user" type="text" default="" />
-		<setting label="30008" id="hellspy_pass" type="text" default="" option="true" />
-	</category>
 	<category label="30014">
 		<setting label="30002" id="fastshare_enabled" type="bool" default="true" />
 		<setting label="30000" id="fastshare_keep-searches" type="text" default="20" />
