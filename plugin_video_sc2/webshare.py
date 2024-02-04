@@ -2,12 +2,11 @@
 import os
 from tools_xbmc.tools.md5crypt import md5crypt
 import xml.etree.ElementTree as ET
-from hashlib import md5, sha1
+from hashlib import md5, sha1, sha256 as sha512
 import traceback
 from datetime import datetime
 from time import time, mktime
 import json
-from .stream import nxx
 
 # #################################################################################################
 
@@ -243,9 +242,7 @@ class Webshare():
 		salt = self.get_file_password_salt(ident)
 		if salt:
 			self.cp.log_debug("Salt for password protected file: %s" % salt)
-			self.cp.log_debug("Computing password for ident %s and file name %s" % (ident, file_name))
-			file_password = nxx(ident, file_name)
-			self.cp.log_debug("Computed file password: %s" % file_password)
+			file_password = sha512((file_name + ident).encode('utf-8')).hexdigest()
 			request_data['password'] = self.get_password_hash(file_password, salt)
 			self.cp.log_debug("Computed file password hash: %s" % request_data['password'])
 
