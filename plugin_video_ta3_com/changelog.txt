@@ -1,3 +1,6 @@
+2.0:
+- kompletný prepis a opätovné sfunkčnenie doplnku
+
 1.5.0:
 - added support for virtual profiles in ArchivCZSK >= 2.5.0
 

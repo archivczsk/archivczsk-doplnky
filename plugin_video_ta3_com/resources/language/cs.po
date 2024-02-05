@@ -1,0 +1,70 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_ta3_com \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-02-06 13:18+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: plugin_video_ta3_com/provider.py:22
+#, python-brace-format
+msgid ""
+"In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\n"
+"python{0}-beautifulsoup4 or python{0}-bs4)"
+msgstr ""
+"K fungování doplňku si musíte pomocí svého správce balíků doinstalovat BeautifulSoup4. Hledejte balík se jménem:\n"
+"python{0}-beautifulsoup4 nebo python{0}-bs4"
+
+#: plugin_video_ta3_com/provider.py:32
+msgid "Archive of programs"
+msgstr "Archiv programů"
+
+#: plugin_video_ta3_com/provider.py:33
+msgid "Slovakia"
+msgstr "Slovensko"
+
+#: plugin_video_ta3_com/provider.py:34
+msgid "Foreign"
+msgstr "Zahraničí"
+
+#: plugin_video_ta3_com/provider.py:35
+msgid "Economics"
+msgstr "Ekonomika"
+
+#: plugin_video_ta3_com/provider.py:36
+msgid "Regions"
+msgstr "Regiony"
+
+#: plugin_video_ta3_com/provider.py:37
+msgid "Sport"
+msgstr "Sport"
+
+#: plugin_video_ta3_com/provider.py:38
+msgid "Press conferences"
+msgstr "Tiskové konference"
+
+#: plugin_video_ta3_com/provider.py:39
+msgid "Society"
+msgstr "Společnost"
+
+#: plugin_video_ta3_com/provider.py:40
+msgid "Auto-moto"
+msgstr "Auto-moto"
+
+#: plugin_video_ta3_com/provider.py:41
+msgid "Health"
+msgstr "Zdraví"
+
+#: plugin_video_ta3_com/provider.py:51
+msgid "Error extracting data from ta3.com. Format of the site is probably changed and addon needs to be modified in order to work again. Please report this problem to addon authors."
+msgstr "Chyba extrahování dat z ta3.com. Formát webu se pravděpodobně změnil a doplněk musí být upraven, aby byl znovu funkční. Prosim nahláste tento problém autorům doplňku."
