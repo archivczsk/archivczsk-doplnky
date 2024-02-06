@@ -1,3 +1,6 @@
+2.1:
+- úpravy kvôli kompatibilite s BeautifulSoup ver. 4.9
+
 2.0:
 - kompletný prepis a opätovné sfunkčnenie doplnku
 

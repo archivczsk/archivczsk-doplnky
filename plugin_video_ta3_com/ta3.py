@@ -128,8 +128,8 @@ class TA3(object):
 		# get videoID
 		soup = self.call_api(article)
 		s = soup.find('div', { 'class': 'detail_text_item_livebox' }).find('script')
-		video_id = re.search(r'"videoId"[\s]*:[\s]*"(.+?)".*', s.get_text(), re.DOTALL).group(1)
-		video_name = re.search(r'"title"[\s]*:[\s]*"(.+?)".*', s.get_text(), re.DOTALL).group(1)
+		video_id = re.search(r'"videoId"[\s]*:[\s]*"(.+?)".*', str(s), re.DOTALL).group(1)
+		video_name = re.search(r'"title"[\s]*:[\s]*"(.+?)".*', str(s), re.DOTALL).group(1)
 
 		# get URL pattern
 		resp = self.req_session.get("http://embed.livebox.cz/ta3_v2/vod-source.js")

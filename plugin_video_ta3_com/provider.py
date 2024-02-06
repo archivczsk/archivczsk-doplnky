@@ -23,7 +23,7 @@ class Ta3ContentProvider(CommonContentProvider):
 			return
 
 		if self.ta3 == None:
-			from ta3 import TA3
+			from .ta3 import TA3
 			self.ta3 = TA3(self)
 
 		self.add_video('TA3 Live', cmd=self.resolve_live_video, video_title="TA3 Live", section='live', download=False)
