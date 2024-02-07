@@ -1,0 +1,352 @@
+# -*- coding: utf-8 -*-
+from tools_archivczsk.contentprovider.provider import CommonContentProvider
+from tools_archivczsk.contentprovider.exception import AddonErrorException
+from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman
+from .primaplus import PrimaPlus
+from datetime import datetime, date, timedelta
+import time
+
+class PrimaPlusContentProvider(CommonContentProvider):
+
+	def __init__(self, settings=None, data_dir=None):
+		CommonContentProvider.__init__(self, 'Prima+', settings=settings, data_dir=data_dir)
+		self.primaplus = None
+		self.login_settings_names = ('username', 'password')
+
+	# ##################################################################################################################
+
+	def login(self, silent):
+		self.primaplus = PrimaPlus(self)
+		if self.primaplus.check_access_token() == False:
+			self.primaplus.login()
+
+		self.days_of_week = (self._('Monday'), self._('Tuesday'), self._('Wednesday'), self._('Thursday'), 	self._('Friday'), self._('Saturday'), self._('Sunday'))
+		return True
+
+	# ##################################################################################################################
+
+	def root(self):
+		subscription = self.primaplus.get_subscription()
+
+		self.add_search_dir()
+		self.add_dir(self._("Movies"), cmd=self.list_layout, layout='categoryMovie__' + subscription)
+		self.add_dir(self._("Series"), cmd=self.list_layout, layout='categorySeries__' + subscription)
+		self.add_dir(self._("Kids"), cmd=self.list_layout, layout='kids__' + subscription)
+		self.add_dir(self._("New releases"), cmd=self.list_layout, layout='categoryNewReleases__' + subscription)
+		self.add_dir(self._("My"), cmd=self.list_layout, layout='mySection__' + subscription)
+		self.add_dir(self._("Genres"), cmd=self.list_genres)
+		self.add_dir(self._("Live"), cmd=self.list_chnnels)
+		self.add_dir(self._("Archive"), cmd=self.list_archive)
+		self.add_dir(self._("Informations and settings"), cmd=self.list_info)
+
+	# ##################################################################################################################
+
+	def list_info(self):
+		self.add_dir(self._("Profiles"), cmd=self.list_profiles)
+		self.add_dir(self._("Devices"), cmd=self.list_devices)
+		self.add_video(self._("Account informations"), cmd=self.account_info)
+
+	# ##################################################################################################################
+
+	def account_info(self):
+		data = self.primaplus.get_account_info()
+
+		result = []
+		result.append(self._("Customer") + ':')
+		result.append(self._("Name") + ': %s %s' % (data["firstName"] or '', data['lastName'] or ''))
+		if data.get("address"):
+			result.append(self._("Address") + ': %s, %s %s' % (data["address"]['streetAddress'] or '', data["address"]['postalCode'] or '', data["address"]['locality'] or ''))
+		result.append(self._("E-Mail") + ': ' + data["email"])
+		result.append(self._("Year of birth") + ': %d' % data["birthYear"])
+		result.append(self._("Customer key") + ": " + data["uuid"])
+		result.append("")
+		result.append(self._("Active subscription") + ": " + data["primaPlay"]['userLevel'])
+		result.append("{}: {}".format(self._("Paid"), self._("Yes") if data["primaPlay"]['paidSubscription'] else self._("No")))
+		d = datetime.strptime(data['subscriptionData']["currentSubscription"]['validFrom'][:19], "%Y-%m-%dT%H:%M:%S")
+		result.append(self._("Valid from") + ": {:02}.{:02}.{:04} - {:02d}:{:02d} UTC".format(d.day, d.month, d.year, d.hour, d.minute))
+		d = datetime.strptime(data['subscriptionData']["currentSubscription"]['validUntil'][:19], "%Y-%m-%dT%H:%M:%S")
+		result.append(self._("Valid until") + ": {:02}.{:02}.{:04} - {:02d}:{:02d} UTC".format(d.day, d.month, d.year, d.hour, d.minute))
+
+		self.show_info('\n'.join(result), noexit=True)
+
+	# ##################################################################################################################
+
+	def list_devices(self):
+		for item in self.primaplus.get_devices():
+			plot = []
+			d = datetime.strptime(item["registered"][:19], "%Y-%m-%dT%H:%M:%S")
+			plot.append("{}: {:02}.{:02}.{:04} - {:02d}:{:02d} UTC".format(self._("Registered at"), d.day, d.month, d.year, d.hour, d.minute))
+
+			d = datetime.strptime(item["lastChanged"][:19], "%Y-%m-%dT%H:%M:%S")
+			plot.append("{}: {:02}.{:02}.{:04} - {:02d}:{:02d} UTC".format(self._("Last change"), d.day, d.month, d.year, d.hour, d.minute))
+
+			title = '[%s]: %s' % (item['slotType'], item['title'])
+			if item['this']:
+				title = _I(title)
+			self.add_video(title, info_labels={'plot': '\n'.join(plot)}, cmd=self.delete_device, device_id=item['slotId'] if item['this'] == False else None )
+
+	# ##################################################################################################################
+
+	def delete_device(self, device_id):
+		if device_id == None:
+			return
+
+		if self.get_yes_no_input(self._("Do you realy want to delete this device?")) == True:
+			self.primaplus.delete_device(device_id)
+			self.refresh_screen()
+
+	# ##################################################################################################################
+
+	def list_profiles(self):
+		for p in self.primaplus.get_profiles():
+			d = datetime.strptime(p['metadata']["createdAt"][:19], "%Y-%m-%dT%H:%M:%S")
+			plot = ["{}: {:02}.{:02}.{:04} - {:02d}:{:02d} UTC".format(self._("Created at"), d.day, d.month, d.year, d.hour, d.minute)]
+			plot.append('%s: %d' % (self._('Year of birth'), p['birthYear']))
+			if p['master']:
+				plot.append(self._("Main profile"))
+			if p['kids']:
+				plot.append(self._("Kids profile"))
+
+			if p['this']:
+				title = _I(p['name'])
+			else:
+				title = p['name']
+
+			self.add_video(title, img=p['avatarUrl'], info_labels={'plot':'\n'.join(plot)}, cmd=self.switch_profile, profile_id=p['ulid'] if p['this'] == False else None)
+
+	# ##################################################################################################################
+
+	def switch_profile(self, profile_id):
+		if profile_id == None:
+			return
+
+		if self.get_yes_no_input(self._("Do you realy want to switch profile?")) == True:
+			self.primaplus.switch_profile(profile_id)
+			self.refresh_screen()
+
+	# ##################################################################################################################
+
+	def search(self, keyword, search_id):
+		for item in self.primaplus.search(keyword):
+			self.add_list_item(item)
+
+	# ##################################################################################################################
+
+	def add_list_item(self, item, menu=None):
+		if item['type'] not in ('movie', 'episode', 'series') or item['distribution']['showLock'] == True:
+			return
+
+		additionals = item.get('additionals',{}) or {}
+		date = ''
+		if additionals.get('broadcastDateTime') is not None:
+			split_date = additionals['broadcastDateTime'][:10].split('-')
+			date = ' | ' + split_date[2] + '.' + split_date[1] + '.' + split_date[0]
+		elif additionals.get('premiereDateTime') is not None:
+			split_date = additionals['premiereDateTime'][:10].split('-')
+			date = ' | ' + split_date[2] + '.' + split_date[1] + '.' + split_date[0]
+
+		if item['type'] == 'episode' and '(' + str(additionals.get('episodeNumber', 0)) + ')' not in item['title']:
+			title = item['title'] + ' (' + str(additionals.get('episodeNumber', 0)) + ')' + date
+		else:
+			title = item['title']
+
+		info_labels = {
+			'title': item['title'],
+			'plot': item.get('perex'),
+			'year': int(additionals.get('year', 0) or 0),
+			'genre' : ', '.join(additionals.get('genres',[]))
+		}
+		if item['type'] == 'episode':
+			info_labels.update({
+				'epname': item['title'],
+				'episode': int(additionals.get('episodeNumber',0)),
+				'season': int(additionals.get('seasonNumber',0)),
+			})
+			info_labels['title'] += ' %s (%d)' % (int_to_roman(info_labels['season']), info_labels['episode'])
+
+		if menu == None:
+			menu = self.create_ctx_menu()
+
+		if self.is_fav(item):
+			menu.add_menu_item(self._("Remove from my list"), self.remove_fav, item=item)
+		else:
+			menu.add_menu_item(self._("Add to my list"), self.add_fav, item=item)
+
+		img = item['images']['3x5'] or additionals.get('programImages',{}).get('3x5') or additionals.get('parentImages',{}).get('3x5') or item['images']['16x9'] or additionals.get('programImages',{}).get('16x9') or additionals.get('parentImages',{}).get('16x9')
+
+		if item['type'] == 'series':
+			self.add_dir(item['title'], img=img, info_labels=info_labels, menu=menu, cmd=self.list_series, slug=item['slug'])
+		else:
+			self.add_video(title, img=img, info_labels=info_labels, menu=menu, cmd=self.play_stream, play_id=item['playId'], play_title=title)
+
+
+	# ##################################################################################################################
+
+	def add_fav(self, item):
+		self.primaplus.watchlist_add(item['id'])
+		self.refresh_screen()
+
+	def remove_fav(self, item):
+		self.primaplus.watchlist_remove(item['id'])
+		self.refresh_screen()
+
+	def is_fav(self, item):
+		return self.primaplus.watchlist_search(item['id'])
+
+	# ##################################################################################################################
+
+	def list_layout(self, layout):
+		for item in self.primaplus.get_layout(layout):
+			self.add_dir(item['title'], cmd=self.list_strip, strip_id=item['strip_id'])
+
+	# ##################################################################################################################
+
+	def list_strip(self, strip_id, strip_filter=None, order_abc=False):
+		items = self.primaplus.get_strip(strip_id, strip_filter=strip_filter)
+
+		if order_abc:
+			items = sorted(items, key=lambda d: d['title'])
+
+		menu = self.create_ctx_menu()
+		menu.add_menu_item(self._("Order by alphabet"), cmd=self.list_strip, strip_id=strip_id, strip_filter=strip_filter, order_abc=True)
+
+		for item in items:
+			if item['type'] == 'static' and item['slug'] != 'https://iprima.cz/subskripce':
+				self.add_dir(item['title'], menu=menu, cmd=self.list_strip, strip_id=strip_id, strip_filter=[{'type' : 'genre', 'value' : item['title']}])
+			elif item['type'] in ('movie', 'series', 'episode'):
+				self.add_list_item(item, menu=menu)
+
+	# ##################################################################################################################
+
+	def list_genres(self):
+		for item in self.primaplus.get_genres():
+			self.add_dir(item['title'], cmd=self.list_strip, strip_id=item['strip_id'], strip_filter=item.get('strip_filter'))
+
+	# ##################################################################################################################
+
+	def get_utc_offset(self):
+		ts = int(time.time())
+		return datetime.fromtimestamp(ts) - datetime.utcfromtimestamp(ts)
+
+	# ##################################################################################################################
+
+	def list_chnnels(self):
+		utc_offset = self.get_utc_offset()
+		epg_data = self.primaplus.get_current_epg( [ch['id'] for ch in self.primaplus.get_channels()] )
+		for ch in self.primaplus.get_channels():
+			epg = epg_data.get(ch['id'])
+
+			if epg:
+				title = ch['title'] + '  ' + _I(epg['title'])
+				epg_start = datetime.strptime(epg["programStartTime"][:19], "%Y-%m-%dT%H:%M:%S") + utc_offset
+				epg_stop = datetime.strptime(epg["programEndTime"][:19], "%Y-%m-%dT%H:%M:%S") + utc_offset
+
+				info_labels = {
+					'plot':  "[{:02}:{:02} - {:02d}:{:02d}]\n{}".format(epg_start.hour, epg_start.minute, epg_stop.hour, epg_stop.minute, epg.get('description') or ''),
+					'year': epg.get('year'),
+					'genre': ', '.join(epg.get('genres',[])),
+					'duration': epg.get('duration') // 1000 if epg.get('duration') else 0
+				}
+			else:
+				title = ch['title']
+				info_labels = {}
+
+			self.add_video(title, ch['img'], info_labels=info_labels, cmd=self.play_stream, play_id=ch['play_id'], play_title=ch['title'])
+
+	# ##################################################################################################################
+
+	def list_archive(self):
+		for ch in self.primaplus.get_channels():
+			self.add_dir(ch['title'], ch['img'], cmd=self.list_archive_days, channel_id=ch['id'])
+
+	# ##################################################################################################################
+
+	def list_archive_days(self, channel_id):
+		for i in range(31):
+			if i == 0:
+				day_name = self._("Today")
+			elif i == 1:
+				day_name = self._("Yesterday")
+			else:
+				day = date.today() - timedelta(days=i)
+				day_name = self.days_of_week[day.weekday()] + " " + day.strftime("%d.%m.%Y")
+
+			self.add_dir(day_name, cmd=self.list_archive_program, channel_id=channel_id, archive_day=i)
+
+	# ##################################################################################################################
+
+	def list_archive_program(self, channel_id, archive_day):
+		utc_offset = self.get_utc_offset()
+
+		for item in self.primaplus.get_channel_epg(channel_id, -archive_day):
+			epg_start = datetime.strptime(item["programStartTime"][:19], "%Y-%m-%dT%H:%M:%S") + utc_offset
+			epg_stop = datetime.strptime(item["programEndTime"][:19], "%Y-%m-%dT%H:%M:%S") + utc_offset
+			title = "{:02}:{:02} - {:02d}:{:02d}".format(epg_start.hour, epg_start.minute, epg_stop.hour, epg_stop.minute)
+
+			info_labels = {
+				'year': item.get('year'),
+				'plot': item.get('description'),
+				'genre': ', '.join(item.get('genres',[])),
+				'duration': item.get('duration') // 1000 if item.get('duration') else None
+			}
+
+			try:
+				img = item.get('images',{}).get('3x5') or item.get('programImages',{}).get('3x5') or item.get('parentImages',{}).get('3x5')
+			except:
+				try:
+					img = item.get('images',{}).get('16x9') or item.get('programImages',{}).get('16x9') or item.get('parentImages',{}).get('16x9')
+				except:
+					img = None
+
+			if item.get('isPlayable'):
+				title = title + ' - ' + _I(item['title'])
+				self.add_video(title, img=img, info_labels=info_labels, cmd=self.play_stream, play_id=item.get('playId'), play_title=item['title'])
+			else:
+				title = _C('gray',title + ' - ' + item['title'])
+				self.add_video(title, img=img, info_labels=info_labels)
+
+
+	# ##################################################################################################################
+
+	def list_series(self, slug):
+		seasons = self.primaplus.get_series(slug)
+		if len(seasons) > 1:
+			for season in seasons:
+				self.add_dir(season['title'], cmd=self.list_season, season=season)
+		else:
+			for season in seasons:
+				self.list_season(season)
+
+	# ##################################################################################################################
+
+	def list_season(self, season):
+		episodes = list(season['episodes'])
+		episodes.reverse()
+		for item in episodes:
+			self.add_list_item(item)
+
+	# ##################################################################################################################
+
+	def resolve_streams(self, url, video_title):
+		for one in self.get_hls_streams(url, self.primaplus.req_session):
+			info_labels = {
+				'bandwidth': one['bandwidth'],
+				'quality': one.get('resolution', 'x???').split('x')[1] + 'p'
+			}
+			self.add_play(video_title, one['url'], info_labels=info_labels)
+
+	# ##################################################################################################################
+
+	def play_stream(self, play_id, play_title):
+		url = self.primaplus.get_stream_url(play_id)
+
+		if not url:
+			raise AddonErrorException(self._("No playable stream found for this item"))
+
+		if url.endswith('.m3u8'):
+			self.resolve_streams(url, play_title)
+		else:
+			# TODO: Dorobit preprocessing pre MPD
+			self.add_play(play_title, url)
+
+	# ##################################################################################################################

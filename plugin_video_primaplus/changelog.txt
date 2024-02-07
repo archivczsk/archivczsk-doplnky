@@ -1,0 +1,2 @@
+1.0 - 12.02.2024
+- First release based on kodi addon by waladir (thx)
