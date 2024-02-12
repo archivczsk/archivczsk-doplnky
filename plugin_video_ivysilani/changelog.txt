@@ -1,3 +1,6 @@
+2024-02-12 [1.6.1]
+* fixed crash when trying to play DRM protected content
+
 2024-01-27 [1.6.0]
  * added support for virtual profiles in ArchivCZSK >= 2.5.0
 

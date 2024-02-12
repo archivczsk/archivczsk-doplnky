@@ -12,6 +12,8 @@ import time
 import json
 import gzip
 
+from tools_xbmc.contentprovider.provider import ResolveException
+
 try:
 	from StringIO import StringIO
 	from urllib2 import urlopen, HTTPError
@@ -36,13 +38,13 @@ class _ProgrammeList:
 		data = _fetch(PROGRAMMELIST_URL, params)
 		programmes = ET.fromstring(data)
 		output = []
-		for item in programmes:				
+		for item in programmes:
 			programme = Programme()
 			for child in item:
 				setattr(programme, child.tag, child.text)
 			output.append(programme)
 		return output
-	
+
 	def list(self):
 		params = self._identifier()
 		params["imageType"] = IMAGE_WIDTH
@@ -54,13 +56,13 @@ class Spotlight(_ProgrammeList):
 	def __init__(self, ID, label):
 		self.ID = ID
 		self.label = label
-		
+
 	def _identifier(self):
 		return { "spotlight" : self.ID }
 
 # Přehled pro datum a kanál
 class Date(_ProgrammeList):
-	
+
 	def _validate_date(self, date_text):
 		date_format = '%Y-%m-%d'
 		date = None
@@ -71,39 +73,39 @@ class Date(_ProgrammeList):
 		min_date = time.strptime(DATE_MIN, date_format)
 		if date < min_date:
 			raise ValueError("Must be after " + DATE_MIN)
-		
+
 	def __init__(self, date, live_channel):
 		self._validate_date(date)
 		self.date = date
 		self.live_channel = live_channel
-		
+
 	def _identifier(self):
 		return { "date" : self.date,
 				"channel" : self.live_channel.channel }
 
-# Přehled pro písmeno		
+# Přehled pro písmeno
 class Letter(_ProgrammeList):
-	
+
 	def __init__(self, title, link):
 		self.title = title
 		self.link = link
-		
+
 	def _identifier(self):
 		return { "letter": _toString(self.link) }
-	
+
 # Přehled pro žánr
 class Genre(_ProgrammeList):
 	_identifier_name = "genre"
-	
+
 	def __init__(self, title, link):
 		self.title = title
 		self.link = link
-		
+
 	def _identifier(self):
 		return { "genre": self.link }
 
 class Quality():
-	
+
 	def __init__(self, quality):
 		self.height = self._height(quality)
 		self.playerType = "iPad"
@@ -116,7 +118,7 @@ class Quality():
 		if quality == "AD":
 			return -1
 		return int(quality[0:-1])
-	
+
 	def quality(self):
 		if self.height == 576:
 			return "web"
@@ -126,22 +128,22 @@ class Quality():
 
 	def label(self):
 		return str(self.height) + "p"
-	
+
 	def __eq__(self, obj):
 		return isinstance(obj, Quality) and obj.__str__() == self.__str__()
-	
+
 	def __hash__(self):
 		return self.__str__().__hash__()
-		
+
 	def __repr__(self):
 		return self.__str__()
-			
+
 	def __str__(self):
 		return self.quality()
 
 # Abstraktní třída zprostředkovává přístup ke kvalitě a odkazu na video
 class _Playable:
-	
+
 	def available_qualities(self):
 		for quality_label in QUALITIES:
 			try:
@@ -151,14 +153,14 @@ class _Playable:
 				par = urlparse.parse_qs(urlparse.urlparse(url).query)
 				label = _toString(par['quality'][0])
 				quality = Quality(label)
-				if quality not in self._links(): 
+				if quality not in self._links():
 					self._links()[quality] = url
 			except:
 				pass
 		qualities = list(self._links().keys())
 		sorted_qualities = sorted(qualities, key=lambda quality: quality.height, reverse=True)
 		return sorted_qualities
-	
+
 	def _links(self):
 		try:
 			if not self.__links__:
@@ -169,7 +171,7 @@ class _Playable:
 
 	def url(self, quality):
 		url = None
-		quality = Quality(str(quality))			
+		quality = Quality(str(quality))
 		if quality in self._links():
 			url = self._links()[quality]
 			return url
@@ -192,6 +194,10 @@ class _Playable:
 				url = video.get("src")
 		if not url:
 			return None
+
+		if "drmOnly=true" in url:
+			raise ResolveException('Video nelze přehrát, protože je chráněno DRM ochranou která není na tomto přijímači podporováná.')
+
 		switchItem = root.find("smilRoot/body/switchItem")
 		if switchItem:
 			url = switchItem.get("base") + "/" + url
@@ -204,19 +210,19 @@ class _Playable:
 
 # Kanál
 class LiveChannel(_Playable):
-	
+
 	_programme = None
-	
+
 	def __init__(self, channel, ID, title):
 		self.channel = channel
 		self.ID = ID
 		self.title = title
-		
+
 	def programme(self):
 		if self._programme is None:
 			self._refresh()
 		return self._programme
-	
+
 	def _refresh(self):
 		params = { "imageType": IMAGE_WIDTH,
 			   "current": 1,
@@ -231,10 +237,10 @@ class LiveChannel(_Playable):
 		programme = root[0][0][0]
 		for child in programme:
 			setattr(self._programme, child.tag, child.text)
-			
+
 # Program
 class Programme(_Playable):
-	
+
 
 	def __init__(self, ID=None):
 		if ID is None:
@@ -250,7 +256,7 @@ class Programme(_Playable):
 		programme = root
 		for child in programme:
 			setattr(self, child.tag, child.text)
-	
+
 	def _list(self, name, current_page, page_size):
 		if page_size is None:
 			page_size = PAGE_SIZE
@@ -272,16 +278,16 @@ class Programme(_Playable):
 				setattr(programme, child.tag, child.text)
 			output.append(programme)
 		return output
-	
+
 	def related(self, current_page=1, page_size=None):
 		return self._list("related", current_page, page_size)
-	
+
 	def episodes(self, current_page=1, page_size=None):
 		return self._list("episodes", current_page, page_size)
-		
+
 	def bonuses(self, current_page=1, page_size=None):
 		return self._list("bonuses", current_page, page_size)
-		
+
 
 ## --- privátní metody - začátek --- ###
 
