@@ -58,7 +58,6 @@ class Ta3ContentProvider(CommonContentProvider):
 	def list_articles(self, section, page=1):
 		articles, max_page = self.safe_call(self.ta3.get_articles, section, page)
 
-		self.log_debug("Adding %s" % str(articles))
 		for p in articles:
 			info_labels = {
 				'plot': p['desc']

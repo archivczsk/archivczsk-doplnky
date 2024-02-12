@@ -31,10 +31,6 @@ class TA3(object):
 		else:
 			raise Exception('HTTP response code: %d for page %s' % (response.status_code, url))
 
-	def call_apiXXX(self, url, params=None):
-		with open(url, 'r') as f:
-			return BeautifulSoup(f.read(), "html.parser")
-
 	# ##################################################################################################################
 
 	def get_img_url(self, section, element):
