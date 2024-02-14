@@ -19,7 +19,7 @@
 <addon id="plugin.video.online-files" name="Soubory Online" version="1.6.0" hash="eaaf4472d9a0b656a2b732cd8efa324c" />
 <addon id="plugin.video.orangetv" name="OrangeTV" version="2.15" hash="372ec628755352962a46a069f497f933" />
 <addon id="plugin.video.pohadkar.cz" name="Pohádkář.cz" version="1.4.0" hash="f9bee39e2b92304f7f5d4844ae9d5001" />
-<addon id="plugin.video.primaplus" name="Prima+" version="1.0" hash="a0ce22b76e46ae1934de7eb52a7ff76e" />
+<addon id="plugin.video.primaplus" name="Prima+" version="1.1" hash="19ed483320a6d3872751a79187136754" />
 <addon id="plugin.video.rebittv" name="Rebit.tv" version="1.7" hash="e6dd6083e2af63a5ec3cb19119de07db" />
 <addon id="plugin.video.rtvs.sk" name="rtvs.sk" version="1.12.0" hash="3a7abf7b60168fc02e33efcaf557258d" />
 <addon id="plugin.video.sc2" name="Stream Cinema Community" version="3.13" hash="81cbaa417d74eeaef3b5d5a9a7a71564" />
