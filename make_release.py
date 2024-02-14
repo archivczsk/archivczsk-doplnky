@@ -78,6 +78,30 @@ class XmlOnlyAddon(object):
 
 		return e
 
+	# ###########################################################################################################
+
+	def clean_old_zip(self, keep_current=True):
+		current_zip = self.addon_id + '-' + self.version + '.zip'
+		addon_repo_dir = os.path.join(REPO_DIR, self.addon_id)
+
+		for file in os.listdir(addon_repo_dir):
+			if file.startswith(self.addon_id) and file.endswith('.zip') and (keep_current == False or file != current_zip):
+				log_debug("Removing old release zip for addon %s (%s): %s" % (self.name, self.addon_id, file))
+				os.remove(os.path.join(addon_repo_dir, file))
+
+		if keep_current == False:
+			try:
+				os.rmdir(addon_repo_dir)
+			except:
+				pass
+
+	# ###########################################################################################################
+
+	def add_to_git_index(self):
+		addon_repo_dir = os.path.join(REPO_DIR, self.addon_id)
+		subprocess.check_call( ['git', 'add', addon_repo_dir] )
+
+
 # ###########################################################################################################
 
 class Addon(XmlOnlyAddon):
@@ -92,22 +116,36 @@ class Addon(XmlOnlyAddon):
 
 	# ###########################################################################################################
 
-	def get_addon_files(self, files_only=True):
+	def get_addon_files(self, files_only=True, filter=()):
+		def is_filtered(file):
+			if file.startswith('.') or os.path.basename(file).startswith('.'):
+				return True
+
+			for ext in ('.pyo', '.pyc', '.swo', '.swn', '.swc', '.so', 'atk_client.py') + filter:
+				if file.endswith(ext):
+					return True
+
+			return False
+
 		if files_only:
 			files = []
 		else:
 			files = [self.addon_dir + '/']
 
 		for dirpath,dirs,filenames in os.walk(self.addon_dir):
-			if dirpath.endswith('.git'):
+			if dirpath.endswith('.git') or dirpath.endswith('__pycache__'):
 				continue
 
 			if files_only == False:
 				for f in dirs:
+					if f in ('.git', '__pycache__',):
+						continue
+
 					files.append(os.path.join(dirpath, f) + '/')
 
 			for f in filenames:
-				files.append(os.path.join(dirpath, f))
+				if not is_filtered(f):
+					files.append(os.path.join(dirpath, f))
 
 		return sorted(files)
 
@@ -115,11 +153,10 @@ class Addon(XmlOnlyAddon):
 
 	def get_addon_data_hash(self):
 		m = md5()
-		for file in self.get_addon_files():
-			if not self.is_filtered(file, extra=('.mo',)):
-				with open(file, 'rb') as f:
-					for data in iter(lambda: f.read(8192), b''):
-						m.update(data)
+		for file in self.get_addon_files(filter=('.mo',)):
+			with open(file, 'rb') as f:
+				for data in iter(lambda: f.read(8192), b''):
+					m.update(data)
 
 		return m.hexdigest()
 
@@ -159,58 +196,21 @@ class Addon(XmlOnlyAddon):
 
 	# ###########################################################################################################
 
-	def is_filtered(self, file, extra=()):
-		if file.startswith('.') or os.path.basename(file).startswith('.'):
-			return True
-
-		for ext in ('.pyo', '.pyc', '.swo', '.swn', '.swc', '.so') + extra:
-			if file.endswith(ext):
-				return True
-
-		return False
-
-	# ###########################################################################################################
-
 	def create_release_zip(self):
 		self.build_lang_files()
 		output_dir=os.path.join(REPO_DIR, self.addon_id)
 		os.makedirs(output_dir, exist_ok=True)
 		with zipfile.ZipFile( os.path.join(output_dir, self.addon_id + '-' + self.version + '.zip'), mode='w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as z:
-			for file in self.get_addon_files(files_only=False):
-				if not self.is_filtered(file, extra=('.po', 'atk_client.py')):
-					z.write(file)
-			pass
+			for file in self.get_addon_files(files_only=False, filter=('.po',)):
+				z.write(file)
 
 		self.clean_lang_files()
-
-	# ###########################################################################################################
-
-	def clean_old_zip(self, keep_current=True):
-		current_zip = self.addon_id + '-' + self.version + '.zip'
-		addon_repo_dir = os.path.join(REPO_DIR, self.addon_id)
-
-		for file in os.listdir(addon_repo_dir):
-			if file.startswith(self.addon_id) and file.endswith('.zip') and (keep_current == False or file != current_zip):
-				log_debug("Removing old release zip for addon %s (%s): %s" % (self.name, self.addon_id, file))
-				os.remove(os.path.join(addon_repo_dir, file))
-
-		if keep_current == False:
-			try:
-				os.rmdir(addon_repo_dir)
-			except:
-				pass
 
 	# ###########################################################################################################
 
 	def check_git_status(self):
 		if subprocess.check_output( ['git', 'status', '--porcelain', self.addon_dir] ) != b'':
 			raise Exception('Addon %s (%s) has uncommited changes in directory %s' % (self.name, self.addon_id, self.addon_dir))
-
-	# ###########################################################################################################
-
-	def add_to_git_index(self):
-		addon_repo_dir = os.path.join(REPO_DIR, self.addon_id)
-		subprocess.check_call( ['git', 'add', addon_repo_dir] )
 
 	# ###########################################################################################################
 
@@ -235,7 +235,6 @@ class Addon(XmlOnlyAddon):
 
 		return ret
 
-	# ###########################################################################################################
 
 # ###########################################################################################################
 
@@ -293,14 +292,17 @@ class ArchivczskAddonsReleaser(object):
 
 		if need_commit:
 			log_info("Rebuilding addons.xml ...")
-			if len(self.addon_dirs) == 0:
-				# user has not specified addons to release, so write addons.xml from all available addons
-				self.write_addons_xml(available_addons.values())
-			else:
-				# user has specified addons to release, so merge user specified with released and write new addons.xml
-				addons = released_addons.copy()
-				addons.update(available_addons)
-				self.write_addons_xml(addons.values())
+			addons = released_addons.copy()
+			# remove deleted addons from list of released
+			for addon in del_addons:
+				del addons[addon.addon_id]
+
+			# update data from updated addons
+			for addon in updated_addons:
+				addons[addon.addon_id] = addon
+
+			# write the result
+			self.write_addons_xml(addons.values())
 
 			log_info("Commiting changes to git ...")
 			subprocess.check_call( ['git', 'add', 'addons.xml'] )
