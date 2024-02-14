@@ -1,2 +1,5 @@
+1.1 - 14.02.2024
+- oprava prehrávania HLS streamov s oddelenou video a zvukovou stopou
+
 1.0 - 12.02.2024
-- First release based on kodi addon by waladir (thx)
+- prvé vydanie založené na kodi doplnku od waladir (vďaka)

@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from tools_archivczsk.contentprovider.exception import AddonErrorException
+from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman
 from .primaplus import PrimaPlus
 from datetime import datetime, date, timedelta
 import time
+import json
 
 class PrimaPlusContentProvider(CommonContentProvider):
 
-	def __init__(self, settings=None, data_dir=None):
+	def __init__(self, settings=None, data_dir=None, http_endpoint=None):
 		CommonContentProvider.__init__(self, 'Prima+', settings=settings, data_dir=data_dir)
+		self.http_endpoint = http_endpoint
 		self.primaplus = None
 		self.login_settings_names = ('username', 'password')
 
@@ -327,13 +330,26 @@ class PrimaPlusContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
+	def get_hls_info(self, stream_key):
+		return {
+			'url': stream_key['url'],
+			'bandwidth': stream_key['bandwidth'],
+		}
+
+	# ##################################################################################################################
+
 	def resolve_streams(self, url, video_title):
 		for one in self.get_hls_streams(url, self.primaplus.req_session):
+			key = {
+				'url': url,
+				'bandwidth': one['bandwidth']
+			}
+
 			info_labels = {
 				'bandwidth': one['bandwidth'],
 				'quality': one.get('resolution', 'x???').split('x')[1] + 'p'
 			}
-			self.add_play(video_title, one['url'], info_labels=info_labels)
+			self.add_play(video_title, stream_key_to_hls_url(self.http_endpoint, key), info_labels=info_labels)
 
 	# ##################################################################################################################
 
