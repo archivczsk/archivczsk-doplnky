@@ -24,6 +24,7 @@ import re
 import requests
 from datetime import datetime
 from hashlib import md5
+import xml.etree.ElementTree as ET
 from .exception import LoginException
 
 try:
@@ -346,7 +347,7 @@ class CommonContentProvider(object):
 		'''
 		Returns streams from hls master playlist. Only EXT-X-STREAM-INF addresses are returned.
 		If master playlist contains EXT-X-MEDIA tags, then returned streams are not directly playable and HlsHTTPRequestHandler needs to be used to convert master playlist to right format.
-		url - url of master playslist
+		url - url of master playlist
 		requests_session - session to use
 		headers - additional requests headers (if needed)
 		max_bitrate - max bitrate in Mbits/s of returned streams
@@ -394,6 +395,83 @@ class CommonContentProvider(object):
 		return sorted(streams, key=lambda i: int(i['bandwidth']), reverse=True)
 
 	# #################################################################################################
+
+	def get_dash_streams(self, url, requests_session=None, headers=None, max_bitrate=None):
+		'''
+		Returns video streams info from DASH playlist
+		url - url of playlist
+		requests_session - session to use
+		headers - additional requests headers (if needed)
+		max_bitrate - max bitrate in Mbits/s of returned streams
+
+		returns list of stream informations sorted by bitrate (from max)
+		'''
+		try:
+			if requests_session == None:
+				requests_session = self.get_requests_session()
+
+			response = requests_session.get(url, headers=headers)
+		except:
+			self.log_exception()
+			return None
+
+		if response.status_code != 200:
+			self.log_error("Status code response for DASH playlist: %d" % response.status_code)
+			return None
+
+		if max_bitrate and int(max_bitrate) > 0:
+			max_bitrate = int(max_bitrate) * 1000000
+		else:
+			max_bitrate = 1000000000
+
+		streams = []
+		root = ET.fromstring(response.text)
+
+		# extract namespace of root element
+		ns = root.tag[1:root.tag.index('}')]
+		ns = '{%s}' % ns
+
+		def add_drm_info(element, stream_info):
+			kid = None
+			pssh = None
+
+			e = element.find('./{}ContentProtection[@schemeIdUri="urn:mpeg:dash:mp4protection:2011"]'.format(ns))
+			if e != None:
+				kid = e.get('{urn:mpeg:cenc:2013}default_KID') or e.get('default_KID')
+
+			e = element.find('./%sContentProtection[@schemeIdUri="urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed"]/{urn:mpeg:cenc:2013}pssh' % ns)
+			if e != None and e.text:
+				pssh = e.text.strip()
+
+			if kid:
+				stream_info['kid'] = kid
+
+			if pssh:
+				stream_info['pssh'] = pssh
+
+		for e_period in root.findall('{}Period'.format(ns)):
+			for e_adaptation_set in e_period.findall('{}AdaptationSet'.format(ns)):
+				drm_info_adaptation = {}
+				add_drm_info(e_adaptation_set, drm_info_adaptation)
+
+				if e_adaptation_set.get('contentType','') == 'video' or e_adaptation_set.get('mimeType','').startswith('video/'):
+					for e_rep in e_adaptation_set.findall('{}Representation'.format(ns)):
+						if int(e_rep.get('bandwidth', 0)) <= max_bitrate:
+							stream_info = {}
+							stream_info.update(e_rep.attrib)
+							add_drm_info(e_rep, stream_info)
+							if drm_info_adaptation.get('kid') and not stream_info.get('kid'):
+								stream_info['kid'] = drm_info_adaptation['kid']
+
+							if drm_info_adaptation.get('pssh') and not stream_info.get('pssh'):
+								stream_info['pssh'] = drm_info_adaptation['pssh']
+
+							streams.append(stream_info)
+
+		return sorted(streams, key=lambda i: int(i.get('bandwidth',0)), reverse=True)
+
+	# #################################################################################################
+
 	@staticmethod
 	def timestamp_to_str(ts, format='%H:%M'):
 		return datetime.fromtimestamp(ts).strftime(format)
