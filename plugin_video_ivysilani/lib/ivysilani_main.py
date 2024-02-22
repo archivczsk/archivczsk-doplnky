@@ -1,4 +1,4 @@
-# modified addon.py from https://github.com/StepanOrt/kodi-addons/blob/master/plugin.video.ivysilani/addon.py 
+# modified addon.py from https://github.com/StepanOrt/kodi-addons/blob/master/plugin.video.ivysilani/addon.py
 # for archivCZSK enigma2 plugin by mx3L
 
 import re
@@ -15,6 +15,8 @@ import random
 from tools_xbmc.tools import util
 from tools_xbmc.contentprovider.provider import ContentProvider
 from Plugins.Extensions.archivCZSK.engine import client
+from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
+from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from . import ivysilani
 
 try:
@@ -29,6 +31,29 @@ except:
 	import http.cookiejar as cookielib
 	is_py3 = True
 	unicode = str
+
+
+class iVysilaniContentProviderHelper(CommonContentProvider):
+	def __init__(self, settings=None, data_dir=None, http_endpoint=None):
+		CommonContentProvider.__init__(self, 'iVysilani', settings=settings, data_dir=data_dir)
+		self.http_endpoint = http_endpoint
+
+	def get_dash_info(self, stream_info):
+		return {
+			'url': stream_info['url'],
+			'bandwidth': stream_info['bandwidth'],
+			'drm' : {
+				'licence_url': 'https://ivys-wvproxy.o2tv.cz/license?access_token=c3RlcGFuLWEtb25kcmEtanNvdS1wcm9zdGUtbmVqbGVwc2k='
+			}
+		}
+
+iVysilani_helper = None
+
+def iVysilaniContentProviderHelper_Init(*args, **kwargs):
+	global iVysilani_helper
+	iVysilani_helper = iVysilaniContentProviderHelper(*args, **kwargs)
+	return iVysilani_helper
+
 
 _baseurl_ = ""
 
@@ -59,8 +84,9 @@ def _toString(text):
 
 class iVysilaniContentProvider(ContentProvider):
 
-	def __init__(self, username=None, password=None, filter=None, tmp_dir='/tmp'):
+	def __init__(self, username=None, password=None, filter=None, tmp_dir='/tmp', http_endpoint=None):
 		ContentProvider.__init__(self, 'ivysilani.cz', 'http://ivysilani.cz', username, password, filter, tmp_dir)
+		self.http_endpoint = http_endpoint
 		opener = build_opener(HTTPCookieProcessor(cookielib.LWPCookieJar()))
 		install_opener(opener)
 
@@ -147,7 +173,7 @@ class iVysilaniContentProvider(ContentProvider):
 		except Exception as e:
 			self.error(traceback.format_exc())
 			client.showError(str(e))
-	
+
 	def listLiveChannels(self):
 		result = []
 		for liveChannel in ivysilani.LIVE_CHANNELS:
@@ -220,7 +246,7 @@ class iVysilaniContentProvider(ContentProvider):
 				result.append(itm)
 				#addDirectoryItem(title, url, ID=item.ID, related=True, episodes=episodes, plot=plot, date=date, image=item.imageURL)
 		return result
-		
+
 	def selectLiveChannel(self, ID):
 		for liveChannel in ivysilani.LIVE_CHANNELS:
 			if liveChannel.ID == ID:
@@ -276,7 +302,7 @@ class iVysilaniContentProvider(ContentProvider):
 			result.append(item)
 			#addDirectoryItem(_toString(channel.title), url, image=image)
 		return result
-	
+
 	def listContext(self, what, ID, page):
 		result = []
 		programme = ivysilani.Programme(ID)
@@ -302,7 +328,7 @@ class iVysilaniContentProvider(ContentProvider):
 			itm['menu'] = {}
 			itm['menu'][_lang_(30003)] =  {'list':_baseurl_ + "?related=" + item.ID, 'action-type':'list'}
 			itm['menu'][_lang_(30004)] = {'list':_baseurl_ + "?episodes=" + item.ID, 'action-type':'list'}
-			itm['menu'][_lang_(30005)] = {'list':_baseurl_ + "?bonuses=" + item.ID, 'action-type':'list'} 
+			itm['menu'][_lang_(30005)] = {'list':_baseurl_ + "?bonuses=" + item.ID, 'action-type':'list'}
 			result.append(itm)
 			#addDirectoryItem(item.title, _baseurl_ + "?play=" + item.ID, ID=item.ID, related=True, plot=plot, image=item.imageURL)
 		if len(l) == ivysilani.PAGE_SIZE:
@@ -313,7 +339,7 @@ class iVysilaniContentProvider(ContentProvider):
 			result.append(item)
 		   # addDirectoryItem('[B]' + _lang_(30006) + ' >>[/B]', _baseurl_ + "?" + what + "=" + ID + "&page=" + str(page + 1), image=_next_)
 		return result
-	
+
 	def resolve(self, item, captcha_cb=None, select_cb=None):
 		result = []
 		item = item.copy()
@@ -324,29 +350,46 @@ class iVysilaniContentProvider(ContentProvider):
 			image = "" #os.path.join(_addon_.getAddonInfo('path'), 'resources', 'media', 'logo_' + playable.ID.lower() + '_400x225.png')
 		if isinstance(playable, ivysilani.Programme):
 			image = playable.imageURL
-		manifest = util.request(playable.url(ivysilani.Quality("web")))
-		#for m in re.finditer('#EXT-X-STREAM-INF:PROGRAM-ID=\d+,BANDWIDTH=(?P<bandwidth>\d+)\s(?P<chunklist>[^\s]+)', manifest, re.DOTALL):
-		
-		for m in re.finditer('#EXT-X-STREAM-INF:PROGRAM-ID=\d+,BANDWIDTH=(?P<bandwidth>\d+),AUDIO="\d+"\s(?P<chunklist>[^\s]+)', manifest, re.DOTALL):
-			item = self.video_item()
-			item['title'] = _toString(playable.title)
-			bandwidth = int(m.group('bandwidth'))
-			if bandwidth < 628000:
-				item['quality'] = "144p"
-			if bandwidth >= 628000 and bandwidth < 1160000:
-				item['quality'] = "288p"
-			elif bandwidth >= 1160000 and bandwidth < 2176000:
-				item['quality'] = "404p"
-			elif bandwidth >= 2176000 and bandwidth < 3712000:
-				item['quality'] = "576p"
-			elif bandwidth >= 3712000 and bandwidth < 6272000:
-				item['quality'] = "720p"	
-			else:
-				item['quality'] = "1080p"
-			item['url'] = m.group('chunklist')
-			result.append(item)
+
+		stream_url, stream_type = playable.url(ivysilani.Quality("web"))
+
+		if stream_url == None:
+			self.error("No playable stream URL found")
+			return None
+
+		self.debug("Stream URL: %s" % stream_url)
+
+		if stream_type == 'dash':
+			dash_streams = iVysilani_helper.get_dash_streams(stream_url) or []
+			for s in dash_streams:
+				item = self.video_item()
+				item['title'] = _toString(playable.title)
+				item['quality'] = s['height'] + 'p' if s.get('height') else "720p"
+				item['url'] = stream_key_to_dash_url(self.http_endpoint, {'url': stream_url, 'bandwidth': int(s.get('bandwidth', 0))})
+				result.append(item)
+		else:
+			manifest = util.request(stream_url)
+			for m in re.finditer('#EXT-X-STREAM-INF:PROGRAM-ID=\d+,BANDWIDTH=(?P<bandwidth>\d+),AUDIO="\d+"\s(?P<chunklist>[^\s]+)', manifest, re.DOTALL):
+				item = self.video_item()
+				item['title'] = _toString(playable.title)
+				bandwidth = int(m.group('bandwidth'))
+				if bandwidth < 628000:
+					item['quality'] = "144p"
+				if bandwidth >= 628000 and bandwidth < 1160000:
+					item['quality'] = "288p"
+				elif bandwidth >= 1160000 and bandwidth < 2176000:
+					item['quality'] = "404p"
+				elif bandwidth >= 2176000 and bandwidth < 3712000:
+					item['quality'] = "576p"
+				elif bandwidth >= 3712000 and bandwidth < 6272000:
+					item['quality'] = "720p"
+				else:
+					item['quality'] = "1080p"
+				item['url'] = m.group('chunklist')
+				result.append(item)
+
 		result = sorted(result,key=lambda i:(len(i['quality']),i['quality']), reverse = True)
 		if len(result) > 0 and select_cb:
 			return select_cb(result)
-		
+
 		return result

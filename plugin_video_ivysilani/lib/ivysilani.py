@@ -13,6 +13,7 @@ import json
 import gzip
 
 from tools_xbmc.contentprovider.provider import ResolveException
+from Plugins.Extensions.archivCZSK.engine import client
 
 try:
 	from StringIO import StringIO
@@ -187,16 +188,16 @@ class _Playable:
 		playlist_url = root.text
 		resp = urlopen(playlist_url)
 		playlist_data = resp.read()
-		root = ET.fromstring(playlist_data)
+		root = ET.fromstring(playlist_data.decode('utf-8'))
 		videos = root.findall("smilRoot/body//video")
 		for video in videos:
 			if 'label' not in video.attrib or video.get("label") == quality.quality():
 				url = video.get("src")
 		if not url:
-			return None
+			return None, None
 
 		if "drmOnly=true" in url:
-			raise ResolveException('Video nelze přehrát, protože je chráněno DRM ochranou která není na tomto přijímači podporováná.')
+			return self.drmUrl(quality)
 
 		switchItem = root.find("smilRoot/body/switchItem")
 		if switchItem:
@@ -205,8 +206,50 @@ class _Playable:
 			if urlopen(url).getcode() == 200:
 				self._links()[quality] = url
 		except HTTPError:
-			return None
-		return url
+			return None, None
+
+		return (url, 'hls')
+
+	def drmUrl(self, quality):
+		url = None
+		params = {"ID": self.ID,
+					"playerType": "dash",
+					"quality": quality.quality()}
+		data = None
+		try:
+			data = _fetch(PLAYLISTURL_URL, params)
+		except Exception as ex:
+			return None, None
+
+		root = ET.fromstring(data)
+		if root.tag == "errors":
+			raise Exception(', '.join([e.text for e in root]))
+		playlist_url = root.text
+		resp = urlopen(playlist_url)
+		playlist_data = resp.read()
+		try:
+			root = json.loads(playlist_data)
+		except json.JSONDecodeError as ex:
+			return None, None
+
+		if not "playlist" in root or len(root["playlist"]) == 0:
+			client.log.error("Playlist empty")
+			return None, None
+
+		for video in root["playlist"]:
+			if 'streamUrls' in video and "main" in video["streamUrls"]:
+				url = video["streamUrls"]["main"]
+
+		if not url:
+			client.log.error("No drm video found")
+			return None, None
+		try:
+			if urlopen(url).getcode() == 200:
+				self._links()[quality] = url
+		except HTTPError as ex:
+			return None, None
+
+		return (url, "dash")
 
 # Kanál
 class LiveChannel(_Playable):

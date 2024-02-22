@@ -1,3 +1,6 @@
+2024-02-24 [1.7.0]
+* added support for playing DRM protected content (exteplayer3 is requiered for DRM streams)
+
 2024-02-12 [1.6.1]
 * fixed crash when trying to play DRM protected content
 
