@@ -8,7 +8,7 @@
 <addon id="plugin.video.eurosport" name="Eurosport Player" version="1.11" hash="a7cc0e4d8b64bc328e2dd1927d820c0c" />
 <addon id="plugin.video.idnestv" name="iDNES.tv" version="1.3" hash="afa5965d11802bf7caeeea5db80aa475" />
 <addon id="plugin.video.iprima" name="iPrima.cz" version="1.12" hash="9edcc667fc3f4db1b489f8e0901a15a8" />
-<addon id="plugin.video.ivysilani" name="iVysílání — Česká televize" version="1.6.1" hash="2f844daefbbeb9a4c63cd0f5b98bc75f" />
+<addon id="plugin.video.ivysilani" name="iVysílání — Česká televize" version="1.7.0" hash="26e81ad8aa14a013fb2389cf9f52c27a" />
 <addon id="plugin.video.joj.sk" name="joj.sk" version="1.6.0" hash="cfce04a47acf054c95f1fd005515c107" />
 <addon id="plugin.video.magiogo" name="Magio TV" version="1.15" hash="8d195b5944d62dcf6552331caf290868" />
 <addon id="plugin.video.mall.tv" name="Fameplay.tv" version="1.10" hash="cf4e1dc3f8e2230976a8aa3c9db758ed" />
@@ -36,6 +36,7 @@
 <addon id="plugin.video.tvseznam" name="Televize Seznam" version="1.9" hash="4baa077aa6bdbe5a3f2f535d7c3c6643" />
 <addon id="plugin.video.videacesky.cz" name="videacesky.cz" version="1.3.0" hash="5347c8d01f48c543836e73cc4edacab2" />
 <addon id="plugin.video.yt" name="YouTube" version="1.9" hash="b713d4a11d91e2713d32b144b1bbd2a0" />
-<addon id="tools.archivczsk" name="Addons base" version="1.17" hash="408fa25a3525879d4a534b5a8bea353b" />
+<addon id="tools.archivczsk" name="Addons base" version="1.18" hash="80b6700d1e4fb1175a91b59e0e4d332f" />
 <addon id="tools.xbmc" name="xbmc addons helper" version="1.2" hash="024b71e73a91c082946f129af1764585" />
+<addon id="tools.cenc" name="Content encryption support" version="1.0" hash="04d53e266de3d9600b10c8c902ca6291" />
 </addons>
