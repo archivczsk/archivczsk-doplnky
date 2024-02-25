@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+	<setting label="Login type" type="keyenum" id="login_type" values="sk_voyo;SK Voyo|cz_voyo;CZ Voyo|sk_telekom;SK Telekom" default="sk_voyo"/>
+	<setting label="Login name" type="text" id="username" default=""/>
+	<setting label="Login password" type="password" id="password" default=""/>
+	<setting label="Maximum bandwidth of the offered stream" id="max_bitrate" type="keyenum" values="0;Unlimited|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
+</settings>

@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.voyo" name="VOYO" version="1.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.6.0"/>
+		<import addon="tools.archivczsk" version="1.18" />
+		<import addon="tools.cenc" version="1.0" />
+	</requires>
+	<extension point="archivczsk.addon.video" import-name="addon" entry-point="main"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Addon for playing series, movies and other content from VOYO service</description>
+		<description lang="cs">Doplněk pro přehrávání seriálů, filmů a pořadů ze služby VOYO.</description>
+		<description lang="sk">Doplnok pre prehrávanie seriálov, filmov a iných programov zo služby VOYO</description>
+	</extension>
+</addon>
