@@ -1,21 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import base64
-from Plugins.Extensions.archivCZSK.engine.httpserver import AddonHttpRequestHandler
-from time import time
+from .template import HTTPRequestHandlerTemplate
 import re
-import json
-
-from twisted.web.client import CookieAgent, RedirectAgent, Agent, HTTPConnectionPool
-from twisted.web.http_headers import Headers
-from twisted.internet.protocol import Protocol
-from twisted.internet import reactor
-
-try:
-	from cookielib import CookieJar
-except:
-	from http.cookiejar import CookieJar
-
 
 # #################################################################################################
 
@@ -23,80 +10,18 @@ def stream_key_to_hls_url(endpoint, stream_key):
 	'''
 	Converts stream key (string or dictionary) to url, that can be played by player. It is then handled by HlsHTTPRequestHandler that will respond with processed hls master playlist
 	'''
-
-	if stream_key == None:
-		stream_key = ""
-
-	if isinstance( stream_key, (type({}), type([]), type(()),) ):
-		stream_key = '{' + json.dumps(stream_key) + '}'
-
-	stream_key = base64.b64encode(stream_key.encode('utf-8')).decode('utf-8')
-	return "%s/hls/%s.m3u8" % (endpoint, stream_key)
+	return HTTPRequestHandlerTemplate.encode_stream_key(endpoint, stream_key, 'hls', 'm3u8')
 
 # #################################################################################################
 
-class HlsSegmentDataWriter(Protocol):
-	def __init__(self, cp, d, cbk_data, timeout_call ):
-		self.cp = cp
-		self.d = d # reference to defered object - needed to ensure, that it is not destroyed during operation
-		self.cbk_data = cbk_data
-		self.timeout_call = timeout_call
-
-	def dataReceived(self, data):
-		try:
-			self.cbk_data(data)
-		except:
-			self.cp.log_exception()
-
-	def connectionLost(self, reason):
-		try:
-			self.cbk_data(None)
-		except:
-			self.cp.log_exception()
-
-		if self.timeout_call.active():
-			self.timeout_call.cancel()
-
-# #################################################################################################
-
-class HlsHTTPRequestHandler(AddonHttpRequestHandler):
+class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 	'''
 	Http request handler that implements processing of HLS master playlist and exports new one with only selected one video stream.
 	Other streams (audio, subtitles, ...) are preserved.
 	'''
 	def __init__(self, content_provider, addon, proxy_segments=False):
-		AddonHttpRequestHandler.__init__(self, addon)
-		self.cp = content_provider
-		self.proxy_segments = proxy_segments
-
-		timeout = int(self.cp.get_setting('loading_timeout'))
-		if timeout == 0:
-			timeout = 5 # it will be very silly to disable timeout, so set 5s here as default
-
-		self._cookies = CookieJar()
-		self._pool = HTTPConnectionPool(reactor)
-		self.cookie_agent = Agent(reactor, connectTimeout=timeout/2, pool=self._pool)
-		self.cookie_agent = CookieAgent(self.cookie_agent, self._cookies)
-		self.cookie_agent = RedirectAgent(self.cookie_agent)
-
-	# #################################################################################################
-
-	def decode_stream_key(self, path):
-		'''
-		Decodes stream key encoded using stream_key_to_hls_url
-		'''
-		if path.endswith('.m3u8'):
-			path = path[:-5]
-
-		if len(path) > 0:
-			stream_key = base64.b64decode(path.encode('utf-8')).decode("utf-8")
-			if stream_key[0] == '{' and stream_key[-1] == '}':
-				stream_key = json.loads(stream_key[1:-1])
-
-			return stream_key
-
-		else:
-			return None
+		super(HlsHTTPRequestHandler, self).__init__(content_provider, addon)
+		self.hls_proxy_segments = proxy_segments
 
 	# #################################################################################################
 
@@ -146,27 +71,27 @@ class HlsHTTPRequestHandler(AddonHttpRequestHandler):
 
 	# #################################################################################################
 
-	def proxify_segment_url(self, url):
+	def hls_proxify_segment_url(self, url):
 		'''
 		Redirects segment url to use proxy
 		'''
 
 		segment_key = base64.b64encode(url.encode('utf-8')).decode('utf-8')
-		return "/%s/s/%s" % (self.name, segment_key)
+		return "/%s/hs/%s" % (self.name, segment_key)
 
 	# #################################################################################################
 
-	def proxify_playlist_url(self, url):
+	def hls_proxify_playlist_url(self, url):
 		'''
 		Redirects segment url to use proxy
 		'''
 
 		segment_key = base64.b64encode(url.encode('utf-8')).decode('utf-8')
-		return "/%s/p/%s" % (self.name, segment_key)
+		return "/%s/hp/%s" % (self.name, segment_key)
 
 	# #################################################################################################
 
-	def P_s(self, request, path):
+	def P_hs(self, request, path):
 		url = base64.b64decode(path.encode('utf-8')).decode('utf-8')
 
 		self.cp.log_debug('Requesting HLS segment: %s' % url)
@@ -195,79 +120,7 @@ class HlsHTTPRequestHandler(AddonHttpRequestHandler):
 
 	# #################################################################################################
 
-	def request_http_data_async(self, url, cbk_response_code, cbk_header, cbk_data, headers=None, range=None):
-		timeout = int(self.cp.get_setting('loading_timeout'))
-		if timeout == 0:
-			timeout = 5 # it will be very silly to disable timeout, so set 5s here as default
-
-		request_headers = Headers()
-
-		if headers:
-			for k, v in headers.items():
-				request_headers.addRawHeader(k.encode('utf-8'), v.encode('utf-8'))
-
-		if range != None:
-			request_headers.addRawHeader(b'Range', range)
-
-		if not request_headers.hasHeader('User-Agent'):
-			# empty user agent is not what we want, so use something common
-			request_headers.addRawHeader(b'User-Agent', b'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-
-		d = self.cookie_agent.request( b'GET', url.encode('utf-8'), request_headers, None)
-
-		timeout_call = reactor.callLater(timeout, d.cancel)
-
-		def request_created(response):
-			cbk_response_code(response.code, response.request.absoluteURI)
-
-			for k,v in response.headers.getAllRawHeaders():
-				if k in (b'Content-Length', b'Accept-Ranges', b'Content-Type', b'Accept'):
-					cbk_header(k,v[0])
-
-			response.deliverBody(HlsSegmentDataWriter(self.cp, d, cbk_data, timeout_call))
-
-		def request_failed(response):
-			self.cp.log_error('Request for url %s failed: %s' % (url, str(response)))
-
-			cbk_response_code(500, '')
-			cbk_data(None)
-			if timeout_call.active():
-				timeout_call.cancel()
-
-		d.addCallback(request_created)
-		d.addErrback(request_failed)
-
-	# #################################################################################################
-
-	def request_http_data_async_simple(self, url, cbk, headers=None, **kwargs):
-		response = {
-			'status_code': None,
-			'url': None,
-			'headers': {},
-			'content': b''
-		}
-
-		def cbk_response_code(rcode, rurl):
-			response['status_code'] = rcode
-			response['url'] = rurl.decode('utf-8')
-
-		def cbk_header(k, v):
-			response['headers'][k] = v
-
-		def cbk_data(data):
-			if data == None:
-				try:
-					cbk(response, **kwargs)
-				except:
-					self.cp.log_exception()
-			else:
-				response['content'] += data
-
-		return self.request_http_data_async( url, cbk_response_code, cbk_header, cbk_data, headers=headers)
-
-	# #################################################################################################
-
-	def P_p(self, request, path):
+	def P_hp(self, request, path):
 		url = base64.b64decode(path.encode('utf-8')).decode('utf-8')
 
 		self.cp.log_debug('Requesting HLS variant playlist: %s' % url)
@@ -287,7 +140,7 @@ class HlsHTTPRequestHandler(AddonHttpRequestHandler):
 					else:
 						surl = redirect_url[:redirect_url.rfind('/') + 1] + surl
 
-					surl = self.proxify_segment_url(surl)
+					surl = self.hls_proxify_segment_url(surl)
 
 				return surl
 
@@ -338,8 +191,8 @@ class HlsHTTPRequestHandler(AddonHttpRequestHandler):
 				else:
 					surl = redirect_url[:redirect_url.rfind('/') + 1] + surl
 
-				if self.proxy_segments:
-					surl = self.proxify_playlist_url(surl)
+				if self.hls_proxy_segments:
+					surl = self.hls_proxify_playlist_url(surl)
 
 			return surl
 
@@ -406,6 +259,5 @@ class HlsHTTPRequestHandler(AddonHttpRequestHandler):
 			return
 
 		self.request_http_data_async_simple(url, cbk=p_continue, headers=headers, bandwidth=bandwidth)
-
 
 	# #################################################################################################

@@ -28,6 +28,11 @@ import xml.etree.ElementTree as ET
 from .exception import LoginException
 
 try:
+	from Plugins.Extensions.archivCZSK.settings import USER_AGENT
+except:
+	USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36'
+
+try:
 	from Plugins.Extensions.archivCZSK.engine.client import log
 except:
 	# to make it run also without archivczsk
@@ -72,6 +77,9 @@ class CCPRequestsSession(requests.Session):
 	def __init__(self, content_provider):
 		requests.Session.__init__(self)
 		self.cp = content_provider
+		self.headers.update({
+			'User-Agent': USER_AGENT
+		})
 
 	def request(self, method, url, **kwargs):
 		if 'timeout' not in kwargs:
@@ -440,6 +448,9 @@ class CommonContentProvider(object):
 				kid = e.get('{urn:mpeg:cenc:2013}default_KID') or e.get('default_KID')
 
 			e = element.find('./%sContentProtection[@schemeIdUri="urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed"]/{urn:mpeg:cenc:2013}pssh' % ns)
+			if e == None:
+				e = element.find('./%sContentProtection[@schemeIdUri="urn:uuid:EDEF8BA9-79D6-4ACE-A3C8-27DCD51D21ED"]/{urn:mpeg:cenc:2013}pssh' % ns)
+
 			if e != None and e.text:
 				pssh = e.text.strip()
 

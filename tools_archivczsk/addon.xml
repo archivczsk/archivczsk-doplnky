@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<addon id="tools.archivczsk" name="Addons base" version="1.18">
+<addon id="tools.archivczsk" name="Addons base" version="1.19">
 	<requires>
 		<import addon="enigma2.archivczsk" version="2.5.0"/>
 	</requires>

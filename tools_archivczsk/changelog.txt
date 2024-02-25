@@ -1,3 +1,9 @@
+1.19 - 27.02.2024
+    - improved DASH processing and DASH stream info extractor
+    - rewrite HTTP handlers for HLS and DASH and make them possible to use both at the time
+    - added simple autokey expiring cache
+    - added support for on demand loading of info labels introduced in ArchivCZSK 2.6.0
+
 1.18 - 24.02.2024
     - added support for processing MPD streams
     - added WV DRM support using tools.cenc addon

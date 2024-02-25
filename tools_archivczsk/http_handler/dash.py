@@ -1,25 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from .template import HTTPRequestHandlerTemplate
 import base64
-from Plugins.Extensions.archivCZSK.engine.httpserver import AddonHttpRequestHandler
 import json
 
-from twisted.web.client import CookieAgent, RedirectAgent, Agent, HTTPConnectionPool
-from twisted.web.http_headers import Headers
-from twisted.internet.protocol import Protocol
-from twisted.internet import reactor
 import xml.etree.ElementTree as ET
-from hashlib import md5
-
-try:
-	from time import monotonic
-except:
-	from time import time as monotonic
-
-try:
-	from cookielib import CookieJar
-except:
-	from http.cookiejar import CookieJar
 
 try:
 	from urlparse import urljoin
@@ -35,118 +20,28 @@ def stream_key_to_dash_url(endpoint, stream_key):
 	'''
 	Converts stream key (string or dictionary) to url, that can be played by player. It is then handled by DashHTTPRequestHandler that will respond with processed MPD playlist
 	'''
-
-	if stream_key == None:
-		stream_key = ""
-
-	if isinstance( stream_key, (type({}), type([]), type(()),) ):
-		stream_key = '{' + json.dumps(stream_key) + '}'
-
-	stream_key = base64.b64encode(stream_key.encode('utf-8')).decode('utf-8')
-	return "%s/dash/%s.mpd" % (endpoint, stream_key)
+	return HTTPRequestHandlerTemplate.encode_stream_key(endpoint, stream_key, 'dash', 'mpd')
 
 # #################################################################################################
 
-class DashSegmentDataWriter(Protocol):
-	def __init__(self, cp, d, cbk_data, timeout_call ):
-		self.cp = cp
-		self.d = d # reference to defered object - needed to ensure, that it is not destroyed during operation
-		self.cbk_data = cbk_data
-		self.timeout_call = timeout_call
-
-	def dataReceived(self, data):
-		try:
-			self.cbk_data(data)
-		except:
-			self.cp.log_exception()
-
-	def connectionLost(self, reason):
-		try:
-			self.cbk_data(None)
-		except:
-			self.cp.log_exception()
-
-		if self.timeout_call.active():
-			self.timeout_call.cancel()
-
-# #################################################################################################
-
-class DashHTTPRequestHandler(AddonHttpRequestHandler):
+class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 	'''
 	Http request handler that implements processing of DASH master playlist and exports new one with only selected one video stream.
 	Other streams (audio, subtitles, ...) are preserved.
 	'''
 	def __init__(self, content_provider, addon, proxy_segments=True):
-		AddonHttpRequestHandler.__init__(self, addon)
-		self.cp = content_provider
-		self.proxy_segments = proxy_segments
+		super(DashHTTPRequestHandler, self).__init__(content_provider, addon)
+		self.dash_proxy_segments = proxy_segments
 		self.enable_devel_logs = False
 		self.wvdecrypt = WvDecrypt(enable_logging=self.enable_devel_logs)
 		self.pssh = {}
-		self.drm_cache = {}
 		self.segment_counter = 0
-
-		timeout = int(self.cp.get_setting('loading_timeout'))
-		if timeout == 0:
-			timeout = 5 # it will be very silly to disable timeout, so set 5s here as default
-
-		self._cookies = CookieJar()
-		self._pool = HTTPConnectionPool(reactor)
-		self.cookie_agent = Agent(reactor, connectTimeout=timeout/2, pool=self._pool)
-		self.cookie_agent = CookieAgent(self.cookie_agent, self._cookies)
-		self.cookie_agent = RedirectAgent(self.cookie_agent)
 
 	# #################################################################################################
 
 	def log_devel(self, msg):
 		if self.enable_devel_logs:
 			self.cp.log_debug(msg)
-
-	# #################################################################################################
-
-	def drm_cache_get(self, key):
-		data = self.drm_cache.get(key)
-		if data:
-			data['last_used'] = int(monotonic())
-
-		return data['data']
-
-	# #################################################################################################
-
-	def drm_cache_put(self, key, data):
-		cur_time = int(monotonic())
-
-		krem = []
-		for k,v in self.drm_cache.items():
-			if (cur_time - v['last_used']) > 60:
-				krem.append(k)
-
-		for k in krem:
-			del self.drm_cache[k]
-
-		self.drm_cache[key] = {
-			'last_used': cur_time,
-			'data': data
-		}
-
-	# #################################################################################################
-
-	def decode_stream_key(self, path):
-		'''
-		Decodes stream key encoded using stream_key_to_dash_url
-		'''
-		if path.endswith('.mpd'):
-			path = path[:-4]
-
-		if len(path) > 0:
-			stream_key = base64.b64decode(path.encode('utf-8')).decode("utf-8")
-			if stream_key[0] == '{' and stream_key[-1] == '}':
-				stream_key = json.loads(stream_key[1:-1])
-
-			return stream_key
-
-		else:
-			return None
 
 	# #################################################################################################
 
@@ -200,30 +95,39 @@ class DashHTTPRequestHandler(AddonHttpRequestHandler):
 		'''
 		Redirects segment url to use proxy
 		'''
+		if len(pssh) == 0 and isinstance(drm, type({})) and drm.get('pssh'):
+			pssh = drm['pssh']
+
+		key = self.scache.put({
+			'url': url,
+			'pssh': pssh,
+			'drm': drm,
+			'init': {}
+		})
 
 		if len(pssh) > 0:
-			# drm protectet content
-			key = md5(url.encode('utf-8')).hexdigest()
-			self.drm_cache_put(key, {
-				'url': url,
-				'pssh': pssh,
-				'drm': drm,
-				'init': {}
-			})
+			# drm protectet content - use handler for protectet segments
 			return "/%s/dsp/%s/" % (self.name, key)
 		else:
-			segment_key = base64.b64encode(url.encode('utf-8')).decode('utf-8')
-			return "/%s/ds/%s/" % (self.name, segment_key)
+			return "/%s/ds/%s/" % (self.name, key)
 
 	# #################################################################################################
 
 	def P_ds(self, request, path):
 		# split path to encoded base URL and segment part
 		url_parts=path.split('/')
-		base_url = base64.b64decode(url_parts[0].encode('utf-8')).decode('utf-8')
+		cache_data = self.scache.get(url_parts[0])
+
+		if not cache_data:
+			self.log_error("No cached data found for key: %s" % url_parts[0])
+			self.reply_error500(request)
+
+		base_url = cache_data['url']
 
 		# recreate original segment URL
-		url = base_url + '/' + '/'.join(url_parts[1:])
+		# url_parts[0] is segment type - this information is only needed when DRM is active
+		url = '/'.join(url_parts[2:])
+		url = urljoin(base_url, url.replace('dot-dot-slash', '../'))
 
 		self.log_devel('Requesting DASH segment: %s' % url)
 		flags = {
@@ -308,7 +212,12 @@ class DashHTTPRequestHandler(AddonHttpRequestHandler):
 		self.log_devel("Received segment request: %s" % path)
 		# split path to encoded base URL and segment part
 		url_parts=path.split('/')
-		cache_data = self.drm_cache_get(url_parts[0])
+		cache_data = self.scache.get(url_parts[0])
+
+		if not cache_data:
+			self.log_error("No cached data found for key: %s" % url_parts[0])
+			self.reply_error500(request)
+
 		segment_type = url_parts[1]
 		base_url = cache_data['url']
 
@@ -322,7 +231,7 @@ class DashHTTPRequestHandler(AddonHttpRequestHandler):
 		def dsp_continue(response):
 			if response['status_code'] >= 400:
 				self.cp.log_error("Response code for DASH segment: %d" % response['status_code'])
-				request.setResponseCode(501)
+				request.setResponseCode(403)
 			else:
 				data = self.process_drm_protected_segment(segment_type, response['content'], cache_data)
 
@@ -342,77 +251,6 @@ class DashHTTPRequestHandler(AddonHttpRequestHandler):
 		self.log_devel('Requesting DASH segment: %s' % url)
 		self.request_http_data_async_simple(url, cbk=dsp_continue, range=request.getHeader(b'Range'))
 		return self.NOT_DONE_YET
-
-	# #################################################################################################
-
-	def request_http_data_async(self, url, cbk_response_code, cbk_header, cbk_data, headers=None, range=None):
-		timeout = int(self.cp.get_setting('loading_timeout'))
-		if timeout == 0:
-			timeout = 5 # it will be very silly to disable timeout, so set 5s here as default
-
-		request_headers = Headers()
-
-		if headers:
-			for k, v in headers.items():
-				request_headers.addRawHeader(k.encode('utf-8'), v.encode('utf-8'))
-
-		if range != None:
-			request_headers.addRawHeader(b'Range', range)
-
-		if not request_headers.hasHeader('User-Agent'):
-			# empty user agent is not what we want, so use something common
-			request_headers.addRawHeader(b'User-Agent', b'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-
-		d = self.cookie_agent.request( b'GET', url.encode('utf-8'), request_headers, None)
-		timeout_call = reactor.callLater(timeout, d.cancel)
-
-		def request_created(response):
-			cbk_response_code(response.code, response.request.absoluteURI)
-
-			for k,v in response.headers.getAllRawHeaders():
-				if k in (b'Content-Length', b'Accept-Ranges', b'Content-Type', b'Accept'):
-					cbk_header(k,v[0])
-
-			response.deliverBody(DashSegmentDataWriter(self.cp, d, cbk_data, timeout_call))
-
-		def request_failed(response):
-			self.cp.log_error('Request for url %s failed: %s' % (url, str(response)))
-
-			cbk_response_code(500, '')
-			cbk_data(None)
-			if timeout_call.active():
-				timeout_call.cancel()
-
-		d.addCallback(request_created)
-		d.addErrback(request_failed)
-
-	# #################################################################################################
-
-	def request_http_data_async_simple(self, url, cbk, headers=None, range=None, **kwargs):
-		response = {
-			'status_code': None,
-			'url': None,
-			'headers': {},
-			'content': b''
-		}
-
-		def cbk_response_code(rcode, rurl):
-			response['status_code'] = rcode
-			response['url'] = rurl.decode('utf-8')
-
-		def cbk_header(k, v):
-			response['headers'][k] = v
-
-		def cbk_data(data):
-			if data == None:
-				try:
-					cbk(response, **kwargs)
-				except:
-					self.cp.log_exception()
-			else:
-				response['content'] += data
-
-		return self.request_http_data_async( url, cbk_response_code, cbk_header, cbk_data, headers=headers, range=range)
 
 	# #################################################################################################
 
@@ -437,6 +275,8 @@ class DashHTTPRequestHandler(AddonHttpRequestHandler):
 					ret = True
 
 			e = element.find('./%sContentProtection[@schemeIdUri="urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed"]/{urn:mpeg:cenc:2013}pssh' % ns)
+			if e == None:
+				e = element.find('./%sContentProtection[@schemeIdUri="urn:uuid:EDEF8BA9-79D6-4ACE-A3C8-27DCD51D21ED"]/{urn:mpeg:cenc:2013}pssh' % ns)
 			if e != None and e.text:
 				self.log_devel("Found PSSH: %s" % e.text)
 				pssh_list.append(e.text.strip())
@@ -466,6 +306,7 @@ class DashHTTPRequestHandler(AddonHttpRequestHandler):
 			kid_list = []
 			pssh_list = []
 
+
 			for e_adaptation_set in e_period.findall('{}AdaptationSet'.format(ns)):
 				if e_adaptation_set.get('contentType','') == 'video' or e_adaptation_set.get('mimeType','').startswith('video/'):
 					# search for video representations and keep only highest resolution/bandwidth
@@ -483,18 +324,17 @@ class DashHTTPRequestHandler(AddonHttpRequestHandler):
 				if e_adaptation_set.get('contentType','') == 'audio' or e_adaptation_set.get('mimeType','').startswith('audio/'):
 					audio_list.append(e_adaptation_set)
 
-				has_drm = search_drm_data(e_adaptation_set)
+				search_drm_data(e_adaptation_set)
 				for e in e_adaptation_set.findall('{}Representation'.format(ns)):
-					has_drm += search_drm_data(e)
+					search_drm_data(e)
 
-				if has_drm:
-					# for DRM protected content we need to add distinguish between init and data segment, so set prefix for it
-					# and also remove ContentProtection elements from manifest
-					path_segment_url(e_adaptation_set)
-					remove_content_protection(e_adaptation_set)
-					for e in e_adaptation_set.findall('{}Representation'.format(ns)):
-						path_segment_url(e)
-						remove_content_protection(e)
+				# for DRM protected content we need to add distinguish between init and data segment, so set prefix for it
+				# and also remove ContentProtection elements from manifest
+				path_segment_url(e_adaptation_set)
+				remove_content_protection(e_adaptation_set)
+				for e in e_adaptation_set.findall('{}Representation'.format(ns)):
+					path_segment_url(e)
+					remove_content_protection(e)
 
 			if len(audio_list) > 0:
 				# all enigma2 players use first audio track as the default, so move CZ and SK audio tracks on the top
@@ -511,17 +351,20 @@ class DashHTTPRequestHandler(AddonHttpRequestHandler):
 					e_period.append(a)
 
 			# either update BaseURL or create element and set it
-			e_base_url = e_period.find('{}BaseURL'.format(ns)) or root.find('{}BaseURL'.format(ns))
+			e_base_url = e_period.find('{}BaseURL'.format(ns))
+			if  e_base_url == None:
+				e_base_url = root.find('{}BaseURL'.format(ns))
+
 			if e_base_url != None:
 				base_url_set = urljoin(base_url, e_base_url.text)
 
-				if self.proxy_segments:
+				if self.dash_proxy_segments:
 					base_url_set = self.dash_proxify_base_url(base_url_set, pssh=list(set(pssh_list)), drm=drm)
 
 				e_base_url.text = base_url_set
 			else:
 				# base path not found in MPD, so set it ...
-				if self.proxy_segments:
+				if self.dash_proxy_segments:
 					base_url_set = self.dash_proxify_base_url(base_url, pssh=list(set(pssh_list)), drm=drm)
 				else:
 					base_url_set = base_url
