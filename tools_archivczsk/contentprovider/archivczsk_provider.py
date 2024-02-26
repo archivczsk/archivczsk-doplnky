@@ -301,16 +301,18 @@ class ArchivCZSKContentProvider(object):
 				# create nice names for streams
 				prefix = '[%d] ' % i
 
-				for key in ('quality', 'bandwidth', 'vcodec', 'acodec', 'lang'):
-					if key in pl_item['info_labels']:
-						if key == 'bandwidth':
-							if int(pl_item['info_labels'][key]) > 100:
-								# filter out garbage
-								prefix += '[%.1f MBit/s] ' % (float(pl_item['info_labels'][key]) / 1000000)
-						else:
-							prefix += '[%s] ' % pl_item['info_labels'][key]
+				if not callable(pl_item['info_labels']):
+					for key in ('quality', 'bandwidth', 'vcodec', 'acodec', 'lang'):
+						if key in pl_item['info_labels']:
+							if key == 'bandwidth':
+								if int(pl_item['info_labels'][key]) > 100:
+									# filter out garbage
+									prefix += '[%.1f MBit/s] ' % (float(pl_item['info_labels'][key]) / 1000000)
+							else:
+								prefix += '[%s] ' % pl_item['info_labels'][key]
 
-				pl_item['info_labels']['title'] = pl_item['info_labels'].get('title', pl_item['title'])
+					pl_item['info_labels']['title'] = pl_item['info_labels'].get('title', pl_item['title'])
+
 				pl_item['title'] = prefix + pl_item['title']
 				playlist.add(self.create_play_item(**pl_item))
 				i += 1
