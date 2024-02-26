@@ -33,6 +33,7 @@ class XmlOnlyAddon(object):
 	def __init__(self, xml_root):
 		self.xml_root = xml_root
 		self.hash = self.xml_root.attrib.get('hash','')
+		self.rhash = self.xml_root.attrib.get('rhash','')
 		self.addon_id = self.xml_root.attrib.get('id')
 		self.name = self.xml_root.attrib.get('name')
 		self.version = self.xml_root.attrib.get('version')
@@ -67,7 +68,8 @@ class XmlOnlyAddon(object):
 			'id': self.addon_id,
 			'name': self.name,
 			'version': self.version,
-			'hash': self.hash
+			'hash': self.hash,
+			'rhash': self.rhash,
 		})
 		e.tail = '\n'
 
@@ -197,13 +199,18 @@ class Addon(XmlOnlyAddon):
 	# ###########################################################################################################
 
 	def create_release_zip(self):
+		m = md5()
 		self.build_lang_files()
 		output_dir=os.path.join(REPO_DIR, self.addon_id)
 		os.makedirs(output_dir, exist_ok=True)
 		with zipfile.ZipFile( os.path.join(output_dir, self.addon_id + '-' + self.version + '.zip'), mode='w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as z:
-			for file in self.get_addon_files(files_only=False, filter=('.po',)):
+			for file in self.get_addon_files(filter=('.po',)):
 				z.write(file)
+				with open(file, 'rb') as f:
+					for data in iter(lambda: f.read(8192), b''):
+						m.update(data)
 
+		self.rhash = m.hexdigest()
 		self.clean_lang_files()
 
 	# ###########################################################################################################
