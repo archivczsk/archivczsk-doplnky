@@ -2,4 +2,6 @@
 <settings>
     <setting label="Login name" type="text" id="username" default=""/>
     <setting label="Login password" type="password" id="password" default=""/>
+    <setting label="Maximum bandwidth of the offered stream" id="max_bitrate" type="keyenum" values="0;Unlimited|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
+    <setting label="Prefered stream type" id="stream_type" type="keyenum" values="HLS;HLS|DASH;MPEG-DASH" default="HLS" />
 </settings>

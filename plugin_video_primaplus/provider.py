@@ -2,11 +2,12 @@
 from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
+from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
+from tools_archivczsk.cache import SimpleAutokeyExpiringCache
 from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman
 from .primaplus import PrimaPlus
 from datetime import datetime, date, timedelta
 import time
-import json
 
 class PrimaPlusContentProvider(CommonContentProvider):
 
@@ -14,11 +15,17 @@ class PrimaPlusContentProvider(CommonContentProvider):
 		CommonContentProvider.__init__(self, 'Prima+', settings=settings, data_dir=data_dir)
 		self.http_endpoint = http_endpoint
 		self.primaplus = None
-		self.login_settings_names = ('username', 'password')
+		self.login_optional_settings_names = ('username', 'password')
+		self.scache = SimpleAutokeyExpiringCache()
 
 	# ##################################################################################################################
 
 	def login(self, silent):
+		if not self.get_setting('username') or not self.get_setting('password'):
+			if not silent:
+				self.show_info(self._("To display the content, you must enter a login name and password in the addon settings"), noexit=True)
+			return False
+
 		self.primaplus = PrimaPlus(self)
 		if self.primaplus.check_access_token() == False:
 			self.primaplus.login()
@@ -338,8 +345,31 @@ class PrimaPlusContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def resolve_streams(self, url, video_title):
-		for one in self.get_hls_streams(url, self.primaplus.req_session):
+	def get_dash_info(self, stream_key):
+		data = self.scache.get(stream_key['key'])
+		drm_info = data['drm_info'] or {}
+
+		ret_data = {
+			'url': data['url'],
+			'bandwidth': stream_key['bandwidth'],
+		}
+
+		if drm_info.get('licence_url') and drm_info.get('licence_key'):
+			ret_data.update({
+				'drm' : {
+					'licence_url': drm_info['licence_url'],
+					'headers': {
+						'X-AxDRM-Message': drm_info['licence_key']
+					}
+				}
+			})
+
+		return ret_data
+
+	# ##################################################################################################################
+
+	def resolve_hls_streams(self, url, video_title):
+		for one in self.get_hls_streams(url, self.primaplus.req_session, max_bitrate=self.get_setting('max_bitrate')):
 			key = {
 				'url': url,
 				'bandwidth': one['bandwidth']
@@ -350,19 +380,40 @@ class PrimaPlusContentProvider(CommonContentProvider):
 				'quality': one.get('resolution', 'x???').split('x')[1] + 'p'
 			}
 			self.add_play(video_title, stream_key_to_hls_url(self.http_endpoint, key), info_labels=info_labels)
+			break # store only first best available stream to playlist
+
+	# ##################################################################################################################
+
+	def resolve_dash_streams(self, url, video_title, drm_info):
+		data = {
+			'url': url,
+			'drm_info': drm_info
+		}
+
+		cache_key = self.scache.put(data)
+		for one in self.get_dash_streams(url, self.primaplus.req_session, max_bitrate=self.get_setting('max_bitrate')):
+			key = {
+				'key': cache_key,
+				'bandwidth': one['bandwidth']
+			}
+
+			info_labels = {
+				'bandwidth': one['bandwidth'],
+				'quality': one.get('height', '???') + 'p'
+			}
+			self.add_play(video_title, stream_key_to_dash_url(self.http_endpoint, key), info_labels=info_labels)
+			break # store only first best available stream to playlist
 
 	# ##################################################################################################################
 
 	def play_stream(self, play_id, play_title):
-		url = self.primaplus.get_stream_url(play_id)
+		prefered_stream_type  = self.get_setting('stream_type')
+		all_streams = sorted(self.primaplus.get_streams(play_id), key=lambda x: x['lang'] == 'cs', reverse=True)
 
-		if not url:
-			raise AddonErrorException(self._("No playable stream found for this item"))
-
-		if url.endswith('.m3u8'):
-			self.resolve_streams(url, play_title)
-		else:
-			# TODO: Dorobit preprocessing pre MPD
-			self.add_play(play_title, url)
+		for s in filter(lambda x: x['type'] == prefered_stream_type, all_streams) or all_streams:
+			if s['type'] == 'HLS':
+				self.resolve_hls_streams(s['url'], '[%s] %s'% (s['lang'].upper(), play_title))
+			elif s['type'] == 'DASH':
+				self.resolve_dash_streams(s['url'], '[%s] %s'% (s['lang'].upper(), play_title), s.get('drm_info'))
 
 	# ##################################################################################################################

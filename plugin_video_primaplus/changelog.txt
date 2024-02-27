@@ -1,3 +1,8 @@
+1.2 - 27.02.2024
+- pridanie možnosti pre voľbu audio stopy stlačením tlačida HORE/DOLE počas prehrávania
+- pridanie podpory pre MPEG-DASH streamy
+- experimentálna podpora pre streamy chránené DRM ochranou
+
 1.1 - 14.02.2024
 - oprava prehrávania HLS streamov s oddelenou video a zvukovou stopou
 

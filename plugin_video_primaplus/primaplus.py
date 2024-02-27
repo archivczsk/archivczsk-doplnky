@@ -1,20 +1,17 @@
 # -*- coding: utf-8 -*-
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
 from tools_archivczsk.debug.http import dump_json_request
-import requests
-import json
 import re
 import time
 from datetime import datetime, timedelta
 
 try:
-    from urllib.parse import parse_qs, urlparse
+	from urllib.parse import parse_qs, urlparse
 except ImportError:
-    from urlparse import parse_qs, urlparse
+	from urlparse import parse_qs, urlparse
 
 
 COMMON_HEADERS = {
-	'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 OPR/105.0.0.0',
 	'Origin': 'https://www.iprima.cz/',
 	'Referer': 'https://www.iprima.cz/',
 }
@@ -408,29 +405,38 @@ class PrimaPlus(object):
 
 	# ##################################################################################################################
 
-	def get_stream_url(self, play_id):
+	def get_streams(self, play_id):
 		data = self.call_api('https://api.play-backend.iprima.cz/api/v1/products/id-%s/play' % str(play_id))
 		if len(data.get('streamInfos',[])) == 0:
 			raise AddonErrorException(self.cp._("No stream informations returned from server"))
 
-		url_hls = None
-		url_dash = None
+		ret = []
 		for stream in data['streamInfos']:
 			if 'url' not in stream:
 				continue
 
-			if stream.get('drmProtectionType', 'NONE') not in ('NONE', 'AES'):
+			if stream.get('type', 'NONE') not in ('HLS', 'DASH'):
 				continue
 
-			#TODO: Parsovat jazyk streamu priamo z JSONu a nie z URL, resp. dorobit moznost volby jazyka
-			if stream.get('type') == 'HLS':
-				if url_hls == None or '/cze-' in stream['url']:
-					url_hls = stream['url']
-			elif stream.get('type') == 'DASH':
-				if url_dash == None or '/cze-' in stream['url']:
-					url_dash = stream['url']
+			if stream['type'] == 'HLS' and stream.get('drmProtectionType', 'NONE') not in ('NONE', 'AES'):
+				continue
 
-		return url_hls or url_dash
+			drm_info = None
+			for drminfo in stream.get('drmInfo',{}).get('modularDrmInfos',[]):
+				if drminfo['keySystem'] == 'com.widevine.alpha':
+					drm_info = {
+						'licence_url': drminfo['licenseServerUrl'],
+						'licence_key': drminfo['token']
+					}
+
+			ret.append({
+				'type': stream['type'],
+				'url': stream['url'],
+				'lang': stream['lang']['key'],
+				'drm_info': drm_info
+			})
+
+		return ret
 
 	# ##################################################################################################################
 

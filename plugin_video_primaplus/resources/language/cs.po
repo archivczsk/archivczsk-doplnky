@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_primaplus\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-12 21:16+0100\n"
-"PO-Revision-Date: 2024-02-12 20:26+0100\n"
+"POT-Creation-Date: 2024-02-27 14:34+0100\n"
+"PO-Revision-Date: 2024-02-27 14:37+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -16,209 +16,209 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_primaplus/provider.py:23
+#: plugin_video_primaplus/provider.py:26
+msgid "To display the content, you must enter a login name and password in the addon settings"
+msgstr "Pro zobrazení obsahu je nutné zadat přihlašovací jméno a heslo v nastaveních doplňku"
+
+#: plugin_video_primaplus/provider.py:33
 msgid "Monday"
 msgstr "Pondelí"
 
-#: plugin_video_primaplus/provider.py:23
+#: plugin_video_primaplus/provider.py:33
 msgid "Tuesday"
 msgstr "Úterý"
 
-#: plugin_video_primaplus/provider.py:23
+#: plugin_video_primaplus/provider.py:33
 msgid "Wednesday"
 msgstr "Středa"
 
-#: plugin_video_primaplus/provider.py:23
+#: plugin_video_primaplus/provider.py:33
 msgid "Thursday"
 msgstr "Čtvrtek"
 
-#: plugin_video_primaplus/provider.py:23
+#: plugin_video_primaplus/provider.py:33
 msgid "Friday"
 msgstr "Pátek"
 
-#: plugin_video_primaplus/provider.py:23
+#: plugin_video_primaplus/provider.py:33
 msgid "Saturday"
 msgstr "Sobota"
 
-#: plugin_video_primaplus/provider.py:23
+#: plugin_video_primaplus/provider.py:33
 msgid "Sunday"
 msgstr "Neděle"
 
-#: plugin_video_primaplus/provider.py:32
+#: plugin_video_primaplus/provider.py:42
 msgid "Movies"
 msgstr "Filmy"
 
-#: plugin_video_primaplus/provider.py:33
+#: plugin_video_primaplus/provider.py:43
 msgid "Series"
 msgstr "Seriály"
 
-#: plugin_video_primaplus/provider.py:34
+#: plugin_video_primaplus/provider.py:44
 msgid "Kids"
 msgstr "Dětské"
 
-#: plugin_video_primaplus/provider.py:35
+#: plugin_video_primaplus/provider.py:45
 msgid "New releases"
 msgstr "Novinky"
 
-#: plugin_video_primaplus/provider.py:36
+#: plugin_video_primaplus/provider.py:46
 msgid "My"
 msgstr "Moje"
 
-#: plugin_video_primaplus/provider.py:37
+#: plugin_video_primaplus/provider.py:47
 msgid "Genres"
 msgstr "Žánry"
 
-#: plugin_video_primaplus/provider.py:38
+#: plugin_video_primaplus/provider.py:48
 msgid "Live"
 msgstr "Živě"
 
-#: plugin_video_primaplus/provider.py:39
+#: plugin_video_primaplus/provider.py:49
 msgid "Archive"
 msgstr "Archiv"
 
-#: plugin_video_primaplus/provider.py:40
+#: plugin_video_primaplus/provider.py:50
 msgid "Informations and settings"
 msgstr "Informace a nastavení"
 
-#: plugin_video_primaplus/provider.py:45
+#: plugin_video_primaplus/provider.py:55
 msgid "Profiles"
 msgstr "Profily"
 
-#: plugin_video_primaplus/provider.py:46
+#: plugin_video_primaplus/provider.py:56
 msgid "Devices"
 msgstr "Zařízení"
 
-#: plugin_video_primaplus/provider.py:47
+#: plugin_video_primaplus/provider.py:57
 msgid "Account informations"
 msgstr "Informace o účtu"
 
-#: plugin_video_primaplus/provider.py:55
+#: plugin_video_primaplus/provider.py:65
 msgid "Customer"
 msgstr "Zákazník"
 
-#: plugin_video_primaplus/provider.py:56
+#: plugin_video_primaplus/provider.py:66
 msgid "Name"
 msgstr "Jméno"
 
-#: plugin_video_primaplus/provider.py:58
+#: plugin_video_primaplus/provider.py:68
 msgid "Address"
 msgstr "Adresa"
 
-#: plugin_video_primaplus/provider.py:59
+#: plugin_video_primaplus/provider.py:69
 msgid "E-Mail"
 msgstr "E-Mail"
 
-#: plugin_video_primaplus/provider.py:60 plugin_video_primaplus/provider.py:104
+#: plugin_video_primaplus/provider.py:70 plugin_video_primaplus/provider.py:114
 msgid "Year of birth"
 msgstr "Rok narození"
 
-#: plugin_video_primaplus/provider.py:61
+#: plugin_video_primaplus/provider.py:71
 msgid "Customer key"
 msgstr "Zákaznický klíč"
 
-#: plugin_video_primaplus/provider.py:63
+#: plugin_video_primaplus/provider.py:73
 msgid "Active subscription"
 msgstr "Aktivní předplatné"
 
-#: plugin_video_primaplus/provider.py:64
+#: plugin_video_primaplus/provider.py:74
 msgid "Paid"
 msgstr "Placené"
 
-#: plugin_video_primaplus/provider.py:64
+#: plugin_video_primaplus/provider.py:74
 msgid "Yes"
 msgstr "Ano"
 
-#: plugin_video_primaplus/provider.py:64
+#: plugin_video_primaplus/provider.py:74
 msgid "No"
 msgstr "Ne"
 
-#: plugin_video_primaplus/provider.py:66
+#: plugin_video_primaplus/provider.py:76
 msgid "Valid from"
 msgstr "Platné od"
 
-#: plugin_video_primaplus/provider.py:68
+#: plugin_video_primaplus/provider.py:78
 msgid "Valid until"
 msgstr "Platné do"
 
-#: plugin_video_primaplus/provider.py:78
+#: plugin_video_primaplus/provider.py:88
 msgid "Registered at"
 msgstr "Registrováno"
 
-#: plugin_video_primaplus/provider.py:81
+#: plugin_video_primaplus/provider.py:91
 msgid "Last change"
 msgstr "Poslední změna"
 
-#: plugin_video_primaplus/provider.py:94
+#: plugin_video_primaplus/provider.py:104
 msgid "Do you realy want to delete this device?"
 msgstr "Opravdu chcete smazat toto zařízení?"
 
-#: plugin_video_primaplus/provider.py:103
+#: plugin_video_primaplus/provider.py:113
 msgid "Created at"
 msgstr "Vytvořeno"
 
-#: plugin_video_primaplus/provider.py:106
+#: plugin_video_primaplus/provider.py:116
 msgid "Main profile"
 msgstr "Hlavní profil"
 
-#: plugin_video_primaplus/provider.py:108
+#: plugin_video_primaplus/provider.py:118
 msgid "Kids profile"
 msgstr "Dětský profil"
 
-#: plugin_video_primaplus/provider.py:123
+#: plugin_video_primaplus/provider.py:133
 msgid "Do you realy want to switch profile?"
 msgstr "Opravdu chcete přepnut profil?"
 
-#: plugin_video_primaplus/provider.py:171
+#: plugin_video_primaplus/provider.py:181
 msgid "Remove from my list"
 msgstr "Odstranit z mého seznamu"
 
-#: plugin_video_primaplus/provider.py:173
+#: plugin_video_primaplus/provider.py:183
 msgid "Add to my list"
 msgstr "Přidat na můj seznam"
 
-#: plugin_video_primaplus/provider.py:211
+#: plugin_video_primaplus/provider.py:221
 msgid "Order by alphabet"
 msgstr "Seřadit podle abecedy"
 
-#: plugin_video_primaplus/provider.py:267
+#: plugin_video_primaplus/provider.py:277
 msgid "Today"
 msgstr "Dnes"
 
-#: plugin_video_primaplus/provider.py:269
+#: plugin_video_primaplus/provider.py:279
 msgid "Yesterday"
 msgstr "Včera"
 
-#: plugin_video_primaplus/provider.py:344
-msgid "No playable stream found for this item"
-msgstr "Pro tuto položku nebyl nalezen žádný přehratelný stream"
-
-#: plugin_video_primaplus/primaplus.py:100
+#: plugin_video_primaplus/primaplus.py:97
 msgid "Unexpected return code from Prima RPC server"
 msgstr "Neočekávaný návratový kód z Prima RPC serveru"
 
-#: plugin_video_primaplus/primaplus.py:105
+#: plugin_video_primaplus/primaplus.py:102
 msgid "Error by calling Prima RPC API"
 msgstr "Chyba při volání Prima RPC API"
 
-#: plugin_video_primaplus/primaplus.py:144
-#: plugin_video_primaplus/primaplus.py:188
-#: plugin_video_primaplus/primaplus.py:205
+#: plugin_video_primaplus/primaplus.py:141
+#: plugin_video_primaplus/primaplus.py:185
+#: plugin_video_primaplus/primaplus.py:202
 msgid "Unexpected return code from server"
 msgstr "Neočekávaný návratový kód ze serveru"
 
-#: plugin_video_primaplus/primaplus.py:179
+#: plugin_video_primaplus/primaplus.py:176
 msgid "Failed to get csrf token needed for login"
 msgstr "Nepodařilo se získat csrf token potřebný pro přihlášení"
 
-#: plugin_video_primaplus/primaplus.py:192
+#: plugin_video_primaplus/primaplus.py:189
 msgid "Failed to get auth code. Probably wrong login name/password combination."
 msgstr "Nepodařilo se získat autorizační kód. Pravdepodobně špatná kombinace přihlašovasího jména/hesla."
 
-#: plugin_video_primaplus/primaplus.py:232
+#: plugin_video_primaplus/primaplus.py:229
 msgid "Access token not found in response data from server"
 msgstr "V odpovědi ze serveru nebyl nalezen přístupový token"
 
-#: plugin_video_primaplus/primaplus.py:414
+#: plugin_video_primaplus/primaplus.py:411
 msgid "No stream informations returned from server"
 msgstr "Nepodařilo se získat informace o streamech ze serveru"
 
@@ -227,3 +227,36 @@ msgstr "Přihlašovací jméno"
 
 msgid "Login password"
 msgstr "Přihlašovací heslo"
+
+msgid "Maximum bandwidth of the offered stream"
+msgstr "Maximální datový tok nabízeného streamu"
+
+msgid "Unlimited"
+msgstr "Bez omezení"
+
+msgid "8 Mbit/s"
+msgstr ""
+
+msgid "6 Mbit/s"
+msgstr ""
+
+msgid "4 Mbit/s"
+msgstr ""
+
+msgid "3 Mbit/s"
+msgstr ""
+
+msgid "2 Mbit/s"
+msgstr ""
+
+msgid "Prefered stream type"
+msgstr "Preferovaný typ streamu"
+
+msgid "HLS"
+msgstr ""
+
+msgid "MPEG-DASH"
+msgstr ""
+
+#~ msgid "No playable stream found for this item"
+#~ msgstr "Pro tuto položku nebyl nalezen žádný přehratelný stream"
