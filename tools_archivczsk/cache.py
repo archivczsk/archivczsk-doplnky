@@ -3,9 +3,14 @@
 """ LRU caching class and decorator """
 from abc import abstractmethod
 from abc import ABCMeta
+try:
+	# monotonic is available from ArchivCZSK version 2.6.0
+	from Plugins.Extensions.archivCZSK.engine.tools.monotonic import monotonic
+except:
+	# fallback for older versions
+	from time import time as monotonic
 
 import threading
-import time
 import uuid
 
 _MARKER = object()
@@ -228,7 +233,7 @@ class ExpiringLRUCache(Cache):
 		except KeyError:
 			self.misses += 1
 			return default
-		if expires > time.time():
+		if expires > monotonic():
 			# cache entry still valid
 			self.hits += 1
 			self.clock_refs[pos] = True
@@ -261,7 +266,7 @@ class ExpiringLRUCache(Cache):
 				# We already have key. Only make sure data is up to date and
 				# to remember that it was used.
 				pos = entry[0]
-				data[key] = (pos, val, time.time() + timeout)
+				data[key] = (pos, val, monotonic() + timeout)
 				clock_refs[pos] = True
 				return
 			# else: key is not yet in cache. Search place to insert it.
@@ -292,7 +297,7 @@ class ExpiringLRUCache(Cache):
 						self.evictions += 1
 					clock_keys[hand] = key
 					clock_refs[hand] = True
-					data[key] = (hand, val, time.time() + timeout)
+					data[key] = (hand, val, monotonic() + timeout)
 					hand += 1
 					if hand > maxpos:
 						hand = 0
@@ -405,7 +410,7 @@ class CacheMaker(object):
 
 	def lrucache(self, name=None, maxsize=None):
 		"""Named arguments:
-		
+
 		- name (optional) is a string, and should be unique amongst all caches
 
 		- maxsize (optional) is an int, overriding any default value set by
@@ -432,7 +437,7 @@ class CacheMaker(object):
 
 	def clear(self, *names):
 		"""Clear the given cache(s).
-		
+
 		If no 'names' are passed, clear all caches.
 		"""
 		if len(names) == 0:
@@ -440,3 +445,36 @@ class CacheMaker(object):
 
 		for name in names:
 			self._cache[name].clear()
+
+class SimpleAutokeyExpiringCache(object):
+	def __init__(self, expire_time=60):
+		self.expire_time = expire_time
+		self.scache_key = 1
+		self.scache = {}
+
+	def get(self, key):
+		data = self.scache.get(key)
+		if data:
+			data['last_used'] = int(monotonic())
+
+		return data['data']
+
+	def put(self, data):
+		cur_time = int(monotonic())
+		key = str(self.scache_key)
+		self.scache_key += 1
+
+		krem = []
+		for k,v in self.scache.items():
+			if (cur_time - v['last_used']) > self.expire_time:
+				krem.append(k)
+
+		for k in krem:
+			del self.scache[k]
+
+		self.scache[key] = {
+			'last_used': cur_time,
+			'data': data
+		}
+
+		return key
