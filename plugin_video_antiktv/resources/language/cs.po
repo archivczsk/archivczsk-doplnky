@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_antiktv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-22 10:59+0200\n"
-"PO-Revision-Date: 2023-05-10 10:47+0200\n"
+"POT-Creation-Date: 2024-02-27 19:57+0100\n"
+"PO-Revision-Date: 2024-02-27 19:58+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -20,60 +20,64 @@ msgstr ""
 msgid "Others"
 msgstr "Ostaní"
 
-#: plugin_video_antiktv/atk_client.py:409
+#: plugin_video_antiktv/atk_client.py:427
+msgid "Wrong login name"
+msgstr "Chybné přihlašovací jméno"
+
+#: plugin_video_antiktv/atk_client.py:429
 msgid "Wrong communication data received from server"
 msgstr "Nesprávné komunikační data přijatá ze serveru"
 
-#: plugin_video_antiktv/atk_client.py:446
+#: plugin_video_antiktv/atk_client.py:462
 msgid "Request to remote server failed"
 msgstr "Požadavek na vzdálený server selhal"
 
-#: plugin_video_antiktv/atk_client.py:448
+#: plugin_video_antiktv/atk_client.py:464
 msgid "Login failed"
 msgstr "Přihlášení selhalo"
 
-#: plugin_video_antiktv/atk_client.py:450
+#: plugin_video_antiktv/atk_client.py:466
 msgid "Request is blocked by firewall"
 msgstr "Požadavek blokován firewallem"
 
-#: plugin_video_antiktv/atk_client.py:458
+#: plugin_video_antiktv/atk_client.py:474
 msgid "Unexpected return code from server"
 msgstr "Neočekávaný návratový kód ze serveru"
 
-#: plugin_video_antiktv/atk_client.py:508
+#: plugin_video_antiktv/atk_client.py:521
 msgid "Wrong login data provided or account doesn't exists."
 msgstr "Nesprávné přihlašovací údaje nebo konto neexistuje."
 
-#: plugin_video_antiktv/atk_client.py:513
+#: plugin_video_antiktv/atk_client.py:526
 msgid "Account is not yet activated. You need to activate it using instructions in SMS or E-mail entered by registration."
 msgstr "Konto není aktivováno. Musíte ho aktivovat podle instrukcí v SMS nebo E-mailu zadaném při registraci."
 
-#: plugin_video_antiktv/atk_client.py:515
+#: plugin_video_antiktv/atk_client.py:528
 #, python-brace-format
 msgid "You have reached the limit of maximum registered devices. Go to {my_antik}, section Devices and removed unused one."
 msgstr "Dosáhli jste limit maximálního počtu registrovaných zařízení. Choďte na {my_antik}, sekce Zařízení a vymažte nějaké nepotřebné."
 
-#: plugin_video_antiktv/atk_client.py:517
+#: plugin_video_antiktv/atk_client.py:530
 msgid "Account is marked as inactive."
 msgstr "Konto je označeno jako neaktivní."
 
-#: plugin_video_antiktv/atk_client.py:519
+#: plugin_video_antiktv/atk_client.py:532
 msgid "Unsupported login response code received from server"
 msgstr "Ze serveru byla přijata nepodporovaná odpověď na login požadavek"
 
-#: plugin_video_antiktv/atk_client.py:531
+#: plugin_video_antiktv/atk_client.py:544
 msgid "No username or password provided"
 msgstr "Přihlašovací jméno a heslo není zadané"
 
-#: plugin_video_antiktv/atk_client.py:636
+#: plugin_video_antiktv/atk_client.py:646
 msgid "Unknown channel type"
 msgstr "Neznámy typ kanálů"
 
-#: plugin_video_antiktv/atk_client.py:704
+#: plugin_video_antiktv/atk_client.py:723
 msgid "Failed to get stream URL"
 msgstr "Nepodařilo se získat URL streamu"
 
-#: plugin_video_antiktv/atk_client.py:709
+#: plugin_video_antiktv/atk_client.py:728
 msgid "Not available stream found for this channel"
 msgstr "Pro tento kanál není dostupný žádný stream"
 
@@ -110,118 +114,81 @@ msgstr "Kamery z Košic a ostatních míst Slovenska"
 msgid "All"
 msgstr "Všechny"
 
-#: plugin_video_antiktv/provider.py:82 plugin_video_antiktv/provider.py:249
-msgid "Please enter parental control pin"
-msgstr "Prosím zadejte rodičovský pin"
-
-#: plugin_video_antiktv/provider.py:86 plugin_video_antiktv/provider.py:253
-#: plugin_video_antiktv/provider.py:324
-msgid "Entered pin code is incorrect"
-msgstr "Zadaný pin kód je nesprávný"
-
-#: plugin_video_antiktv/provider.py:110
+#: plugin_video_antiktv/provider.py:109
 msgid "By channels"
 msgstr "Podle kanálů"
 
-#: plugin_video_antiktv/provider.py:111
+#: plugin_video_antiktv/provider.py:110
 msgid "By genres"
 msgstr "Podle žánrů"
 
-#: plugin_video_antiktv/provider.py:281
+#: plugin_video_antiktv/provider.py:274
 msgid "Informations and settings"
 msgstr "Informace a nastavení"
 
-#: plugin_video_antiktv/provider.py:296
+#: plugin_video_antiktv/provider.py:289
 msgid "User account"
 msgstr "Poživatelské konto"
 
-#: plugin_video_antiktv/provider.py:297
+#: plugin_video_antiktv/provider.py:290
 msgid "Purchased packages"
 msgstr "Zakoupené balíky"
 
-#: plugin_video_antiktv/provider.py:298
+#: plugin_video_antiktv/provider.py:291
 msgid "Refresh channel list"
 msgstr "Obnovit seznam kanálů"
 
-#: plugin_video_antiktv/provider.py:299
+#: plugin_video_antiktv/provider.py:292
 msgid "Request device identification code"
 msgstr "Vyžádat identifikaci tohoto zařízení"
 
-#: plugin_video_antiktv/provider.py:300
-msgid "Parental control PIN"
-msgstr "Rodičovský PIN"
-
-#: plugin_video_antiktv/provider.py:300
-msgid "Default PIN is 0000. Please change it to your own value."
-msgstr "Předvolený PIN je 0000. Prosím změňte ho na svojí vlastní hodnotu."
-
-#: plugin_video_antiktv/provider.py:301
+#: plugin_video_antiktv/provider.py:293
 msgid "Logout from this device"
 msgstr "Odhlásit z tohoto zařízení"
 
-#: plugin_video_antiktv/provider.py:308
+#: plugin_video_antiktv/provider.py:300
 msgid "Channel list was updated"
 msgstr "Seznam kanálů byl aktualizován"
 
-#: plugin_video_antiktv/provider.py:314
+#: plugin_video_antiktv/provider.py:306
 #, python-brace-format
 msgid "Device identification code is: {did}"
 msgstr "Identifikační kód tohoto zařízení je: {did}"
 
-#: plugin_video_antiktv/provider.py:319
-msgid "Please enter current parental control pin"
-msgstr "Prosím zadejte aktuální rodičovský pin"
-
-#: plugin_video_antiktv/provider.py:327
-msgid "Please enter new parental control pin"
-msgstr "Prosím zadejte nový rodičovský pin"
-
-#: plugin_video_antiktv/provider.py:331
-msgid "Please repeat new parental control pin"
-msgstr "Prosím zopakujte nový rodičovský pin"
-
-#: plugin_video_antiktv/provider.py:336
-msgid "Parental control pins differs"
-msgstr "Rodičovské pin kódy se liší"
-
-#: plugin_video_antiktv/provider.py:342
-msgid "Parental control pin successfuly changed"
-msgstr "Rodičovský pin byl úspěšně změněn"
-
-#: plugin_video_antiktv/provider.py:360
+#: plugin_video_antiktv/provider.py:324
 #, python-brace-format
 msgid "To order more packages go to {antik_site}"
 msgstr "Pro objednávku dalších balíku choďte na {antik_site}"
 
-#: plugin_video_antiktv/provider.py:367
+#: plugin_video_antiktv/provider.py:331
 msgid "Do you really want to logout from this device?"
 msgstr "Opravdu se chcete odhlásit z tohoto zařízení?"
 
-#: plugin_video_antiktv/provider.py:375
+#: plugin_video_antiktv/provider.py:339
 msgid "You have been logged out from this device"
 msgstr "Byli jste odhlášen z tohoto zařízení"
 
-#: plugin_video_antiktv/provider.py:383
+#: plugin_video_antiktv/provider.py:347
 msgid "Customer"
 msgstr "Zákazník"
 
-#: plugin_video_antiktv/provider.py:384
+#: plugin_video_antiktv/provider.py:348
 msgid "Name"
 msgstr "Jméno"
 
-#: plugin_video_antiktv/provider.py:385
+#: plugin_video_antiktv/provider.py:349
 msgid "E-Mail"
 msgstr "E-Mail"
 
-#: plugin_video_antiktv/provider.py:386
+#: plugin_video_antiktv/provider.py:350
 msgid "Customer key"
 msgstr "Zákaznický klíč"
 
-#: plugin_video_antiktv/provider.py:388
+#: plugin_video_antiktv/provider.py:352
 msgid "This device identification"
 msgstr "Identifikace tohoto zařízení"
 
-#: plugin_video_antiktv/provider.py:391
+#: plugin_video_antiktv/provider.py:355
 msgid "Provider name"
 msgstr "Jméno poskytovatele"
 
@@ -258,9 +225,6 @@ msgstr "Povolit programy pro dospělé"
 msgid "Allow informations and settings in main menu"
 msgstr "Povolit informace a nastavení v hlavním menu"
 
-msgid "pin"
-msgstr ""
-
 msgid "Userbouquet"
 msgstr "Userbouquet"
 
@@ -296,6 +260,33 @@ msgstr ""
 
 msgid "DVB (OE>=2.5)"
 msgstr ""
+
+#~ msgid "Please enter parental control pin"
+#~ msgstr "Prosím zadejte rodičovský pin"
+
+#~ msgid "Entered pin code is incorrect"
+#~ msgstr "Zadaný pin kód je nesprávný"
+
+#~ msgid "Parental control PIN"
+#~ msgstr "Rodičovský PIN"
+
+#~ msgid "Default PIN is 0000. Please change it to your own value."
+#~ msgstr "Předvolený PIN je 0000. Prosím změňte ho na svojí vlastní hodnotu."
+
+#~ msgid "Please enter current parental control pin"
+#~ msgstr "Prosím zadejte aktuální rodičovský pin"
+
+#~ msgid "Please enter new parental control pin"
+#~ msgstr "Prosím zadejte nový rodičovský pin"
+
+#~ msgid "Please repeat new parental control pin"
+#~ msgstr "Prosím zopakujte nový rodičovský pin"
+
+#~ msgid "Parental control pins differs"
+#~ msgstr "Rodičovské pin kódy se liší"
+
+#~ msgid "Parental control pin successfuly changed"
+#~ msgstr "Rodičovský pin byl úspěšně změněn"
 
 #~ msgid "Device ID"
 #~ msgstr "ID zařízení"

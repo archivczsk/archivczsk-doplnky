@@ -69,10 +69,10 @@ class AntikTVModuleLiveTV(CPModuleLiveTV):
 				'adult': channel['adult']
 			}
 
-			if not channel["adult"] or self.cp.get_parental_settings('show_posters'):
-				img = channel.get("snapshot") or channel.get("logo").replace('.png', '_608x608.png').replace('&w=50', '&w=608')
-			else:
+			if channel["adult"] and self.cp.get_parental_settings('unlocked') == False:
 				img = channel.get("logo").replace('.png', '_608x608.png').replace('&w=50', '&w=608')
+			else:
+				img = channel.get("snapshot") or channel.get("logo").replace('.png', '_608x608.png').replace('&w=50', '&w=608')
 
 			self.cp.add_video(channel["name"] + epg_str, img, info_labels=info_labels, download=False, cmd=self.resolve_play_url, channel_title=channel['name'], channel_id=channel['id'], epg_title=title)
 
@@ -169,7 +169,12 @@ class AntikTVModuleArchive(CPModuleArchive):
 					'duration': epg['duration'],
 					'adult': channel['adult']
 				}
-				img = epg.get('image') if not channel['adult'] or self.cp.get_parental_settings('show_posters') else None
+
+				if channel['adult'] and self.cp.get_parental_settings('unlocked') == False:
+					img = None
+				else:
+					img = epg.get('image')
+
 				self.cp.add_video(title, img, info_labels, cmd=self.get_archive_url, epg_title=str(epg["title"]), channel_id=channel['id_content'], epg_start=epg_start, epg_stop=epg_stop)
 
 	# #################################################################################################
