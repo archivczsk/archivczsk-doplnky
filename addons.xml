@@ -39,5 +39,5 @@
 <addon id="tools.archivczsk" name="Addons base" version="1.20" hash="b6ef6b0e72bbf09484821616e3894fb1" rhash="b6ef6b0e72bbf09484821616e3894fb1" />
 <addon id="tools.xbmc" name="xbmc addons helper" version="1.2" hash="024b71e73a91c082946f129af1764585" rhash="024b71e73a91c082946f129af1764585" />
 <addon id="tools.cenc" name="Content encryption support" version="1.1" hash="100f3acbb7d178d098a2ffd708770279" rhash="100f3acbb7d178d098a2ffd708770279" />
-<addon id="plugin.video.voyo" name="VOYO" version="1.0" hash="4f6244bbb156fc9c1c772536b019316a" rhash="bcbff71803f8902acd55ddf413b058f5" />
+<addon id="plugin.video.voyo" name="VOYO" version="1.1" hash="5116a32b5af62a4d1e623739d6b1a0d8" rhash="e3182b741610712c5b23ab0b751bcb80" />
 </addons>
