@@ -1,3 +1,6 @@
+1.20 - 29.02.2024
+    - fixed crash when WvDecrypt is not available
+
 1.19 - 27.02.2024
     - improved DASH processing and DASH stream info extractor
     - rewrite HTTP handlers for HLS and DASH and make them possible to use both at the time

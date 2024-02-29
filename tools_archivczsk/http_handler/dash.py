@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-
 from .template import HTTPRequestHandlerTemplate
-import base64
-import json
 
 import xml.etree.ElementTree as ET
 
@@ -11,7 +8,7 @@ try:
 except:
 	from urllib.parse import urljoin
 
-from tools_cenc.wvl3.wvdecryptcustom import WvDecrypt
+from tools_cenc.wvdecrypt import WvDecrypt
 from tools_cenc.mp4decrypt import mp4decrypt
 
 # #################################################################################################

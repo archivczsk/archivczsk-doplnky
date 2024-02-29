@@ -1,2 +1,5 @@
+1.1 - 29.02.2024
+- added dummy wrapper to WvDecrypt
+
 1.0 - 24.02.2024
 - initial version
