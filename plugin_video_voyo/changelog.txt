@@ -1,3 +1,6 @@
+1.1 - 29.02.2024
+    - oprevená chyba pri prihlásení
+
 1.0 - 27.02.2024
     - prvá verzia
     - podporované prihlásenie cez voyo a SK telekom účet

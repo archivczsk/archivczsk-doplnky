@@ -266,7 +266,7 @@ class Voyo(object):
 
 		try:
 			if self.login_data['login_type'] == 'voyo':
-				self.login_voyo()
+				resp = self.login_voyo()
 
 			elif self.login_data['login_type'] == 'telekom':
 				resp = self.login_telekom()
@@ -285,7 +285,6 @@ class Voyo(object):
 			# this call always fails, but is realy needed ...
 			self.call_api('app-init', params={'reason': 'user-changed'}, auto_refresh_token=False, ignore_error=True)
 
-			time.sleep(1)
 			resp = self.call_api('users/info', auto_refresh_token=False, ignore_error=True)
 
 			if 'user' in resp:
