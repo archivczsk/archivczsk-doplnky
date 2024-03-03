@@ -1,0 +1,50 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_prehrajto\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-03-05 14:23+0100\n"
+"PO-Revision-Date: 2024-03-04 20:27+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: sk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: plugin_video_prehrajto/provider.py:36
+msgid "Login to premium account failed. Continuing with free account."
+msgstr "Prihlásenie k premium kontu zlyhalo. Pokračujem s free kontom."
+
+#: plugin_video_prehrajto/provider.py:44
+#, python-brace-format
+msgid ""
+"In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\n"
+"python{0}-beautifulsoup4 or python{0}-bs4)"
+msgstr ""
+"K fungovaniu doplnku si musíte pomocou svojho správcu balíkov doinštalovať BeautifulSoup4. Hľadajte balík se menom:\n"
+"python{0}-beautifulsoup4 alebo python{0}-bs4"
+
+#: plugin_video_prehrajto/provider.py:74
+msgid "Available subtitles"
+msgstr "Dostupné titulky"
+
+#: plugin_video_prehrajto/prehrajto.py:43
+msgid "Unexpected return code from server"
+msgstr "Neočakávaný návratový kód zo servera"
+
+msgid "Login name"
+msgstr "Prihlasovacie meno"
+
+msgid "Login password"
+msgstr "Prihlasovacie heslo"
+
+msgid "Max watched items"
+msgstr "Maximálny počet videných položiek"
+
+msgid "Enable subtitles support"
+msgstr "Povoliť podporu pre titulky"
