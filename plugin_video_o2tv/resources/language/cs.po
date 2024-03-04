@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_archivo2tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-22 15:10+0100\n"
-"PO-Revision-Date: 2023-11-22 15:14+0100\n"
+"POT-Creation-Date: 2024-03-04 20:17+0100\n"
+"PO-Revision-Date: 2024-03-04 20:14+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -16,150 +16,146 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_o2tv/o2tv.py:162
+#: plugin_video_o2tv/o2tv.py:170
 msgid "Unexpected return code from server"
 msgstr "Neočekávaný návratový kód ze serveru"
 
-#: plugin_video_o2tv/o2tv.py:183
+#: plugin_video_o2tv/o2tv.py:192
 msgid "Failed to get login session"
 msgstr "Nepodařilo se vytvořit přihlašovací sezení"
 
-#: plugin_video_o2tv/o2tv.py:198
+#: plugin_video_o2tv/o2tv.py:207
 msgid "Login to O2 TV 2.0 failed. Have you been already migrated?"
 msgstr "Přihlášení do O2 TV 2.0 selhalo. Bylo už vaše konto přemigrováno?"
 
-#: plugin_video_o2tv/o2tv.py:721
+#: plugin_video_o2tv/o2tv.py:714
 msgid "Unsupported stream type"
 msgstr "Nepodporovaný typ streamu"
 
-#: plugin_video_o2tv/provider.py:25
+#: plugin_video_o2tv/provider.py:26
 msgid "All channels"
 msgstr "Všechny kanály"
 
-#: plugin_video_o2tv/provider.py:26
+#: plugin_video_o2tv/provider.py:27
 msgid "Favourites"
 msgstr "Favoritní"
 
-#: plugin_video_o2tv/provider.py:78
+#: plugin_video_o2tv/provider.py:84
 msgid "Remove from favourites"
 msgstr "Odstranit z favoritních"
 
-#: plugin_video_o2tv/provider.py:80
+#: plugin_video_o2tv/provider.py:86
 msgid "Add to favourites"
 msgstr "Přidat do favoritních"
 
-#: plugin_video_o2tv/provider.py:88 plugin_video_o2tv/provider.py:194
-msgid "Please enter parental control pin"
-msgstr "Prosím zadejte rodičovský pin"
-
-#: plugin_video_o2tv/provider.py:92 plugin_video_o2tv/provider.py:198
-msgid "Entered pin code is incorrect"
-msgstr "Zadaný pin kód je nesprávný"
-
-#: plugin_video_o2tv/provider.py:123
+#: plugin_video_o2tv/provider.py:121
 msgid "Added to favourites"
 msgstr "Přidáno do favoritních"
 
-#: plugin_video_o2tv/provider.py:125
+#: plugin_video_o2tv/provider.py:123
 msgid "Channel is already in favourites"
 msgstr "Kanál už je ve favoritních"
 
-#: plugin_video_o2tv/provider.py:180 plugin_video_o2tv/provider.py:328
-#: plugin_video_o2tv/provider.py:565
+#: plugin_video_o2tv/provider.py:179 plugin_video_o2tv/provider.py:320
+#: plugin_video_o2tv/provider.py:545
 msgid "Record the event"
 msgstr "Nahrát pořad"
 
-#: plugin_video_o2tv/provider.py:225
+#: plugin_video_o2tv/provider.py:217
 msgid "Recordings"
 msgstr "Nahrávky"
 
-#: plugin_video_o2tv/provider.py:225
+#: plugin_video_o2tv/provider.py:217
 msgid "Here you will find recordings of your programs"
 msgstr "Tu najdete nahrávky vašich programů"
 
-#: plugin_video_o2tv/provider.py:230
+#: plugin_video_o2tv/provider.py:222
 msgid "Plan recording"
 msgstr "Naplánovat nahrávání"
 
-#: plugin_video_o2tv/provider.py:231
+#: plugin_video_o2tv/provider.py:223
 msgid "Futures - planed"
 msgstr "Budoucí - plánováne"
 
-#: plugin_video_o2tv/provider.py:232
+#: plugin_video_o2tv/provider.py:224
 msgid "Existing"
 msgstr "Existujíci"
 
-#: plugin_video_o2tv/provider.py:258
+#: plugin_video_o2tv/provider.py:250
 msgid "Available until"
 msgstr "Dostupné do"
 
-#: plugin_video_o2tv/provider.py:268
+#: plugin_video_o2tv/provider.py:260
 msgid "Delete recording"
 msgstr "Smazat nahrávku"
 
-#: plugin_video_o2tv/provider.py:337
+#: plugin_video_o2tv/provider.py:329
 msgid "Special section"
 msgstr "Speciální sekce"
 
-#: plugin_video_o2tv/provider.py:348
+#: plugin_video_o2tv/provider.py:340
 msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
 msgstr "Tu si můžete zobrazit a případně vymazat/odregistrovat zbytečná zařízení, aby jste se mohli znova jinde přihlásit."
 
-#: plugin_video_o2tv/provider.py:349
+#: plugin_video_o2tv/provider.py:341
 msgid "Registered devices"
 msgstr "Zaregistrovaná zařízení"
 
-#: plugin_video_o2tv/provider.py:351
+#: plugin_video_o2tv/provider.py:343
 msgid "Here you can see the list of available services for this account and optionally change active one."
 msgstr "Tady můžete vidět seznam dostupných služeb pro tohle konto a případně změnit aktivní službu."
 
-#: plugin_video_o2tv/provider.py:352
+#: plugin_video_o2tv/provider.py:344
 msgid "Available services"
 msgstr "Dostupné služby"
 
-#: plugin_video_o2tv/provider.py:354
+#: plugin_video_o2tv/provider.py:346
 msgid "This will force login reset. New device identificator will be created and used for login."
 msgstr "Tohle vynutí reset přihlášení. Bude vygenerován nový identifikátor zařízení, který bude použit pro přihlášení."
 
-#: plugin_video_o2tv/provider.py:355
+#: plugin_video_o2tv/provider.py:347
 msgid "Reset login"
 msgstr "Resetovat přihlášení"
 
-#: plugin_video_o2tv/provider.py:362
+#: plugin_video_o2tv/provider.py:359
 msgid "In menu you can remove device using Remove device!"
 msgstr "V menu můžete zařízení vymazat pomocí Smazat zařízení!"
 
-#: plugin_video_o2tv/provider.py:365
+#: plugin_video_o2tv/provider.py:362
 msgid "Remove device!"
 msgstr "Smazat zařízení!"
 
-#: plugin_video_o2tv/provider.py:374
+#: plugin_video_o2tv/provider.py:371
 #, python-brace-format
 msgid "Device {device} was removed!"
 msgstr "Zařízení {device} bylo vymazáno!"
 
-#: plugin_video_o2tv/provider.py:376
+#: plugin_video_o2tv/provider.py:373
 #, python-brace-format
 msgid "Failed to remove device {device}!"
 msgstr "Nepodařilo se odstranit zařízení {device}!"
 
-#: plugin_video_o2tv/provider.py:391
+#: plugin_video_o2tv/provider.py:388
 msgid "In menu you can activate service using \"Make activate\""
 msgstr "V menu můžete aktivovat službu pomocí \"Aktivovat\""
 
-#: plugin_video_o2tv/provider.py:392
+#: plugin_video_o2tv/provider.py:389
 msgid "Make active"
 msgstr "Aktivovat"
 
-#: plugin_video_o2tv/provider.py:400
+#: plugin_video_o2tv/provider.py:397
 #, python-brace-format
 msgid "Service {service} was activated!"
 msgstr "Služba {service} byla aktivovaná!"
 
-#: plugin_video_o2tv/provider.py:411
+#: plugin_video_o2tv/provider.py:408
 #, python-brace-format
 msgid "New login session using device ID {device_id} was created!"
 msgstr "Bylo vytvořeno nové přihlašovací sezení pomocí identifikace {device_id}!"
+
+#: plugin_video_o2tv/provider.py:410
+msgid "Failed to create new login session!"
+msgstr "Nepodařilo se vytvořit novou přihlašovací session!"
 
 #: plugin_video_o2tv/provider.py:429
 msgid "Mo"
@@ -189,15 +185,15 @@ msgstr "So"
 msgid "Su"
 msgstr "Ne"
 
-#: plugin_video_o2tv/provider.py:438
+#: plugin_video_o2tv/provider.py:434
 msgid "Search"
 msgstr "Vyhledat"
 
-#: plugin_video_o2tv/provider.py:541
+#: plugin_video_o2tv/provider.py:521
 msgid "Recording added"
 msgstr "Nahrávka přidána"
 
-#: plugin_video_o2tv/provider.py:541
+#: plugin_video_o2tv/provider.py:521
 msgid "There was an error by adding recording"
 msgstr "Při přidávaní nahrávky nastala chyba"
 
@@ -206,9 +202,6 @@ msgstr "Přihlašovací jméno"
 
 msgid "Login password"
 msgstr "Přihlašovací heslo"
-
-msgid "Device ID"
-msgstr "ID zařízení"
 
 msgid "Maximum bandwidth of the offered stream"
 msgstr "Maximální datový tok nabízeného streamu"
@@ -242,9 +235,6 @@ msgstr "Povolit speciální sekci v hlavním menu"
 
 msgid "Allow downloading of live broadcasting"
 msgstr "Povolit stahování u živého vysílání"
-
-msgid "Use preprocessing for MPEG-DASH streams"
-msgstr "Použit předzpracování MPEG-DASH streamů"
 
 msgid "Userbouquet"
 msgstr "Userbouquet"
@@ -281,6 +271,18 @@ msgstr ""
 
 msgid "DVB (OE>=2.5)"
 msgstr ""
+
+#~ msgid "Use preprocessing for MPEG-DASH streams"
+#~ msgstr "Použit předzpracování MPEG-DASH streamů"
+
+#~ msgid "Please enter parental control pin"
+#~ msgstr "Prosím zadejte rodičovský pin"
+
+#~ msgid "Entered pin code is incorrect"
+#~ msgstr "Zadaný pin kód je nesprávný"
+
+#~ msgid "Device ID"
+#~ msgstr "ID zařízení"
 
 #~ msgid "Play from beginning"
 #~ msgstr "Přehrát od začátku"

@@ -19,7 +19,6 @@ class O2TVBouquetGenerator(BouquetGenerator):
 
 
 class O2TVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
-
 	def __init__(self, content_provider, http_endpoint, user_agent):
 		self.prefix = NAME_PREFIX
 		self.name = NAME
@@ -27,7 +26,7 @@ class O2TVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 		self.tid = SERVICEREF_TID
 		self.onid = SERVICEREF_ONID
 		self.namespace = SERVICEREF_NAMESPACE
-		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=('username', 'password', 'deviceid'), user_agent=user_agent)
+		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=('username', 'password'), user_agent=user_agent)
 		self.bouquet_generator = O2TVBouquetGenerator
 
 	def logged_in(self):

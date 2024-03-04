@@ -1,3 +1,9 @@
+1.6 - 04.03.2024
+    - prechod na MPEG-DASH handler z tools_archivczsk
+    - pridanie možnosti zvoliť kvalitu streamu
+    - zjednodušenie kódu
+    - opravy chýb
+
 1.5 - 27.01.2024
     - priadnie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
 

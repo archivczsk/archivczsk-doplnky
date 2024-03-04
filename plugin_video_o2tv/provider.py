@@ -3,11 +3,12 @@
 import os
 from datetime import datetime
 import time
-import random
 from hashlib import md5
 
 from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPModuleLiveTV, CPModuleArchive, CPModuleTemplate, CPModuleSearch
 from tools_archivczsk.string_utils import _I, _C, _B
+from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
+from tools_archivczsk.cache import SimpleAutokeyExpiringCache
 from .o2tv import O2TV
 from .bouquet import O2TVBouquetXmlEpgGenerator
 import base64
@@ -89,7 +90,6 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 	# #################################################################################################
 
 	def get_livetv_stream(self, channel_title, channel_key, channel_id):
-		enable_download = self.cp.get_setting('download_live')
 		epg_data = self.cp.o2tv.get_current_epg([channel_id])
 
 		mi_set = False
@@ -97,14 +97,15 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 
 		if mosaic_id:
 			# this is mosaic event - extract mosaic streams and add it to playlist
+			playlist = self.cp.add_playlist(channel_title)
 			for mi in self.cp.o2tv.get_mosaic_info(mosaic_id, True).get('mosaic_info', []):
-				url = self.cp.o2tv.get_proxy_live_link(mi['id'])
-				self.cp.add_play(mi['title'], url, download=enable_download)
+				url = self.cp.o2tv.get_live_link(mi['id'])
+				self.cp.resolve_dash_streams(url, mi['id'], playlist=playlist)
 				mi_set = True
 
 		if mi_set == False:
-			url = self.cp.o2tv.get_proxy_live_link(channel_key)
-			self.cp.add_play(channel_title, url, download=enable_download)
+			url = self.cp.o2tv.get_live_link(channel_key)
+			self.cp.resolve_dash_streams(url, channel_title)
 
 			# Not working because of bugs in exteplayer3
 #			url = self.cp.o2tv.get_proxy_startover_link(channel_key)
@@ -189,12 +190,13 @@ class O2TVModuleArchive(CPModuleArchive):
 
 	def get_archive_stream(self, epg_title, epg_id, mosaic_info):
 		if len(mosaic_info) > 0:
+			playlist = self.cp.add_playlist(epg_title)
 			for mi in mosaic_info:
-				url = self.cp.o2tv.get_proxy_archive_link(mi['id'])
-				self.cp.add_play(mi['title'], url)
+				url = self.cp.o2tv.get_archive_link(mi['id'])
+				self.cp.resolve_dash_streams(url, mi['title'], playlist=playlist)
 		else:
-			url = self.cp.o2tv.get_proxy_archive_link(epg_id)
-			self.cp.add_play(epg_title, url)
+			url = self.cp.o2tv.get_archive_link(epg_id)
+			self.cp.resolve_dash_streams(url, epg_title)
 
 	# #################################################################################################
 
@@ -265,8 +267,8 @@ class O2TVModuleRecordings(CPModuleTemplate):
 	# #################################################################################################
 
 	def play_recording(self, rec_title, rec_id):
-		url = self.cp.o2tv.get_proxy_recording_link(rec_id)
-		self.cp.add_play(rec_title, url)
+		url = self.cp.o2tv.get_recording_link(rec_id)
+		self.cp.resolve_dash_streams(url, rec_title)
 
 	# #################################################################################################
 
@@ -342,7 +344,7 @@ class O2TVModuleExtra(CPModuleTemplate):
 		self.cp.add_dir(self._('Available services'), info_labels=info_labels, cmd=self.list_services)
 
 		info_labels = {'plot': self._("This will force login reset. New device identificator will be created and used for login.") }
-		self.cp.add_dir(self._('Reset login'), info_labels=info_labels, cmd=self.reset_login)
+		self.cp.add_video(self._('Reset login'), info_labels=info_labels, cmd=self.reset_login)
 
 	# #################################################################################################
 
@@ -366,9 +368,9 @@ class O2TVModuleExtra(CPModuleTemplate):
 		ret = self.cp.o2tv.device_remove(device_id)
 
 		if ret:
-			self.cp.add_video(_C('red', self._('Device {device} was removed!').format(device=device_id)), download=False)
+			self.cp.show_info(self._('Device {device} was removed!').format(device=device_id))
 		else:
-			self.cp.add_video(_C('red', self._('Failed to remove device {device}!').format(device=device_id)), download=False)
+			self.cp.show_info(self._('Failed to remove device {device}!').format(device=device_id))
 
 	# #################################################################################################
 
@@ -399,11 +401,13 @@ class O2TVModuleExtra(CPModuleTemplate):
 	# #################################################################################################
 
 	def reset_login(self):
-		device_id = O2TV.create_device_id()
-		self.cp.set_setting('deviceid', device_id)
+		self.cp.o2tv.reset_login_data()
 		self.cp.login(silent=True)
 		self.cp.load_channel_list()
-		self.cp.add_video(_C('red', self._('New login session using device ID {device_id} was created!').format(device_id=device_id)), download=False)
+		if self.cp.o2tv:
+			self.cp.show_info(self._('New login session using device ID {device_id} was created!').format(device_id=self.cp.o2tv.deviceid))
+		else:
+			self.cp.show_error(self._('Failed to create new login session!'))
 
 # #################################################################################################
 
@@ -412,7 +416,7 @@ class O2TVContentProvider(ModuleContentProvider):
 		ModuleContentProvider.__init__(self, name='O2 TV 2.0', settings=settings, data_dir=data_dir, bgservice=bgservice)
 
 		# list of settings used for login - used to auto call login when they change
-		self.login_settings_names = ('username', 'password', 'deviceid')
+		self.login_settings_names = ('username', 'password')
 
 		self.o2tv = None
 		self.channels = []
@@ -421,13 +425,10 @@ class O2TVContentProvider(ModuleContentProvider):
 		self.checksum = None
 		self.http_endpoint = http_endpoint
 		self.favourites = None
+		self.scache = SimpleAutokeyExpiringCache()
 		self.day_name_short = (self._("Mo"), self._("Tu"), self._("We"), self._("Th"), self._("Fr"), self._("Sa"), self._("Su"))
 
-		if not self.get_setting('deviceid'):
-			self.set_setting('deviceid', O2TV.create_device_id())
-
 		self.bxeg = O2TVBouquetXmlEpgGenerator(self, http_endpoint, None)
-		self.pin_entered = False
 
 		self.modules = [
 			CPModuleSearch(self, self._('Search')),
@@ -446,18 +447,12 @@ class O2TVContentProvider(ModuleContentProvider):
 		self.channels = []
 		self.channels_by_key = {}
 
-		o2tv = O2TV(self, self.get_setting('username'), self.get_setting('password'), self.get_setting('deviceid'))
+		o2tv = O2TV(self)
 		o2tv.refresh_configuration()
 
 		self.o2tv = o2tv
 
 		return True
-
-	# #################################################################################################
-
-	def root(self):
-		self.pin_entered = False
-		ModuleContentProvider.root(self)
 
 	# #################################################################################################
 
@@ -553,7 +548,41 @@ class O2TVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def get_archive_stream(self, epg_title, epg_id):
-		url = self.o2tv.get_proxy_archive_link(epg_id)
-		self.add_play(epg_title, url)
+		url = self.o2tv.get_archive_link(epg_id)
+		self.resolve_dash_streams(url, epg_title)
 
 	# #################################################################################################
+
+	def get_dash_info(self, stream_key):
+		if 'url' in stream_key:
+			# needed for playlive handler
+			return stream_key
+
+		url = self.scache.get(stream_key['key'])
+
+		return {
+			'url': url,
+			'bandwidth': stream_key['bandwidth'],
+		}
+
+	# ##################################################################################################################
+
+	def resolve_dash_streams(self, url, video_title, playlist=None):
+		cache_key = self.scache.put(url)
+		for one in self.get_dash_streams(url, self.o2tv.req_session, max_bitrate=self.get_setting('max_bitrate')):
+			key = {
+				'key': cache_key,
+				'bandwidth': one['bandwidth'],
+			}
+
+			info_labels = {
+				'bandwidth': one['bandwidth'],
+				'quality': one.get('height', '???') + 'p'
+			}
+			if playlist:
+				playlist.add_play(video_title, stream_key_to_dash_url(self.http_endpoint, key), info_labels=info_labels)
+				break
+			else:
+				self.add_play(video_title, stream_key_to_dash_url(self.http_endpoint, key), info_labels=info_labels)
+
+	# ##################################################################################################################

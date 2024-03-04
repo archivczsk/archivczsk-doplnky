@@ -2,13 +2,11 @@
 <settings>
 	<setting label="Login name" type="text" id="username" default=""/>
 	<setting label="Login password" type="password" id="password" default=""/>
-	<setting label="Device ID" type="text" id="deviceid" default="" visible="false"/>
 	<setting label="Maximum bandwidth of the offered stream" id="max_bitrate" type="keyenum" values="0;Unlimited|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
 	<setting label="Enable adult channels" id="enable_adult" type="bool" default="true" />
 	<setting label="Number of search history items" type="number" id="keep-searches" default="20"/>
 	<setting label="Enable special section in main menu" id="enable_extra" type="bool" default="false" />
 	<setting label="Allow downloading of live broadcasting" id="download_live" type="bool" default="false" />
-	<setting label="Use preprocessing for MPEG-DASH streams" id="preprocess_mpd" type="bool" default="true" />
 	<category label="Userbouquet">
 		<setting label="Automatically export channel list as userbouquet" id="enable_userbouquet" type="bool" default="false" />
 		<setting label="Generate XML EPG for epgimport plugin (if installed)" id="enable_xmlepg" type="bool" default="false" />

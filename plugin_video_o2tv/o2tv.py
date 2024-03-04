@@ -18,14 +18,12 @@ CLIENT_TAG = '9.40.0-PC'
 API_VERSION = '5.4.0'
 PARTNER_ID = 3201
 
-class O2TV:
-	def __init__(self, cp, username, password, deviceid):
+class O2TV(object):
+	def __init__(self, cp):
 		self.cp = cp
-		self.username = username
-		self.password = password
-		self.deviceid = deviceid
 		self._ = cp._
 		self.base_api_url = 'https://%d.frp1.ott.kaltura.com' % PARTNER_ID
+		self.deviceid = None
 		self.session_data = {}
 		self.services = []
 		self.active_service = None
@@ -37,42 +35,41 @@ class O2TV:
 	# #################################################################################################
 
 	def load_login_data(self):
-		try:
-			# load access token
-			if os.path.exists(self.cp.data_dir + '/login2.json'):
-				with open(self.cp.data_dir + '/login2.json', "r") as f:
-					login_data = json.load(f)
+		login_data = self.cp.load_cached_data('login2')
+		self.deviceid = login_data.get('device_id', self.create_device_id())
 
-					if self.get_chsum() == login_data.get('checksum'):
-						self.session_data = login_data['session_data']
-						self.services = login_data.get('services', [])
-						self.active_service = login_data.get('active_service')
-						self.cp.log_info("Login data loaded from cache")
-					else:
-						self.session_data = {}
-						self.cp.log_info("Not using cached login data - wrong checksum")
-		except:
+		if self.get_chsum() == login_data.get('checksum'):
+			self.session_data = login_data.get('session_data',{})
+			self.services = login_data.get('services', [])
+			self.active_service = login_data.get('active_service')
+			self.cp.log_info("Login data loaded from cache")
+		else:
 			self.session_data = {}
-			self.cp.log_exception()
+			self.cp.log_info("Not using cached login data - wrong checksum")
 
 	# #################################################################################################
 
 	def save_login_data(self):
-		try:
-			if self.session_data:
-				# save access token
-				with open(self.cp.data_dir + '/login2.json', "w") as f:
-					data = {
-						'session_data': self.session_data,
-						'services': self.services,
-						'active_service': self.active_service,
-						'checksum': self.get_chsum()
-					}
-					json.dump( data, f )
-			else:
-				os.remove(self.cp.data_dir + '/login2.json')
-		except:
-			self.cp.log_exception()
+		# save access token
+		data = {
+			'device_id': self.deviceid
+		}
+
+		if self.session_data:
+			data.update({
+				'session_data': self.session_data,
+				'services': self.services,
+				'active_service': self.active_service,
+				'checksum': self.get_chsum()
+			})
+		self.cp.save_cached_data('login2', data)
+
+	# #################################################################################################
+
+	def reset_login_data(self):
+		self.deviceid = self.create_device_id()
+		self.session_data = {}
+		self.save_login_data()
 
 	# #################################################################################################
 
@@ -84,11 +81,7 @@ class O2TV:
 	# #################################################################################################
 
 	def get_chsum(self):
-		if not self.username or not self.password or len(self.username) == 0 or len( self.password) == 0:
-			return None
-
-		data = "{}|{}|{}".format(self.password, self.username, self.deviceid)
-		return md5( data.encode('utf-8') ).hexdigest()
+		return self.cp.get_settings_checksum(('username', 'password',), self.deviceid)
 
 	# #################################################################################################
 
@@ -105,6 +98,12 @@ class O2TV:
 	# #################################################################################################
 
 	def call_o2_api(self, url, data=None, params=None, header=None, recover_ks=True):
+		def is_auth_error(json_response):
+			try:
+				return json_response.get('result', {}).get('error', {}).get('code') == '500016'
+			except:
+				return False
+
 		if recover_ks:
 			self.refresh_configuration()
 
@@ -156,7 +155,7 @@ class O2TV:
 					json_response = {}
 
 				# check for 'ks expired' error and recover if possible
-				if recover_ks and '/api_v3/' in url and json_response.get('result', {}).get('error', {}).get('code') == '500016':
+				if recover_ks and '/api_v3/' in url and is_auth_error(json_response):
 					self.refresh_configuration(True)
 
 					# fill new ks in request data
@@ -197,8 +196,8 @@ class O2TV:
 
 		# login to O2
 		post = {
-			'username' : self.username,
-			'password' : self.password,
+			'username' : self.cp.get_setting('username'),
+			'password' : self.cp.get_setting('password'),
 			'udid' : self.deviceid,
 			'service' : 'https://www.new-o2tv.cz/'
 		}
