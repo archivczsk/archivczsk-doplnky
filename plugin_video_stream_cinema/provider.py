@@ -14,15 +14,14 @@ from tools_archivczsk.cache import lru_cache
 from .kraska import Kraska, KraskaLoginFail, KraskaResolveException
 from .sc_api import SC_API
 from .watched import SCWatched
-from .prehrajto import PrehrajTo
 
 ######################
 
 try:
 	from urlparse import urlparse, urlunparse, parse_qsl
-	from urllib import quote, urlencode
+	from urllib import urlencode
 except:
-	from urllib.parse import quote, urlparse, urlunparse, urlencode, parse_qsl
+	from urllib.parse import urlparse, urlunparse, urlencode, parse_qsl
 
 # #################################################################################################
 
@@ -60,7 +59,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 	def __init__(self, settings=None, data_dir=None):
 		CommonContentProvider.__init__(self, 'stream-cinema', settings=settings, data_dir=data_dir)
-		self.login_optional_settings_names = ('kruser', 'krpass', 'ptouser', 'ptopass')
+		self.login_optional_settings_names = ('kruser', 'krpass')
 		self.tapi = trakttv
 
 		if not self.get_setting('deviceid'):
@@ -70,7 +69,6 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 		self.api = SC_API(self)
 		self.kraska = Kraska(self)
-		self.prehrajto = PrehrajTo(self)
 
 	# ##################################################################################################################
 
@@ -93,7 +91,6 @@ class StreamCinemaContentProvider(CommonContentProvider):
 	def login(self, silent):
 		self.build_lang_lists()
 		self.kraska_update_vipdays()
-		self.prehrajto.login()
 
 		if self.kraska_update_vipdays() <= 0:
 			# no username/password provided or vip expired - continue with free account
@@ -552,15 +549,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 	# #################################################################################################
 
 	def prehrajto_search(self, keyword):
-		for item in self.prehrajto.search(keyword):
-			self.add_video(item['title'] + _I(' [' + item['size'] + ']'), item['img'], cmd=self.prehrajto_resolve, video_title=item['title'], video_id=item['id'])
-
-	# #################################################################################################
-
-	def prehrajto_resolve(self, video_title, video_id):
-		video_url, subs_url = self.prehrajto.resolve_video(video_id)
-		if video_url:
-			self.add_play(video_title, video_url, subs=subs_url)
+		self.call_another_addon('plugin.video.prehrajto', keyword)
 
 	# #################################################################################################
 

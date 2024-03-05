@@ -14,8 +14,6 @@
 		<setting label="Login name (kra.sk)" id="kruser" type="text" default="" />
 		<setting label="Login password (kra.sk)" id="krpass" type="password" default="" />
 		<setting label="VIP days remaining (kra.sk)" id="krvipdays" type="number" default="0" />
-		<setting label="Login name (prehraj.to)" id="ptouser" type="text" default="" />
-		<setting label="Login password (prehraj.to)" id="ptopass" type="password" default="" />
 		<setting label="Use primary prehraj.to search" id="prehrajto-primary" type="bool" default="false" />
 	</category>
 	<category label="Filters">

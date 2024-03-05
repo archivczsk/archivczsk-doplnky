@@ -11,11 +11,7 @@ class Csfd(object):
 
 	def __init__(self, content_provider):
 		self.cp = content_provider
-
 		self.req_session = self.cp.get_requests_session()
-		self.req_session.headers.update({
-			'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0'
-		})
 
 	def call_csfd_api(self, endpoint, params=None, tv_cookies=False):
 		timeout = int(self.cp.get_setting('loading_timeout'))

@@ -1,3 +1,6 @@
+2024-03-05 3.11
+    - nahradenie interného klienta prehraj.to za priame volanie nového prehraj.to doplnku
+
 2024-01-27 3.10
     - priadnie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
 

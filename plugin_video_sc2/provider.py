@@ -11,7 +11,6 @@ from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman, strip_accent
 from tools_archivczsk.cache import lru_cache
 from bisect import bisect
 from .webshare import Webshare, WebshareLoginFail, ResolveException
-from .prehrajto import PrehrajTo
 from .scc_api import SCC_API
 from .watched import SCWatched
 from .lang_lists import lang_code_to_lang
@@ -31,7 +30,7 @@ class SccContentProvider(CommonContentProvider):
 
 	def __init__(self, settings=None, data_dir=None):
 		CommonContentProvider.__init__(self, 'SCC', settings=settings, data_dir=data_dir)
-		self.login_optional_settings_names = ('wsuser', 'wspass', 'ptouser', 'ptopass')
+		self.login_optional_settings_names = ('wsuser', 'wspass')
 		self.tapi = trakttv
 		self.webshare = None
 		self.scc = None
@@ -45,7 +44,6 @@ class SccContentProvider(CommonContentProvider):
 		# init SCC Api - will be good to cache its settings and reinit it when some of them change
 		self.api = SCC_API(self)
 		self.csfd = Csfd(self)
-		self.prehrajto = PrehrajTo(self)
 		self.webshare = Webshare(self)
 
 	# ##################################################################################################################
@@ -65,8 +63,6 @@ class SccContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def login(self, silent):
-		self.prehrajto.login()
-
 		if self.webshare_update_vipdays() <= 0:
 			# no username/password provided or vip expired - continue with free account
 			if self.get_setting('wsuser') and self.get_setting('wspass'):
@@ -999,22 +995,11 @@ class SccContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def prehrajto_search(self, keyword):
-		for item in self.prehrajto.search(keyword):
-			self.add_video(item['title'] + _I(' [' + item['size'] + ']'), item['img'], cmd=self.prehrajto_resolve, video_title=item['title'], video_id=item['id'])
-
-	# ##################################################################################################################
-
-	def prehrajto_resolve(self, video_title, video_id):
-		video_url, subs_url = self.prehrajto.resolve_video(video_id)
-		if video_url:
-			self.add_play(video_title, video_url, subs=subs_url)
+		self.call_another_addon('plugin.video.prehrajto', keyword)
 
 	# ##################################################################################################################
 
 	def search(self, keyword, search_id=''):
-		if search_id == 'prehrajto':
-			return self.prehrajto_search(keyword)
-
 		if search_id is not None and search_id.endswith('-all'):
 			search_id = search_id.replace('-all', '-*')
 
