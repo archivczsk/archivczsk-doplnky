@@ -5,6 +5,7 @@
 	</requires>
 	<extension point="archivczsk.addon.video"/>
 	<extension point="archivczsk.addon.metadata">
+		<broken>Tento doplnok nie je viac funkčný a jeho vývoj skončil.</broken>
 		<description>Plugin to play video archive from fameplay.tv (former mall.tv)</description>
 		<description lang="cs">Plugin pro přehrávání videí z fameplay.tv (původní mall.tv)</description>
 	</extension>
