@@ -689,3 +689,10 @@ class CommonContentProvider(object):
 			return s.get(name)
 		else:
 			return s
+
+	def call_another_addon(self, addon_id, search_keyword=None, search_id=None):
+		'''
+		Calls another video addon identified by addon_id. If search_keyword is provided, then search interface will be called. If search_keyword is empty,
+		then run interface will be called (provider's root() method)
+		'''
+		return False

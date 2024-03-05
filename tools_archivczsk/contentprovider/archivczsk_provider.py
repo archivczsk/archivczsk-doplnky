@@ -105,13 +105,14 @@ class ArchivCZSKContentProvider(object):
 	This is a interface, that "glues" archivczsk with provider based on CommmonContentProvider
 	"""
 
+	__playlist = []
+
 	def __init__(self, provider, addon):
 		self.provider = provider
 		self.addon = addon
 		self.addon_id = addon.id
 		self.session = None
 		self.searches = SearchProvider(addon, self.provider.name)
-		self.__playlist = []
 		self.login_refresh_running = False
 
 		# set/overwrite interface methods for provider
@@ -139,6 +140,7 @@ class ArchivCZSKContentProvider(object):
 		self.provider.get_addon_version = lambda: addon.version
 		self.provider.get_engine_version = lambda: archivczsk_version
 		self.provider.get_parental_settings = client.parental_pin.get_settings
+		self.provider.call_another_addon = self.call_another_addon
 		self.initialised_cbk_called = False
 		self.login_tries = 0
 
@@ -289,15 +291,15 @@ class ArchivCZSKContentProvider(object):
 
 	def __process_playlist(self):
 		# check if there are som playable items in playlist
-		if len( self.__playlist ) == 1:
+		if len( ArchivCZSKContentProvider.__playlist ) == 1:
 			# only one item - create one normal video item
-			client.add_item(self.create_play_item(**self.__playlist[0]))
-		elif len( self.__playlist ) > 1:
+			client.add_item(self.create_play_item(**ArchivCZSKContentProvider.__playlist[0]))
+		elif len( ArchivCZSKContentProvider.__playlist ) > 1:
 			# we have more streams - create playlist and play the first one
-			playlist = client.add_playlist(self.__playlist[0]['title'], variant=True)
+			playlist = client.add_playlist(ArchivCZSKContentProvider.__playlist[0]['title'], variant=True)
 
 			i = 1
-			for pl_item in self.__playlist:
+			for pl_item in ArchivCZSKContentProvider.__playlist:
 				# create nice names for streams
 				prefix = '[%d] ' % i
 
@@ -317,7 +319,7 @@ class ArchivCZSKContentProvider(object):
 				playlist.add(self.create_play_item(**pl_item))
 				i += 1
 
-		self.__playlist = []
+		ArchivCZSKContentProvider.__playlist = []
 
 	# #################################################################################################
 
@@ -576,7 +578,7 @@ class ArchivCZSKContentProvider(object):
 		}
 
 		if playlist_autogen:
-			self.__playlist.append(kwargs)
+			ArchivCZSKContentProvider.__playlist.append(kwargs)
 		else:
 			item = self.create_play_item(**kwargs)
 			client.add_item(item)
@@ -657,5 +659,21 @@ class ArchivCZSKContentProvider(object):
 			return (self.addon.profile_id, self.addon.profile_name)
 
 		return None
+
+	# #################################################################################################
+
+	def call_another_addon(self, addon_id, search_keyword=None, search_id=None):
+		try:
+			addon = ArchivCZSK.get_addon(addon_id)
+			addon.provider.resolve_addon_interface()
+			if search_keyword != None:
+				addon.provider.addon_interface.search(self.session, search_keyword, search_id)
+			else:
+				addon.provider.addon_interface.run(self.session, {})
+
+			return True
+		except:
+			self.log_error('Exception caught:\n%s' % traceback.format_exc())
+			return False
 
 	# #################################################################################################

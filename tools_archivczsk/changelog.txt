@@ -1,3 +1,6 @@
+1.21 - 05.03.2024
+    - added possibility to directly call another addon from current one
+
 1.20 - 29.02.2024
     - fixed crash when WvDecrypt is not available
 
