@@ -1,3 +1,6 @@
+1.2 - 04.03.2024
+- updated mipsel decrypt binary
+
 1.1 - 29.02.2024
 - added dummy wrapper to WvDecrypt
 
