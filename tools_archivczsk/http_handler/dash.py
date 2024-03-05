@@ -103,9 +103,11 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		})
 
 		if len(pssh) > 0:
+			self.cp.log_debug("Enabling DRM proxy handler for url %s with key %s" % (url, key))
 			# drm protectet content - use handler for protectet segments
 			return "/%s/dsp/%s/" % (self.name, key)
 		else:
+			self.cp.log_debug("Enabling proxy handler for url %s with key %s" % (url, key))
 			return "/%s/ds/%s/" % (self.name, key)
 
 	# #################################################################################################
@@ -190,6 +192,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				self.pssh[p] = k
 				if k:
 					keys.extend(k)
+					self.cp.log_debug("Received %d keys for pssh %s" % (len(k), p))
 				else:
 					self.cp.log_error("Failed to get DRM keys for pssh %s" % p)
 			else:
@@ -233,6 +236,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				data = self.process_drm_protected_segment(segment_type, response['content'], cache_data)
 
 				if not data:
+					self.cp.log_error('Failed to decrypt segment for stream key: %s' % url_parts[0])
 					request.setResponseCode(501)
 				else:
 					request.setResponseCode(200)
@@ -267,7 +271,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			if e != None:
 				kid = e.get('{urn:mpeg:cenc:2013}default_KID') or e.get('default_KID')
 				if kid:
-					self.log_devel("Found KID: %s" % kid)
+					self.cp.log_debug("Found KID: %s" % kid)
 					kid_list.append(kid)
 					ret = True
 
@@ -275,7 +279,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			if e == None:
 				e = element.find('./%sContentProtection[@schemeIdUri="urn:uuid:EDEF8BA9-79D6-4ACE-A3C8-27DCD51D21ED"]/{urn:mpeg:cenc:2013}pssh' % ns)
 			if e != None and e.text:
-				self.log_devel("Found PSSH: %s" % e.text)
+				self.cp.log_debug("Found PSSH: %s" % e.text)
 				pssh_list.append(e.text.strip())
 				ret = True
 
