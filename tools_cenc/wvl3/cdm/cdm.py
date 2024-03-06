@@ -10,22 +10,31 @@ from tools_cenc.google.protobuf import text_format
 from .formats import wv_proto4_pb2
 from .session import Session
 from .key import Key
+from .compat import CMAC_AES, Padding
+
 try:
-	from Crypto.Random import get_random_bytes
-	from Crypto.Random import random
-	from Crypto.Cipher import PKCS1_OAEP, AES
-	from Crypto.Hash import CMAC, SHA256, HMAC, SHA1
-	from Crypto.PublicKey import RSA
-	from Crypto.Signature import pss
-	from Crypto.Util import Padding
-except:
 	from Cryptodome.Random import get_random_bytes
 	from Cryptodome.Random import random
 	from Cryptodome.Cipher import PKCS1_OAEP, AES
-	from Cryptodome.Hash import CMAC, SHA256, HMAC, SHA1
+	from Cryptodome.Hash import SHA256, HMAC, SHA1
 	from Cryptodome.PublicKey import RSA
 	from Cryptodome.Signature import pss
-	from Cryptodome.Util import Padding
+except:
+	from Crypto.Random import get_random_bytes
+	from Crypto.Random import random
+	from Crypto.Cipher import PKCS1_OAEP, AES
+	from Crypto.Hash import SHA256, HMAC
+	from Crypto.PublicKey import RSA
+
+	try:
+		from Crypto.Hash import SHA1
+	except:
+		from Crypto.Hash import SHA as SHA1
+
+	try:
+		from Crypto.Signature import pss
+	except:
+		from Crypto.Signature import PKCS1_PSS as pss
 
 import logging
 
@@ -301,24 +310,24 @@ class Cdm:
 		auth_key_3 = b"\x03" + auth_key_base
 		auth_key_4 = b"\x04" + auth_key_base
 
-		cmac_obj = CMAC.new(session.session_key, ciphermod=AES)
+		cmac_obj = CMAC_AES(session.session_key)
 		cmac_obj.update(enc_key)
 
 		enc_cmac_key = cmac_obj.digest()
 
-		cmac_obj = CMAC.new(session.session_key, ciphermod=AES)
+		cmac_obj = CMAC_AES(session.session_key)
 		cmac_obj.update(auth_key_1)
 		auth_cmac_key_1 = cmac_obj.digest()
 
-		cmac_obj = CMAC.new(session.session_key, ciphermod=AES)
+		cmac_obj = CMAC_AES(session.session_key)
 		cmac_obj.update(auth_key_2)
 		auth_cmac_key_2 = cmac_obj.digest()
 
-		cmac_obj = CMAC.new(session.session_key, ciphermod=AES)
+		cmac_obj = CMAC_AES(session.session_key)
 		cmac_obj.update(auth_key_3)
 		auth_cmac_key_3 = cmac_obj.digest()
 
-		cmac_obj = CMAC.new(session.session_key, ciphermod=AES)
+		cmac_obj = CMAC_AES(session.session_key)
 		cmac_obj.update(auth_key_4)
 		auth_cmac_key_4 = cmac_obj.digest()
 
@@ -354,7 +363,7 @@ class Cdm:
 			iv = key.Iv
 			type = wv_proto4_pb2.License.KeyContainer.KeyType.Name(key.Type)
 
-			cipher = AES.new(session.derived_keys['enc'], AES.MODE_CBC, iv=iv)
+			cipher = AES.new(session.derived_keys['enc'], AES.MODE_CBC, iv)
 			decrypted_key = cipher.decrypt(encrypted_key)
 			if type == "OPERATOR_SESSION":
 				permissions = []

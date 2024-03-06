@@ -1,3 +1,6 @@
+1.3 - 06.03.2024
+- added alternative CMAC calculation using pycryptography module (fixes compatibility with VTi)
+
 1.2 - 04.03.2024
 - updated mipsel decrypt binary
 
