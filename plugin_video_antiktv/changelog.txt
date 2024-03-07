@@ -1,3 +1,6 @@
+2.11:
+- dočasná oprava prehrávania archívu
+
 2.10:
 - lepšie ošetrenie chyby pri nesprávnom prihlasovacom mene
 - oprava zobrazenia posterov pri aktivovanej rodičovskej kontrole
