@@ -10,6 +10,7 @@ except:
 
 from tools_cenc.wvdecrypt import WvDecrypt
 from tools_cenc.mp4decrypt import mp4decrypt
+from binascii import crc32
 
 # #################################################################################################
 
@@ -32,13 +33,18 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		self.enable_devel_logs = False
 		self.wvdecrypt = WvDecrypt(enable_logging=self.enable_devel_logs)
 		self.pssh = {}
-		self.segment_counter = 0
 
 	# #################################################################################################
 
 	def log_devel(self, msg):
 		if self.enable_devel_logs:
 			self.cp.log_debug(msg)
+
+	# #################################################################################################
+
+	@staticmethod
+	def calc_cache_key(data):
+		return str(crc32(data.encode('utf-8')))
 
 	# #################################################################################################
 
@@ -55,6 +61,16 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		'''
 		Handles request to MPD playlist. Address is created using stream_key_to_dash_url()
 		'''
+		if path.startswith('%s/dsp/' % self.name):
+			# workaround for buggy internal player in OpenATV 7.3 (doesn't handle properly BaseURL tag)
+			return self.P_dsp(request, path[len(self.name)+5:])
+
+		if path.startswith('%s/ds/' % self.name):
+			# workaround for buggy internal player in OpenATV 7.3 (doesn't handle properly BaseURL tag)
+			return self.P_ds(request, path[len(self.name)+4:])
+
+		self.log_devel("Request for MPD manifest for: %s" % path)
+
 		def dash_continue(data):
 			if data:
 				self.log_devel("Processed MPD:\n%s" % data.decode('utf-8'))
@@ -77,6 +93,8 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			if not isinstance(dash_info, type({})):
 				dash_info = { 'url': dash_info }
 
+			self.log_devel("Dash info: %s" % str(dash_info))
+
 			# resolve and process DASH playlist
 			self.get_dash_playlist_data_async(dash_info['url'], dash_info.get('bandwidth'), dash_info.get('headers'), dash_info.get('drm',{}), cbk=dash_continue)
 			return self.NOT_DONE_YET
@@ -88,27 +106,35 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 	# #################################################################################################
 
-	def dash_proxify_base_url(self, url, pssh=[], drm=None):
+	def dash_proxify_base_url(self, url, pssh=[], drm=None, cache_key=None):
 		'''
 		Redirects segment url to use proxy
 		'''
 		if len(pssh) == 0 and isinstance(drm, type({})) and drm.get('pssh'):
 			pssh = drm['pssh']
 
-		key = self.scache.put({
+		cached_data = {'init':{}}
+		if cache_key:
+			cached_data = self.scache.get(cache_key, cached_data)
+
+		cached_data.update({
 			'url': url,
 			'pssh': pssh,
 			'drm': drm,
-			'init': {}
 		})
 
-		if len(pssh) > 0:
-			self.cp.log_debug("Enabling DRM proxy handler for url %s with key %s" % (url, key))
-			# drm protectet content - use handler for protectet segments
-			return "/%s/dsp/%s/" % (self.name, key)
+		if cache_key == None:
+			cache_key = self.scache.put(cached_data)
 		else:
-			self.cp.log_debug("Enabling proxy handler for url %s with key %s" % (url, key))
-			return "/%s/ds/%s/" % (self.name, key)
+			cache_key = self.scache.put_with_key(cached_data, cache_key)
+
+		if len(pssh) > 0:
+			self.cp.log_debug("Enabling DRM proxy handler for url %s with key %s" % (url, cache_key))
+			# drm protectet content - use handler for protectet segments
+			return "/%s/dsp/%s/" % (self.name, cache_key)
+		else:
+			self.cp.log_debug("Enabling proxy handler for url %s with key %s" % (url, cache_key))
+			return "/%s/ds/%s/" % (self.name, cache_key)
 
 	# #################################################################################################
 
@@ -124,7 +150,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		base_url = cache_data['url']
 
 		# recreate original segment URL
-		# url_parts[0] is segment type - this information is only needed when DRM is active
+		# url_parts[1] is segment type - this information is only needed when DRM is active
 		url = '/'.join(url_parts[2:])
 		url = urljoin(base_url, url.replace('dot-dot-slash', '../'))
 
@@ -255,7 +281,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 	# #################################################################################################
 
-	def handle_mpd_manifest(self, base_url, root, bandwidth, drm=None):
+	def handle_mpd_manifest(self, base_url, root, bandwidth, drm=None, cache_key=None):
 		kid_list = []
 		pssh_list = []
 
@@ -286,15 +312,18 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			return ret
 
 		def path_segment_url(element):
-			for e_segment_template in element.findall('{}SegmentTemplate'.format(ns)):
-				v = e_segment_template.get('initialization')
-				if v:
-					e_segment_template.set('initialization', 'i%d/%s' % (self.segment_counter, v.replace('../', 'dot-dot-slash')))
+			if self.dash_proxy_segments:
+				ck = self.calc_cache_key(element.get('id'))
+				i = 0
+				for e_segment_template in element.findall('{}SegmentTemplate'.format(ns)):
+					v = e_segment_template.get('initialization')
+					if v:
+						e_segment_template.set('initialization', 'i%s%d/%s' % (ck, i, v.replace('../', 'dot-dot-slash')))
 
-				v = e_segment_template.get('media')
-				if v:
-					e_segment_template.set('media', 'm%d/%s' % (self.segment_counter, v.replace('../', 'dot-dot-slash')))
-				self.segment_counter += 1
+					v = e_segment_template.get('media')
+					if v:
+						e_segment_template.set('media', 'm%s%d/%s' % (ck, i, v.replace('../', 'dot-dot-slash')))
+					i += 1
 
 		def remove_content_protection(element):
 			for e in element.findall('{}ContentProtection'.format(ns)):
@@ -360,13 +389,13 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				base_url_set = urljoin(base_url, e_base_url.text)
 
 				if self.dash_proxy_segments:
-					base_url_set = self.dash_proxify_base_url(base_url_set, pssh=list(set(pssh_list)), drm=drm)
+					base_url_set = self.dash_proxify_base_url(base_url_set, pssh=list(set(pssh_list)), drm=drm, cache_key=cache_key)
 
 				e_base_url.text = base_url_set
 			else:
 				# base path not found in MPD, so set it ...
 				if self.dash_proxy_segments:
-					base_url_set = self.dash_proxify_base_url(base_url, pssh=list(set(pssh_list)), drm=drm)
+					base_url_set = self.dash_proxify_base_url(base_url, pssh=list(set(pssh_list)), drm=drm, cache_key=cache_key)
 				else:
 					base_url_set = base_url
 
@@ -392,13 +421,16 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				bandwidth = int(bandwidth)
 
 			redirect_url = response['url']
+			self.log_devel("Playlist URL after redirect: %s" % redirect_url)
+			cache_key = self.calc_cache_key(redirect_url)
+			self.log_devel("Cache key: %s" % cache_key)
 			redirect_url = redirect_url[:redirect_url.rfind('/')] + '/'
 
 			response_data = response['content'].decode('utf-8')
 			self.log_devel("Received MPD:\n%s" % response_data)
 
 			root = ET.fromstring(response_data)
-			self.handle_mpd_manifest(redirect_url, root, bandwidth, drm)
+			self.handle_mpd_manifest(redirect_url, root, bandwidth, drm, cache_key)
 			cbk( ET.tostring(root, encoding='utf8', method='xml'))
 			return
 

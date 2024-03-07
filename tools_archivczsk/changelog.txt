@@ -1,4 +1,7 @@
-1.21 - 05.03.2024
+1.22 - 07.03.2024
+    - many fixes in MPD processor
+
+1.21 - 04.03.2024
     - added possibility to directly call another addon from current one
     - updated debug messages when handling MPD file
 
