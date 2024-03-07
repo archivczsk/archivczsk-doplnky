@@ -242,13 +242,17 @@ class VoyoContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def resolve_dash_streams(self, url, video_title, drm_info):
+		streams = self.get_dash_streams(url, self.voyo.req_session, max_bitrate=self.get_setting('max_bitrate'))
+		if not streams:
+			return
+
 		data = {
-			'url': url,
+			'url': streams[0]['playlist_url'],
 			'drm_info': drm_info
 		}
 
 		cache_key = self.scache.put(data)
-		for one in self.get_dash_streams(url, self.voyo.req_session, max_bitrate=self.get_setting('max_bitrate')):
+		for one in streams:
 			key = {
 				'key': cache_key,
 				'bandwidth': one['bandwidth']
