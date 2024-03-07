@@ -1,3 +1,6 @@
+1.7 - 07.03.2024
+    - oprava zasekávania živého vysielania
+
 1.6 - 04.03.2024
     - prechod na MPEG-DASH handler z tools_archivczsk
     - pridanie možnosti zvoliť kvalitu streamu

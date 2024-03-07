@@ -568,8 +568,12 @@ class O2TVContentProvider(ModuleContentProvider):
 	# ##################################################################################################################
 
 	def resolve_dash_streams(self, url, video_title, playlist=None):
-		cache_key = self.scache.put(url)
-		for one in self.get_dash_streams(url, self.o2tv.req_session, max_bitrate=self.get_setting('max_bitrate')):
+		streams = self.get_dash_streams(url, self.o2tv.req_session, max_bitrate=self.get_setting('max_bitrate'))
+		if not streams:
+			return
+
+		cache_key = self.scache.put(streams[0]['playlist_url'])
+		for one in streams:
 			key = {
 				'key': cache_key,
 				'bandwidth': one['bandwidth'],
