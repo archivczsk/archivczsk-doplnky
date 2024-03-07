@@ -452,17 +452,20 @@ class SimpleAutokeyExpiringCache(object):
 		self.scache_key = 1
 		self.scache = {}
 
-	def get(self, key):
+	def get(self, key, default=None):
 		data = self.scache.get(key)
 		if data:
 			data['last_used'] = int(monotonic())
-
-		return data['data']
+			return data['data']
+		return default
 
 	def put(self, data):
-		cur_time = int(monotonic())
 		key = str(self.scache_key)
 		self.scache_key += 1
+		return self.put_with_key(data, key)
+
+	def put_with_key(self, data, key):
+		cur_time = int(monotonic())
 
 		krem = []
 		for k,v in self.scache.items():
