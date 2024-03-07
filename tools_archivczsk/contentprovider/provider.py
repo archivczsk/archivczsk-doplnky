@@ -383,7 +383,9 @@ class CommonContentProvider(object):
 		streams = []
 
 		for m in re.finditer(r'^#EXT-X-STREAM-INF:(?P<info>.+)\n(?P<chunk>.+)', response.text, re.MULTILINE):
-			stream_info = {}
+			stream_info = {
+				'playlist_url': response.url
+			}
 			for info in re.split(r''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', m.group('info')):
 				key, val = info.split('=', 1)
 				stream_info[key.strip().lower()] = val.strip()
@@ -468,7 +470,9 @@ class CommonContentProvider(object):
 				if e_adaptation_set.get('contentType','') == 'video' or e_adaptation_set.get('mimeType','').startswith('video/'):
 					for e_rep in e_adaptation_set.findall('{}Representation'.format(ns)):
 						if int(e_rep.get('bandwidth', 0)) <= max_bitrate:
-							stream_info = {}
+							stream_info = {
+								'playlist_url': response.url
+							}
 							stream_info.update(e_rep.attrib)
 							add_drm_info(e_rep, stream_info)
 							if drm_info_adaptation.get('kid') and not stream_info.get('kid'):
