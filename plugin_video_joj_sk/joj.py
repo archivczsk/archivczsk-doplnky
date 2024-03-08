@@ -22,7 +22,9 @@
 
 import re
 import random
+import requests
 from xml.etree.ElementTree import fromstring
+from Plugins.Extensions.archivCZSK.engine import client
 
 from tools_xbmc.tools import util
 from tools_xbmc.contentprovider.provider import ContentProvider
@@ -357,15 +359,12 @@ class JojContentProvider(ContentProvider):
 		url = item['url']
 		if url.endswith('live.html'):
 			channel = urlparse(url).netloc.split('.')[0]
-			sou = 'hls'
-			if channel in 'plus':
-				channel = 'jojplus'
+			sou = 'andromeda'
 			if channel == 'joj24':
 				channel = 'joj_news'
-				sou = 'andromeda'
-			channel_quality_map = {'joj': ('360', '540', '720'),
-								   'jojplus': ('360', '540'),
-								   'wau': ('360', '540'),
+			channel_quality_map = {'joj': ('404', '720', '1080'),
+								   'plus': ('404', '720', '1080'),
+								   'wau': ('404', '720', '1080'),
 								   'joj_news': ('404', '720', '1080')
 								   }
 			for quality in channel_quality_map[channel]:
@@ -374,6 +373,18 @@ class JojContentProvider(ContentProvider):
 				item['url'] = 'https://live.cdn.joj.sk/live/' + sou + '/' + channel + '-' + quality + '.m3u8'
 				result.append(item)
 		else:
+			on_joj_play = False
+			try:
+				resp = requests.get(url, timeout=2, verify=False, allow_redirects=False)
+				if resp.status_code > 300 and resp.status_code < 310 and resp.headers['location'].startswith('https://play.joj.sk'):
+					on_joj_play = True
+			except:
+				pass
+
+			if on_joj_play:
+				client.showError('Video je dostupné len v službe JOJ Play ktorú tento doplnok nepodporuje.')
+				return None
+
 			data = util.request(url)
 			vdata = util.substr(data, '<section class="s-section py-0 s-video-detail">', '</section>')
 			# maybe this is video on joj.sk (not on videoportal.joj.sk)?
@@ -403,7 +414,7 @@ class JojContentProvider(ContentProvider):
 			bitrates_str = re.search(r'var src = {(.+?)};', d_player_str, re.DOTALL).group(1)
 			#print('bitrates:', bitrates_str)
 			bitrates_url = re.search(r'"mp4": \[(.+?)\]', bitrates_str, re.DOTALL).group(1)
-			bitrates_url = bitrates_url.replace("'", "").replace('\n', '').replace(' ', '').split(',')
+			bitrates_url = bitrates_url.replace("'", "").replace('"', "").replace('\n', '').replace(' ', '').split(',')
 			for idx, url in enumerate(bitrates_url):
 				item = self.video_item()
 				item['img'] = poster_url

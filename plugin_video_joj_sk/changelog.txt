@@ -1,3 +1,8 @@
+1.6.1
+- fixed live TV playback and added full HD streams
+- fixed archive playback
+- added mesage when video is available only on JOJ play
+
 1.6.0
 - added support for virtual profiles in ArchivCZSK >= 2.5.0
 
