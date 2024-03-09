@@ -1,3 +1,6 @@
+1.23 - 09.03.2024
+    - added cookies to hls and dash info
+
 1.22 - 07.03.2024
     - many fixes in MPD processor
 

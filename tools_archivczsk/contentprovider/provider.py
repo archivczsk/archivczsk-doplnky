@@ -384,7 +384,8 @@ class CommonContentProvider(object):
 
 		for m in re.finditer(r'^#EXT-X-STREAM-INF:(?P<info>.+)\n(?P<chunk>.+)', response.text, re.MULTILINE):
 			stream_info = {
-				'playlist_url': response.url
+				'playlist_url': response.url,
+				'cookies': ','.join('%s=%s' % x for x in response.cookies.items())
 			}
 			for info in re.split(r''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', m.group('info')):
 				key, val = info.split('=', 1)
@@ -471,7 +472,8 @@ class CommonContentProvider(object):
 					for e_rep in e_adaptation_set.findall('{}Representation'.format(ns)):
 						if int(e_rep.get('bandwidth', 0)) <= max_bitrate:
 							stream_info = {
-								'playlist_url': response.url
+								'playlist_url': response.url,
+								'cookies': ','.join('%s=%s' % x for x in response.cookies.items())
 							}
 							stream_info.update(e_rep.attrib)
 							add_drm_info(e_rep, stream_info)
