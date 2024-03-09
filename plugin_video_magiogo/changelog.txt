@@ -1,3 +1,7 @@
+1.16 - 09.03.2024
+    - zmena spôsobu spracovávania streamov na univerzálny HLS a DASH preprocessor
+    - opravy chýb
+
 1.15 - 27.01.2024
     - priadnie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
 

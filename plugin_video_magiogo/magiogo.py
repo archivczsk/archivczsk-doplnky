@@ -11,7 +11,7 @@ from tools_archivczsk.debug.http import dump_json_request
 # #################################################################################################
 
 
-class MagioGOChannel:
+class MagioGOChannel(object):
 	def __init__(self, channel_info):
 		self.id = str(channel_info['channelId'])
 		self.name = channel_info['name']
@@ -57,7 +57,7 @@ class MagioGOChannel:
 
 # #################################################################################################
 
-class MagioGO:
+class MagioGO(object):
 	magiogo_device_types = [
 		("OTT_ANDROID", "Xiaomi Mi 11"),        # 0
 		("OTT_IPAD", "iPad Pro"),               # 1
@@ -69,7 +69,7 @@ class MagioGO:
 	]
 
 	os_version = '12.0'
-	app_version = '4.0.7'
+	app_version = '4.0.10'
 
 	def __init__(self, content_provider):
 		self.cp = content_provider
@@ -97,6 +97,7 @@ class MagioGO:
 		self.get_last_app_version()
 		self.load_login_data()
 		self.refresh_login_data()
+		self.user_agent_playback = 'com.telekom.magiogo/%s (Linux;Android 6.0) ExoPlayerLib/2.18.1' % self.app_version
 
 	# #################################################################################################
 	@staticmethod
@@ -385,8 +386,11 @@ class MagioGO:
 
 	# #################################################################################################
 
-	def get_stream_link(self, stream_id, service='LIVE', prof='p3'):
+	def get_stream_link(self, stream_id, service='LIVE', prof=None):
 		self.refresh_login_data()
+
+		if not prof:
+			prof = 'p' + self.cp.get_setting('stream_profile')
 
 		params = {
 			"service": service,

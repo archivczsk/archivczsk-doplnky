@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from tools_archivczsk.generator.bouquet_xmlepg import BouquetXmlEpgGenerator, BouquetGenerator
+from tools_archivczsk.generator.bouquet_xmlepg import BouquetXmlEpgGenerator
 import time
 
 NAME_PREFIX = "magiogo"
@@ -13,13 +13,6 @@ SERVICEREF_NAMESPACE = 0xAC40000
 
 # #################################################################################################
 
-class MagioGOBouquetGenerator(BouquetGenerator):
-
-	def __init__(self, bxeg, channel_type=None):
-		BouquetGenerator.__init__(self, bxeg, channel_type)
-		self.play_url_pattern = '/playlive/%s/index'
-
-
 class MagioGOBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
 	def __init__(self, content_provider, http_endpoint, user_agent):
@@ -30,7 +23,6 @@ class MagioGOBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 		self.onid = SERVICEREF_ONID
 		self.namespace = SERVICEREF_NAMESPACE
 		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=('region', 'username', 'password', 'deviceid', 'devicetype'), user_agent=user_agent)
-		self.bouquet_generator = MagioGOBouquetGenerator
 
 	def logged_in(self):
 		return self.cp.magiogo != None

@@ -5,6 +5,8 @@ import base64
 from hashlib import md5
 
 from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPModuleLiveTV, CPModuleArchive, CPModuleTemplate
+from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
+from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.string_utils import _I, _C, _B
 from .magiogo import MagioGO
 from .bouquet import MagioGOBouquetXmlEpgGenerator
@@ -65,17 +67,8 @@ class MagioGOModuleLiveTV(CPModuleLiveTV):
 	# #################################################################################################
 
 	def get_livetv_stream(self, channel_title, channel_id, event_start):
-		url = self.cp.http_endpoint + '/playlive/' + base64.b64encode(str(channel_id).encode("utf-8")).decode("utf-8") + '/index.' + self.cp.magiogo.stream_type_by_device()
-
-		play_settings = {
-			"resume_time_sec": int(time.time()) - event_start if event_start != None else None,
-			"resume_popup": False
-		}
-
-		self.cp.add_play(channel_title, url, download=self.cp.get_setting('download_live'), settings=play_settings)
-
-#		for p in ('p0', 'p1', 'p2', 'p3', 'p4', 'p5'):
-#			self.cp.add_play(channel_title + ' ' + p, url + '?p=' + p, download=self.cp.get_setting('download_live'))
+		index_url = self.cp.magiogo.get_stream_link(channel_id)
+		return self.cp.resolve_streams(index_url, channel_title, event_start)
 
 # #################################################################################################
 
@@ -118,8 +111,8 @@ class MagioGOModuleArchive(CPModuleArchive):
 	# #################################################################################################
 
 	def get_archive_stream(self, archive_title, event_id):
-		url = self.cp.http_endpoint + '/playarchive/' + base64.b64encode(str(event_id).encode("utf-8")).decode("utf-8") + '/index.' + self.cp.magiogo.stream_type_by_device()
-		self.cp.add_play(archive_title, url, playlist_autogen=False)
+		index_url = self.cp.magiogo.get_stream_link(event_id, 'ARCHIVE')
+		return self.cp.resolve_streams(index_url, archive_title)
 
 	# #################################################################################################
 
@@ -291,3 +284,69 @@ class MagioGOContentProvider(ModuleContentProvider):
 			self.channels_next_load_time = act_time + 3600
 
 	# #################################################################################################
+
+	def get_hls_info(self, stream_key):
+		resp = {
+			'url': stream_key['url'],
+			'bandwidth': stream_key['bandwidth'],
+			'headers': {
+				'User-Agent': self.magiogo.user_agent_playback
+			}
+		}
+
+		if stream_key.get('cookies'):
+			resp['headers']['Cookies'] = stream_key['cookies']
+
+		return resp
+
+	# ##################################################################################################################
+
+	def get_dash_info(self, stream_key):
+		return self.get_hls_info(stream_key)
+
+	# ##################################################################################################################
+
+	def resolve_hls_streams(self, url, video_title, player_settings):
+		for one in self.get_hls_streams(url, self.magiogo.req_session, max_bitrate=self.get_setting('max_bitrate')):
+			key = {
+				'url': one['playlist_url'],
+				'bandwidth': one['bandwidth'],
+				'cookies': one['cookies']
+			}
+
+			info_labels = {
+				'bandwidth': one['bandwidth'],
+				'quality': one.get('resolution', 'x???').split('x')[1] + 'p'
+			}
+			self.add_play(video_title, stream_key_to_hls_url(self.http_endpoint, key), info_labels=info_labels, settings=player_settings)
+
+	# ##################################################################################################################
+
+	def resolve_dash_streams(self, url, video_title, player_settings):
+		for one in self.get_dash_streams(url, self.magiogo.req_session, max_bitrate=self.get_setting('max_bitrate')):
+			key = {
+				'url': one['playlist_url'],
+				'bandwidth': one['bandwidth'],
+				'cookies': one['cookies']
+			}
+
+			info_labels = {
+				'bandwidth': one['bandwidth'],
+				'quality': one.get('height', '???') + 'p'
+			}
+			self.add_play(video_title, stream_key_to_dash_url(self.http_endpoint, key), info_labels=info_labels, settings=player_settings)
+
+	# ##################################################################################################################
+
+	def resolve_streams(self, url, video_title, event_start = None):
+		player_settings = {
+			"resume_time_sec": int(time.time()) - event_start if event_start != None else None,
+			"resume_popup": False
+		}
+
+		if self.magiogo.stream_type_by_device() == 'm3u8':
+			return self.resolve_hls_streams(url, video_title, player_settings)
+		else: # mpd
+			return self.resolve_dash_streams(url, video_title, player_settings)
+
+	# ##################################################################################################################
