@@ -1,3 +1,7 @@
+1.17 - 09.03.2024
+    - oprava skratky do archívu
+    - oprava odstránenia VOD kanálov z userbouquetu
+
 1.16 - 09.03.2024
     - zmena spôsobu spracovávania streamov na univerzálny HLS a DASH preprocessor
     - opravy chýb

@@ -35,13 +35,14 @@ class MagioGOBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
 	def get_bouquet_channels(self, channel_type=None):
 		for channel in self.cp.channels:
-			yield {
-				'name': channel.name,
-				'adult': channel.adult,
-				'picon': channel.picon,
-				'id': int(channel.id),
-				'key': channel.id
-			}
+			if channel.type == 'TV':
+				yield {
+					'name': channel.name,
+					'adult': channel.adult,
+					'picon': channel.picon,
+					'id': int(channel.id),
+					'key': channel.id
+				}
 
 	def get_xmlepg_channels(self):
 		for channel in self.cp.channels:

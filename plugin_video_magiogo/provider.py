@@ -126,7 +126,8 @@ class MagioGOModuleArchive(CPModuleArchive):
 	def get_channel_id_from_path(self, path):
 		if path.startswith('playlive/'):
 			path = path[9:]
-			path = path[:path.find('/')]
+			if path.endswith('/index'):
+				path = path[:-6]
 			channel_id = base64.b64decode(path.encode('utf-8')).decode("utf-8")
 			channel = self.cp.channels_by_key.get(int(channel_id))
 			return int(channel_id) if channel.timeshift else None
