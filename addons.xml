@@ -10,7 +10,7 @@
 <addon id="plugin.video.iprima" name="iPrima.cz" version="1.12" hash="9edcc667fc3f4db1b489f8e0901a15a8" rhash="9edcc667fc3f4db1b489f8e0901a15a8" />
 <addon id="plugin.video.ivysilani" name="iVysílání — Česká televize" version="1.7.0" hash="26e81ad8aa14a013fb2389cf9f52c27a" rhash="26e81ad8aa14a013fb2389cf9f52c27a" />
 <addon id="plugin.video.joj.sk" name="joj.sk" version="1.6.1" hash="29cde0c219502b134d0d77bc697525ee" rhash="29cde0c219502b134d0d77bc697525ee" />
-<addon id="plugin.video.magiogo" name="Magio TV" version="1.15" hash="8d195b5944d62dcf6552331caf290868" rhash="3b27dd4399d072c625b7f8da3fe6ce8e" />
+<addon id="plugin.video.magiogo" name="Magio TV" version="1.16" hash="bfa695d9d23fe50a5a6c8e69876f99fe" rhash="5d531a57169f6c6efb22380e81a38b5c" />
 <addon id="plugin.video.mall.tv" name="Fameplay.tv" version="1.10" hash="60029a04ebfec44e9290c8c711d3c95d" rhash="60029a04ebfec44e9290c8c711d3c95d"><extension point="archivczsk.addon.metadata"><broken>Tento doplnok nie je viac funkčný a jeho vývoj skončil.</broken></extension></addon>
 <addon id="plugin.video.markiza" name="Markíza" version="2.6" hash="ef66d957bf0c435d80415523de1b7d5f" rhash="e638789730c7b6fe91c7307142e0c2b4" />
 <addon id="plugin.video.mtr.sk" name="Mestská TV Ružomberok" version="1.3.0" hash="818e5787c0590cbf73e6075959f5d787" rhash="818e5787c0590cbf73e6075959f5d787" />
@@ -36,7 +36,7 @@
 <addon id="plugin.video.tvseznam" name="Televize Seznam" version="1.9" hash="4baa077aa6bdbe5a3f2f535d7c3c6643" rhash="4baa077aa6bdbe5a3f2f535d7c3c6643" />
 <addon id="plugin.video.videacesky.cz" name="videacesky.cz" version="1.3.0" hash="5347c8d01f48c543836e73cc4edacab2" rhash="5347c8d01f48c543836e73cc4edacab2" />
 <addon id="plugin.video.yt" name="YouTube" version="1.9" hash="b713d4a11d91e2713d32b144b1bbd2a0" rhash="b713d4a11d91e2713d32b144b1bbd2a0" />
-<addon id="tools.archivczsk" name="Addons base" version="1.22" hash="ec6956a1bf8e9ff719dfd9b0f4cb130c" rhash="ec6956a1bf8e9ff719dfd9b0f4cb130c" />
+<addon id="tools.archivczsk" name="Addons base" version="1.23" hash="272ed3bf1b2bd46ed3b59b556f931a1d" rhash="272ed3bf1b2bd46ed3b59b556f931a1d" />
 <addon id="tools.xbmc" name="xbmc addons helper" version="1.2" hash="024b71e73a91c082946f129af1764585" rhash="024b71e73a91c082946f129af1764585" />
 <addon id="tools.cenc" name="Content encryption support" version="1.3" hash="357f81e137d5b327b39c8744f3c11753" rhash="357f81e137d5b327b39c8744f3c11753" />
 <addon id="plugin.video.voyo" name="VOYO" version="1.2" hash="506f84e01d131041dbe29d24bcd62a24" rhash="5636c1012bb7b4302687171ac377ab5b" />
