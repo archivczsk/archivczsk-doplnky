@@ -480,7 +480,7 @@ class ArchivczskAddonsReleaser(object):
 		root = ET.Element('addons')
 		root.tail = '\n'
 		root.text = '\n'
-		for addon in addons:
+		for addon in sorted(addons, key=lambda a: a.addon_id):
 			root.append(addon.get_simple_xml_root())
 
 		ET.ElementTree(element=root).write('addons.xml', encoding='UTF-8', xml_declaration=True)
