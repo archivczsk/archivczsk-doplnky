@@ -392,7 +392,7 @@ class O2TVModuleExtra(CPModuleTemplate):
 
 	# #################################################################################################
 
-	def make_active(self, service_name, service_id):
+	def activate_service(self, service_name, service_id):
 		self.cp.o2tv.activate_service(service_id)
 		self.cp.add_video(_C('red', self._('Service {service} was activated!').format(service=service_name)), download=False)
 		self.cp.load_channel_list(True)
