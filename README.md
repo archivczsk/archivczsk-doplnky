@@ -25,7 +25,7 @@ Ak máte problém, tak podporu môžete hľadať na fórach ako napr. **CS Fóru
 | Markíza                    | funkčné             |                     |
 | Mestská TV Ružomberok      | funkčné             |                     |
 | TV Nova                    | funkčné             |                     |
-| O2 TV 2.0                  | funkčné             | 2) 4)               |
+| O2 TV 2.0                  | funkčné             | 2)                  |
 | Soubory Online             | nefunkčné           | podpora ukončená - doplnok bude vymazaný |
 | OrangeTV                   | funkčné             |                     |
 | Pohádkář.cz                | funkčné             |                     |
@@ -54,4 +54,3 @@ Ak máte problém, tak podporu môžete hľadať na fórach ako napr. **CS Fóru
 1) sh4 platforma nie je podporovaná
 2) Pre prehrávanie streamov vo formáte MPEG-DASH je nutné aby používané image malo pre prehrávanie týchto streamov podporu. Tá je dostupná od OpenATV 7.3 a OpenPLi 9.0. Do starších a neaktualizovaných verzii ako OpenATV 6.4 a OpenPLi 8.3 je potrebné nainštalovať upravený [exteplayer3](https://github.com/archivczsk/archivczsk/wiki/ServiceApp#vylepšený-exteplayer3). Sťahovanie však kvôli chýbajúcej podpore vo ffmpeg fungovať nebude. Riešenie pre staršie a neaktualizované image (ako napr. VTi) momentálne nie je dostupné. Zvážte prechod na aktualizované image.
 3) Pri výbere zatiadenia iPad funguje všade. Pre ostatné zariadenia platí bod 2
-4) Pretáčanie v archíve pomocou klávesov 1,2,4,6,7,9 nefunguje. Dôvodom je nekompatibilita streamu s ffmpeg knižnicou. V OpenATV 7.3 funguje pri použití vstavaného prehrávača v enigma2 pretáčanie dlhým stlačením tlačidla VPRAVO.

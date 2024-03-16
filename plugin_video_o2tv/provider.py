@@ -100,7 +100,7 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 			playlist = self.cp.add_playlist(channel_title)
 			for mi in self.cp.o2tv.get_mosaic_info(mosaic_id, True).get('mosaic_info', []):
 				url = self.cp.o2tv.get_live_link(mi['id'])
-				self.cp.resolve_dash_streams(url, mi['id'], playlist=playlist)
+				self.cp.resolve_dash_streams(url, mi['title'], playlist=playlist)
 				mi_set = True
 
 		if mi_set == False:
@@ -572,6 +572,9 @@ class O2TVContentProvider(ModuleContentProvider):
 		if not streams:
 			return
 
+		play_settings = {
+			'relative_seek_enabled': False
+		}
 		cache_key = self.scache.put(streams[0]['playlist_url'])
 		for one in streams:
 			key = {
@@ -584,9 +587,9 @@ class O2TVContentProvider(ModuleContentProvider):
 				'quality': one.get('height', '???') + 'p'
 			}
 			if playlist:
-				playlist.add_play(video_title, stream_key_to_dash_url(self.http_endpoint, key), info_labels=info_labels)
+				playlist.add_play(video_title, stream_key_to_dash_url(self.http_endpoint, key), info_labels=info_labels, settings=play_settings)
 				break
 			else:
-				self.add_play(video_title, stream_key_to_dash_url(self.http_endpoint, key), info_labels=info_labels)
+				self.add_play(video_title, stream_key_to_dash_url(self.http_endpoint, key), info_labels=info_labels, settings=play_settings)
 
 	# ##################################################################################################################
