@@ -573,7 +573,8 @@ class O2TVContentProvider(ModuleContentProvider):
 			return
 
 		play_settings = {
-			'relative_seek_enabled': False
+			'relative_seek_enabled': False,
+			'playlist_on_start': playlist != None and self.get_setting('show_md_choice')
 		}
 		cache_key = self.scache.put(streams[0]['playlist_url'])
 		for one in streams:

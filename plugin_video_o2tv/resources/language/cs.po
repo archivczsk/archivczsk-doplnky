@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_archivo2tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-04 20:17+0100\n"
-"PO-Revision-Date: 2024-03-04 20:14+0100\n"
+"POT-Creation-Date: 2024-03-24 21:18+0100\n"
+"PO-Revision-Date: 2024-03-24 21:19+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -197,6 +197,10 @@ msgstr "Nahrávka přidána"
 msgid "There was an error by adding recording"
 msgstr "Při přidávaní nahrávky nastala chyba"
 
+#: plugin_video_o2tv/http_handler.py:147
+msgid "Multidimension"
+msgstr "Multidimenze"
+
 msgid "Login name"
 msgstr "Přihlašovací jméno"
 
@@ -235,6 +239,9 @@ msgstr "Povolit speciální sekci v hlavním menu"
 
 msgid "Allow downloading of live broadcasting"
 msgstr "Povolit stahování u živého vysílání"
+
+msgid "Show multidimension stream choice"
+msgstr "U multidimenze zobrazovat výběr streamu"
 
 msgid "Userbouquet"
 msgstr "Userbouquet"
