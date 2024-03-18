@@ -12,7 +12,6 @@ Ak máte problém, tak podporu môžete hľadať na fórach ako napr. **CS Fóru
 | ---                        | :---:               | ---                 |
 | Aktuálně (DVTV)            | funkčné             |                     |
 | Antik TV                   | funkčné             | 1)                  |
-| Sledování O2TV             | nefunkčné           | Služba O2 TV 1.0 skončila. Nutné prejsť na doplnok O2 TV 2.0 |
 | Autosalon                  | funkčné             |                     |
 | Dokumenty.tv               | funkčné             |                     |
 | Eurosport Player           | funkčné             |                     |

@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.archivo2tv" name="Sledování O2TV" provider-name="archivczsk" version="1.11.0">
+<addon id="plugin.video.archivo2tv" name="Sledování O2TV" provider-name="archivczsk" version="1.12.0">
 	<requires>
 		<import addon="enigma2.archivczsk" version="2.5.0"/>
 		<import addon="tools.archivczsk" version="1.17" />
 	</requires>
-	<extension point="archivczsk.addon.video" preload="yes"/>
-	<extension point="archivczsk.addon.shortcut" name="archive"/>
+	<extension point="archivczsk.addon.video"/>
 	<extension point="archivczsk.addon.metadata">
-		<description>Allows watching O2TV inclusive base work with recordings</description>
-		<description lang="cs">Umožnuje sledování O2TV včetně základní práce s nahrávkami</description>
-		<description lang="sk">Umožňuje sledovanie O2TV vrátane základnej práce s nahrávkami</description>
+		<broken>Tento doplnok využíval službu od O2 ktorá skončila a preto doplnok viac nie je funkčný. Náhradou je nový doplnok O2 TV 2.0.</broken>
+		<description>Service was closed</description>
+		<description lang="cs">Služba byla ukončena</description>
+		<description lang="sk">Služba bola ukončená</description>
 	</extension>
 </addon>
