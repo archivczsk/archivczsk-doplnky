@@ -5,6 +5,7 @@
 	</requires>
 	<extension point="archivczsk.addon.video"/>
 	<extension point="archivczsk.addon.metadata">
+		<broken>Vývoj doplnku skončil a viac nie je podporovaný</broken>
 		<description>Doplnok viac nie je podporovaný</description>
 	</extension>
 </addon>
