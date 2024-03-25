@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.hbomax" name="HBO Max" version="1.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.6.2"/>
+		<import addon="tools.archivczsk" version="1.24" />
+		<import addon="tools.cenc" version="1.4" />
+	</requires>
+	<extension point="archivczsk.addon.video" import-name="addon" entry-point="main"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Say hello to HBO Max, the streaming platform that bundles all of HBO together with even more of your favorite movies and TV series, plus new Max Originals.</description>
+		<description lang="cs">Vítejte na HBO Max, streamovací platformě, která spojuje celou HBO dohromady s ještě větším množstvím vašich oblíbených filmů a seriálů a s novými originálními filmy z produkce Max Originals.</description>
+		<description lang="sk">Vitajte na HBO Max, streamovacej platforme, ktorá spojuje celú HBO s ešte väčším množstvom vaších obľúbených filmov a seriálov a s novými originálnymi filmami z produkcie Max Originals.</description>
+	</extension>
+</addon>

@@ -1,0 +1,5 @@
+1.0 - 25.03.2024
+    - prvá verejná verzia na základe doplnku pre Kodi od slyguy
+    - streamy sú dostupné v 720p kvalite
+    - detské profily nefungujú
+    - pre prehrávanie je nutný upravený exteplayer3

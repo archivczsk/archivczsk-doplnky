@@ -1,0 +1,217 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_hbomax\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-03-25 18:26+0100\n"
+"PO-Revision-Date: 2024-03-25 18:28+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: plugin_video_hbomax/provider.py:28
+msgid "To display the content, you must enter a login name and password in the addon settings"
+msgstr "Pro zobrazení obsahu je nutné zadat přihlašovací jméno a heslo v nastaveních doplňku"
+
+#: plugin_video_hbomax/provider.py:82
+msgid "Select profile"
+msgstr "Vyberte profil"
+
+#: plugin_video_hbomax/provider.py:100
+msgid "Home"
+msgstr "Domov"
+
+#: plugin_video_hbomax/provider.py:101
+msgid "Movies"
+msgstr "Filmy"
+
+#: plugin_video_hbomax/provider.py:102
+msgid "Series"
+msgstr "Seriály"
+
+#: plugin_video_hbomax/provider.py:103
+msgid "HBO Originals"
+msgstr "HBO Originals"
+
+#: plugin_video_hbomax/provider.py:104
+msgid "Just added"
+msgstr "Právě přidané"
+
+#: plugin_video_hbomax/provider.py:106
+msgid "Coming soon"
+msgstr "Již brzy"
+
+#: plugin_video_hbomax/provider.py:107
+msgid "Trending"
+msgstr "Trendy"
+
+#: plugin_video_hbomax/provider.py:110
+msgid "Watchlist"
+msgstr "Watchlist"
+
+#: plugin_video_hbomax/provider.py:113
+msgid "Continue watching"
+msgstr "Pokračovat v sledování"
+
+#: plugin_video_hbomax/provider.py:115
+msgid "Informations and settings"
+msgstr "Informace a nastavení"
+
+#: plugin_video_hbomax/provider.py:120
+msgid "Profiles"
+msgstr "Profily"
+
+#: plugin_video_hbomax/provider.py:121
+msgid "Devices"
+msgstr "Zařízení"
+
+#: plugin_video_hbomax/provider.py:129
+msgid "Last used"
+msgstr "Naposled použito"
+
+#: plugin_video_hbomax/provider.py:141
+msgid "This operation is not yet implemented!"
+msgstr "Tato operace není implementovaná!"
+
+#: plugin_video_hbomax/provider.py:152
+msgid "Active profile"
+msgstr "Aktivní profil"
+
+#: plugin_video_hbomax/provider.py:154
+msgid "Kids profile"
+msgstr "Dětský profil"
+
+#: plugin_video_hbomax/provider.py:169
+msgid "Do you realy want to switch profile?"
+msgstr "Opravdu chcete přepnut profil?"
+
+#: plugin_video_hbomax/provider.py:254
+msgid "Remove from watchlist"
+msgstr "Vymazat z watchlistu"
+
+#: plugin_video_hbomax/provider.py:256 plugin_video_hbomax/provider.py:350
+msgid "Add to watchlist"
+msgstr "Přidat do watchlistu"
+
+#: plugin_video_hbomax/provider.py:268
+msgid "Extras"
+msgstr "Doplňky"
+
+#: plugin_video_hbomax/provider.py:281
+msgid "Go to series"
+msgstr "Jít na seriál"
+
+#: plugin_video_hbomax/provider.py:329
+msgid "Season"
+msgstr "Sezona"
+
+#: plugin_video_hbomax/hbomax.py:112
+msgid "No response received from server. Maybe is your IP blocked by HBO."
+msgstr "Server neodeslal odpověď. Možná je vaše IP u HBO zablokováná."
+
+#: plugin_video_hbomax/hbomax.py:123
+msgid "Unexpected return code from server"
+msgstr "Neočekávaný návratový kód ze serveru"
+
+#: plugin_video_hbomax/hbomax.py:213
+msgid "Failed to perform anonymous login. Your IP is maybe blocked by HBO."
+msgstr "Anonymní přihlášení selhalo. Vaše IP je možná u HBO zablokovaná."
+
+#: plugin_video_hbomax/hbomax.py:319 plugin_video_hbomax/hbomax.py:347
+msgid "You don't have access to this content"
+msgstr "K tomuto obsahu nemáte přístup"
+
+#: plugin_video_hbomax/hbomax.py:537 plugin_video_hbomax/hbomax.py:557
+msgid "Video not found"
+msgstr "Video nenalezeno"
+
+msgid "Login name"
+msgstr "Přihlašovací jméno"
+
+msgid "Login password"
+msgstr "Přihlašovací heslo"
+
+msgid "Select profile on startup"
+msgstr "Volba profilu při startu"
+
+msgid "Prefered video codec"
+msgstr "Preferovaný video codec"
+
+msgid "h264"
+msgstr ""
+
+msgid "h265"
+msgstr ""
+
+msgid "Sync watchlist"
+msgstr "Synchronizovat watchlist"
+
+msgid "Sync playback"
+msgstr "Synchronizovat pozici přehrávanání"
+
+msgid "Language of dubbed entries and menu"
+msgstr "Jazyk dabovaných položek a menu"
+
+msgid "Auto"
+msgstr ""
+
+msgid "CZ"
+msgstr ""
+
+msgid "SK"
+msgstr ""
+
+msgid "CZ & SK"
+msgstr ""
+
+msgid "SK & CZ"
+msgstr ""
+
+msgid "EN"
+msgstr ""
+
+msgid "Start subtitles automatically"
+msgstr "Automaticky spustit titulky"
+
+msgid "Always"
+msgstr "Vždy"
+
+msgid "When undubbed"
+msgstr "U nedabovaných"
+
+msgid "Never"
+msgstr "Nikdy"
+
+msgid "Start forced subtitles automatically"
+msgstr "Automaticky spustit forced titulky"
+
+#~ msgid "Name"
+#~ msgstr "Jméno"
+
+#~ msgid "Customer ID"
+#~ msgstr "Zákaznické ID"
+
+#~ msgid "Login from partner"
+#~ msgstr "Přihlášení přes partnera"
+
+#~ msgid "No"
+#~ msgstr "Ne"
+
+#~ msgid "Active subscription"
+#~ msgstr "Aktivní předplatné"
+
+#~ msgid "Number of registered devices"
+#~ msgstr "Počet zaregistrovaných zařízení"
+
+#~ msgid "Last used profile"
+#~ msgstr "Poslední použitý profil"
+
+#~ msgid "Do you realy want to delete this device?"
+#~ msgstr "Opravdu chcete smazat toto zařízení?"
