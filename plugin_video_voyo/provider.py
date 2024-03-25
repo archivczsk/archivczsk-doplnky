@@ -4,6 +4,7 @@ from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman
 from tools_archivczsk.cache import SimpleAutokeyExpiringCache
+from tools_archivczsk.player.features import PlayerFeatures
 from .voyo import Voyo
 from functools import partial
 
@@ -42,6 +43,7 @@ class VoyoContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def root(self):
+		PlayerFeatures.request_ffmpeg_mpd_support(self)
 		self.load_favorites()
 
 		self.add_search_dir()

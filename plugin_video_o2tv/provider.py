@@ -9,6 +9,7 @@ from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPM
 from tools_archivczsk.string_utils import _I, _C, _B
 from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.cache import SimpleAutokeyExpiringCache
+from tools_archivczsk.player.features import PlayerFeatures
 from .o2tv import O2TV
 from .bouquet import O2TVBouquetXmlEpgGenerator
 import base64
@@ -439,6 +440,12 @@ class O2TVContentProvider(ModuleContentProvider):
 		]
 
 		self.load_favourites()
+
+	# #################################################################################################
+
+	def root(self):
+		PlayerFeatures.request_ffmpeg_mpd_support(self)
+		ModuleContentProvider.root(self)
 
 	# #################################################################################################
 
