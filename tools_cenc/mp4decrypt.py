@@ -22,17 +22,18 @@ def mp4decrypt(keys, init_data, enc_data):
 	with open(tmp_file_name_in, 'wb') as f:
 		f.write(enc_data)
 
-	with open(tmp_file_name_init, 'wb') as f:
-		f.write(init_data)
-
 	cmd = [DECRYPT_CMD]
 
 	for k in keys:
 		cmd.append('--key')
 		cmd.append(k)
 
-	cmd.append('--fragments-info')
-	cmd.append(tmp_file_name_init)
+	if init_data != None:
+		with open(tmp_file_name_init, 'wb') as f:
+			f.write(init_data)
+
+		cmd.append('--fragments-info')
+		cmd.append(tmp_file_name_init)
 
 	cmd.append(tmp_file_name_in)
 	cmd.append(tmp_file_name_out)
@@ -45,7 +46,9 @@ def mp4decrypt(keys, init_data, enc_data):
 		with open(tmp_file_name_out, 'rb') as f:
 			data_out = f.read()
 	finally:
-		os.remove(tmp_file_name_init)
+		if init_data != None:
+			os.remove(tmp_file_name_init)
+
 		os.remove(tmp_file_name_in)
 		try:
 			os.remove(tmp_file_name_out)
