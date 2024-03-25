@@ -1,0 +1,161 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: tools_archivczsk\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-03-25 19:59+0100\n"
+"PO-Revision-Date: 2024-03-25 20:00+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: sk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: tools_archivczsk/player/features.py:105
+msgid "It was not possible to determine, if you have installed ffmpeg and if it can process MPEG-DASH streams needed by this addon."
+msgstr "Nebolo možné zistiť, či máte nainštalované program ffmpeg a či podporuje MPEG-DASH streamy potrebné pre tento doplnok."
+
+#: tools_archivczsk/player/features.py:107
+msgid "Installed version of ffmpeg probably doesn't support MPEG-DASH streams needed by this addon."
+msgstr "Nainštalovaná verzia ffmpeg pravdepodobne nepodporuje MPEG-DASH streamy potrebné pre tento doplnok."
+
+#: tools_archivczsk/player/features.py:121
+msgid "This addon is not supported on DMM image"
+msgstr "Tento doplnok nie je podporovaný na originálnom DMM image"
+
+#: tools_archivczsk/player/features.py:123
+msgid "You need to install ServiceApp in order to use this addon"
+msgstr "Pre použitie tohto doplnku musíte nainštalovať ServiceApp"
+
+#: tools_archivczsk/player/features.py:127
+msgid "Hardware platform of your receiver is not supported"
+msgstr "Hardwarová platforma vášho prijímača nie je podporovaná"
+
+#: tools_archivczsk/player/features.py:131
+msgid "It was not possible to determine, if you have installed exteplayer3 and if it can play DRM protected streams needed by this addon."
+msgstr "Nebolo možné zistiť, či máte nainštalovaný prehrávač exteplayer3 a či podporuje prehrávanie streamov s DRM ochranou, ktorá je potrebná pre tento doplnok."
+
+#: tools_archivczsk/player/features.py:133
+msgid "Installed version of exteplayer3 doesn't support playback of DRM protected streams needed by this addon."
+msgstr "Nainštalovaná verzia prehrávača exeplayer3 nepodporuje prehrávanie streamov s DRM ochranou, ktorá je potrebná pre tento doplnok."
+
+#: tools_archivczsk/player/features.py:135
+msgid ""
+"It is recommended to install modified version of exteplayer3 and ffmpeg with build in support for MPEG-DASH and DRM streams.\n"
+"Should I download and install recommanded version for you?"
+msgstr ""
+"Odporúča sa nainštalovať upravenú verziu exteplayer3 a ffmpeg so vstavanou podporou pre MPEG-DASH a DRM streamy.\n"
+"Mám stiahnuť a nainštalovať odporúčanú verziu?"
+
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:215
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:369
+msgid "Login failed"
+msgstr "Prihlásenie zlyhalo"
+
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:221
+msgid "Login ended with error"
+msgstr "Prihlásenie skončilo chybou"
+
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:413
+msgid "New search"
+msgstr "Nové hľadanie"
+
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:422
+msgid "Remove"
+msgstr "Odstrániť"
+
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:423
+msgid "Edit"
+msgstr "Upraviť"
+
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:436
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:446
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:501
+#: tools_archivczsk/contentprovider/extended.py:256
+msgid "Search"
+msgstr "Vyhľadať"
+
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:506
+msgid "Next"
+msgstr "Ďalšie"
+
+#: tools_archivczsk/contentprovider/extended.py:68
+msgid "Here you will find list of Live TV channels"
+msgstr "Tu nájdete zoznam kanálov s ponukou živého vysielania"
+
+#: tools_archivczsk/contentprovider/extended.py:70
+msgid "Live TV"
+msgstr "Live TV"
+
+#: tools_archivczsk/contentprovider/extended.py:114
+msgid "Here you will find your channels archive"
+msgstr "Tu nájdete spätné prehrávanie vašich kanálov"
+
+#: tools_archivczsk/contentprovider/extended.py:116
+msgid "Archive"
+msgstr "Archív"
+
+#: tools_archivczsk/contentprovider/extended.py:117
+msgid "Monday"
+msgstr "Pondelok"
+
+#: tools_archivczsk/contentprovider/extended.py:117
+msgid "Tuesday"
+msgstr "Utorok"
+
+#: tools_archivczsk/contentprovider/extended.py:117
+msgid "Wednesday"
+msgstr "Streda"
+
+#: tools_archivczsk/contentprovider/extended.py:117
+msgid "Thursday"
+msgstr "Štvrtok"
+
+#: tools_archivczsk/contentprovider/extended.py:117
+msgid "Friday"
+msgstr "Piatok"
+
+#: tools_archivczsk/contentprovider/extended.py:117
+msgid "Saturday"
+msgstr "Sobota"
+
+#: tools_archivczsk/contentprovider/extended.py:117
+msgid "Sunday"
+msgstr "Nedeľa"
+
+#: tools_archivczsk/contentprovider/extended.py:118
+msgid "day"
+msgstr "deň"
+
+#: tools_archivczsk/contentprovider/extended.py:118
+msgid "days2-4"
+msgstr "dni"
+
+#: tools_archivczsk/contentprovider/extended.py:118
+msgid "days5+"
+msgstr "dní"
+
+#: tools_archivczsk/contentprovider/extended.py:119
+msgid "hour"
+msgstr "hodina"
+
+#: tools_archivczsk/contentprovider/extended.py:119
+msgid "hours2-4"
+msgstr "hodiny"
+
+#: tools_archivczsk/contentprovider/extended.py:119
+msgid "hours5+"
+msgstr "dní"
+
+#: tools_archivczsk/contentprovider/extended.py:202
+msgid "Today"
+msgstr "Dnes"
+
+#: tools_archivczsk/contentprovider/extended.py:204
+msgid "Yesterday"
+msgstr "Včera"
