@@ -1,5 +1,6 @@
-1.24 - 18.03.2024
+1.24 - 25.03.2024
     - drm data extract and processing rewrite
+    - added player info and possibility to install modified version of exteplayer3 and ffmpeg
 
 1.23 - 09.03.2024
     - added cookies to hls and dash info
