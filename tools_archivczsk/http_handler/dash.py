@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 from .template import HTTPRequestHandlerTemplate
 
 import xml.etree.ElementTree as ET
@@ -27,10 +28,11 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 	Http request handler that implements processing of DASH master playlist and exports new one with only selected one video stream.
 	Other streams (audio, subtitles, ...) are preserved.
 	'''
-	def __init__(self, content_provider, addon, proxy_segments=True):
+	def __init__(self, content_provider, addon, proxy_segments=True, internal_decrypt=True):
 		super(DashHTTPRequestHandler, self).__init__(content_provider, addon)
 		self.dash_proxy_segments = proxy_segments
-		self.enable_devel_logs = False
+		self.dash_internal_decrypt = proxy_segments and internal_decrypt
+		self.enable_devel_logs = os.path.isfile('/tmp/archivczsk_enable_devel_logs')
 		self.wvdecrypt = WvDecrypt(enable_logging=self.enable_devel_logs)
 		self.pssh = {}
 
@@ -128,7 +130,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		else:
 			cache_key = self.scache.put_with_key(cached_data, cache_key)
 
-		if len(pssh) > 0:
+		if len(pssh) > 0 and self.dash_internal_decrypt:
 			self.cp.log_debug("Enabling DRM proxy handler for url %s with key %s" % (url, cache_key))
 			# drm protectet content - use handler for protectet segments
 			return "/%s/dsp/%s/" % (self.name, cache_key)
@@ -196,25 +198,16 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 	# #################################################################################################
 
-	def process_drm_protected_segment(self, segment_type, data, cache_data):
-		# handle DRM protected segment data
-		if segment_type[0] == 'i':
-			self.log_devel("Received init segment data for %s" % segment_type[1:])
-
-			# init segment is not encrypted, but we need it for decrypting data segments
-			cache_data['init'][segment_type[1:]] = data
-			return data
-
-		# collect keys for protected content
+	def get_drm_keys(self, pssh_list, drm_info, privacy_mode=False):
 		keys = []
-		for p in cache_data['pssh']:
+		for p in pssh_list:
 			k = self.pssh.get(p)
 			if k == None:
 				self.cp.log_debug("Requesting keys for pssh %s from licence server" % p)
-				if cache_data['drm'].get('privacy_mode', False):
-					k = self.wvdecrypt.get_content_keys(p, lambda lic_request: self.get_wv_licence(cache_data['drm'], lic_request), lambda cert_request: self.get_wv_licence(cache_data['drm'], cert_request))
+				if privacy_mode:
+					k = self.wvdecrypt.get_content_keys(p, lambda lic_request: self.get_wv_licence(drm_info, lic_request), lambda cert_request: self.get_wv_licence(drm_info, cert_request))
 				else:
-					k = self.wvdecrypt.get_content_keys(p, lambda lic_request: self.get_wv_licence(cache_data['drm'], lic_request))
+					k = self.wvdecrypt.get_content_keys(p, lambda lic_request: self.get_wv_licence(drm_info, lic_request))
 				self.pssh[p] = k
 				if k:
 					keys.extend(k)
@@ -225,17 +218,34 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				self.log_devel("Keys for pssh %s found in cache" % p)
 				keys.extend(k)
 
+		return keys
+
+	# #################################################################################################
+
+	def process_drm_protected_segment(self, segment_type, data, cache_data):
+		# handle DRM protected segment data
+		if segment_type[0] == 'i':
+			self.log_devel("Received init segment data for %s" % segment_type[1:])
+
+			# init segment is not encrypted, but we need it for decrypting data segments
+			cache_data['init'][segment_type[1:]] = data
+			return data
+
+		# collect keys for protected content
+		keys = self.get_drm_keys(cache_data['pssh'], cache_data['drm'], cache_data['drm'].get('privacy_mode', False))
+
 		if len(keys) == 0:
 			self.cp.log_error("No keys to decrypt DRM protected content")
 			return None
 
 		self.log_devel("Keys for pssh: %s" % str(keys))
-		return mp4decrypt(keys, cache_data['init'][segment_type[1:]], data)
+		return mp4decrypt(keys, cache_data['init'].get(segment_type[1:]), data)
 
 	# #################################################################################################
 
 	def P_dsp(self, request, path):
 		self.log_devel("Received segment request: %s" % path)
+
 		# split path to encoded base URL and segment part
 		url_parts=path.split('/')
 		cache_data = self.scache.get(url_parts[0])
@@ -265,7 +275,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 					self.cp.log_error('Failed to decrypt segment for stream key: %s' % url_parts[0])
 					request.setResponseCode(501)
 				else:
-					request.setResponseCode(200)
+					request.setResponseCode(response['status_code'])
 					for k,v in response['headers'].items():
 						if k != b'Content-Length':
 							request.setHeader(k, v)
@@ -282,24 +292,27 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 	# #################################################################################################
 
 	def handle_mpd_manifest(self, base_url, root, bandwidth, drm=None, cache_key=None):
-		kid_list = []
 		pssh_list = []
+		kid_rep_mapping = {}
 
 		# extract namespace of root element and set it as global namespace
 		ns = root.tag[1:root.tag.index('}')]
 		ET.register_namespace('', ns)
 		ns = '{%s}' % ns
 
+		e_base_url = root.find('{}BaseURL'.format(ns))
+		if e_base_url != None:
+			base_url = urljoin(base_url, e_base_url.text.strip())
+			root.remove(e_base_url)
+
 		def search_drm_data(element):
-			ret = False
 			kid = None
 			e = element.find('./{}ContentProtection[@schemeIdUri="urn:mpeg:dash:mp4protection:2011"]'.format(ns))
 			if e != None:
 				kid = e.get('{urn:mpeg:cenc:2013}default_KID') or e.get('default_KID')
 				if kid:
 					self.cp.log_debug("Found KID: %s" % kid)
-					kid_list.append(kid)
-					ret = True
+					kid = kid.replace('-', '').lower()
 
 			e = element.find('./%sContentProtection[@schemeIdUri="urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed"]/{urn:mpeg:cenc:2013}pssh' % ns)
 			if e == None:
@@ -307,11 +320,10 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			if e != None and e.text:
 				self.cp.log_debug("Found PSSH: %s" % e.text)
 				pssh_list.append(e.text.strip())
-				ret = True
 
-			return ret
+			return kid
 
-		def path_segment_url(element):
+		def patch_segment_url(element):
 			if self.dash_proxy_segments:
 				ck = self.calc_cache_key(element.get('id'))
 				i = 0
@@ -329,13 +341,66 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			for e in element.findall('{}ContentProtection'.format(ns)):
 				element.remove(e)
 
+		# search for DRM data first
+		for e_period in root.findall('{}Period'.format(ns)):
+			for e_adaptation_set in e_period.findall('{}AdaptationSet'.format(ns)):
+				a_kid = search_drm_data(e_adaptation_set)
+				for e in e_adaptation_set.findall('{}Representation'.format(ns)):
+					r_kid = search_drm_data(e) or a_kid
+					kid_rep_mapping[e.get('id')] = {
+						'kid': r_kid
+					}
+
+		# request and preprocess CENC keys
+		keys = self.get_drm_keys(pssh_list, drm)
+		kid_key_mapping = {}
+		for k in keys:
+			kid, key = k.split(':')
+			if key != '00000000000000000000000000000000':
+				kid_key_mapping[kid] = key
+
+		# search add info to representations, if they are decryptable
+		for rep_info in kid_rep_mapping.values():
+			if not rep_info['kid']:
+				# representation is probably not encrypted
+				rep_info['decryptable'] = True
+				rep_info['key'] = None
+			elif rep_info['kid'] in kid_key_mapping:
+				# we have key for this representation
+				rep_info['decryptable'] = True
+				rep_info['key'] = kid_key_mapping[rep_info['kid']]
+			else:
+				# we don't have key for this representation - mark as not decryptable
+				rep_info['decryptable'] = False
+
+		# search for all representations and remove all undecryptable
+		for e_period in root.findall('{}Period'.format(ns)):
+			for e_adaptation_set in e_period.findall('{}AdaptationSet'.format(ns)):
+				for e_rep in e_adaptation_set.findall('{}Representation'.format(ns)):
+					if kid_rep_mapping[e_rep.get('id')]['decryptable'] == False:
+						e_adaptation_set.remove(e_rep)
+
+		# remove empty AdaptationSets
+		for e_period in root.findall('{}Period'.format(ns)):
+			for e_adaptation_set in e_period.findall('{}AdaptationSet'.format(ns)):
+				if len(e_adaptation_set.findall('{}Representation'.format(ns))) == 0:
+					e_period.remove(e_adaptation_set)
+
+		# remove empty Periods
+		for e_period in root.findall('{}Period'.format(ns)):
+			if len(e_period.findall('{}AdaptationSet'.format(ns))) == 0:
+				root.remove(e_period)
+
+		# remove all content protection elements - we have enough data for player to play this content
+		for e_period in root.findall('{}Period'.format(ns)):
+			for e_adaptation_set in e_period.findall('{}AdaptationSet'.format(ns)):
+				remove_content_protection(e_adaptation_set)
+				for e in e_adaptation_set.findall('{}Representation'.format(ns)):
+					remove_content_protection(e)
 
 		# modify MPD manifest and make it as best playable on enigma2 as possible
 		for e_period in root.findall('{}Period'.format(ns)):
 			audio_list = []
-			kid_list = []
-			pssh_list = []
-
 
 			for e_adaptation_set in e_period.findall('{}AdaptationSet'.format(ns)):
 				if e_adaptation_set.get('contentType','') == 'video' or e_adaptation_set.get('mimeType','').startswith('video/'):
@@ -354,17 +419,15 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				if e_adaptation_set.get('contentType','') == 'audio' or e_adaptation_set.get('mimeType','').startswith('audio/'):
 					audio_list.append(e_adaptation_set)
 
-				search_drm_data(e_adaptation_set)
-				for e in e_adaptation_set.findall('{}Representation'.format(ns)):
-					search_drm_data(e)
-
 				# for DRM protected content we need to add distinguish between init and data segment, so set prefix for it
-				# and also remove ContentProtection elements from manifest
-				path_segment_url(e_adaptation_set)
-				remove_content_protection(e_adaptation_set)
+				patch_segment_url(e_adaptation_set)
 				for e in e_adaptation_set.findall('{}Representation'.format(ns)):
-					path_segment_url(e)
-					remove_content_protection(e)
+					patch_segment_url(e)
+					cenc_key = kid_rep_mapping[e.get('id')]['key']
+					if cenc_key and self.dash_internal_decrypt == False:
+						self.cp.log_debug("Setting CENC key %s for representation %s" % (cenc_key, e.get('id')))
+						e.set('cenc_decryption_key', cenc_key)
+
 
 			if len(audio_list) > 0:
 				# all enigma2 players use first audio track as the default, so move CZ and SK audio tracks on the top
@@ -382,8 +445,6 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 			# either update BaseURL or create element and set it
 			e_base_url = e_period.find('{}BaseURL'.format(ns))
-			if  e_base_url == None:
-				e_base_url = root.find('{}BaseURL'.format(ns))
 
 			if e_base_url != None:
 				base_url_set = urljoin(base_url, e_base_url.text)
@@ -399,7 +460,10 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				else:
 					base_url_set = base_url
 
-				ET.SubElement(root, 'BaseURL').text = base_url_set
+				be = ET.Element('BaseURL')
+				be.text = base_url_set
+				e_period.insert(0, be)
+#				ET.SubElement(e_period, 'BaseURL').text = base_url_set
 
 
 	# #################################################################################################
@@ -435,6 +499,5 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			return
 
 		self.request_http_data_async_simple(url, cbk=p_continue, headers=headers, bandwidth=bandwidth)
-
 
 	# #################################################################################################
