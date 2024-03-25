@@ -11,11 +11,17 @@ def print_string(s):
 
 class SettingsXMLParser:
 	def __init__(self, xml_file):
-		el = ElementTree()
-		el.parse(xml_file)
-		self.xml = el.getroot()
+		if os.path.isfile(xml_file):
+			el = ElementTree()
+			el.parse(xml_file)
+			self.xml = el.getroot()
+		else:
+			self.xml = None
 
 	def parse(self):
+		if not self.xml:
+			return
+
 		categories = []
 		settings = self.xml
 
