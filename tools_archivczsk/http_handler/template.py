@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import base64
+import os, base64
 from Plugins.Extensions.archivCZSK.engine.httpserver import AddonHttpRequestHandler
 from Plugins.Extensions.archivCZSK.settings import USER_AGENT
 from ..cache import SimpleAutokeyExpiringCache
@@ -15,6 +15,9 @@ try:
 	from cookielib import CookieJar
 except:
 	from http.cookiejar import CookieJar
+
+from tools_cenc.wvdecrypt import WvDecrypt
+from binascii import crc32
 
 # #################################################################################################
 
@@ -58,6 +61,17 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler, object):
 		self.cookie_agent = Agent(reactor, connectTimeout=timeout/2, pool=self._pool)
 		self.cookie_agent = CookieAgent(self.cookie_agent, self._cookies)
 		self.cookie_agent = RedirectAgent(self.cookie_agent)
+
+		self.enable_devel_logs = os.path.isfile('/tmp/archivczsk_enable_devel_logs')
+		self.wvdecrypt = WvDecrypt(enable_logging=self.enable_devel_logs)
+		self.pssh = {}
+
+	# #################################################################################################
+
+	def log_devel(self, msg):
+		if self.enable_devel_logs:
+			self.cp.log_debug(msg)
+
 
 	# #################################################################################################
 
@@ -170,5 +184,51 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler, object):
 				response['content'] += data
 
 		return self.request_http_data_async( url, cbk_response_code, cbk_header, cbk_data, headers=headers, range=range)
+
+	# #################################################################################################
+
+	def get_wv_licence(self, drm_info, lic_request):
+		session = self.cp.get_requests_session()
+		try:
+			response = session.post(drm_info['licence_url'], data=lic_request, headers=drm_info.get('headers',{}))
+			response.raise_for_status()
+			content = response.content
+		except Exception as e:
+			self.cp.log_error("Failed to get DRM licence: %s" % str(e))
+			content = None
+
+		session.close()
+
+		return content
+
+	# #################################################################################################
+
+	def get_drm_keys(self, pssh_list, drm_info, privacy_mode=False):
+		keys = []
+		for p in pssh_list:
+			k = self.pssh.get(p)
+			if k == None:
+				self.cp.log_debug("Requesting keys for pssh %s from licence server" % p)
+				if privacy_mode:
+					k = self.wvdecrypt.get_content_keys(p, lambda lic_request: self.get_wv_licence(drm_info, lic_request), lambda cert_request: self.get_wv_licence(drm_info, cert_request))
+				else:
+					k = self.wvdecrypt.get_content_keys(p, lambda lic_request: self.get_wv_licence(drm_info, lic_request))
+				self.pssh[p] = k
+				if k:
+					keys.extend(k)
+					self.cp.log_debug("Received %d keys for pssh %s" % (len(k), p))
+				else:
+					self.cp.log_error("Failed to get DRM keys for pssh %s" % p)
+			else:
+				self.cp.log_debug("Keys for pssh %s found in cache" % p)
+				keys.extend(k)
+
+		return keys
+
+	# #################################################################################################
+
+	@staticmethod
+	def calc_cache_key(data):
+		return str(crc32(data.encode('utf-8')) & 0xffffffff)
 
 	# #################################################################################################

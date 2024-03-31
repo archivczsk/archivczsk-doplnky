@@ -9,9 +9,7 @@ try:
 except:
 	from urllib.parse import urljoin
 
-from tools_cenc.wvdecrypt import WvDecrypt
 from tools_cenc.mp4decrypt import mp4decrypt
-from binascii import crc32
 
 # #################################################################################################
 
@@ -32,21 +30,6 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		super(DashHTTPRequestHandler, self).__init__(content_provider, addon)
 		self.dash_proxy_segments = proxy_segments
 		self.dash_internal_decrypt = proxy_segments and internal_decrypt
-		self.enable_devel_logs = os.path.isfile('/tmp/archivczsk_enable_devel_logs')
-		self.wvdecrypt = WvDecrypt(enable_logging=self.enable_devel_logs)
-		self.pssh = {}
-
-	# #################################################################################################
-
-	def log_devel(self, msg):
-		if self.enable_devel_logs:
-			self.cp.log_debug(msg)
-
-	# #################################################################################################
-
-	@staticmethod
-	def calc_cache_key(data):
-		return str(crc32(data.encode('utf-8')))
 
 	# #################################################################################################
 
@@ -179,46 +162,6 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		self.request_http_data_async(url, http_code_write, http_header_write, http_data_write, range=request.getHeader(b'Range'))
 		request.notifyFinish().addBoth(request_finished)
 		return self.NOT_DONE_YET
-
-	# #################################################################################################
-
-	def get_wv_licence(self, drm_info, lic_request):
-		session = self.cp.get_requests_session()
-		try:
-			response = session.post(drm_info['licence_url'], data=lic_request, headers=drm_info.get('headers',{}))
-			response.raise_for_status()
-			content = response.content
-		except Exception as e:
-			self.cp.log_error("Failed to get DRM licence: %s" % str(e))
-			content = None
-
-		session.close()
-
-		return content
-
-	# #################################################################################################
-
-	def get_drm_keys(self, pssh_list, drm_info, privacy_mode=False):
-		keys = []
-		for p in pssh_list:
-			k = self.pssh.get(p)
-			if k == None:
-				self.cp.log_debug("Requesting keys for pssh %s from licence server" % p)
-				if privacy_mode:
-					k = self.wvdecrypt.get_content_keys(p, lambda lic_request: self.get_wv_licence(drm_info, lic_request), lambda cert_request: self.get_wv_licence(drm_info, cert_request))
-				else:
-					k = self.wvdecrypt.get_content_keys(p, lambda lic_request: self.get_wv_licence(drm_info, lic_request))
-				self.pssh[p] = k
-				if k:
-					keys.extend(k)
-					self.cp.log_debug("Received %d keys for pssh %s" % (len(k), p))
-				else:
-					self.cp.log_error("Failed to get DRM keys for pssh %s" % p)
-			else:
-				self.log_devel("Keys for pssh %s found in cache" % p)
-				keys.extend(k)
-
-		return keys
 
 	# #################################################################################################
 
