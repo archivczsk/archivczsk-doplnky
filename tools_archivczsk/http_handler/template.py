@@ -141,7 +141,7 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler, object):
 #				self.log_devel("%s: %s" % (k.decode('utf-8'), v[0].decode('utf-8')))
 
 			for k,v in response.headers.getAllRawHeaders():
-				if k in (b'Content-Length', b'Accept-Ranges', b'Content-Type', b'Accept', b'Content-Range'):
+				if k in (b'Accept-Ranges', b'Content-Type', b'Accept', b'Content-Range'):
 					cbk_header(k,v[0])
 
 			response.deliverBody(SegmentDataWriter(self.cp, d, cbk_data, timeout_call))

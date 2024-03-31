@@ -220,10 +220,8 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				else:
 					request.setResponseCode(response['status_code'])
 					for k,v in response['headers'].items():
-						if k != b'Content-Length':
-							request.setHeader(k, v)
+						request.setHeader(k, v)
 
-					request.setHeader(b'Content-Length', str(len(data)))
 					request.write(data)
 
 			request.finish()
