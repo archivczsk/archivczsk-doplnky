@@ -13,6 +13,7 @@ import json
 class MagioGOHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler):
 	def __init__(self, content_provider, addon ):
 		super(MagioGOHTTPRequestHandler, self).__init__(content_provider, addon)
+		self.hls_proxy_variants = True
 		self.hls_proxy_segments = True
 		self.dash_proxy_segments = True
 		self.live_cache = {}

@@ -1,3 +1,6 @@
+1.18 - 31.03.2024
+    - oprava pretáčania v archíve u MPD streamov (pre OpenPLi 9.0 a OpenATV 7.3, no funguje len s interným prehrávačom)
+
 1.17 - 09.03.2024
     - oprava skratky do archívu
     - oprava odstránenia VOD kanálov z userbouquetu

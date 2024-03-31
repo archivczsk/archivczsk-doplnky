@@ -335,6 +335,8 @@ class MagioGOContentProvider(ModuleContentProvider):
 				'bandwidth': one['bandwidth'],
 				'quality': one.get('height', '???') + 'p'
 			}
+
+			player_settings['relative_seek_enabled'] = False
 			self.add_play(video_title, stream_key_to_dash_url(self.http_endpoint, key), info_labels=info_labels, settings=player_settings)
 
 	# ##################################################################################################################
