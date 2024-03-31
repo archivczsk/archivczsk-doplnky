@@ -3,6 +3,15 @@
 import base64
 from .template import HTTPRequestHandlerTemplate
 import re
+import binascii
+
+try:
+	from urlparse import urljoin, quote, unquote
+except:
+	from urllib.parse import urljoin, quote, unquote
+
+from tools_cenc.mp4decrypt import mp4decrypt
+
 
 # #################################################################################################
 
@@ -19,9 +28,11 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 	Http request handler that implements processing of HLS master playlist and exports new one with only selected one video stream.
 	Other streams (audio, subtitles, ...) are preserved.
 	'''
-	def __init__(self, content_provider, addon, proxy_segments=False):
+	def __init__(self, content_provider, addon, proxy_segments=False, proxy_variants=False, internal_decrypt=False):
 		super(HlsHTTPRequestHandler, self).__init__(content_provider, addon)
 		self.hls_proxy_segments = proxy_segments
+		self.hls_proxy_variants = proxy_variants
+		self.hls_internal_decrypt = proxy_segments and internal_decrypt
 
 	# #################################################################################################
 
@@ -61,7 +72,7 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				hls_info = { 'url': hls_info }
 
 			# resolve HLS playlist and get only best stream
-			self.get_hls_playlist_data_async(hls_info['url'], hls_info.get('bandwidth'), hls_info.get('headers'), cbk=hls_continue)
+			self.get_hls_playlist_data_async(hls_info['url'], hls_info.get('bandwidth'), hls_info.get('headers'), hls_info.get('drm',{}), cbk=hls_continue)
 			return self.NOT_DONE_YET
 
 		except:
@@ -71,30 +82,136 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 	# #################################################################################################
 
-	def hls_proxify_segment_url(self, url):
+	def hls_proxify_segment_url(self, segment_cache_key, url, segment_type):
 		'''
 		Redirects segment url to use proxy
 		'''
 
-		segment_key = base64.b64encode(url.encode('utf-8')).decode('utf-8')
-		return "/%s/hs/%s" % (self.name, segment_key)
+		if segment_cache_key:
+			# drm protected segment, that should be decrypted by hsp handler
+			return "/%s/hsp/%s/%s/%s" % (self.name, segment_type, segment_cache_key, quote(url))
+		else:
+			# not crypted segment, or segment that should be forwarded directly to player
+			return "/%s/hs/%s" % (self.name, quote(url))
 
 	# #################################################################################################
 
-	def hls_proxify_playlist_url(self, url):
+	def hls_proxify_playlist_url(self, cache_key):
 		'''
 		Redirects segment url to use proxy
 		'''
+		return self.encode_stream_key('/' + self.name, cache_key, 'hp', 'm3u8')
 
-		segment_key = base64.b64encode(url.encode('utf-8')).decode('utf-8')
-		return "/%s/hp/%s" % (self.name, segment_key)
+	# #################################################################################################
+
+	def P_rawkey(self, request, path):
+		self.cp.log_debug("Returning decryption key: %s" % path)
+		key = binascii.a2b_hex(path)
+		return self.reply_ok( request, key, "application/octet-stream", raw=True)
+
+	# #################################################################################################
+
+	def process_drm_key_line(self, line, drm_info, segment_cache_data):
+		self.cp.log_debug('Processing DRM line: %s' % line)
+
+		attr = {}
+		for a in re.findall(r'(?:[^\s,"]|"(?:\\.|[^"])*")+', line[11:]):
+			s = a.split('=')
+			attr[s[0]] = '='.join(s[1:])
+
+		self.cp.log_debug('Attrs: %s' % attr)
+		self.cp.log_debug("Keyformat: %s" % attr.get('KEYFORMAT'))
+
+		if attr.get('KEYFORMAT','').lower() == '"urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed"':
+			self.cp.log_debug("Widevine keyformat found")
+			# wv drm data
+			pssh = attr.get('URI','')
+			if not pssh.startswith('"data:text/plain;base64,'):
+				self.cp.log_error("Failed to process PSSH key - URI format not supported")
+				line = ''
+			else:
+				pssh = pssh[24:-1]
+				segment_cache_data['pssh'].append(pssh)
+				keys = self.get_drm_keys([pssh], drm_info)
+				if self.hls_internal_decrypt:
+					# when doing internal decrypt, then remove #EXT-X-KEY: line to not confuse player
+					line = ''
+				else:
+					if len(keys) == 1:
+						line = '#EXT-X-KEY:METHOD=SAMPLE-AES,URI="/%s/rawkey/%s"' % (self.name, keys[0].split(':')[1])
+					else:
+						line = '#EXT-X-KEY:METHOD=SAMPLE-AES,URI="keys://' + ':'.join(k.replace(':','=') for k in keys) + '"'
+		elif attr.get('METHOD') == 'SAMPLE-AES-CTR':
+			# remove not supported DRM line by player
+			line = ''
+
+		return line
+
+	# #################################################################################################
+
+	def hls_process_drm_protected_segment(self, segment_type, data, cache_data):
+		# handle DRM protected segment data
+		if segment_type == 'i':
+			self.log_devel("Received init segment data")
+
+			# init segment is not encrypted, but we need it for decrypting data segments
+			cache_data['init'] = data
+			return data
+
+		# collect keys for protected content
+		keys = self.get_drm_keys(cache_data['pssh'], cache_data['drm'], cache_data['drm'].get('privacy_mode', False))
+
+		if len(keys) == 0:
+			self.cp.log_error("No keys to decrypt DRM protected content")
+			return None
+
+		self.log_devel("Keys for pssh: %s" % str(keys))
+
+		self.log_devel("Decrypting media segment with size %d" % len(data))
+		data_out = mp4decrypt(keys, cache_data['init'], data)
+		self.log_devel("Decrypted media segment with size %d" % len(data_out))
+		return data_out
+
+	# #################################################################################################
+
+	def P_hsp(self, request, path):
+		path_splitted = path.split('/')
+		segment_type = path_splitted[0]
+		segment_cache_key = path_splitted[1]
+		segment_url = '/'.join(path_splitted[2:])
+		segment_url = unquote(segment_url)
+
+		self.cp.log_debug('Requesting HLS %s segment: %s' % ('init' if segment_type == 'i' else 'media', segment_url))
+		cache_data = self.scache.get(segment_cache_key)
+
+		def hsp_continue(response):
+			if response['status_code'] >= 400:
+				self.cp.log_error("Response code for HLS segment: %d" % response['status_code'])
+				request.setResponseCode(403)
+			else:
+				data = self.hls_process_drm_protected_segment(segment_type, response['content'], cache_data)
+
+				if not data:
+					self.cp.log_error('Failed to decrypt segment for stream key: %s' % segment_cache_key)
+					request.setResponseCode(501)
+				else:
+					request.setResponseCode(response['status_code'])
+					for k,v in response['headers'].items():
+						request.setHeader(k, v)
+
+					request.write(data)
+
+			request.finish()
+
+		self.request_http_data_async_simple(segment_url, cbk=hsp_continue, range=request.getHeader(b'Range'))
+		return self.NOT_DONE_YET
 
 	# #################################################################################################
 
 	def P_hs(self, request, path):
-		url = base64.b64decode(path.encode('utf-8')).decode('utf-8')
+		segment_url = unquote(path)
 
-		self.cp.log_debug('Requesting HLS segment: %s' % url)
+		self.cp.log_debug('Requesting HLS segment: %s' % segment_url)
 		flags = {
 			'finished': False
 		}
@@ -114,14 +231,17 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		def request_finished(reason):
 			flags['finished'] = True
 
-		self.request_http_data_async(url, http_code_write, http_header_write, http_data_write, range=request.getHeader(b'Range'))
+		self.request_http_data_async(segment_url, http_code_write, http_header_write, http_data_write, range=request.getHeader(b'Range'))
 		request.notifyFinish().addBoth(request_finished)
 		return self.NOT_DONE_YET
 
 	# #################################################################################################
 
 	def P_hp(self, request, path):
-		url = base64.b64decode(path.encode('utf-8')).decode('utf-8')
+		cache_key = self.decode_stream_key(path)
+		stream_data = self.scache.get(cache_key)
+		url = stream_data['url']
+		drm_info = stream_data['drm']
 
 		self.cp.log_debug('Requesting HLS variant playlist: %s' % url)
 
@@ -133,14 +253,19 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				request.finish()
 				return
 
-			def process_url(surl, redirect_url):
-				if not surl.startswith('http'):
-					if surl.startswith('/'):
-						surl = redirect_url[:redirect_url[9:].find('/') + 9] + surl
-					else:
-						surl = redirect_url[:redirect_url.rfind('/') + 1] + surl
+			segment_cache_data = {
+				'drm': drm_info,
+				'pssh': []
+			}
 
-					surl = self.hls_proxify_segment_url(surl)
+			segment_cache_key = self.calc_cache_key('segment' + response['url'])
+			self.scache.put_with_key(segment_cache_data, segment_cache_key)
+
+			def process_url(surl, redirect_url, segment_type='m'):
+				surl = urljoin(redirect_url, surl)
+
+				if self.hls_proxy_segments:
+					surl = self.hls_proxify_segment_url(segment_cache_key if len(segment_cache_data['pssh']) > 0 else None, surl, segment_type)
 
 				return surl
 
@@ -148,19 +273,21 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			stream_url_line = False
 
 			for line in iter(response['content'].decode('utf-8').splitlines()):
-				if stream_url_line:
+				if stream_url_line and not line.startswith('#'):
 					resp_data.append(process_url(line, response['url']))
 					stream_url_line = False
 					continue
 
-				if 'URI=' in line:
+				if drm_info and line.startswith("#EXT-X-KEY:"):
+					line = self.process_drm_key_line(line, drm_info, segment_cache_data)
+				elif 'URI=' in line:
 					# fix uri to full url
 					uri = line[line.find('URI=') + 4:]
 
 					if uri[0] in ('"', "'"):
 						uri = uri[1:uri[1:].find(uri[0]) + 1]
 
-					line = line.replace(uri, process_url(uri, response['url']))
+					line = line.replace(uri, process_url(uri, response['url'], 'i' if line.startswith('#EXT-X-MAP:') else 'm'))
 
 				if line.startswith("#EXTINF:"):
 					stream_url_line = True
@@ -171,6 +298,7 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			request.setHeader('content-type', "application/vnd.apple.mpegurl")
 			request.write(('\n'.join(resp_data) + '\n').encode('utf-8'))
 			request.finish()
+
 			return
 
 		self.request_http_data_async_simple(url, cbk=p_continue)
@@ -179,20 +307,22 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 	# #################################################################################################
 
-	def get_hls_playlist_data_async(self, url, bandwidth=None, headers=None, cbk=None):
+	def get_hls_playlist_data_async(self, url, bandwidth=None, headers=None, drm=None, cbk=None):
 		'''
 		Processes HLS master playlist from given url and returns new one with only one variant playlist specified by bandwidth (or with best bandwidth if no bandwidth is given)
 		'''
 
-		def process_url(surl, redirect_url):
-			if not surl.startswith('http'):
-				if surl.startswith('/'):
-					surl = redirect_url[:redirect_url[9:].find('/') + 9] + surl
-				else:
-					surl = redirect_url[:redirect_url.rfind('/') + 1] + surl
+		def process_url(surl, redirect_url, allow_proxy = True):
+			surl = urljoin(redirect_url, surl)
 
-				if self.hls_proxy_segments:
-					surl = self.hls_proxify_playlist_url(surl)
+			if self.hls_proxy_variants and allow_proxy:
+				cache_key = self.calc_cache_key(surl)
+				cache_data = {
+					'url': surl,
+					'drm': drm
+				}
+				self.scache.put_with_key(cache_data, cache_key)
+				surl = self.hls_proxify_playlist_url(cache_key)
 
 			return surl
 
@@ -226,34 +356,39 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 			if len(streams) == 0:
 				self.cp.log_error("No streams found for bandwidth %d" % bandwidth)
-				return None
+				return cbk(None)
 
 			resp_data = []
 			ignore_next = False
 			stream_to_keep = 'BANDWIDTH=%s' % streams[0].get('bandwidth', 0)
+			audio_found = False
 
 			for line in iter(response_text.splitlines()):
-				if ignore_next:
+				if ignore_next and not line.startswith('#'):
 					ignore_next = False
 					continue
 
-				if 'URI=' in line:
-					# fix uri to full url
-					uri = line[line.find('URI=') + 4:]
+				if line.startswith('#'):
+					if drm and line.startswith("#EXT-X-SESSION-KEY:"):
+						# session key is not supported by the player - it will be handled in variant playlist
+						line = ''
+					elif 'URI=' in line:
+						# fix uri to full url
+						uri = line[line.find('URI=') + 4:]
 
-					if uri[0] in ('"', "'"):
-						uri = uri[1:uri[1:].find(uri[0]) + 1]
+						if uri[0] in ('"', "'"):
+							uri = uri[1:uri[1:].find(uri[0]) + 1]
 
-					line = line.replace(uri, process_url(uri, response['url']))
+						line = line.replace(uri, process_url(uri, response['url']))
 
-				if line.startswith("#EXT-X-STREAM-INF:"):
-					if stream_to_keep in line:
+					if line.startswith("#EXT-X-STREAM-INF:"):
+						if stream_to_keep in line:
+							resp_data.append(line)
+							resp_data.append(streams[0]['url'])
+
+						ignore_next = True
+					else:
 						resp_data.append(line)
-						resp_data.append(streams[0]['url'])
-
-					ignore_next = True
-				else:
-					resp_data.append(line)
 
 			cbk('\n'.join(resp_data) + '\n')
 			return
