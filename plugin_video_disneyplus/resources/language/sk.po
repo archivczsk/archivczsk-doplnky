@@ -1,0 +1,198 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_hbomax\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-04-19 13:17+0200\n"
+"PO-Revision-Date: 2024-04-07 18:53+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: sk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: plugin_video_disneyplus/provider.py:39
+msgid "To display the content, you must enter a login name and password in the addon settings"
+msgstr "Pre zobrazenie obsahu je potrebné zadať prihlasovacie meno a heslo v nastaveniach doplnku"
+
+#: plugin_video_disneyplus/provider.py:88
+#: plugin_video_disneyplus/provider.py:157
+msgid "PIN protected"
+msgstr "Chránené PIN kódom"
+
+#: plugin_video_disneyplus/provider.py:98
+msgid "Select profile"
+msgstr "Vyberte profil"
+
+#: plugin_video_disneyplus/provider.py:116
+msgid "Home"
+msgstr "Domov"
+
+#: plugin_video_disneyplus/provider.py:117
+msgid "Hubs"
+msgstr "Zbrierky"
+
+#: plugin_video_disneyplus/provider.py:118
+msgid "Movies"
+msgstr "Filmy"
+
+#: plugin_video_disneyplus/provider.py:119
+msgid "Series"
+msgstr "Seriály"
+
+#: plugin_video_disneyplus/provider.py:120
+msgid "Disney Originals"
+msgstr "Disney Originals"
+
+#: plugin_video_disneyplus/provider.py:123
+msgid "Watchlist"
+msgstr "Watchlist"
+
+#: plugin_video_disneyplus/provider.py:126
+msgid "Continue watching"
+msgstr "Pokračovať v sledovaní"
+
+#: plugin_video_disneyplus/provider.py:128
+msgid "Informations and settings"
+msgstr "Informácie a nastavenia"
+
+#: plugin_video_disneyplus/provider.py:133
+msgid "Profiles"
+msgstr "Profily"
+
+#: plugin_video_disneyplus/provider.py:173
+msgid "Do you realy want to switch profile?"
+msgstr "Naozaj chcete prepnúť profil?"
+
+#: plugin_video_disneyplus/provider.py:176
+msgid "Enter PIN"
+msgstr "Zadajte PIN"
+
+#: plugin_video_disneyplus/provider.py:468
+msgid "Delete from watchlist"
+msgstr "Vymazať z Watchlist"
+
+#: plugin_video_disneyplus/provider.py:470
+msgid "Add to watchlist"
+msgstr "Pridať do watchlistu"
+
+#: plugin_video_disneyplus/provider.py:547
+#: plugin_video_disneyplus/provider.py:592
+msgid "Play trailer"
+msgstr "Prehrať trailer"
+
+#: plugin_video_disneyplus/provider.py:557
+msgid "Season"
+msgstr "Sezóna"
+
+#: plugin_video_disneyplus/provider.py:593
+#: plugin_video_disneyplus/provider.py:609
+msgid "Extras"
+msgstr "Doplnky"
+
+#: plugin_video_disneyplus/provider.py:594
+#: plugin_video_disneyplus/provider.py:612
+msgid "Suggested"
+msgstr "Odporúčané"
+
+#: plugin_video_disneyplus/disneyplus.py:42
+msgid "You are not entitled to access this content. Check if your subscription is valid."
+msgstr "Nemáte oprávnenie pre prístup k tomuto obsahu. Skontrolujte platnosť vašeho predplatného."
+
+#: plugin_video_disneyplus/disneyplus.py:43
+msgid "Your login details are incorrect."
+msgstr "Vaše prihlasovacie údaje nie sú správne."
+
+#: plugin_video_disneyplus/disneyplus.py:44
+msgid "Incorrect PIN"
+msgstr "Nesprávny PIN"
+
+#: plugin_video_disneyplus/disneyplus.py:132
+msgid "Unexpected return code from server"
+msgstr "Neočakávaný návratový kód zo servera"
+
+#: plugin_video_disneyplus/disneyplus.py:237
+#: plugin_video_disneyplus/disneyplus.py:241
+#: plugin_video_disneyplus/disneyplus.py:244
+#, python-brace-format
+msgid "API request failed. Server Error: {msg}"
+msgstr "Požiadavka na API zlyhala. Chyba servera: {msg}"
+
+#: plugin_video_disneyplus/disneyplus.py:286
+msgid "Login e-mail not found"
+msgstr "Prihlasovací e-mail nebol nájdený"
+
+#: plugin_video_disneyplus/disneyplus.py:289
+msgid "Login using OTP is not supported"
+msgstr "Prihlásenie pomocou jednorázového hesla nie je podporované"
+
+msgid "Login name"
+msgstr "Prihlasovacie meno"
+
+msgid "Login password"
+msgstr "Prihlasovacie heslo"
+
+msgid "Select profile on startup"
+msgstr "Výber profilu pri spustení"
+
+msgid "Prefered video codec"
+msgstr "Preferovaný video kodek"
+
+msgid "h264"
+msgstr ""
+
+msgid "h265"
+msgstr ""
+
+msgid "Enable and prefer multichannel audio"
+msgstr "Povoliť a preferovať viackanálové audio"
+
+msgid "Sync watchlist"
+msgstr "Synchronizovať watchlist"
+
+msgid "Sync playback"
+msgstr "Synchronizovať pozíciu prehrávania"
+
+msgid "Enable relative seeking in movies"
+msgstr "Povoliť relatívne pretáčanie u filmov"
+
+msgid "Language of dubbed entries and menu"
+msgstr "Jazyk dabovaných položiek a menu"
+
+msgid "Auto"
+msgstr ""
+
+msgid "CZ"
+msgstr ""
+
+msgid "SK"
+msgstr ""
+
+msgid "CZ & SK"
+msgstr ""
+
+msgid "SK & CZ"
+msgstr ""
+
+msgid "EN"
+msgstr ""
+
+msgid "Start subtitles automatically"
+msgstr "Automaticky spustiť titulky"
+
+msgid "Always"
+msgstr "Vždy"
+
+msgid "When undubbed"
+msgstr "U nedabovaných"
+
+msgid "Never"
+msgstr "Nikdy"
+
+msgid "Start forced subtitles automatically"
+msgstr "Automaticky spustiť forced titulky"

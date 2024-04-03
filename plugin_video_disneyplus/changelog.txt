@@ -1,0 +1,5 @@
+1.0 - 19.04.2024
+    - prvá verejná verzia na základe doplnku pre Kodi od slyguy
+    - pre správne fungovanie je nutný upravený exteplayer3 verzie >= 169
+    - obsah je dostupný v 720p kvalite
+    - audio je možné prepínať cez playlist (tlačidlá HORE/DOLE počas prehrávania)

@@ -1,0 +1,273 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_hbomax\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-04-19 13:17+0200\n"
+"PO-Revision-Date: 2024-04-07 18:53+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: plugin_video_disneyplus/provider.py:39
+msgid "To display the content, you must enter a login name and password in the addon settings"
+msgstr "Pro zobrazení obsahu je nutné zadat přihlašovací jméno a heslo v nastaveních doplňku"
+
+#: plugin_video_disneyplus/provider.py:88
+#: plugin_video_disneyplus/provider.py:157
+msgid "PIN protected"
+msgstr "Chráněné PIN kódem"
+
+#: plugin_video_disneyplus/provider.py:98
+msgid "Select profile"
+msgstr "Vyberte profil"
+
+#: plugin_video_disneyplus/provider.py:116
+msgid "Home"
+msgstr "Domov"
+
+#: plugin_video_disneyplus/provider.py:117
+msgid "Hubs"
+msgstr "Sbírky"
+
+#: plugin_video_disneyplus/provider.py:118
+msgid "Movies"
+msgstr "Filmy"
+
+#: plugin_video_disneyplus/provider.py:119
+msgid "Series"
+msgstr "Seriály"
+
+#: plugin_video_disneyplus/provider.py:120
+msgid "Disney Originals"
+msgstr "Disney Originals"
+
+#: plugin_video_disneyplus/provider.py:123
+msgid "Watchlist"
+msgstr "Watchlist"
+
+#: plugin_video_disneyplus/provider.py:126
+msgid "Continue watching"
+msgstr "Pokračovat v sledování"
+
+#: plugin_video_disneyplus/provider.py:128
+msgid "Informations and settings"
+msgstr "Informace a nastavení"
+
+#: plugin_video_disneyplus/provider.py:133
+msgid "Profiles"
+msgstr "Profily"
+
+#: plugin_video_disneyplus/provider.py:173
+msgid "Do you realy want to switch profile?"
+msgstr "Opravdu chcete přepnut profil?"
+
+#: plugin_video_disneyplus/provider.py:176
+msgid "Enter PIN"
+msgstr "Zadejte PIN"
+
+#: plugin_video_disneyplus/provider.py:468
+msgid "Delete from watchlist"
+msgstr "Vymazat z Watchlist"
+
+#: plugin_video_disneyplus/provider.py:470
+msgid "Add to watchlist"
+msgstr "Přidat do watchlistu"
+
+#: plugin_video_disneyplus/provider.py:547
+#: plugin_video_disneyplus/provider.py:592
+msgid "Play trailer"
+msgstr "Přehrát trailer"
+
+#: plugin_video_disneyplus/provider.py:557
+msgid "Season"
+msgstr "Sezona"
+
+#: plugin_video_disneyplus/provider.py:593
+#: plugin_video_disneyplus/provider.py:609
+msgid "Extras"
+msgstr "Doplňky"
+
+#: plugin_video_disneyplus/provider.py:594
+#: plugin_video_disneyplus/provider.py:612
+msgid "Suggested"
+msgstr "Navrhované"
+
+#: plugin_video_disneyplus/disneyplus.py:42
+msgid "You are not entitled to access this content. Check if your subscription is valid."
+msgstr "Nemáte oprávněni k přístupu k tomuto obsahu. Zkontrolujte, jestli je vaše předplatné nadále validní."
+
+#: plugin_video_disneyplus/disneyplus.py:43
+msgid "Your login details are incorrect."
+msgstr "Vaše přihlašovací údaje nejsou platné."
+
+#: plugin_video_disneyplus/disneyplus.py:44
+msgid "Incorrect PIN"
+msgstr "Nesprávný PIN"
+
+#: plugin_video_disneyplus/disneyplus.py:132
+msgid "Unexpected return code from server"
+msgstr "Neočekávaný návratový kód ze serveru"
+
+#: plugin_video_disneyplus/disneyplus.py:237
+#: plugin_video_disneyplus/disneyplus.py:241
+#: plugin_video_disneyplus/disneyplus.py:244
+#, python-brace-format
+msgid "API request failed. Server Error: {msg}"
+msgstr "Požadavek na API selhal. Chyba serveru: {msg}"
+
+#: plugin_video_disneyplus/disneyplus.py:286
+msgid "Login e-mail not found"
+msgstr "Přihlašovací  e-mail nebyl nalezen"
+
+#: plugin_video_disneyplus/disneyplus.py:289
+msgid "Login using OTP is not supported"
+msgstr "Přihlášení jednorázovým heslem není podporováno"
+
+msgid "Login name"
+msgstr "Přihlašovací jméno"
+
+msgid "Login password"
+msgstr "Přihlašovací heslo"
+
+msgid "Select profile on startup"
+msgstr "Volba profilu při startu"
+
+msgid "Prefered video codec"
+msgstr "Preferovaný video codec"
+
+msgid "h264"
+msgstr ""
+
+msgid "h265"
+msgstr ""
+
+msgid "Enable and prefer multichannel audio"
+msgstr "Povolit a preferovat vícekanálové audio"
+
+msgid "Sync watchlist"
+msgstr "Synchronizovat watchlist"
+
+msgid "Sync playback"
+msgstr "Synchronizovat pozici přehrávanání"
+
+msgid "Enable relative seeking in movies"
+msgstr "Povolit relativní přetáčení ve filmech "
+
+msgid "Language of dubbed entries and menu"
+msgstr "Jazyk dabovaných položek a menu"
+
+msgid "Auto"
+msgstr ""
+
+msgid "CZ"
+msgstr ""
+
+msgid "SK"
+msgstr ""
+
+msgid "CZ & SK"
+msgstr ""
+
+msgid "SK & CZ"
+msgstr ""
+
+msgid "EN"
+msgstr ""
+
+msgid "Start subtitles automatically"
+msgstr "Automaticky spustit titulky"
+
+msgid "Always"
+msgstr "Vždy"
+
+msgid "When undubbed"
+msgstr "U nedabovaných"
+
+msgid "Never"
+msgstr "Nikdy"
+
+msgid "Start forced subtitles automatically"
+msgstr "Automaticky spustit forced titulky"
+
+#~ msgid "Last used"
+#~ msgstr "Naposled použito"
+
+#~ msgid "This operation is not yet implemented!"
+#~ msgstr "Tato operace není implementovaná!"
+
+#~ msgid "Enable and prefer AC3+ audio codec"
+#~ msgstr "Povolit a preferovat AC3+ audio kodek"
+
+#~ msgid "Enable subtitles support"
+#~ msgstr "Povolit podporu pro titulky"
+
+#~ msgid "HBO Originals"
+#~ msgstr "HBO Originals"
+
+#~ msgid "Just added"
+#~ msgstr "Právě přidané"
+
+#~ msgid "Coming soon"
+#~ msgstr "Již brzy"
+
+#~ msgid "Trending"
+#~ msgstr "Trendy"
+
+#~ msgid "Devices"
+#~ msgstr "Zařízení"
+
+#~ msgid "Active profile"
+#~ msgstr "Aktivní profil"
+
+#~ msgid "Kids profile"
+#~ msgstr "Dětský profil"
+
+#~ msgid "Remove from watchlist"
+#~ msgstr "Vymazat z watchlistu"
+
+#~ msgid "Go to series"
+#~ msgstr "Jít na seriál"
+
+#~ msgid "No response received from server. Maybe is your IP blocked by HBO."
+#~ msgstr "Server neodeslal odpověď. Možná je vaše IP u HBO zablokováná."
+
+#~ msgid "Failed to perform anonymous login. Your IP is maybe blocked by HBO."
+#~ msgstr "Anonymní přihlášení selhalo. Vaše IP je možná u HBO zablokovaná."
+
+#~ msgid "You don't have access to this content"
+#~ msgstr "K tomuto obsahu nemáte přístup"
+
+#~ msgid "Video not found"
+#~ msgstr "Video nenalezeno"
+
+#~ msgid "Name"
+#~ msgstr "Jméno"
+
+#~ msgid "Customer ID"
+#~ msgstr "Zákaznické ID"
+
+#~ msgid "Login from partner"
+#~ msgstr "Přihlášení přes partnera"
+
+#~ msgid "No"
+#~ msgstr "Ne"
+
+#~ msgid "Active subscription"
+#~ msgstr "Aktivní předplatné"
+
+#~ msgid "Number of registered devices"
+#~ msgstr "Počet zaregistrovaných zařízení"
+
+#~ msgid "Last used profile"
+#~ msgstr "Poslední použitý profil"
+
+#~ msgid "Do you realy want to delete this device?"
+#~ msgstr "Opravdu chcete smazat toto zařízení?"
