@@ -57,5 +57,8 @@ def dump_json_request(response):
 		}
 	}
 
-	with open( os.path.join('/tmp/', '%03d_%s.json' % (__debug_nr, file_name)), 'w') as f:
-		json.dump(data, f)
+	try:
+		with open( os.path.join('/tmp/', '%03d_%s.json' % (__debug_nr, file_name)), 'w') as f:
+			json.dump(data, f)
+	except:
+		pass
