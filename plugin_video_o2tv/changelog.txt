@@ -1,3 +1,6 @@
+1.12 - 08.04.2024
+    - pridanie O2 TV Fotbal HD do výberu streamov u multidimenzie
+
 1.11 - 25.03.2024
     - pridaná kontrola dostupnosti prehrávania MPEG-DASH streamov pri štarte doplnku
 
