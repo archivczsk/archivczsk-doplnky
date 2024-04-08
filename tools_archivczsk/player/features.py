@@ -115,7 +115,11 @@ class PlayerFeatures(object):
 
 	@classmethod
 	def request_exteplayer3_cenc_support(cls, content_provider):
-		if cls.exteplayer3_cenc_supported == True:
+		return cls.request_exteplayer3_version(content_provider, 168)
+
+	@classmethod
+	def request_exteplayer3_version(cls, content_provider, req_version):
+		if cls.exteplayer3_version is not None and cls.exteplayer3_version >= req_version:
 			return
 
 		if not videoPlayerInfo.serviceappAvailable:
@@ -129,12 +133,12 @@ class PlayerFeatures(object):
 			content_provider.show_error(_("Hardware platform of your receiver is not supported"))
 			return
 
-		if cls.exteplayer3_cenc_supported == None:
-			msg = _('It was not possible to determine, if you have installed exteplayer3 and if it can play DRM protected streams needed by this addon.')
+		if cls.exteplayer3_version == None:
+			msg = _('It was not possible to determine, if you have installed exteplayer3 and if it provides features needed by this addon.')
 		else:
-			msg = _("Installed version of exteplayer3 doesn't support playback of DRM protected streams needed by this addon.")
+			msg = _("Installed version of exteplayer3 doesn't support all features needed by this addon.")
 
-		if content_provider.get_yes_no_input(msg + ' ' + _("It is recommended to install modified version of exteplayer3 and ffmpeg with build in support for MPEG-DASH and DRM streams.\nShould I download and install recommanded version for you?")) == True:
+		if content_provider.get_yes_no_input(msg + ' ' + _("It is recommended to install latest modified version of exteplayer3 and ffmpeg with build in all features needed.\nShould I download and install recommanded version for you?")) == True:
 			cls.download_and_install(EXTEPLAYER3_NAME)
 			cls.download_and_install(FFMPEG_NAME)
 			PlayerFeatures(True)
