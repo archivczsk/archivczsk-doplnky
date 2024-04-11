@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<settings>
-   <setting label="Stát" id="country" type="enum" lvalues="cz|sk" default="0"/>
-</settings>
