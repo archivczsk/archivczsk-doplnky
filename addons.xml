@@ -2,7 +2,6 @@
 <addons>
 <addon id="plugin.video.aktualne" name="Aktuálně (DVTV)" version="1.5" hash="8c554f18b9b631ffda616fadf3d20df7" rhash="8c554f18b9b631ffda616fadf3d20df7" />
 <addon id="plugin.video.antiktv" name="Antik TV" version="2.11" hash="87eac9d177e4fa945e7e032617e28724" rhash="5bc4602d7bcd0b8a8ab1dcfd0ab4a924" />
-<addon id="plugin.video.archivo2tv" name="Sledování O2TV" version="1.12.0" hash="e40dfc8272358096219137ee2cad39e3" rhash="e40dfc8272358096219137ee2cad39e3"><extension point="archivczsk.addon.metadata"><broken>Tento doplnok využíval službu od O2 ktorá skončila a preto doplnok viac nie je funkčný. Náhradou je nový doplnok O2 TV 2.0.</broken></extension></addon>
 <addon id="plugin.video.autosalontv" name="Autosalon" version="1.6" hash="dfbe5c50bcc0d52a2ba6331275e79962" rhash="dfbe5c50bcc0d52a2ba6331275e79962" />
 <addon id="plugin.video.dokumenty.tv" name="Dokumenty.tv" version="1.6" hash="feab95027a6fec159001a45dd123fc6f" rhash="feab95027a6fec159001a45dd123fc6f" />
 <addon id="plugin.video.eurosport" name="Eurosport Player" version="1.11" hash="a7cc0e4d8b64bc328e2dd1927d820c0c" rhash="a7cc0e4d8b64bc328e2dd1927d820c0c" />
@@ -11,13 +10,11 @@
 <addon id="plugin.video.iprima" name="iPrima.cz" version="1.12" hash="9edcc667fc3f4db1b489f8e0901a15a8" rhash="9edcc667fc3f4db1b489f8e0901a15a8" />
 <addon id="plugin.video.ivysilani" name="iVysílání — Česká televize" version="1.7.0" hash="26e81ad8aa14a013fb2389cf9f52c27a" rhash="26e81ad8aa14a013fb2389cf9f52c27a" />
 <addon id="plugin.video.joj.sk" name="joj.sk" version="1.6.1" hash="29cde0c219502b134d0d77bc697525ee" rhash="29cde0c219502b134d0d77bc697525ee" />
-<addon id="plugin.video.magiogo" name="Magio TV" version="1.17" hash="83d846c706ff0af6a07ce262cb3d902c" rhash="5b0993d882531783a2eb21cc0756ddce" />
-<addon id="plugin.video.mall.tv" name="Fameplay.tv" version="1.10" hash="60029a04ebfec44e9290c8c711d3c95d" rhash="60029a04ebfec44e9290c8c711d3c95d"><extension point="archivczsk.addon.metadata"><broken>Tento doplnok nie je viac funkčný a jeho vývoj skončil.</broken></extension></addon>
+<addon id="plugin.video.magiogo" name="Magio TV" version="1.18" hash="afafcb29b3cf1abe0283865ce964ba9d" rhash="dde178c4f1bddfada58fa7a2738d71af" />
 <addon id="plugin.video.markiza" name="Markíza" version="2.6" hash="ef66d957bf0c435d80415523de1b7d5f" rhash="e638789730c7b6fe91c7307142e0c2b4" />
 <addon id="plugin.video.mtr.sk" name="Mestská TV Ružomberok" version="1.3.0" hash="818e5787c0590cbf73e6075959f5d787" rhash="818e5787c0590cbf73e6075959f5d787" />
 <addon id="plugin.video.novaplus" name="TV Nova" version="3.6" hash="ac55b7ccc4612fcb1be8f7cc4d307079" rhash="f42c75dd5b6524e7320ca7474650af13" />
-<addon id="plugin.video.o2tv" name="O2 TV 2.0" version="1.11" hash="0ed09fd26bbaf759760160dd2dbbd99d" rhash="ab718f7e902afa03a688cfaff921f6f6" />
-<addon id="plugin.video.online-files" name="Soubory Online" version="1.7.0" hash="df73abdaf48215303a749a748d56fb43" rhash="df73abdaf48215303a749a748d56fb43"><extension point="archivczsk.addon.metadata"><broken>Vývoj doplnku skončil a viac nie je podporovaný</broken></extension></addon>
+<addon id="plugin.video.o2tv" name="O2 TV 2.0" version="1.12" hash="eb895f3774edcabf5052bee1b09e514f" rhash="32490cc8f1f35f75e65d78b6cbf755e5" />
 <addon id="plugin.video.orangetv" name="OrangeTV" version="2.15" hash="372ec628755352962a46a069f497f933" rhash="fa643989c4111f085339b17a595d655a" />
 <addon id="plugin.video.pohadkar.cz" name="Pohádkář.cz" version="1.4.0" hash="f9bee39e2b92304f7f5d4844ae9d5001" rhash="f9bee39e2b92304f7f5d4844ae9d5001" />
 <addon id="plugin.video.prehrajto" name="Prehraj.to" version="1.0" hash="8ca4539743d6e9b819a853a0a8d51b97" rhash="07be4eabb1567b542c41224a4bb0af5c" />
@@ -40,7 +37,7 @@
 <addon id="plugin.video.voyo" name="VOYO" version="1.3" hash="e1577d8d12a8bb03e0a1070b35aba372" rhash="f179c29982bdf0f8ca0e077f66637aeb" />
 <addon id="plugin.video.webshare" name="Webshare.cz" version="1.0" hash="2e5887258acf73432bc6691303b4fb96" rhash="e6a82c15de0e3bef6a7a286e47d75a0c" />
 <addon id="plugin.video.yt" name="YouTube" version="1.9" hash="b713d4a11d91e2713d32b144b1bbd2a0" rhash="b713d4a11d91e2713d32b144b1bbd2a0" />
-<addon id="tools.archivczsk" name="Addons base" version="1.24" hash="e9a9475e8ab9ca1dff61e49ba5545a65" rhash="d77fe0621e958007fc0b2e6890319d9b" />
+<addon id="tools.archivczsk" name="Addons base" version="1.25" hash="7722c870dd397123dce1719160e0d425" rhash="5d190b235f339652f72555d996d40e42" />
 <addon id="tools.cenc" name="Content encryption support" version="1.4" hash="0f3e872a0571229285e89bc1d74acc5f" rhash="0f3e872a0571229285e89bc1d74acc5f" />
 <addon id="tools.xbmc" name="xbmc addons helper" version="1.2" hash="024b71e73a91c082946f129af1764585" rhash="024b71e73a91c082946f129af1764585" />
 </addons>
