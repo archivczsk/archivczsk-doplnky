@@ -1,3 +1,7 @@
+1.27 - 19.04.2024
+    - improved HLS handler to be more extendable
+    - added new HLS master playlist parser and processor
+
 1.26 - 14.04.2024
     - fixed wrong import for python2 in HLS handler
 

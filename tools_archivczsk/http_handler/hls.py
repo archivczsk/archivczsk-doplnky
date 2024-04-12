@@ -80,7 +80,6 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			self.cp.log_exception()
 			return self.reply_error500(request)
 
-
 	# #################################################################################################
 
 	def hls_proxify_segment_url(self, segment_cache_key, url, segment_type):
@@ -105,7 +104,7 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 	# #################################################################################################
 
-	def P_rawkey(self, request, path):
+	def P_clearkey(self, request, path):
 		self.cp.log_debug("Returning decryption key: %s" % path)
 		key = binascii.a2b_hex(path)
 		return self.reply_ok( request, key, "application/octet-stream", raw=True)
@@ -120,15 +119,14 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			s = a.split('=')
 			attr[s[0]] = '='.join(s[1:])
 
-		self.cp.log_debug('Attrs: %s' % attr)
-		self.cp.log_debug("Keyformat: %s" % attr.get('KEYFORMAT'))
+#		self.cp.log_debug('Attrs: %s' % attr)
 
 		if attr.get('KEYFORMAT','').lower() == '"urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed"':
 			self.cp.log_debug("Widevine keyformat found")
 			# wv drm data
 			pssh = attr.get('URI','')
 			if not pssh.startswith('"data:text/plain;base64,'):
-				self.cp.log_error("Failed to process PSSH key - URI format not supported")
+				self.cp.log_error("Failed to process PSSH key - URI format not supported: '%s'" % line)
 				line = ''
 			else:
 				pssh = pssh[24:-1]
@@ -139,7 +137,7 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 					line = ''
 				else:
 					if len(keys) == 1:
-						line = '#EXT-X-KEY:METHOD=SAMPLE-AES,URI="/%s/rawkey/%s"' % (self.name, keys[0].split(':')[1])
+						line = '#EXT-X-KEY:METHOD=SAMPLE-AES,URI="/%s/clearkey/%s"' % (self.name, keys[0].split(':')[1])
 					else:
 						line = '#EXT-X-KEY:METHOD=SAMPLE-AES,URI="keys://' + ':'.join(k.replace(':','=') for k in keys) + '"'
 		elif attr.get('METHOD') == 'SAMPLE-AES-CTR':
@@ -238,11 +236,56 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 	# #################################################################################################
 
+	def process_variant_playlist(self, playlist_url, playlist_data, drm_info=None):
+		segment_cache_data = {
+			'drm': drm_info,
+			'pssh': []
+		}
+
+		segment_cache_key = self.calc_cache_key('segment' + playlist_url)
+		self.scache.put_with_key(segment_cache_data, segment_cache_key)
+
+		def process_url(surl, redirect_url, segment_type='m'):
+			surl = urljoin(redirect_url, surl)
+
+			if self.hls_proxy_segments:
+				surl = self.hls_proxify_segment_url(segment_cache_key if len(segment_cache_data['pssh']) > 0 else None, surl, segment_type)
+
+			return surl
+
+		resp_data = []
+		stream_url_line = False
+
+		for line in iter(playlist_data.splitlines()):
+			if stream_url_line and not line.startswith('#'):
+				resp_data.append(process_url(line, playlist_url))
+				stream_url_line = False
+				continue
+
+			if drm_info and line.startswith("#EXT-X-KEY:"):
+				line = self.process_drm_key_line(line, drm_info, segment_cache_data)
+			elif 'URI=' in line:
+				# fix uri to full url
+				uri = line[line.find('URI=') + 4:]
+
+				if uri[0] in ('"', "'"):
+					uri = uri[1:uri[1:].find(uri[0]) + 1]
+
+				line = line.replace(uri, process_url(uri, playlist_url, 'i' if line.startswith('#EXT-X-MAP:') else 'm'))
+
+			if line.startswith("#EXTINF:"):
+				stream_url_line = True
+
+			resp_data.append(line)
+
+		return '\n'.join(resp_data) + '\n'
+
+ 	# #################################################################################################
+
 	def P_hp(self, request, path):
 		cache_key = self.decode_stream_key(path)
 		stream_data = self.scache.get(cache_key)
 		url = stream_data['url']
-		drm_info = stream_data['drm']
 
 		self.cp.log_debug('Requesting HLS variant playlist: %s' % url)
 
@@ -254,69 +297,24 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				request.finish()
 				return
 
-			segment_cache_data = {
-				'drm': drm_info,
-				'pssh': []
-			}
-
-			segment_cache_key = self.calc_cache_key('segment' + response['url'])
-			self.scache.put_with_key(segment_cache_data, segment_cache_key)
-
-			def process_url(surl, redirect_url, segment_type='m'):
-				surl = urljoin(redirect_url, surl)
-
-				if self.hls_proxy_segments:
-					surl = self.hls_proxify_segment_url(segment_cache_key if len(segment_cache_data['pssh']) > 0 else None, surl, segment_type)
-
-				return surl
-
-			resp_data = []
-			stream_url_line = False
-
-			for line in iter(response['content'].decode('utf-8').splitlines()):
-				if stream_url_line and not line.startswith('#'):
-					resp_data.append(process_url(line, response['url']))
-					stream_url_line = False
-					continue
-
-				if drm_info and line.startswith("#EXT-X-KEY:"):
-					line = self.process_drm_key_line(line, drm_info, segment_cache_data)
-				elif 'URI=' in line:
-					# fix uri to full url
-					uri = line[line.find('URI=') + 4:]
-
-					if uri[0] in ('"', "'"):
-						uri = uri[1:uri[1:].find(uri[0]) + 1]
-
-					line = line.replace(uri, process_url(uri, response['url'], 'i' if line.startswith('#EXT-X-MAP:') else 'm'))
-
-				if line.startswith("#EXTINF:"):
-					stream_url_line = True
-
-				resp_data.append(line)
+			resp_data = self.process_variant_playlist(response['url'], response['content'].decode('utf-8'), stream_data['drm'])
 
 			request.setResponseCode(200)
 			request.setHeader('content-type', "application/vnd.apple.mpegurl")
-			request.write(('\n'.join(resp_data) + '\n').encode('utf-8'))
+			request.write(resp_data.encode('utf-8'))
 			request.finish()
-
 			return
 
 		self.request_http_data_async_simple(url, cbk=p_continue)
 		return self.NOT_DONE_YET
 
-
 	# #################################################################################################
 
-	def get_hls_playlist_data_async(self, url, bandwidth=None, headers=None, drm=None, cbk=None):
-		'''
-		Processes HLS master playlist from given url and returns new one with only one variant playlist specified by bandwidth (or with best bandwidth if no bandwidth is given)
-		'''
+	def process_master_playlist(self, playlist_url, playlist_data, bandwidth=None, drm=None):
+		def process_url(surl):
+			surl = urljoin(playlist_url, surl)
 
-		def process_url(surl, redirect_url, allow_proxy = True):
-			surl = urljoin(redirect_url, surl)
-
-			if self.hls_proxy_variants and allow_proxy:
+			if self.hls_proxy_variants:
 				cache_key = self.calc_cache_key(surl)
 				cache_data = {
 					'url': surl,
@@ -327,6 +325,71 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 			return surl
 
+#		self.cp.log_error("HLS response received: %s" % playlist_data)
+
+		if bandwidth == None:
+			bandwidth = 1000000000
+		else:
+			bandwidth = int(bandwidth)
+
+		streams = []
+
+		for m in re.finditer(r'^#EXT-X-STREAM-INF:(?P<info>.+)\n(?P<chunk>.+)', playlist_data, re.MULTILINE):
+			stream_info = {}
+			for info in re.split(r''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', m.group('info')):
+				key, val = info.split('=', 1)
+				stream_info[key.strip().lower()] = val.strip()
+
+			stream_info['url'] = process_url(m.group('chunk'))
+
+			if int(stream_info.get('bandwidth', 0)) <= bandwidth:
+				streams.append(stream_info)
+
+		streams = sorted(streams, key=lambda i: int(i['bandwidth']), reverse=True)
+
+		if len(streams) == 0:
+			self.cp.log_error("No streams found for bandwidth %d" % bandwidth)
+			return None
+
+		resp_data = []
+		ignore_next = False
+		stream_to_keep = 'BANDWIDTH=%s' % streams[0].get('bandwidth', 0)
+
+		for line in iter(playlist_data.splitlines()):
+			if ignore_next and not line.startswith('#'):
+				ignore_next = False
+				continue
+
+			if line.startswith('#'):
+				if drm and line.startswith("#EXT-X-SESSION-KEY:"):
+					# session key is not supported by the player - it will be handled in variant playlist
+					line = ''
+				elif 'URI=' in line:
+					# fix uri to full url
+					uri = line[line.find('URI=') + 4:]
+
+					if uri[0] in ('"', "'"):
+						uri = uri[1:uri[1:].find(uri[0]) + 1]
+
+					line = line.replace(uri, process_url(uri))
+
+				if line.startswith("#EXT-X-STREAM-INF:"):
+					if stream_to_keep in line:
+						resp_data.append(line)
+						resp_data.append(streams[0]['url'])
+
+					ignore_next = True
+				else:
+					resp_data.append(line)
+
+		return '\n'.join(resp_data) + '\n'
+
+ 	# #################################################################################################
+
+	def get_hls_playlist_data_async(self, url, bandwidth=None, headers=None, drm=None, cbk=None):
+		'''
+		Processes HLS master playlist from given url and returns new one with only one variant playlist specified by bandwidth (or with best bandwidth if no bandwidth is given)
+		'''
 		def p_continue(response, bandwidth):
 #			self.cp.log_error("HLS response received: %s" % response)
 
@@ -334,64 +397,8 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				self.cp.log_error("Status code response for HLS master playlist: %d" % response['status_code'])
 				return cbk(None)
 
-			if bandwidth == None:
-				bandwidth = 1000000000
-			else:
-				bandwidth = int(bandwidth)
-
-			streams = []
-
-			response_text = response['content'].decode('utf-8')
-			for m in re.finditer(r'^#EXT-X-STREAM-INF:(?P<info>.+)\n(?P<chunk>.+)', response_text, re.MULTILINE):
-				stream_info = {}
-				for info in re.split(r''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', m.group('info')):
-					key, val = info.split('=', 1)
-					stream_info[key.strip().lower()] = val.strip()
-
-				stream_info['url'] = process_url(m.group('chunk'), response['url'])
-
-				if int(stream_info.get('bandwidth', 0)) <= bandwidth:
-					streams.append(stream_info)
-
-			streams = sorted(streams, key=lambda i: int(i['bandwidth']), reverse=True)
-
-			if len(streams) == 0:
-				self.cp.log_error("No streams found for bandwidth %d" % bandwidth)
-				return cbk(None)
-
-			resp_data = []
-			ignore_next = False
-			stream_to_keep = 'BANDWIDTH=%s' % streams[0].get('bandwidth', 0)
-			audio_found = False
-
-			for line in iter(response_text.splitlines()):
-				if ignore_next and not line.startswith('#'):
-					ignore_next = False
-					continue
-
-				if line.startswith('#'):
-					if drm and line.startswith("#EXT-X-SESSION-KEY:"):
-						# session key is not supported by the player - it will be handled in variant playlist
-						line = ''
-					elif 'URI=' in line:
-						# fix uri to full url
-						uri = line[line.find('URI=') + 4:]
-
-						if uri[0] in ('"', "'"):
-							uri = uri[1:uri[1:].find(uri[0]) + 1]
-
-						line = line.replace(uri, process_url(uri, response['url']))
-
-					if line.startswith("#EXT-X-STREAM-INF:"):
-						if stream_to_keep in line:
-							resp_data.append(line)
-							resp_data.append(streams[0]['url'])
-
-						ignore_next = True
-					else:
-						resp_data.append(line)
-
-			cbk('\n'.join(resp_data) + '\n')
+			resp_data = self.process_master_playlist(response['url'], response['content'].decode('utf-8'), bandwidth, drm)
+			cbk(resp_data)
 			return
 
 		self.request_http_data_async_simple(url, cbk=p_continue, headers=headers, bandwidth=bandwidth)
