@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 
 try:
 	from urllib import quote, unquote
-	from urlparse import urljoin, quote, unquote
+	from urlparse import urljoin
 except:
 	from urllib.parse import urljoin, quote, unquote
 

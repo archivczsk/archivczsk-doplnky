@@ -6,7 +6,8 @@ import re
 import binascii
 
 try:
-	from urlparse import urljoin, quote, unquote
+	from urllib import quote, unquote
+	from urlparse import urljoin
 except:
 	from urllib.parse import urljoin, quote, unquote
 
