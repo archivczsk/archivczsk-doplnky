@@ -816,7 +816,13 @@ class O2TV(object):
 				prog_ext_id = None
 				ch_ext_id = None
 				for item in minfo['value'].split(','):
-					key, val = item.split('=')
+					try:
+						key, val = item.split('=')
+					except:
+						self.cp.log_error("Failed to parse MosaicChannelsInfo key:value pair: '%s'" % item)
+						key = None
+						val = None
+
 					if key == 'Title':
 						title = val
 					elif key == 'ChannelExternalId' and live:
