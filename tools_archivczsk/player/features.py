@@ -12,8 +12,8 @@ __addon__ = ArchivCZSK.get_addon('tools.archivczsk')
 def _(id):
 	return __addon__.get_localized_string(id)
 
-EXTEPLAYER3_NAME='exteplayer3_168'
-FFMPEG_NAME='ffmpeg_168'
+EXTEPLAYER3_NAME='exteplayer3_169'
+FFMPEG_NAME='ffmpeg_169'
 
 class PlayerFeatures(object):
 	DATA_LOADED = False
@@ -85,7 +85,7 @@ class PlayerFeatures(object):
 
 		try:
 			subprocess.check_call(['curl', '-k', '-L', '-o', local_file, url])
-			subprocess.check_call(['opkg', 'install', '--force-downgrade', local_file])
+			subprocess.check_call(['opkg', 'install', '--force-downgrade', '--force-depends', local_file])
 		except:
 			client.log.error(traceback.format_exc())
 
