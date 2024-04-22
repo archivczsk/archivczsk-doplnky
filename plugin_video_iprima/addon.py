@@ -55,6 +55,7 @@ def iprima_run(addon, session, params):
 		add_dir(name, params, image, infoLabels=infoLabels, menuItems=menuItems)
 
 	def menu():
+		client.show_message(session, "Tento doplněk je postaven na zastaralém rozhraní a již není udržován. Případné chyby již nebou opravovány a časem bude doplněk odstraněn. Přejděte co nejdříve na doplněk Prima+.", timeout=20)
 		add_dir('Vyhledat', { 'url': '/search/'}, None)
 		for item in lookups.menu_items:
 			addDir(item['title'], '/section/{0}/'.format(item['resource']), 1, None)
