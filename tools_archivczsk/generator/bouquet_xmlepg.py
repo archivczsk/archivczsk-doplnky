@@ -43,6 +43,12 @@ class XmlEpgGenerator(XmlEpgGeneratorTemplate):
 		self.bxeg = bxeg
 		self.prefix = bxeg.prefix
 		self.name = bxeg.name
+
+		profile_info = bxeg.get_profile_info()
+		if profile_info != None:
+			self.prefix = self.prefix + '_' + profile_info[0]
+			self.name = self.name + ' - ' + profile_info[1]
+
 		self.sid_start = bxeg.sid_start
 		self.tid = bxeg.tid
 		self.onid = bxeg.onid
