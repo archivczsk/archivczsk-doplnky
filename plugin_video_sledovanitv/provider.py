@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import os
 from datetime import datetime, date, timedelta
 import time
-import random
+import json
 from hashlib import md5
 
 from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPModuleLiveTV, CPModuleArchive, CPModuleTemplate, CPModuleSearch
@@ -374,6 +373,13 @@ class SledovaniTVModuleExtra(CPModuleTemplate):
 	def root(self):
 		info_labels = {'plot': self._("Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one.") }
 		self.cp.add_dir(self._('Registered devices'), info_labels=info_labels, cmd=self.list_devices)
+		self.cp.add_video(self._("Run EPG export to enigma or XML files"), cmd=self.export_epg)
+
+	# #################################################################################################
+
+	def export_epg(self):
+		self.cp.bxeg.refresh_xmlepg_start(True)
+		self.cp.show_info(self._("EPG export started"), noexit=True)
 
 	# #################################################################################################
 
@@ -458,8 +464,7 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 				'picon': ch['picon'],
 				'adult': ch['adult']
 			}
-
-			ctx.update(str(frozenset(item)).encode('utf-8'))
+			ctx.update(json.dumps(item, sort_keys=True).encode('utf-8'))
 
 		return ctx.hexdigest()
 

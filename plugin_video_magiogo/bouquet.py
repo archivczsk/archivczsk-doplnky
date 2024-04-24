@@ -3,25 +3,11 @@
 from tools_archivczsk.generator.bouquet_xmlepg import BouquetXmlEpgGenerator
 import time
 
-NAME_PREFIX = "magiogo"
-NAME = "MagioGO"
-
-SERVICEREF_SID_START = 0x100
-SERVICEREF_TID = 7
-SERVICEREF_ONID = 7
-SERVICEREF_NAMESPACE = 0xAC40000
-
 # #################################################################################################
 
 class MagioGOBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
 	def __init__(self, content_provider, http_endpoint, user_agent):
-		self.prefix = NAME_PREFIX
-		self.name = NAME
-		self.sid_start = SERVICEREF_SID_START
-		self.tid = SERVICEREF_TID
-		self.onid = SERVICEREF_ONID
-		self.namespace = SERVICEREF_NAMESPACE
 		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=('region', 'username', 'password', 'deviceid', 'devicetype'), user_agent=user_agent)
 
 	def logged_in(self):

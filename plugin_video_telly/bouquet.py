@@ -1,34 +1,25 @@
 # -*- coding: utf-8 -*-
 
-from tools_archivczsk.generator.bouquet_xmlepg import BouquetXmlEpgGenerator, XmlEpgGenerator
-
-NAME_PREFIX = "telly"
-NAME = "Telly"
-SERVICEREF_SID_START = 0xA000
-SERVICEREF_TID = 7
-SERVICEREF_ONID = 4
-SERVICEREF_NAMESPACE = 0xE040000
+from tools_archivczsk.generator.bouquet_xmlepg import BouquetXmlEpgGenerator, XmlEpgGenerator, EnigmaEpgGenerator
 
 # #################################################################################################
-
 
 class TellyXmlEpgGenerator(XmlEpgGenerator):
 	def run(self, force):
 		XmlEpgGenerator.run(self, force)
 		self.bxeg.cp.telly.save_epg_cache()
 
+class TellyEnigmaEpgGenerator(EnigmaEpgGenerator):
+	def run(self, force):
+		EnigmaEpgGenerator.run(self, force)
+		self.bxeg.cp.telly.save_epg_cache()
 
 class TellyBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
 	def __init__(self, content_provider, http_endpoint, user_agent):
-		self.prefix = NAME_PREFIX
-		self.name = NAME
-		self.sid_start = SERVICEREF_SID_START
-		self.tid = SERVICEREF_TID
-		self.onid = SERVICEREF_ONID
-		self.namespace = SERVICEREF_NAMESPACE
 		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=(), user_agent=user_agent)
 		self.xmlepg_generator = TellyXmlEpgGenerator
+		self.enigmaepg_generator = TellyEnigmaEpgGenerator
 
 	def logged_in(self):
 		return self.cp.telly != None

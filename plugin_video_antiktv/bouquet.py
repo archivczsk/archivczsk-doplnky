@@ -2,26 +2,12 @@
 
 from tools_archivczsk.generator.bouquet_xmlepg import BouquetXmlEpgGenerator
 from datetime import datetime
-import itertools
-
-NAME_PREFIX = "antiktv"
-NAME = "AntikTV"
-SERVICEREF_SID_START = 0x0000
-SERVICEREF_TID = 0
-SERVICEREF_ONID = 0
-SERVICEREF_NAMESPACE = 0xE010000
 
 # #################################################################################################
 
 class AntikTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
 	def __init__(self, content_provider, http_endpoint):
-		self.prefix = NAME_PREFIX
-		self.name = NAME
-		self.sid_start = SERVICEREF_SID_START
-		self.tid = SERVICEREF_TID
-		self.onid = SERVICEREF_ONID
-		self.namespace = SERVICEREF_NAMESPACE
 		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=('username', 'password'), channel_types=('tv', 'radio', 'cam'))
 
 	def logged_in(self):
@@ -98,7 +84,7 @@ class AntikTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 		def ts_convert(ts):
 			return datetime.fromtimestamp(ts).strftime('%Y%m%dT%H%M%S') + '+0000'
 
-		for event in self.cp.atk.get_channel_epg(channel['id_content'], ts_convert(fromts - 7200), ts_convert(tots)):
+		for event in self.cp.atk.get_channel_epg(channel['id_content'], ts_convert(fromts - 14400), ts_convert(tots)):
 			yield {
 				'start': event['start_timestamp'],
 				'end': event['stop_timestamp'],

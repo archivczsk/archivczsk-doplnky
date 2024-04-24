@@ -3,6 +3,7 @@
 import os
 from datetime import datetime
 import time
+import json
 from hashlib import md5
 
 from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPModuleLiveTV, CPModuleArchive, CPModuleTemplate, CPModuleSearch
@@ -344,8 +345,16 @@ class O2TVModuleExtra(CPModuleTemplate):
 		info_labels = {'plot': self._("Here you can see the list of available services for this account and optionally change active one.") }
 		self.cp.add_dir(self._('Available services'), info_labels=info_labels, cmd=self.list_services)
 
+		self.cp.add_video(self._("Run EPG export to enigma or XML files"), cmd=self.export_epg)
+
 		info_labels = {'plot': self._("This will force login reset. New device identificator will be created and used for login.") }
 		self.cp.add_video(self._('Reset login'), info_labels=info_labels, cmd=self.reset_login)
+
+	# #################################################################################################
+
+	def export_epg(self):
+		self.cp.bxeg.refresh_xmlepg_start(True)
+		self.cp.show_info(self._("EPG export started"), noexit=True)
 
 	# #################################################################################################
 
@@ -475,7 +484,7 @@ class O2TVContentProvider(ModuleContentProvider):
 				'service': ch['service']
 			}
 
-			ctx.update(str(frozenset(item)).encode('utf-8'))
+			ctx.update(json.dumps(item, sort_keys=True).encode('utf-8'))
 
 		return ctx.hexdigest()
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+import json
 from hashlib import md5
 
 from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPModuleLiveTV, CPModuleArchive, CPModuleTemplate
@@ -151,6 +152,13 @@ class RebitTVModuleExtra(CPModuleTemplate):
 	def root(self, section=None):
 		info_labels = {'plot': self._("Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one.") }
 		self.cp.add_dir(self._('Registered devices'), info_labels=info_labels, cmd=self.list_devices)
+		self.cp.add_video(self._("Run EPG export to enigma or XML files"), cmd=self.export_epg)
+
+	# #################################################################################################
+
+	def export_epg(self):
+		self.cp.bxeg.refresh_xmlepg_start(True)
+		self.cp.show_info(self._("EPG export started"), noexit=True)
 
 	# #################################################################################################
 
@@ -209,7 +217,7 @@ class RebitTVContentProvider(ModuleContentProvider):
 	def get_channels_checksum(self):
 		ctx = md5()
 		for ch in self.channels:
-			ctx.update(str(frozenset(ch.items())).encode('utf-8'))
+			ctx.update(json.dumps(ch, sort_keys=True).encode('utf-8'))
 
 		return ctx.hexdigest()
 

@@ -2,6 +2,7 @@
 
 import time
 import base64
+import json
 from hashlib import md5
 
 from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPModuleLiveTV, CPModuleArchive, CPModuleTemplate
@@ -155,6 +156,13 @@ class MagioGOModuleExtra(CPModuleTemplate):
 		self.cp.add_dir(self._('Registered devices'), info_labels=info_labels, cmd=self.list_devices)
 		info_labels = {'plot': self._("With this button you can check if playback works OK or it gives some error from the server.") }
 		self.cp.add_dir(self._('Check playback'), info_labels=info_labels, cmd=self.check_playback)
+		self.cp.add_video(self._("Run EPG export to enigma or XML files"), cmd=self.export_epg)
+
+	# #################################################################################################
+
+	def export_epg(self):
+		self.cp.bxeg.refresh_xmlepg_start(True)
+		self.cp.show_info(self._("EPG export started"), noexit=True)
 
 	# #################################################################################################
 
@@ -252,7 +260,8 @@ class MagioGOContentProvider(ModuleContentProvider):
 				'picon': ch.picon,
 				'adult': ch.adult
 			}
-			ctx.update(str(frozenset(item)).encode('utf-8'))
+
+			ctx.update(json.dumps(item, sort_keys=True).encode('utf-8'))
 
 		return ctx.hexdigest()
 

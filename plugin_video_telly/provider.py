@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import time
+import json
 from hashlib import md5
 
-from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPModuleLiveTV, CPModuleArchive
+from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPModuleLiveTV, CPModuleArchive, CPModuleTemplate
 from tools_archivczsk.string_utils import _I, _C, _B
 from .telly import Telly
 from .bouquet import TellyBouquetXmlEpgGenerator
@@ -139,6 +140,30 @@ class TellyModuleArchive(CPModuleArchive):
 
 # #################################################################################################
 
+class TellyModuleExtra(CPModuleTemplate):
+
+	def __init__(self, content_provider):
+		CPModuleTemplate.__init__(self, content_provider, content_provider._("Special section"))
+
+	# #################################################################################################
+
+	def add(self):
+		if self.cp.get_setting('enable_extra'):
+			CPModuleTemplate.add(self)
+
+	# #################################################################################################
+
+	def root(self, section=None):
+		self.cp.add_video(self._("Run EPG export to enigma or XML files"), cmd=self.export_epg)
+
+	# #################################################################################################
+
+	def export_epg(self):
+		self.cp.bxeg.refresh_xmlepg_start(True)
+		self.cp.show_info(self._("EPG export started"), noexit=True)
+
+
+# #################################################################################################
 
 class TellyContentProvider(ModuleContentProvider):
 
@@ -157,6 +182,7 @@ class TellyContentProvider(ModuleContentProvider):
 		self.modules = [
 			TellyModuleLiveTV(self),
 			TellyModuleArchive(self),
+			TellyModuleExtra(self),
 		]
 
 	# #################################################################################################
@@ -196,7 +222,7 @@ class TellyContentProvider(ModuleContentProvider):
 				'picon': ch.picon,
 				'adult': ch.adult
 			}
-			ctx.update(str(frozenset(item)).encode('utf-8'))
+			ctx.update(json.dumps(item, sort_keys=True).encode('utf-8'))
 
 		return ctx.hexdigest()
 

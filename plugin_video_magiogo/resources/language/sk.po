@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_magiogo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-14 16:51+0100\n"
-"PO-Revision-Date: 2023-12-14 16:52+0100\n"
+"POT-Creation-Date: 2024-04-24 14:58+0200\n"
+"PO-Revision-Date: 2024-04-24 15:00+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -16,64 +16,80 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_magiogo/provider.py:125
+#: plugin_video_magiogo/provider.py:21
+msgid "VOD Channels"
+msgstr "VOD programy"
+
+#: plugin_video_magiogo/provider.py:22
+msgid "Here you will find list of channels broadcasting video on demand"
+msgstr "Tu nájdete zoznam kanálov, ktoré vysielajú formou video on demand"
+
+#: plugin_video_magiogo/provider.py:143
 msgid "Special section"
 msgstr "Špeciálna sekcia"
 
-#: plugin_video_magiogo/provider.py:136
+#: plugin_video_magiogo/provider.py:154
 msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
 msgstr "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočné zariadenia, aby ste sa mohli znova inde prihlásiť."
 
-#: plugin_video_magiogo/provider.py:137
+#: plugin_video_magiogo/provider.py:155
 msgid "Registered devices"
 msgstr "Zaregistrované zariadenia"
 
-#: plugin_video_magiogo/provider.py:138
+#: plugin_video_magiogo/provider.py:156
 msgid "With this button you can check if playback works OK or it gives some error from the server."
 msgstr "Týmto tlačidlom môžete skontrolovať, či prehrávanie funguje alebo server vracia nejakú chybovú správu."
 
-#: plugin_video_magiogo/provider.py:139
+#: plugin_video_magiogo/provider.py:157
 msgid "Check playback"
 msgstr "Kontrola prehrávania"
 
-#: plugin_video_magiogo/provider.py:152
+#: plugin_video_magiogo/provider.py:158
+msgid "Run EPG export to enigma or XML files"
+msgstr "Spustiť EPG export do enigmy alebo do XML súborov"
+
+#: plugin_video_magiogo/provider.py:164
+msgid "EPG export started"
+msgstr "EPG export bol spustený"
+
+#: plugin_video_magiogo/provider.py:177
 msgid "Remove device!"
 msgstr "Zmazať zariadenie!"
 
-#: plugin_video_magiogo/provider.py:153
+#: plugin_video_magiogo/provider.py:178
 msgid "In menu you can remove device using Remove device!"
 msgstr "V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!"
 
-#: plugin_video_magiogo/provider.py:163
+#: plugin_video_magiogo/provider.py:188
 #, python-brace-format
 msgid "Device {device} was removed!"
 msgstr "Zariadenie {device} bolo vymazané!"
 
-#: plugin_video_magiogo/provider.py:165
+#: plugin_video_magiogo/provider.py:190
 msgid "Error"
 msgstr "Chyba"
 
-#: plugin_video_magiogo/provider.py:176
+#: plugin_video_magiogo/provider.py:201
 msgid "Playback failed:"
 msgstr "Prehrávanie zlyhalo:"
 
-#: plugin_video_magiogo/provider.py:178
+#: plugin_video_magiogo/provider.py:203
 msgid "No error occured during playback check. Playback should work."
 msgstr "Pri kontrole prehrávania nenastala žiadna chyba. Prehrávanie by malo fungovať."
 
-#: plugin_video_magiogo/provider.py:180
+#: plugin_video_magiogo/provider.py:205
 msgid "Can't check playback. There are no channels available."
 msgstr "Nemôžem skontrolovať prehrávanie. Nie je dostupný žiadny kanál."
 
-#: plugin_video_magiogo/magiogo.py:244
+#: plugin_video_magiogo/magiogo.py:238
 msgid "Unexpected return code from server"
 msgstr "Neočakávaný návratový kód zo servera"
 
-#: plugin_video_magiogo/magiogo.py:260
+#: plugin_video_magiogo/magiogo.py:254
 msgid "Login data not set"
 msgstr "Nezadané prihlasovacie údaje"
 
-#: plugin_video_magiogo/magiogo.py:278 plugin_video_magiogo/magiogo.py:293
+#: plugin_video_magiogo/magiogo.py:272 plugin_video_magiogo/magiogo.py:287
 msgid "Unknown error"
 msgstr "Neznáma chyba"
 
@@ -188,12 +204,6 @@ msgstr ""
 msgid "p5"
 msgstr ""
 
-msgid "Use preprocessing for HLS streams"
-msgstr "Použiť predspracovanie HLS streamov"
-
-msgid "Use preprocessing for MPEG-DASH streams"
-msgstr "Použiť predspracovanie MPEG-DASH streamov"
-
 msgid "Maximum bandwidth of the offered stream"
 msgstr "Maximálny dátový tok ponúkaného streamu"
 
@@ -214,3 +224,9 @@ msgstr ""
 
 msgid "2 Mbit/s"
 msgstr ""
+
+#~ msgid "Use preprocessing for HLS streams"
+#~ msgstr "Použiť predspracovanie HLS streamov"
+
+#~ msgid "Use preprocessing for MPEG-DASH streams"
+#~ msgstr "Použiť predspracovanie MPEG-DASH streamov"

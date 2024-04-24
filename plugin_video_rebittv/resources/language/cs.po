@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_rebittv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-09 18:42+0100\n"
-"PO-Revision-Date: 2023-03-09 18:46+0100\n"
+"POT-Creation-Date: 2024-04-24 15:02+0200\n"
+"PO-Revision-Date: 2024-04-24 15:02+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -16,72 +16,80 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_rebittv/provider.py:123
+#: plugin_video_rebittv/provider.py:141
 msgid "Special section"
 msgstr "Speciální sekce"
 
-#: plugin_video_rebittv/provider.py:134
+#: plugin_video_rebittv/provider.py:152
 msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
 msgstr "Tu si můžete zobrazit a případně vymazat/odregistrovat zbytečná zařízení, aby jste se mohli znova jinde přihlásit."
 
-#: plugin_video_rebittv/provider.py:135
+#: plugin_video_rebittv/provider.py:153
 msgid "Registered devices"
 msgstr "Zaregistrovaná zařízení"
 
-#: plugin_video_rebittv/provider.py:142
+#: plugin_video_rebittv/provider.py:154
+msgid "Run EPG export to enigma or XML files"
+msgstr "Spustit export EPG do enigmy nebo do XML souborů"
+
+#: plugin_video_rebittv/provider.py:160
+msgid "EPG export started"
+msgstr "EPG export byl spuštěn"
+
+#: plugin_video_rebittv/provider.py:167
 msgid "Added"
 msgstr "Přidané"
 
-#: plugin_video_rebittv/provider.py:143
+#: plugin_video_rebittv/provider.py:168
 msgid "In menu you can remove device using Remove device!"
 msgstr "V menu můžete zařízení vymazat pomocí Smazat zařízení!"
 
-#: plugin_video_rebittv/provider.py:146
+#: plugin_video_rebittv/provider.py:171
 msgid "Remove device!"
 msgstr "Smazat zařízení!"
 
-#: plugin_video_rebittv/provider.py:153
+#: plugin_video_rebittv/provider.py:178
 #, python-brace-format
 msgid "Device {device} was removed!"
 msgstr "Zařízení {device} bylo vymazáno!"
 
-#: plugin_video_rebittv/rebittv.py:187
+#: plugin_video_rebittv/rebittv.py:186
 msgid "Unexpected return code from server"
 msgstr "Neočekávaný návratový kód ze serveru"
 
-#: plugin_video_rebittv/rebittv.py:236
+#: plugin_video_rebittv/rebittv.py:235
 msgid "Login failed"
 msgstr "Přihlášení selhalo"
 
-#: plugin_video_rebittv/rebittv.py:264
+#: plugin_video_rebittv/rebittv.py:263
 msgid "Error by login token refresh"
 msgstr "Chyba při obnově přihlašovacího tokenu"
 
-#: plugin_video_rebittv/rebittv.py:307
+#: plugin_video_rebittv/rebittv.py:306
 msgid "Error by device pairing"
 msgstr "Chyba při párovaní zařízení"
 
-#: plugin_video_rebittv/rebittv.py:368
+#: plugin_video_rebittv/rebittv.py:367
 msgid "Error by loading EPG"
 msgstr "Chyba při načítání EPG"
 
-#: plugin_video_rebittv/rebittv.py:379
+#: plugin_video_rebittv/rebittv.py:378
 msgid "Error by loading channel list"
 msgstr "Chyba při načítání seznamu kanálů"
 
-#: plugin_video_rebittv/rebittv.py:405
+#: plugin_video_rebittv/rebittv.py:404
 msgid "Error by loading video"
 msgstr "Chyba při načítání videa"
 
-#: plugin_video_rebittv/rebittv.py:409
+#: plugin_video_rebittv/rebittv.py:408
 msgid "Error by loading video. HTTP response code"
 msgstr "Chyba při načítaní videa. HTTP návratový kód"
 
-#: plugin_video_rebittv/rebittv.py:450
+#: plugin_video_rebittv/rebittv.py:449
 msgid "Error by getting stream address"
 msgstr "Chyba při načítání adresy streamu"
 
-#: plugin_video_rebittv/rebittv.py:456
+#: plugin_video_rebittv/rebittv.py:455
 msgid "Unsupported stream type"
 msgstr "Nepodporovaný typ streamu"
 

@@ -191,8 +191,15 @@ class SweetTVModuleExtra(CPModuleTemplate):
 	def root(self, section=None):
 		info_labels = {'plot': self._("Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one.") }
 		self.cp.add_dir(self._('Registered devices'), info_labels=info_labels, cmd=self.list_devices)
+		self.cp.add_video(self._("Run EPG export to enigma or XML files"), cmd=self.export_epg)
 		info_labels = {'plot': self._("Forces logout from this devices and does new login. Use if you have problem with playback. After running this option it's necessary to go out of this addon to force new automatic login.") }
 		self.cp.add_dir(self._('Logout from this device'), info_labels=info_labels, cmd=self.logout)
+
+	# #################################################################################################
+
+	def export_epg(self):
+		self.cp.bxeg.refresh_xmlepg_start(True)
+		self.cp.show_info(self._("EPG export started"), noexit=True)
 
 	# #################################################################################################
 

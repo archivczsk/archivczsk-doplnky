@@ -294,8 +294,15 @@ class AntikTVModuleExtra(CPModuleTemplate):
 		self.cp.add_video(self._("User account"), cmd=self.account_info)
 		self.cp.add_dir(self._("Purchased packages"), cmd=self.packages)
 		self.cp.add_video(self._("Refresh channel list"), cmd=self.update_channels)
+		self.cp.add_video(self._("Run EPG export to enigma or XML files"), cmd=self.export_epg)
 		self.cp.add_video(self._("Request device identification code"), cmd=self.get_device_support_id)
 		self.cp.add_video(self._("Logout from this device"), cmd=self.logout)
+
+	# #################################################################################################
+
+	def export_epg(self):
+		self.cp.bxeg.refresh_xmlepg_start(True)
+		self.cp.show_info(self._("EPG export started"), noexit=True)
 
 	# #################################################################################################
 

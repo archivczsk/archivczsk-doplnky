@@ -1,3 +1,7 @@
+1.19 - 24.04.2024
+    - úpravy kvôli exportu EPG priamo do enigma2 bez použitia XML-EPG
+    - prechod na unifikovaný bouquet generátor (opravuje nesprávne EPG v niektorých prípadoch)
+
 1.18 - 31.03.2024
     - oprava pretáčania v archíve u MPD streamov (pre OpenPLi 9.0 a OpenATV 7.3, no funguje len s interným prehrávačom)
 

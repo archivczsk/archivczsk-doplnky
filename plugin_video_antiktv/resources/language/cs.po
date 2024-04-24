@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_antiktv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-27 19:57+0100\n"
-"PO-Revision-Date: 2024-02-27 19:58+0100\n"
+"POT-Creation-Date: 2024-04-24 14:55+0200\n"
+"PO-Revision-Date: 2024-04-24 14:58+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -122,73 +122,81 @@ msgstr "Podle kanálů"
 msgid "By genres"
 msgstr "Podle žánrů"
 
-#: plugin_video_antiktv/provider.py:274
+#: plugin_video_antiktv/provider.py:279
 msgid "Informations and settings"
 msgstr "Informace a nastavení"
 
-#: plugin_video_antiktv/provider.py:289
+#: plugin_video_antiktv/provider.py:294
 msgid "User account"
 msgstr "Poživatelské konto"
 
-#: plugin_video_antiktv/provider.py:290
+#: plugin_video_antiktv/provider.py:295
 msgid "Purchased packages"
 msgstr "Zakoupené balíky"
 
-#: plugin_video_antiktv/provider.py:291
+#: plugin_video_antiktv/provider.py:296
 msgid "Refresh channel list"
 msgstr "Obnovit seznam kanálů"
 
-#: plugin_video_antiktv/provider.py:292
+#: plugin_video_antiktv/provider.py:297
+msgid "Run EPG export to enigma or XML files"
+msgstr "Spustit export EPG do enigmy nebo do XML souborů"
+
+#: plugin_video_antiktv/provider.py:298
 msgid "Request device identification code"
 msgstr "Vyžádat identifikaci tohoto zařízení"
 
-#: plugin_video_antiktv/provider.py:293
+#: plugin_video_antiktv/provider.py:299
 msgid "Logout from this device"
 msgstr "Odhlásit z tohoto zařízení"
 
-#: plugin_video_antiktv/provider.py:300
+#: plugin_video_antiktv/provider.py:305
+msgid "EPG export started"
+msgstr "EPG export byl spuštěn"
+
+#: plugin_video_antiktv/provider.py:312
 msgid "Channel list was updated"
 msgstr "Seznam kanálů byl aktualizován"
 
-#: plugin_video_antiktv/provider.py:306
+#: plugin_video_antiktv/provider.py:318
 #, python-brace-format
 msgid "Device identification code is: {did}"
 msgstr "Identifikační kód tohoto zařízení je: {did}"
 
-#: plugin_video_antiktv/provider.py:324
+#: plugin_video_antiktv/provider.py:336
 #, python-brace-format
 msgid "To order more packages go to {antik_site}"
 msgstr "Pro objednávku dalších balíku choďte na {antik_site}"
 
-#: plugin_video_antiktv/provider.py:331
+#: plugin_video_antiktv/provider.py:343
 msgid "Do you really want to logout from this device?"
 msgstr "Opravdu se chcete odhlásit z tohoto zařízení?"
 
-#: plugin_video_antiktv/provider.py:339
+#: plugin_video_antiktv/provider.py:351
 msgid "You have been logged out from this device"
 msgstr "Byli jste odhlášen z tohoto zařízení"
 
-#: plugin_video_antiktv/provider.py:347
+#: plugin_video_antiktv/provider.py:359
 msgid "Customer"
 msgstr "Zákazník"
 
-#: plugin_video_antiktv/provider.py:348
+#: plugin_video_antiktv/provider.py:360
 msgid "Name"
 msgstr "Jméno"
 
-#: plugin_video_antiktv/provider.py:349
+#: plugin_video_antiktv/provider.py:361
 msgid "E-Mail"
 msgstr "E-Mail"
 
-#: plugin_video_antiktv/provider.py:350
+#: plugin_video_antiktv/provider.py:362
 msgid "Customer key"
 msgstr "Zákaznický klíč"
 
-#: plugin_video_antiktv/provider.py:352
+#: plugin_video_antiktv/provider.py:364
 msgid "This device identification"
 msgstr "Identifikace tohoto zařízení"
 
-#: plugin_video_antiktv/provider.py:355
+#: plugin_video_antiktv/provider.py:367
 msgid "Provider name"
 msgstr "Jméno poskytovatele"
 

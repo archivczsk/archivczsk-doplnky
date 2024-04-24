@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from tools_archivczsk.generator.bouquet_xmlepg import BouquetXmlEpgGenerator, XmlEpgGenerator
-
-NAME_PREFIX = "orangetv"
-NAME = "OrangeTV"
-SERVICEREF_SID_START = 0x100
-SERVICEREF_TID = 4
-SERVICEREF_ONID = 3
-SERVICEREF_NAMESPACE = 0xE020000
+from tools_archivczsk.generator.bouquet_xmlepg import BouquetXmlEpgGenerator, XmlEpgGenerator, EnigmaEpgGenerator
 
 # #################################################################################################
 
@@ -16,18 +9,16 @@ class OrangeTVXmlEpgGenerator(XmlEpgGenerator):
 		XmlEpgGenerator.run(self, force)
 		self.bxeg.cp.orangetv.saveEpgCache()
 
+class OrangeTVEnigmaEpgGenerator(EnigmaEpgGenerator):
+	def run(self, force):
+		EnigmaEpgGenerator.run(self, force)
+		self.bxeg.cp.orangetv.saveEpgCache()
 
 class OrangeTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
-
 	def __init__(self, content_provider, http_endpoint, user_agent):
-		self.prefix = NAME_PREFIX
-		self.name = NAME
-		self.sid_start = SERVICEREF_SID_START
-		self.tid = SERVICEREF_TID
-		self.onid = SERVICEREF_ONID
-		self.namespace = SERVICEREF_NAMESPACE
 		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=('username', 'password', 'deviceid'), user_agent=user_agent)
 		self.xmlepg_generator = OrangeTVXmlEpgGenerator
+		self.enigmaepg_generator = OrangeTVEnigmaEpgGenerator
 
 	def logged_in(self):
 		return self.cp.orangetv != None

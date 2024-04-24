@@ -1,3 +1,7 @@
+2.12:
+- úpravy kvôli exportu EPG priamo do enigma2 bez použitia XML-EPG
+- prechod na unifikovaný bouquet generátor (opravuje nesprávne EPG v niektorých prípadoch)
+
 2.11:
 - dočasná oprava prehrávania archívu
 

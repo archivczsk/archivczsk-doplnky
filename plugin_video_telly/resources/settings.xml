@@ -6,6 +6,7 @@
 	<setting label="Enable adult channels" id="enable_adult" type="bool" default="true" />
 	<setting label="How many hours cache EPG data" id="epgcache" type="labelenum" values="6|12|24|48|72" default="24" />
 	<setting label="Allow downloading of live broadcasting" id="download_live" type="bool" default="false" />
+	<setting label="Enable special section in main menu" id="enable_extra" type="bool" default="false" />
 	<category label="Userbouquet">
 		<setting label="Automatically export channel list as userbouquet" id="enable_userbouquet" type="bool" default="false" />
 		<setting label="Generate XML EPG for epgimport plugin (if installed)" id="enable_xmlepg" type="bool" default="false" />

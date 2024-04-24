@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_telly\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-14 15:31+0100\n"
-"PO-Revision-Date: 2023-03-14 15:32+0100\n"
+"POT-Creation-Date: 2024-04-24 15:04+0200\n"
+"PO-Revision-Date: 2024-04-24 15:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -16,11 +16,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
+#: plugin_video_telly/provider.py:145
+msgid "Special section"
+msgstr "Špeciálna sekcia"
+
 #: plugin_video_telly/provider.py:156
+msgid "Run EPG export to enigma or XML files"
+msgstr "Spustiť EPG export do enigmy alebo do XML súborov"
+
+#: plugin_video_telly/provider.py:162
+msgid "EPG export started"
+msgstr "EPG export bol spustený"
+
+#: plugin_video_telly/provider.py:201
 msgid "Enter pairing code from site"
 msgstr "Zadajte párovací kód zo stránky"
 
-#: plugin_video_telly/provider.py:159
+#: plugin_video_telly/provider.py:204
 msgid ""
 "Device pairing with your Telly account failed.\n"
 "Check pairing code validity and try again."
@@ -28,11 +40,11 @@ msgstr ""
 "Párovanie zariadenia s vašim Telly účtom zlyhalo.\n"
 "Skontrolujte správnosť párovacieho kódu a skúste to znavu."
 
-#: plugin_video_telly/telly.py:156
+#: plugin_video_telly/telly.py:148
 msgid "Unexpected return code from server"
 msgstr "Neočakávaný návratový kód zo servera"
 
-#: plugin_video_telly/telly.py:189
+#: plugin_video_telly/telly.py:181
 msgid "Login token is invalid. Pair device again."
 msgstr "Prihlasovací token je neplatný. Spárujte zariadenie znova."
 
@@ -71,6 +83,9 @@ msgstr "Koľko hodín EPG ukladať do cache"
 
 msgid "Allow downloading of live broadcasting"
 msgstr "Povoliť sťahovanie u živého vysielania"
+
+msgid "Enable special section in main menu"
+msgstr "Povoliť špeciálnu sekciu v hlavnom menu"
 
 msgid "Userbouquet"
 msgstr "Userbouquet"

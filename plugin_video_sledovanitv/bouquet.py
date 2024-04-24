@@ -1,19 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from tools_archivczsk.generator.bouquet_xmlepg import BouquetXmlEpgGenerator, XmlEpgGenerator
-
-NAME_PREFIX = "sledovanitv"
-NAME = "SledovaniTV"
-SERVICEREF_SID_START = 0x500
-SERVICEREF_TID = 0xA0
-SERVICEREF_ONID = 12
-SERVICEREF_NAMESPACE = 0xAB40000
+from tools_archivczsk.generator.bouquet_xmlepg import BouquetXmlEpgGenerator, XmlEpgGenerator, EnigmaEpgGenerator
 
 # #################################################################################################
 
-
-class SledovaniTVXmlEpgGenerator(XmlEpgGenerator):
-
+class SledovaniTVEpgGenerator(object):
 	def get_epg(self, channel, fromts, tots):
 		if not self.epg_data:
 			# api allows to load only epg for all channels and has limit on how big response can be
@@ -35,10 +26,19 @@ class SledovaniTVXmlEpgGenerator(XmlEpgGenerator):
 					'desc': event['description']
 				}
 
+class SledovaniTVXmlEpgGenerator(SledovaniTVEpgGenerator, XmlEpgGenerator):
 	def run(self, force):
 		# mark, that we don't have loaded epg data yet
 		self.epg_data = None
 		XmlEpgGenerator.run(self, force)
+		# free used memory
+		del self.epg_data
+
+class SledovaniTVEnigmaEpgGenerator(SledovaniTVEpgGenerator, EnigmaEpgGenerator):
+	def run(self, force):
+		# mark, that we don't have loaded epg data yet
+		self.epg_data = None
+		EnigmaEpgGenerator.run(self, force)
 		# free used memory
 		del self.epg_data
 
@@ -48,14 +48,9 @@ class SledovaniTVXmlEpgGenerator(XmlEpgGenerator):
 class SledovaniTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
 	def __init__(self, content_provider, http_endpoint, user_agent):
-		self.prefix = NAME_PREFIX
-		self.name = NAME
-		self.sid_start = SERVICEREF_SID_START
-		self.tid = SERVICEREF_TID
-		self.onid = SERVICEREF_ONID
-		self.namespace = SERVICEREF_NAMESPACE
 		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=('username', 'password', 'pin', 'serialid'), user_agent=user_agent)
 		self.xmlepg_generator = SledovaniTVXmlEpgGenerator
+		self.enigmaepg_generator = SledovaniTVEnigmaEpgGenerator
 
 	def logged_in(self):
 		return self.cp.sledovanitv != None

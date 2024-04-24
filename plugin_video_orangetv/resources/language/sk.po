@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_orangetv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-09 18:42+0100\n"
-"PO-Revision-Date: 2023-03-09 18:46+0100\n"
+"POT-Creation-Date: 2024-04-24 15:01+0200\n"
+"PO-Revision-Date: 2024-04-24 15:02+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -16,40 +16,48 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_orangetv/provider.py:124
+#: plugin_video_orangetv/provider.py:145
 msgid "Special section"
 msgstr "Špeciálna sekcia"
 
-#: plugin_video_orangetv/provider.py:135
+#: plugin_video_orangetv/provider.py:156
 msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
 msgstr "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočné zariadenia, aby ste sa mohli znova inde prihlásiť."
 
-#: plugin_video_orangetv/provider.py:136
+#: plugin_video_orangetv/provider.py:157
 msgid "Registered devices"
 msgstr "Zaregistrované zariadenia"
 
-#: plugin_video_orangetv/provider.py:145
+#: plugin_video_orangetv/provider.py:158
+msgid "Run EPG export to enigma or XML files"
+msgstr "Spustiť EPG export do enigmy alebo do XML súborov"
+
+#: plugin_video_orangetv/provider.py:164
+msgid "EPG export started"
+msgstr "EPG export bol spustený"
+
+#: plugin_video_orangetv/provider.py:173
 msgid "In menu you can remove device using Remove device!"
 msgstr "V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!"
 
-#: plugin_video_orangetv/provider.py:148
+#: plugin_video_orangetv/provider.py:176
 msgid "Remove device!"
 msgstr "Zmazať zariadenie!"
 
-#: plugin_video_orangetv/provider.py:155
+#: plugin_video_orangetv/provider.py:183
 #, python-brace-format
 msgid "Device {device} was removed!"
 msgstr "Zariadenie {device} bolo vymazané!"
 
-#: plugin_video_orangetv/orangetv.py:125
+#: plugin_video_orangetv/orangetv.py:120
 msgid "Unexpected return code from server"
 msgstr "Neočakávaný návratový kód zo servera"
 
-#: plugin_video_orangetv/orangetv.py:176
+#: plugin_video_orangetv/orangetv.py:171
 msgid "Login data not set"
 msgstr "Nezadané prihlasovacie údaje"
 
-#: plugin_video_orangetv/orangetv.py:202
+#: plugin_video_orangetv/orangetv.py:197
 msgid "Failed to autentificate - probably wrong username/password"
 msgstr "Prihlásenie zlyhalo - pravdepodobne chybné meno/heslo"
 

@@ -1,3 +1,7 @@
+1.12 - 24.04.2024
+    - úpravy kvôli exportu EPG priamo do enigma2 bez použitia XML-EPG
+    - prechod na unifikovaný bouquet generátor (opravuje nesprávne EPG v niektorých prípadoch)
+
 1.11 - 27.01.2024
     - priadnie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
 
