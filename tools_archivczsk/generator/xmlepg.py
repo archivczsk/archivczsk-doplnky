@@ -87,6 +87,7 @@ class XmlEpgGeneratorTemplate(object):
 			return self.data_mtime
 		except:
 			return 0
+
 	# #################################################################################################
 
 	def get_epgload_cache_dir(self):
@@ -128,7 +129,17 @@ class XmlEpgGeneratorTemplate(object):
 			else:
 				self.log_error("Source %s not found" % self.prefix)
 		except:
-			return traceback.format_exc()
+			self.log_error(traceback.format_exc())
+
+	# #################################################################################################
+
+	def disable_epgload_source(self):
+		try:
+			from Plugins.Extensions.EPGLoad.plugin import createSourceConfig
+			# this will recreate EPGLoad's sources configuration
+			createSourceConfig()
+		except:
+			self.log_error(traceback.format_exc())
 
 	# #################################################################################################
 
@@ -145,7 +156,7 @@ class XmlEpgGeneratorTemplate(object):
 				if autoStartTimer is not None:
 					autoStartTimer.update()
 		except:
-			return traceback.format_exc()
+			self.log_error(traceback.format_exc())
 
 	# #################################################################################################
 
@@ -155,6 +166,82 @@ class XmlEpgGeneratorTemplate(object):
 			return True
 
 		return False
+
+	# #################################################################################################
+
+	def cleanup(self, xmlepg_dir, uninstall=False):
+		data_file = os.path.join(xmlepg_dir, self.data_file)
+		channels_file = os.path.join(xmlepg_dir, self.channels_file)
+
+		if os.path.exists(data_file):
+			try:
+				self.log_info("Removing data file %s" % data_file)
+				os.remove(data_file)
+			except:
+				pass
+
+		if os.path.exists(channels_file):
+			try:
+				self.log_info("Removing channels file %s" % channels_file)
+				os.remove(channels_file)
+			except:
+				pass
+
+		if not uninstall:
+			return
+
+		epgimport_found = self.check_plugin_existence('EPGImport')
+		epgload_found = self.check_plugin_existence('EPGLoad')
+
+		epgplugin_data_list = []
+
+		if epgimport_found:
+			epgplugin_data_list.append((self.epgimport_sources_content, self.epgimport_sources_file, self.epgimport_settings_file))
+
+		if epgload_found:
+			epgplugin_data_list.append((self.epgload_sources_content, self.epgload_sources_file, None))
+
+		for epgplugin_data in epgplugin_data_list:
+			if os.path.exists(epgplugin_data[1]):
+				self.log_info("Removing XML-EPG sources file " + epgplugin_data[1])
+				try:
+					os.remove(epgplugin_data[1])
+				except:
+					pass
+
+			if epgplugin_data[2] != None:
+				# EPGImport
+				if os.path.exists(epgplugin_data[2]):
+					epgimport_settings = pickle.load(open(epgplugin_data[2], 'rb'))
+
+					if self.name in epgimport_settings['sources']:
+						self.log_info("Disabling %s in epgimport/epgload config %s" % (self.name, epgplugin_data[2]))
+						epgimport_settings['sources'].remove(self.name)
+						pickle.dump(epgimport_settings, open(epgplugin_data[2], 'wb'), pickle.HIGHEST_PROTOCOL)
+			else:
+				# EPGLoad
+				# for all this we need access to engima :-(
+
+				# 1. check epgload settings and create symlinks to for channels and data file
+				self.log_info("Checking for symlinks to data and channels file")
+				cache_dir = self.get_epgload_cache_dir()
+
+				if cache_dir == None:
+					# something failed
+					self.log_error("Failed to get EPGLoad cache dir")
+				else:
+					self.log_info("EPGLoad's cache dir: %s" % cache_dir)
+
+					for symlink_file, file in [ (os.path.join(cache_dir, self.data_file), data_file), (os.path.join(cache_dir, self.channels_file), channels_file) ]:
+						if os.path.isfile(symlink_file):
+							# destination file exists and is valid (symlink or not)
+							self.log_info("Removing symlink %s" % symlink_file)
+							try:
+								os.remove(symlink_file)
+							except:
+								pass
+
+				self.disable_epgload_source()
 
 	# #################################################################################################
 

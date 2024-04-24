@@ -55,7 +55,7 @@ class BouquetGeneratorTemplate(object):
 					r = s.get( url, timeout=5 )
 
 					if r.status_code == 200:
-						if r.headers.get('content-type') != 'image/png':
+						if r.headers.get('content-type','').lower() != 'image/png':
 							client.log.error("Unsupported content type %s of picon URL %s downloaded to %s" % (r.headers.get('content-type'), url, fileout))
 						else:
 							client.log.debug("Writing picon from URL %s to %s" % (url, fileout))

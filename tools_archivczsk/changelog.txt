@@ -1,3 +1,7 @@
+1.29 - 25.04.2024
+    - added direct epg export to enigma2's epg cache with only fallback to XML-EPG when direct export is not available
+    - rewrite bouquet and EPG processing and make it more unified with less configuration needed
+
 1.28 - 23.04.2024
     - fixed XML-EPG generator for virtual profile
 

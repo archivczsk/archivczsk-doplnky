@@ -2,6 +2,7 @@
 
 from .bouquet import BouquetGeneratorTemplate
 from .xmlepg import XmlEpgGeneratorTemplate
+from .enigmaepg import EnigmaEpgGeneratorTemplate
 import time
 from binascii import crc32
 
@@ -41,7 +42,6 @@ class BouquetGenerator(BouquetGeneratorTemplate):
 
 # #################################################################################################
 
-
 class XmlEpgGenerator(XmlEpgGeneratorTemplate):
 	def __init__(self, bxeg):
 		self.bxeg = bxeg
@@ -71,11 +71,44 @@ class XmlEpgGenerator(XmlEpgGeneratorTemplate):
 
 	# #################################################################################################
 
+	def cleanup(self, uninstall=False):
+		XmlEpgGeneratorTemplate.cleanup(self, self.bxeg.get_setting('xmlepg_dir'), uninstall)
+
+	# #################################################################################################
+
 	def run(self, force):
 		XmlEpgGeneratorTemplate.run(self, force, self.bxeg.get_setting('xmlepg_dir'), self.bxeg.get_setting('xmlepg_days'))
 
 # #################################################################################################
 
+class EnigmaEpgGenerator(EnigmaEpgGeneratorTemplate):
+	def __init__(self, bxeg):
+		self.bxeg = bxeg
+
+		self.sid_start = bxeg.sid_start
+		self.tid = bxeg.tid
+		self.onid = bxeg.onid
+		self.namespace = bxeg.namespace
+		EnigmaEpgGeneratorTemplate.__init__(self, log_info=bxeg.cp.log_info, log_error=bxeg.cp.log_error)
+
+	# #################################################################################################
+
+	def get_channels(self):
+		return self.bxeg.get_xmlepg_channels()
+
+	# #################################################################################################
+
+	def get_epg(self, channel, fromts, tots):
+		return self.bxeg.get_epg(channel, fromts, tots)
+
+	# #################################################################################################
+
+	def run(self, force):
+		cks = self.bxeg.cp.load_cached_data('enigmaepg')
+		if EnigmaEpgGeneratorTemplate.run(self, cks, force, self.bxeg.get_setting('xmlepg_days')):
+			self.bxeg.cp.save_cached_data('enigmaepg', cks)
+
+# #################################################################################################
 
 class BouquetXmlEpgGenerator(object):
 	'''
@@ -98,9 +131,9 @@ class BouquetXmlEpgGenerator(object):
 		self.sid_start = SERVICEREF_SID_START
 
 		if profile_info is not None:
-			self.tid = 0x1 + crc32(self.prefix + profile_info[0]) % 0xFFFE
+			self.tid = 0x1 + crc32((self.prefix + profile_info[0]).encode('utf-8')) % 0xFFFE
 		else:
-			self.tid = 0x1 + crc32(self.prefix) % 0xFFFE
+			self.tid = 0x1 + crc32(self.prefix.encode('utf-8')) % 0xFFFE
 		self.onid = SERVICEREF_ONID
 
 		if not hasattr(self, 'bouquet_settings_names'):
@@ -116,6 +149,7 @@ class BouquetXmlEpgGenerator(object):
 		self.channel_types = channel_types
 		self.bouquet_generator = BouquetGenerator
 		self.xmlepg_generator = XmlEpgGenerator
+		self.enigmaepg_generator = EnigmaEpgGenerator
 		self.bouquet_refresh_running = False
 		self.cp.add_setting_change_notifier(self.bouquet_settings_names, self.bouquet_settings_changed)
 		self.cp.add_initialised_callback(self.initialised)
@@ -206,7 +240,7 @@ class BouquetXmlEpgGenerator(object):
 
 		if not self.bouquet_refresh_running:
 			self.cp.log_debug("Starting bouquet+xmlepg refresh")
-			self.cp.bouquet_refresh_running = True
+			self.bouquet_refresh_running = True
 			self.cp.bgservice.run_delayed('settings_changed(refresh bouquet)', 3, __bouquet_refreshed, self.refresh_bouquet)
 		else:
 			self.cp.log_debug("Bouquet refresh already running")
@@ -214,6 +248,7 @@ class BouquetXmlEpgGenerator(object):
 	# #################################################################################################
 
 	def refresh_bouquet(self):
+		self.bouquet_refresh_running = True
 		cks = self.cp.load_cached_data('bouquet')
 
 		if self.logged_in() and self.get_setting('enable_userbouquet'):
@@ -256,7 +291,16 @@ class BouquetXmlEpgGenerator(object):
 
 	# #################################################################################################
 
-	def refresh_xmlepg(self):
+	def refresh_xmlepg_start(self, force=False):
+		def __xmlepg_refreshed(success, result):
+			self.cp.log_debug("XML-EPG refreshed")
+
+		self.cp.log_debug("Starting xmlepg refresh")
+		self.cp.bgservice.run_delayed('settings_changed(refresh xmlepg)', 3, __xmlepg_refreshed, self.refresh_xmlepg, force=force)
+
+	# #################################################################################################
+
+	def refresh_xmlepg(self, force = False):
 		# do not run epg generator if time is not synced yet
 		if time.time() < 3600:
 			return
@@ -272,12 +316,26 @@ class BouquetXmlEpgGenerator(object):
 			cks['settings'] = settings_cks
 			cks['version'] = 2
 			force = True
-		else:
-			force = False
 
 		if self.logged_in() and self.get_setting('enable_userbouquet') and self.get_setting('enable_xmlepg'):
 			self.load_channel_list()
-			self.xmlepg_generator(self).run(force)
+			try:
+				# try to directly export data to enigma's EPG cache
+				self.enigmaepg_generator(self).run(force)
+
+				try:
+					if cks.get('xml_generated', True):
+						self.xmlepg_generator(self).cleanup(True)
+						cks['xml_generated'] = False
+						force = True # needed to save cached data at the end of this function
+				except:
+					self.cp.log_exception()
+
+			except Exception as e:
+				self.cp.log_exception()
+				self.cp.log_error("Failed to export EPG to enigma's cache: %s. Falling back to XML-EPG export ..." % str(e))
+				self.xmlepg_generator(self).run(force)
+				cks['xml_generated'] = True
 
 		if force:
 			self.cp.save_cached_data('xmlepg', cks)
