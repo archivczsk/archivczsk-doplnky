@@ -112,6 +112,10 @@ class ArchivCZSKContentProvider(object):
 		self.addon = addon
 		self.addon_id = addon.id
 		self.session = None
+
+		if not self.provider.name:
+			self.provider.name = addon.name
+
 		self.searches = SearchProvider(addon, self.provider.name)
 		self.login_refresh_running = False
 
@@ -141,6 +145,8 @@ class ArchivCZSKContentProvider(object):
 		self.provider.get_engine_version = lambda: archivczsk_version
 		self.provider.get_parental_settings = client.parental_pin.get_settings
 		self.provider.call_another_addon = self.call_another_addon
+		self.provider.get_addon_id = self.get_addon_id
+
 		self.initialised_cbk_called = False
 		self.login_tries = 0
 
@@ -675,5 +681,13 @@ class ArchivCZSKContentProvider(object):
 		except:
 			self.log_error('Exception caught:\n%s' % traceback.format_exc())
 			return False
+
+	# #################################################################################################
+
+	def get_addon_id(self, short=False):
+		if short and self.addon_id.startswith('plugin.video.'):
+			return self.addon_id[13:]
+
+		return self.addon_id
 
 	# #################################################################################################

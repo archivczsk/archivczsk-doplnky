@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import sys, os, re, io, base64
-import threading, requests
+import os, base64
+import threading, requests, traceback
+from Plugins.Extensions.archivCZSK.engine import client
 from .lamedb import lameDB
+
 try:
 	from Components.ParentalControl import parentalControl
 except:
@@ -18,14 +20,9 @@ except:
 
 	parentalControl = ParentalControl()
 
-try:
-	from urllib import quote
-except:
-	from urllib.parse import quote
-
 # #################################################################################################
 
-class BouquetGeneratorTemplate:
+class BouquetGeneratorTemplate(object):
 
 	def __init__(self, endpoint, enable_adult=True, enable_xmlepg=False, enable_picons=False, player_name='0', user_agent=None):
 		# configuration to make this class little bit reusable also in other addons
@@ -53,16 +50,19 @@ class BouquetGeneratorTemplate:
 		s = requests.Session()
 
 		def download_picon(fileout, url):
-			if not url.endswith('.png'):
-				return
-
 			if not os.path.exists(fileout):
 				try:
 					r = s.get( url, timeout=5 )
+
 					if r.status_code == 200:
-						with open(fileout, 'wb') as f:
-							f.write( r.content )
+						if r.headers.get('content-type') != 'image/png':
+							client.log.error("Unsupported content type %s of picon URL %s downloaded to %s" % (r.headers.get('content-type'), url, fileout))
+						else:
+							client.log.debug("Writing picon from URL %s to %s" % (url, fileout))
+							with open(fileout, 'wb') as f:
+								f.write( r.content )
 				except:
+					client.log.error(traceback.format_exc())
 					pass
 
 
@@ -200,7 +200,7 @@ class BouquetGeneratorTemplate:
 			except:
 				pass
 
-		return player_id + ":0:1:%X:%X:%X:%X:0:0:0:" % (self.sid_start + channel_id, self.tid, self.onid, self.namespace)
+		return player_id + ":0:1:%X:%X:%X:%X:0:0:0:" % ((self.sid_start + channel_id) % 0xFFFF, self.tid, self.onid, self.namespace)
 
 	# #################################################################################################
 
@@ -335,4 +335,3 @@ class BouquetGeneratorTemplate:
 			threading.Thread(target=BouquetGeneratorTemplate.download_picons,args=(picons,)).start()
 
 	# #################################################################################################
-

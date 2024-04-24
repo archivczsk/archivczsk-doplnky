@@ -3,9 +3,13 @@
 from .bouquet import BouquetGeneratorTemplate
 from .xmlepg import XmlEpgGeneratorTemplate
 import time
+from binascii import crc32
+
+SERVICEREF_SID_START = 0x0001
+SERVICEREF_ONID = 0x1
+SERVICEREF_NAMESPACE = 0x7070000
 
 # #################################################################################################
-
 
 class BouquetGenerator(BouquetGeneratorTemplate):
 
@@ -73,7 +77,7 @@ class XmlEpgGenerator(XmlEpgGeneratorTemplate):
 # #################################################################################################
 
 
-class BouquetXmlEpgGenerator:
+class BouquetXmlEpgGenerator(object):
 	'''
 	This is a base for bouquet + xml epg generator. You need to create your own class and inherit from this one. Then in your
 	class implement at least mandatory functions bellow. After initialisation this class will monitor settings change and will
@@ -82,15 +86,22 @@ class BouquetXmlEpgGenerator:
 	'''
 	def __init__(self, content_provider, http_endpoint, login_settings_names=('username', 'password'), user_agent=None, channel_types=('tv',)):
 		''' content_provider shoould be based on CommonContentProvider '''
-#		self.prefix = "o2tv"
-#		self.name = "O2TV"
-#		self.sid_start = 0xE000
-#		self.tid = 5
-#		self.onid = 2
-#		self.namespace = 0xE030000
+		self.prefix = content_provider.get_addon_id(short=True)
+		self.name = content_provider.name
 		self.cp = content_provider
 		self.user_agent = user_agent
 		self.http_endpoint = http_endpoint
+
+		profile_info = self.get_profile_info()
+
+		self.namespace = SERVICEREF_NAMESPACE
+		self.sid_start = SERVICEREF_SID_START
+
+		if profile_info is not None:
+			self.tid = 0x1 + crc32(self.prefix + profile_info[0]) % 0xFFFE
+		else:
+			self.tid = 0x1 + crc32(self.prefix) % 0xFFFE
+		self.onid = SERVICEREF_ONID
 
 		if not hasattr(self, 'bouquet_settings_names'):
 			# set settings names, that will start bouquet rebuild + are used to check, if rebuild is needed
@@ -213,6 +224,10 @@ class BouquetXmlEpgGenerator:
 				self.cp.log_debug("Settings for userbouquet changed - forcing update")
 				cks = {}
 
+			if cks.get('version') != 2:
+				self.cp.log_debug("Version of exported userbouquet doesn't match - forcing update")
+				cks = {}
+
 			need_save = False
 			for channel_type in self.channel_types:
 				channel_checksum = self.get_channels_checksum(channel_type)
@@ -226,7 +241,9 @@ class BouquetXmlEpgGenerator:
 
 			if need_save:
 				cks['settings'] = settings_cks
+				cks['version'] = 2
 				self.cp.save_cached_data('bouquet', cks)
+
 		elif cks != {}:
 			# remove userbouquet
 			for channel_type in self.channel_types:
@@ -247,8 +264,13 @@ class BouquetXmlEpgGenerator:
 		cks = self.cp.load_cached_data('xmlepg')
 		settings_cks = self.cp.get_settings_checksum(self.login_settings_names + self.xmlepg_settings_names)
 
+		if cks.get('version') != 2:
+			self.cp.log_debug("Version of exported XML-EPG doesn't match - forcing update")
+			cks = {}
+
 		if cks.get('settings') != settings_cks:
 			cks['settings'] = settings_cks
+			cks['version'] = 2
 			force = True
 		else:
 			force = False

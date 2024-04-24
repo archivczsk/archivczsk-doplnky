@@ -47,7 +47,7 @@ def _log_dummy(message):
 	pass
 
 
-class XmlEpgGeneratorTemplate:
+class XmlEpgGeneratorTemplate(object):
 
 	def __init__(self, log_info=None, log_error=None):
 		# configuration to make this class little bit reusable also in other addons
@@ -68,17 +68,17 @@ class XmlEpgGeneratorTemplate:
 		self.epgload_sources_file = '/etc/epgload/%s.sources.xml' % self.prefix
 		self.epgload_sources_content = EPGLOAD_SOURCES_CONTENT.format(name=self.name)
 
-		# Child class must define these values 
+		# Child class must define these values
 #		self.prefix = "o2tv"
 #		self.name = "O2TV"
 #		self.sid_start = 0xE000
 #		self.tid = 5
 #		self.onid = 2
 #		self.namespace = 0xE030000
-	
+
 	# #################################################################################################
 	# overide this function to store data modification time somewere else
-	
+
 	def get_datafile_mtime(self, data_file):
 		try:
 			if self.data_mtime == 0:
@@ -170,7 +170,7 @@ class XmlEpgGeneratorTemplate:
 		if not epgimport_found and not epgload_found:
 			self.log_error("Neither EPGImport nor EPGLoad plugin not detected")
 			return
-			
+
 		# create paths to export files
 		data_file = os.path.join(xmlepg_dir, self.data_file)
 		channels_file = os.path.join(xmlepg_dir, self.channels_file)
@@ -203,11 +203,11 @@ class XmlEpgGeneratorTemplate:
 				pass
 
 			return
-	
+
 		# generate proper sources file for EPGImport
 		if epgimport_found and not os.path.exists('/etc/epgimport'):
 			os.mkdir('/etc/epgimport')
-	
+
 		# generate proper sources file for EPGLoad
 		if epgload_found and not os.path.exists('/etc/epgload'):
 			os.mkdir('/etc/epgload')
@@ -219,7 +219,7 @@ class XmlEpgGeneratorTemplate:
 
 		if epgload_found:
 			epgplugin_data_list.append((self.epgload_sources_content, self.epgload_sources_file, None))
-	
+
 		for epgplugin_data in epgplugin_data_list:
 			xmlepg_source_content = epgplugin_data[0] % (channels_file, data_file)
 			xmlepg_source_content_md5 = md5(xmlepg_source_content.encode('utf-8')).hexdigest()
@@ -359,6 +359,6 @@ class XmlEpgGeneratorTemplate:
 
 				fc.write('</channels>\n')
 				f.write('</tv>\n')
-				
+
 	# #################################################################################################
 

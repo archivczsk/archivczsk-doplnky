@@ -101,7 +101,7 @@ class CommonContentProvider(object):
 	create your own implementation on top of this class.
 	"""
 
-	def __init__(self, name='dummy', settings=None, data_dir=None, bgservice=None):
+	def __init__(self, name='', settings=None, data_dir=None, bgservice=None):
 		self.name = name
 		self.settings = settings
 		self.bgservice = bgservice if bgservice != None else DummyAddonBackgroundService()
@@ -702,3 +702,11 @@ class CommonContentProvider(object):
 		then run interface will be called (provider's root() method)
 		'''
 		return False
+
+	def get_addon_id(self, short=False):
+		'''
+		Returns current addon ID. If short is True, then prefix "plugin.video." (if any) will be removed and only short unique part of ID will be returned
+		'''
+
+		# this is just a dummy implementation
+		return self.name.lower()
