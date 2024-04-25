@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.string_utils import _I, _C, _B, decode_html
@@ -17,69 +18,41 @@ COMMON_HEADERS = {
 
 
 class SkTContentProvider(CommonContentProvider):
+	LOGIN_INFO_URL='https://t.ly/S3hh8'
 
 	def __init__(self, settings=None, data_dir=None):
 		CommonContentProvider.__init__(self, 'SkTonline', settings=settings, data_dir=data_dir)
-		self.login_optional_settings_names = ('username', 'password')
 		self.req_session = self.get_requests_session()
 		self.req_session.headers.update(COMMON_HEADERS)
-		self.free_login = True
+		self.avs = None
 
-	def login(self, silent):
-		self.free_login = True
-		self.req_session.cookies.clear()
-		if not self.get_setting('username') or not self.get_setting('password'):
-			# no username/password provided - continue with free account
-			self.log_debug("No username or password provided - continuing with free account")
-			return True
+	def load_avs(self):
+		avs = None
+		try:
+			with open(os.path.join(self.data_dir, 'avs.txt'), "r") as f:
+				avs = f.read().strip()
+		except:
+			# fallback for users, that have cached AVS when it was possible to get it using name/password
+			avs = self.load_cached_data('login').get('session')
 
-		cks = self.get_settings_checksum(('username', 'password',))
-		data = self.load_cached_data('login')
-
-		avs = data.get('session')
-
-		if avs and data.get('checksum') and data['checksum'] == cks:
-			self.log_debug("Session data found in cache")
-			self.req_session.cookies.set('AVS', data['session'], domain='online.sktorrent.eu')
-			if self.check_login():
-				self.log_debug("Login check OK - continuing with loaded session")
-				self.free_login = False
-				return True
-
-		self.log_debug("Don't have login session - trying fresh login")
-
-		# not logged yet or check login failed
-		payload = {
-			'username': self.get_setting('username'),
-			'password': self.get_setting('password'),
-			'submit_login':''
-		}
-
-		self.call_api('login', data=payload, raw_response=True)
-		# check if login passed
-		if not self.check_login():
-			self.login_error(self._("Login failed - check login name and password"))
-			return False
-
-		# get AVS cookie and store it
-		data['session'] = self.req_session.cookies.get('AVS')
-
-		if not data['session']:
-			self.login_error(self._("Failed to create login session. Maybe login page has changed."))
-			return False
-
-		data['checksum'] = cks
-		self.save_cached_data('login', data)
-		self.log_debug("Login session authorized and stored")
-		self.free_login = False
-		return True
+		return avs
 
 	def check_login(self):
+		avs = self.load_avs() or None
+
+		if avs == self.avs:
+			return
+
+		self.req_session.cookies.clear()
+		self.req_session.cookies.set('AVS', avs, domain='online.sktorrent.eu')
+
 		response = self.call_api('user', raw_response=True)
 		if response.url.endswith('/login'):
-			return False
+			self.req_session.cookies.clear()
+			self.avs = None
+			self.show_error(self._('Login with provided AVS cookie failed. Visit {url} for instructions how to provide valid login cookie.').format(url=self.LOGIN_INFO_URL), noexit=True)
 		else:
-			return True
+			self.avs = avs
 
 	def call_api(self, endpoint, params=None, data=None, raw_response=False):
 		if endpoint.startswith('http'):
@@ -110,6 +83,7 @@ class SkTContentProvider(CommonContentProvider):
 		return self.list_videos('search/videos?t=a&o=mr&type=public&search_query=' + quote(keyword))
 
 	def root(self):
+		self.check_login()
 		self.add_search_dir()
 		httpdata = self.call_api('categories')
 
@@ -137,8 +111,8 @@ class SkTContentProvider(CommonContentProvider):
 		for link, res in re.compile('source src="(.*?)".*?res=\'(.*?)\'', re.DOTALL).findall(httpdata):
 			links.append((link, res,))
 
-		if len(links) == 0 and self.free_login:
-			self.show_info(self._("For starting playback you need to set login name and password in addon's settings"))
+		if len(links) == 0 and not self.avs:
+			self.show_info(self._("For starting playback you need to set valid AVS cookie. Visit {url} for instructions how to do so.").format(url=self.LOGIN_INFO_URL))
 			return
 
 		settings = {
@@ -153,5 +127,3 @@ class SkTContentProvider(CommonContentProvider):
 				'quality': str(res) + 'p'
 			}
 			self.add_play(name, link, info_labels, settings=settings)
-
-

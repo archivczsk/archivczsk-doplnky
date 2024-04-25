@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_sktonline\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-09 19:06+0100\n"
-"PO-Revision-Date: 2023-03-09 19:07+0100\n"
+"POT-Creation-Date: 2024-04-25 10:57+0200\n"
+"PO-Revision-Date: 2024-04-25 10:59+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -16,27 +16,34 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_sktonline/provider.py:62
-msgid "Login failed - check login name and password"
-msgstr "Přihlášení selhalo - zkontrolujte přihlašovací jméno a heslo"
+#: plugin_video_sktonline/provider.py:52
+#, python-brace-format
+msgid "Login with provided AVS cookie failed. Visit {url} for instructions how to provide valid login cookie."
+msgstr "Přihlášení pomocí zadaného AVS cookie se nezdařilo. Navštivte stránku {url}, kde naleznete pokyny, jak zadat platný přihlašovací cookie."
 
-#: plugin_video_sktonline/provider.py:69
-msgid "Failed to create login session. Maybe login page has changed."
-msgstr "Vytvoření přihlašovací session selhalo. Možná nastala změna způsobu přihlášení."
-
-#: plugin_video_sktonline/provider.py:110
+#: plugin_video_sktonline/provider.py:79
 msgid "HTTP reponse code"
 msgstr "HTTP návratový kód"
 
-#: plugin_video_sktonline/provider.py:144
-msgid "For starting playback you need to set login name and password in addon's settings"
-msgstr "Pro spuštěni přehrávání musíte v nastaveních zadat přihlašovací jméno a heslo"
+#: plugin_video_sktonline/provider.py:114
+#, python-brace-format
+msgid "For starting playback you need to set valid AVS cookie. Visit {url} for instructions how to do so."
+msgstr "Pro spuštění přehrávání je potřeba nastavit platný AVS cookie. Pokyny, jak to provést, naleznete na adrese {url}."
 
-msgid "Login name"
-msgstr "Přihlašovací jméno"
+#~ msgid "Login failed - check login name and password"
+#~ msgstr "Přihlášení selhalo - zkontrolujte přihlašovací jméno a heslo"
 
-msgid "Login password"
-msgstr "Přihlašovací heslo"
+#~ msgid "Failed to create login session. Maybe login page has changed."
+#~ msgstr "Vytvoření přihlašovací session selhalo. Možná nastala změna způsobu přihlášení."
 
-msgid "Enable server SSL certificate check"
-msgstr "Povolit kontrolu SSL certifikátu serveru"
+#~ msgid "For starting playback you need to set login name and password in addon's settings"
+#~ msgstr "Pro spuštěni přehrávání musíte v nastaveních zadat přihlašovací jméno a heslo"
+
+#~ msgid "Login name"
+#~ msgstr "Přihlašovací jméno"
+
+#~ msgid "Login password"
+#~ msgstr "Přihlašovací heslo"
+
+#~ msgid "Enable server SSL certificate check"
+#~ msgstr "Povolit kontrolu SSL certifikátu serveru"

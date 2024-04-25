@@ -1,5 +1,3 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-  <setting label="Login name" id="username" type="text" default=""/>
-  <setting label="Login password" id="password" type="password" default=""/>
 </settings>
