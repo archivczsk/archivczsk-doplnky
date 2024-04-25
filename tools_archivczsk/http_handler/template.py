@@ -11,6 +11,11 @@ from twisted.web.http_headers import Headers
 from twisted.internet.protocol import Protocol
 from twisted.internet import reactor
 
+from twisted.web.iweb import IPolicyForHTTPS
+from twisted.internet.ssl import CertificateOptions
+from twisted.internet import _sslverify
+from zope.interface import implementer
+
 try:
 	from cookielib import CookieJar
 except:
@@ -18,6 +23,13 @@ except:
 
 from tools_cenc.wvdecrypt import WvDecrypt
 from binascii import crc32
+
+# #################################################################################################
+
+@implementer(IPolicyForHTTPS)
+class SSLNoVerifyContextFactory(object):
+	def creatorForNetloc(self, hostname, port):
+		return _sslverify.ClientTLSOptions(hostname.decode('utf-8'), CertificateOptions(verify=False).getContext())
 
 # #################################################################################################
 
@@ -58,7 +70,12 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler, object):
 
 		self._cookies = CookieJar()
 		self._pool = HTTPConnectionPool(reactor)
-		self.cookie_agent = Agent(reactor, connectTimeout=timeout/2, pool=self._pool)
+
+		if self.cp.get_setting('verify_ssl'):
+			self.cookie_agent = Agent(reactor, connectTimeout=timeout/2, pool=self._pool)
+		else:
+			self.cookie_agent = Agent(reactor, connectTimeout=timeout/2, pool=self._pool, contextFactory=SSLNoVerifyContextFactory())
+
 		self.cookie_agent = CookieAgent(self.cookie_agent, self._cookies)
 		self.cookie_agent = RedirectAgent(self.cookie_agent)
 
