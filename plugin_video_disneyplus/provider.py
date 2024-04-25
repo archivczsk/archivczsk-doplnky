@@ -108,7 +108,7 @@ class DisneyPlusContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def root(self):
-		PlayerFeatures.request_exteplayer3_version(self, 169)
+		PlayerFeatures.request_exteplayer3_version(self, 170)
 		self.build_lang_lists()
 		self.select_profile_on_startup()
 
