@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_markiza\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-08 19:17+0100\n"
-"PO-Revision-Date: 2023-03-13 19:19+0100\n"
+"POT-Creation-Date: 2024-04-25 10:05+0200\n"
+"PO-Revision-Date: 2024-04-25 10:06+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -69,11 +69,15 @@ msgstr "Všetky"
 msgid "Categories"
 msgstr "Kategórie"
 
-#: plugin_video_markiza/provider.py:350
+#: plugin_video_markiza/provider.py:372
 msgid "Video not found."
 msgstr "Video nebolo nájdené."
 
-#: plugin_video_markiza/provider.py:377
+#: plugin_video_markiza/provider.py:396
+msgid "Format of site has been changed. Addon needs to be updated in order to work again."
+msgstr "Formát stránky sa zmenil. Doplnok potrebuje aktualizáciu aby znovu fungoval."
+
+#: plugin_video_markiza/provider.py:408
 msgid "Failed to play video"
 msgstr "Nepodarilo sa prehrať video"
 

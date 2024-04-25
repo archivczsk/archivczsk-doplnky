@@ -1,3 +1,6 @@
+2.7: 25.04.2024
+- oprava prehrávania po zmenách na stránke
+
 2.6: 27.01.2024
 - priadnie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
 

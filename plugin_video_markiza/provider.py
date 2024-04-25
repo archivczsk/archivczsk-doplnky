@@ -5,7 +5,7 @@ from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.string_utils import _I, _C, _B, decode_html
 from tools_archivczsk.debug.http import dump_json_request
 import sys
-import re, json
+import re, ast
 
 try:
 	from urllib import quote
@@ -307,6 +307,28 @@ class MarkizaContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
+	def get_js_data(self, data, pattern):
+		'''
+		Extracts piece of javascript data from data based on pattern and converts it to python object
+		'''
+		sources = re.compile(pattern, re.DOTALL)
+		js_obj = sources.findall(data)[0]
+
+		# remove all spaces not in double quotes
+		js_obj = re.sub(r'\s+(?=([^"]*"[^"]*")*[^"]*$)', '', js_obj)
+
+		# add double quotes around dictionary keys
+		js_obj = re.sub(r'([{,]+)(\w+):', '\\1"\\2":', js_obj)
+
+		# replace JS variables with python alternatives
+		js_obj = re.sub(r'(["\']):undefined([,}])', '\\1:None\\2', js_obj)
+		js_obj = re.sub(r'(["\']):null([,}])', '\\1:None\\2', js_obj)
+		js_obj = re.sub(r'(["\']):NaN([,}])', '\\1:None\\2', js_obj)
+		js_obj = re.sub(r'(["\']):true([,}])', '\\1:True\\2', js_obj)
+		js_obj = re.sub(r'(["\']):false([,}])', '\\1:False\\2', js_obj)
+		return ast.literal_eval(js_obj)
+
+
 	def get_hls_info(self, stream_key):
 		return {
 			'url': self.last_hls,
@@ -353,16 +375,25 @@ class MarkizaContentProvider(CommonContentProvider):
 		embeded = self.call_api(embeded_url)
 
 		try:
-			json_data = json.loads(
-				re.compile('{"tracks":(.+?),"duration"').findall(str(embeded))[0]
-			)
+			# search for player configuration
+			json_data = None
+			for s in embeded.find_all('script'):
+				try:
+					json_data = self.get_js_data(s.text, '\s+player:\s+(\{.*?)\};.*')
+					break
+				except:
+					pass
 		except:
 			self.log_exception()
 			json_data = None
 
 		if json_data:
 #			self.log_info("json_data: %s" % json_data)
-			stream_data = json_data['HLS'][0]
+			try:
+				stream_data = sorted(json_data['lib']['source']['sources'], key=lambda s: s.get('type').lower() == "application/x-mpegurl", reverse=True)[0]
+			except:
+				self.log_exception()
+				self.show_error(self._("Format of site has been changed. Addon needs to be updated in order to work again."))
 
 			if not "drm" in stream_data:
 				resolved_url = stream_data["src"]
