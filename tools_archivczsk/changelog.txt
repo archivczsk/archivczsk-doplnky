@@ -1,3 +1,6 @@
+1.30 - 28.04.2024
+    - allow disabling some channel types when exporting userbouquet and EPG
+
 1.29 - 25.04.2024
     - added direct epg export to enigma2's epg cache with only fallback to XML-EPG when direct export is not available
     - rewrite bouquet and EPG processing and make it more unified with less configuration needed

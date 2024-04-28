@@ -146,7 +146,8 @@ class BouquetXmlEpgGenerator(object):
 
 		# if any of login settings names changes, then it will force bouquet and xmlepg rebuild
 		self.login_settings_names = login_settings_names
-		self.channel_types = channel_types
+		self.channel_types = channel_types       # list of enabled channel types
+		self.channel_types_all = channel_types   # list of all channel types
 		self.bouquet_generator = BouquetGenerator
 		self.xmlepg_generator = XmlEpgGenerator
 		self.enigmaepg_generator = EnigmaEpgGenerator
@@ -264,15 +265,19 @@ class BouquetXmlEpgGenerator(object):
 				cks = {}
 
 			need_save = False
-			for channel_type in self.channel_types:
+			for channel_type in self.channel_types_all:
 				channel_checksum = self.get_channels_checksum(channel_type)
 
-				if cks.get(channel_type) == None or cks.get(channel_type) != channel_checksum:
-					self.cp.log_info("Channel list for type %s changed - starting generator" % channel_type)
-					self.bouquet_generator(self, channel_type if len(self.channel_types) > 1 else None).run()
-					self.cp.log_info("Userbouquet for channel type %s generated" % channel_type)
-					cks[channel_type] = channel_checksum
-					need_save = True
+				if channel_type in self.channel_types:
+					if cks.get(channel_type) == None or cks.get(channel_type) != channel_checksum:
+						self.cp.log_info("Channel list for type %s changed - starting generator" % channel_type)
+						self.bouquet_generator(self, channel_type if len(self.channel_types_all) > 1 else None).run()
+						self.cp.log_info("Userbouquet for channel type %s generated" % channel_type)
+						cks[channel_type] = channel_checksum
+						need_save = True
+				else:
+					if self.bouquet_generator(self, channel_type if len(self.channel_types_all) > 1 else None).userbouquet_remove():
+						self.cp.log_info("Userbouquet for channel type %s disabled - removing" % channel_type)
 
 			if need_save:
 				cks['settings'] = settings_cks
@@ -281,9 +286,9 @@ class BouquetXmlEpgGenerator(object):
 
 		elif cks != {}:
 			# remove userbouquet
-			for channel_type in self.channel_types:
+			for channel_type in self.channel_types_all:
 				self.cp.log_info("Removing userbouquet for channel type %s" % channel_type)
-				self.bouquet_generator(self, channel_type if len(self.channel_types) > 1 else None).userbouquet_remove()
+				self.bouquet_generator(self, channel_type if len(self.channel_types_all) > 1 else None).userbouquet_remove()
 
 			self.cp.save_cached_data('bouquet', {})
 
@@ -341,3 +346,4 @@ class BouquetXmlEpgGenerator(object):
 			self.cp.save_cached_data('xmlepg', cks)
 
 	# #################################################################################################
+
