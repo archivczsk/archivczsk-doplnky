@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_antiktv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-24 14:55+0200\n"
-"PO-Revision-Date: 2024-04-24 14:58+0200\n"
+"POT-Creation-Date: 2024-04-28 15:37+0200\n"
+"PO-Revision-Date: 2024-04-28 15:39+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -238,6 +238,12 @@ msgstr "Userbouquet"
 
 msgid "Automatically export channel list as userbouquet"
 msgstr "Automaticky exportovat seznam stanic jako userbouquet"
+
+msgid "Allow creating userbouquet for radios"
+msgstr "Povolit vytvoření userbouquetu pro radia"
+
+msgid "Allow creating userbouquet for cameras"
+msgstr "Povolit vytvoření userbouquetu pro kamery"
 
 msgid "Generate XML EPG for epgimport plugin (if installed)"
 msgstr "Generovat XML EPG pro epgimport plugin (pokud je nainstalován)"

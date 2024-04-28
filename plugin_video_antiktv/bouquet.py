@@ -8,6 +8,7 @@ from datetime import datetime
 class AntikTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
 	def __init__(self, content_provider, http_endpoint):
+		self.bouquet_settings_names = ('enable_userbouquet', 'enable_userbouquet_radio', 'enable_userbouquet_cam', 'enable_adult', 'enable_xmlepg', 'enable_picons', 'player_name')
 		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=('username', 'password'), channel_types=('tv', 'radio', 'cam'))
 
 	def logged_in(self):
@@ -17,6 +18,15 @@ class AntikTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 		return self.cp.atk.get_channels_checksum(channel_type)
 
 	def load_channel_list(self):
+		channel_types = ['tv']
+
+		if self.cp.get_setting('enable_userbouquet_radio'):
+			channel_types.append('radio')
+
+		if self.cp.get_setting('enable_userbouquet_cam'):
+			channel_types.append('cam')
+
+		self.channel_types = channel_types
 		self.cp.atk.update_channels()
 
 	def get_bouquet_channels(self, channel_type=None):
@@ -61,7 +71,12 @@ class AntikTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 		}
 		'''
 
-		for channel_type in ('tv', 'radio'):
+		channel_types = ['tv']
+
+		if self.cp.get_setting('enable_userbouquet_radio'):
+			channel_types.append('radio')
+
+		for channel_type in channel_types:
 			for channel in self.cp.atk.get_channels(channel_type):
 				yield {
 					'name': channel['name'],
@@ -91,4 +106,3 @@ class AntikTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 				'title': event['title'],
 				'desc': event.get('description')
 			}
-

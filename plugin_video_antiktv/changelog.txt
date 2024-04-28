@@ -1,3 +1,6 @@
+2.13:
+- pridaná možnosť zakázať export userbouquetu pre rádia a kamery v nastaveniach
+
 2.12:
 - úpravy kvôli exportu EPG priamo do enigma2 bez použitia XML-EPG
 - prechod na unifikovaný bouquet generátor (opravuje nesprávne EPG v niektorých prípadoch)
