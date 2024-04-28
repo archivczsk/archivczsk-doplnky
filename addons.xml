@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <addons>
 <addon id="plugin.video.aktualne" name="Aktuálně (DVTV)" version="1.5" hash="8c554f18b9b631ffda616fadf3d20df7" rhash="8c554f18b9b631ffda616fadf3d20df7" />
-<addon id="plugin.video.antiktv" name="Antik TV" version="2.12" hash="4679d978b75207bf3334e759e4bcff4d" rhash="965718960201b3fe37ff1d43213fc99c" />
+<addon id="plugin.video.antiktv" name="Antik TV" version="2.13" hash="eaf706a5e995d308d768fa6b42978d65" rhash="8aa1fec9ac90881d831f2954a094c6df" />
 <addon id="plugin.video.autosalontv" name="Autosalon" version="1.6" hash="dfbe5c50bcc0d52a2ba6331275e79962" rhash="dfbe5c50bcc0d52a2ba6331275e79962" />
 <addon id="plugin.video.disneyplus" name="Disney+" version="1.1" hash="960e9a9c18db541a783ab134c070e09d" rhash="e32d7d7f29098c9dde9c67979ebb89e8" />
 <addon id="plugin.video.dokumenty.tv" name="Dokumenty.tv" version="1.6" hash="feab95027a6fec159001a45dd123fc6f" rhash="feab95027a6fec159001a45dd123fc6f" />
@@ -38,7 +38,7 @@
 <addon id="plugin.video.voyo" name="VOYO" version="1.3" hash="e1577d8d12a8bb03e0a1070b35aba372" rhash="f179c29982bdf0f8ca0e077f66637aeb" />
 <addon id="plugin.video.webshare" name="Webshare.cz" version="1.0" hash="2e5887258acf73432bc6691303b4fb96" rhash="e6a82c15de0e3bef6a7a286e47d75a0c" />
 <addon id="plugin.video.yt" name="YouTube" version="1.9" hash="b713d4a11d91e2713d32b144b1bbd2a0" rhash="b713d4a11d91e2713d32b144b1bbd2a0" />
-<addon id="tools.archivczsk" name="Addons base" version="1.29" hash="11cfba3e32b9387d805c5553f85868ac" rhash="c5748f91b3dd54bf8a9ca409eb8a4d98" />
+<addon id="tools.archivczsk" name="Addons base" version="1.30" hash="ffbb448aab71fcc5933ea7c5d4b482a2" rhash="7e51283a1c6b9aa00bcd6ae776e27ed3" />
 <addon id="tools.cenc" name="Content encryption support" version="1.4" hash="0f3e872a0571229285e89bc1d74acc5f" rhash="0f3e872a0571229285e89bc1d74acc5f" />
 <addon id="tools.xbmc" name="xbmc addons helper" version="1.2" hash="024b71e73a91c082946f129af1764585" rhash="024b71e73a91c082946f129af1764585" />
 </addons>
