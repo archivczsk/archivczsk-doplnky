@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.kvifftv" name="Kviff.tv" version="1.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="2.6.8"/>
+		<import addon="tools.archivczsk" version="1.30" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.seeker"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Your shortcut to world of movie festivals</description>
+		<description lang="sk">Vaša skrarka do sveta filmových festivalov</description>
+		<description lang="cs">Vaše zkratka do světa filmových festivalů</description>
+	</extension>
+</addon>

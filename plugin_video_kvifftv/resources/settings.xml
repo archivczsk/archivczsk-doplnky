@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+  <setting label="Max watched items" id="max_watched" type="number" default="10"/>
+  <setting label="Enable subtitles support" id="enable_subtitles" type="bool" default="true"/>
+</settings>

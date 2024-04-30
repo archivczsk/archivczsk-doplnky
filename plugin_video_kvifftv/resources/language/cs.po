@@ -1,0 +1,92 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_prehrajto\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-04-30 15:46+0200\n"
+"PO-Revision-Date: 2024-04-30 15:55+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: plugin_video_kvifftv/provider.py:27
+msgid "Pair device with your account"
+msgstr "Spárovat zařízení s vašim kontem"
+
+#: plugin_video_kvifftv/provider.py:32
+msgid "Recent"
+msgstr "Nedávné"
+
+#: plugin_video_kvifftv/provider.py:33 plugin_video_kvifftv/provider.py:118
+msgid "Recommended"
+msgstr "Doporučené"
+
+#: plugin_video_kvifftv/provider.py:34
+msgid "Collections"
+msgstr "Kolekce"
+
+#: plugin_video_kvifftv/provider.py:35
+msgid "Genres"
+msgstr "Źánry"
+
+#: plugin_video_kvifftv/provider.py:36
+msgid "Watched"
+msgstr "Sledované"
+
+#: plugin_video_kvifftv/provider.py:78
+msgid "Pairing completed. Quit addon and return back to enjoy available content."
+msgstr "Párování je dokončeno. Ukončete doplněk a vraťte se zpět aby jste si vychutnali dostupný obsah."
+
+#: plugin_video_kvifftv/provider.py:81
+msgid "Scan showed QR code and login with your credentialas. Then press \"Confirm pairing\"."
+msgstr "Naskenujte zobrazený QR kód a přihlaste se pomocí vašich přihlašovacích údajů. Poté stlačte \"Potvrdit spárování\"."
+
+#: plugin_video_kvifftv/provider.py:85
+msgid "Confirm pairing"
+msgstr "Potvrdit spárování"
+
+#: plugin_video_kvifftv/provider.py:171
+msgid "Available subtitles"
+msgstr "Dostupné titulky"
+
+#: plugin_video_kvifftv/kvifftv.py:44
+msgid "Wrong authorization token"
+msgstr "Chybný přihlašovací token"
+
+#: plugin_video_kvifftv/kvifftv.py:47
+msgid "Unexpected return code from server"
+msgstr "Neočekávaný návratový kód ze serveru"
+
+#: plugin_video_kvifftv/kvifftv.py:85
+msgid "You have not yet authorized this device using provided QR code"
+msgstr "Toto zařízení jste dosud neautorizovali pomocí poskytnutého QR kódu"
+
+msgid "Max watched items"
+msgstr "Maximální počet viděných položek"
+
+msgid "Enable subtitles support"
+msgstr "Povolit podporu pro titulky"
+
+#~ msgid "Login to premium account failed. Continuing with free account."
+#~ msgstr "Přihlášení do premium konta selhalo. Pokračuji s free kontem."
+
+#, python-brace-format
+#~ msgid ""
+#~ "In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\n"
+#~ "python{0}-beautifulsoup4 or python{0}-bs4)"
+#~ msgstr ""
+#~ "K fungování doplňku si musíte pomocí svého správce balíků doinstalovat BeautifulSoup4. Hledejte balík se jménem:\n"
+#~ "python{0}-beautifulsoup4 nebo python{0}-bs4"
+
+#~ msgid "Login name"
+#~ msgstr "Přihlašovací jméno"
+
+#~ msgid "Login password"
+#~ msgstr "Přihlašovací heslo"
