@@ -112,7 +112,7 @@ class HboMax(object):
 			raise LoginException(self.cp._("No response received from server. Maybe is your IP blocked by HBO."))
 
 		if not resp.ok or (isinstance(resp_json, type({})) and resp_json.get('statusCode',0) > 400):
-			if auto_refresh_token and resp.status_code == 401 or resp_json.get('statusCode',0) == 401:
+			if auto_refresh_token and (resp.status_code == 401 or resp_json.get('statusCode',0) == 401):
 				self.refresh_token()
 				return self.call_api(endpoint, params, data, method, headers, auto_refresh_token=False, ignore_error=ignore_error)
 
@@ -179,21 +179,6 @@ class HboMax(object):
 
 		self.client_config = self.call_api('https://sessions.api.hbo.com/sessions/v1/clientConfig', data=payload, auto_refresh_token=False)
 		self.client_config['__validity'] = int(time()) + 1800
-
-		# check for available languages and fix LANG list
-		if False:
-			available_langs = {}
-			for l in self.get_languages():
-				self.cp.log_debug("Available lang: %s (%s)" % (l['endonym'], l['code']))
-				available_langs[l['code']] = True
-
-			del_keys = []
-			for k,v in self.LANG_CODE.items():
-				if v not in available_langs:
-					del_keys.append(k)
-
-			for k in del_keys:
-				del self.LANG_CODE[k]
 
 	# ##################################################################################################################
 

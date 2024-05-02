@@ -1,3 +1,6 @@
+1.1 - 02.05.2024
+    - oprava zacyklenia pri prihlásení
+
 1.0 - 25.03.2024
     - prvá verejná verzia na základe doplnku pre Kodi od slyguy
     - streamy sú dostupné v 720p kvalite

@@ -31,7 +31,7 @@ class HboMaxContentProvider(CommonContentProvider):
 		self.build_lang_lists()
 		self.hbomax = HboMax(self)
 		if self.hbomax.check_access_token(True) == False:
-			self.hbomax.login()
+			self.hbomax.refresh_token()
 
 		return True
 
