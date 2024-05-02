@@ -1,3 +1,6 @@
+2.14:
+- aktualizovaný loader
+
 2.13:
 - pridaná možnosť zakázať export userbouquetu pre rádia a kamery v nastaveniach
 
