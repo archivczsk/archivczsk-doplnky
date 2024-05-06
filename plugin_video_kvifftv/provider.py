@@ -19,7 +19,7 @@ class KviffTvContentProvider(CommonContentProvider):
 
 	def root(self):
 		try:
-			if self.kvifftv.check_login == False:
+			if self.kvifftv.check_login() == False:
 				raise LoginException("No access token")
 
 			home_data = self.kvifftv.call_api('home')['data']

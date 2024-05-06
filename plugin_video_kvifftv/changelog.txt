@@ -1,2 +1,5 @@
+1.1: 06.05.2024
+- oprava kontroly autorizačného tokenu
+
 1.0: 30.04.2024
 - úvodná verzia
