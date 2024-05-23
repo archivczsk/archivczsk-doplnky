@@ -1,3 +1,10 @@
+2024-05-24 [2.0]
+* kompltený prepis doplnku, no stále s použitím pôvodného API
+* dynamické pridávanie živého vysielania podľa dostupnosti
+* problémy API na strane ČT, nie doplnku:
+  - niekedy sa stream nespustí na prvý krát a je nutné pokus opakovať
+  - u niektorých položiek sa zobrazuje chyba "programme not found"
+
 2024-02-24 [1.7.0]
 * added support for playing DRM protected content (exteplayer3 is requiered for DRM streams)
 
