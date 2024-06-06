@@ -1,3 +1,8 @@
+1.31 - 06.06.2024
+    - improvements in HLS master playlist parser
+    - replaced HLS master playlist parser in HLS handler with improved version
+    - automaticaly remove unneeded parts from MPD playlist in DASH handler
+
 1.30 - 28.04.2024
     - allow disabling some channel types when exporting userbouquet and EPG
 

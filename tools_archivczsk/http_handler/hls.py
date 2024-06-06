@@ -2,6 +2,7 @@
 
 import base64
 from .template import HTTPRequestHandlerTemplate
+from ..parser.hls import HlsMaster
 import re
 import binascii
 
@@ -12,6 +13,35 @@ except:
 	from urllib.parse import urljoin, quote, unquote
 
 from tools_cenc.mp4decrypt import mp4decrypt
+
+# #################################################################################################
+
+class HlsMasterProcessor(HlsMaster):
+	def __init__(self, request_handler, url, max_bandwidth=None, drm=None):
+		super(HlsMasterProcessor, self).__init__(url)
+		self.request_handler = request_handler
+		self.drm = drm
+		self.max_bandwidth = max_bandwidth
+
+	# #################################################################################################
+
+	def filter_master_playlist(self):
+		super(HlsMasterProcessor, self).filter_master_playlist(max_bandwidth=self.max_bandwidth)
+
+		if self.drm:
+			# session key is not supported by the player - it will be handled in variant playlist
+			self.header = list(filter(lambda p: not p.startswith("#EXT-X-SESSION-KEY:"), self.header))
+
+	# #################################################################################################
+
+	def process_playlist_urls(self):
+		super(HlsMasterProcessor, self).process_playlist_urls()
+
+		if self.request_handler.hls_proxy_variants:
+			for playlist_group in (self.audio_playlists, self.subtitles_playlists, self.video_playlists):
+				for p in playlist_group:
+					if p.playlist_url:
+						p.playlist_url = self.request_handler.hls_proxify_variant_url(p.playlist_url, self.drm)
 
 
 # #################################################################################################
@@ -34,6 +64,7 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		self.hls_proxy_segments = proxy_segments
 		self.hls_proxy_variants = proxy_variants
 		self.hls_internal_decrypt = proxy_segments and internal_decrypt
+		self.hls_master_processor = HlsMasterProcessor
 
 	# #################################################################################################
 
@@ -101,6 +132,17 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		Redirects segment url to use proxy
 		'''
 		return self.encode_stream_key('/' + self.name, cache_key, 'hp', 'm3u8')
+
+	# #################################################################################################
+
+	def hls_proxify_variant_url(self, variant_url, drm=None):
+		cache_key = self.calc_cache_key(variant_url)
+		cache_data = {
+			'url': variant_url,
+			'drm': drm
+		}
+		self.scache.put_with_key(cache_data, cache_key)
+		return self.hls_proxify_playlist_url(cache_key)
 
 	# #################################################################################################
 
@@ -311,80 +353,9 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 	# #################################################################################################
 
 	def process_master_playlist(self, playlist_url, playlist_data, bandwidth=None, drm=None):
-		def process_url(surl):
-			surl = urljoin(playlist_url, surl)
+		return self.hls_master_processor(self, playlist_url, bandwidth, drm).process(playlist_data)
 
-			if self.hls_proxy_variants:
-				cache_key = self.calc_cache_key(surl)
-				cache_data = {
-					'url': surl,
-					'drm': drm
-				}
-				self.scache.put_with_key(cache_data, cache_key)
-				surl = self.hls_proxify_playlist_url(cache_key)
-
-			return surl
-
-#		self.cp.log_error("HLS response received: %s" % playlist_data)
-
-		if bandwidth == None:
-			bandwidth = 1000000000
-		else:
-			bandwidth = int(bandwidth)
-
-		streams = []
-
-		for m in re.finditer(r'^#EXT-X-STREAM-INF:(?P<info>.+)\n(?P<chunk>.+)', playlist_data, re.MULTILINE):
-			stream_info = {}
-			for info in re.split(r''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', m.group('info')):
-				key, val = info.split('=', 1)
-				stream_info[key.strip().lower()] = val.strip()
-
-			stream_info['url'] = process_url(m.group('chunk'))
-
-			if int(stream_info.get('bandwidth', 0)) <= bandwidth:
-				streams.append(stream_info)
-
-		streams = sorted(streams, key=lambda i: int(i['bandwidth']), reverse=True)
-
-		if len(streams) == 0:
-			self.cp.log_error("No streams found for bandwidth %d" % bandwidth)
-			return None
-
-		resp_data = []
-		ignore_next = False
-		stream_to_keep = 'BANDWIDTH=%s' % streams[0].get('bandwidth', 0)
-
-		for line in iter(playlist_data.splitlines()):
-			if ignore_next and not line.startswith('#'):
-				ignore_next = False
-				continue
-
-			if line.startswith('#'):
-				if drm and line.startswith("#EXT-X-SESSION-KEY:"):
-					# session key is not supported by the player - it will be handled in variant playlist
-					line = ''
-				elif 'URI=' in line:
-					# fix uri to full url
-					uri = line[line.find('URI=') + 4:]
-
-					if uri[0] in ('"', "'"):
-						uri = uri[1:uri[1:].find(uri[0]) + 1]
-
-					line = line.replace(uri, process_url(uri))
-
-				if line.startswith("#EXT-X-STREAM-INF:"):
-					if stream_to_keep in line:
-						resp_data.append(line)
-						resp_data.append(streams[0]['url'])
-
-					ignore_next = True
-				else:
-					resp_data.append(line)
-
-		return '\n'.join(resp_data) + '\n'
-
- 	# #################################################################################################
+	# #################################################################################################
 
 	def get_hls_playlist_data_async(self, url, bandwidth=None, headers=None, drm=None, cbk=None):
 		'''
