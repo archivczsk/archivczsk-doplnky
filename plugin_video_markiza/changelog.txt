@@ -1,3 +1,6 @@
+2.8: 06.06.2024
+- oprava prehrávania pre niektoré verzie python3-beautifulsoup4 (napr. v OpenPLi 9.0)
+
 2.7: 25.04.2024
 - oprava prehrávania po zmenách na stránke
 

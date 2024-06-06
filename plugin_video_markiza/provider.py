@@ -379,7 +379,7 @@ class MarkizaContentProvider(CommonContentProvider):
 			json_data = None
 			for s in embeded.find_all('script'):
 				try:
-					json_data = self.get_js_data(s.text, '\s+player:\s+(\{.*?)\};.*')
+					json_data = self.get_js_data(s.string, '\s+player:\s+(\{.*?)\};.*')
 					break
 				except:
 					pass
