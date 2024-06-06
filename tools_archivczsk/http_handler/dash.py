@@ -342,6 +342,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		# modify MPD manifest and make it as best playable on enigma2 as possible
 		for e_period in root.findall('{}Period'.format(ns)):
 			audio_list = []
+			other_list = []
 
 			for e_adaptation_set in e_period.findall('{}AdaptationSet'.format(ns)):
 				if e_adaptation_set.get('contentType','') == 'video' or e_adaptation_set.get('mimeType','').startswith('video/'):
@@ -357,8 +358,15 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 					for child2 in rep_childs[1:]:
 						e_adaptation_set.remove(child2)
 
-				if e_adaptation_set.get('contentType','') == 'audio' or e_adaptation_set.get('mimeType','').startswith('audio/'):
+				elif e_adaptation_set.get('contentType','') == 'audio' or e_adaptation_set.get('mimeType','').startswith('audio/'):
 					audio_list.append(e_adaptation_set)
+
+				elif e_adaptation_set.get('contentType','') == 'text' or e_adaptation_set.get('mimeType','').startswith('text/'):
+					# subtitles
+					pass
+				else:
+					# add everything else to others
+					other_list.append(e_adaptation_set)
 
 				# for DRM protected content we need to add distinguish between init and data segment, so set prefix for it
 				patch_segment_url(e_adaptation_set)
@@ -369,6 +377,9 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 						self.cp.log_debug("Setting CENC key %s for representation %s" % (cenc_key, e.get('id')))
 						e.set('cenc_decryption_key', cenc_key)
 
+			# remove all adaptation sets except audio, video and subtitles
+			for a in other_list:
+				e_period.remove(a)
 
 			if len(audio_list) > 0:
 				# all enigma2 players use first audio track as the default, so move CZ and SK audio tracks on the top
