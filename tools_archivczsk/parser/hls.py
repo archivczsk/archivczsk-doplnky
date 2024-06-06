@@ -58,7 +58,11 @@ class PlaylistHeader(object):
 
 	def __str__(self):
 		if self.get('TYPE') in ('AUDIO', 'SUBTITLES'):
-			return '#EXT-X-MEDIA:' + ','.join('%s=%s' % (k, v.export()) for k, v in self.attrs.items()) + ',URI="%s"' % self.playlist_url
+			if self.playlist_url:
+				return '#EXT-X-MEDIA:' + ','.join('%s=%s' % (k, v.export()) for k, v in self.attrs.items()) + ',URI="%s"' % self.playlist_url
+			else:
+				# audio variant can be without url - audio is embedded to video track (mostly TS container)
+				return '#EXT-X-MEDIA:' + ','.join('%s=%s' % (k, v.export()) for k, v in self.attrs.items())
 		else:
 			return '#EXT-X-STREAM-INF:' + ','.join('%s=%s' % (k, v.export()) for k, v in self.attrs.items()) + '\n' + self.playlist_url
 
@@ -75,7 +79,12 @@ class HlsMaster(object):
 	# ##################################################################################################################
 
 	def load_http_data(self):
-		return requests.get(self.mp_url).text
+		resp = requests.get(self.mp_url)
+		resp.raise_for_status()
+
+		# update playlist url after redirect
+		self.mp_url = resp.url
+		return resp.text
 
 	# ##################################################################################################################
 	@staticmethod
@@ -100,7 +109,7 @@ class HlsMaster(object):
 		playlist_type = attrs.get('TYPE')
 
 		if playlist_type == 'AUDIO':
-			p = PlaylistHeader(str(attrs['URI']), attrs)
+			p = PlaylistHeader(str(attrs['URI']) if 'URI' in attrs else None, attrs)
 			self.audio_playlists.append(p)
 		elif playlist_type == 'SUBTITLES':
 			p = PlaylistHeader(str(attrs['URI']), attrs)
@@ -144,7 +153,7 @@ class HlsMaster(object):
 
 	# ##################################################################################################################
 
-	def filter_master_playlist(self):
+	def filter_master_playlist(self, video_variants=False, max_bandwidth=None):
 		# remove audio with scene description
 		self.audio_playlists = list(filter(lambda p: "public.accessibility.describes-video" not in p.get('CHARACTERISTICS','').split(','), self.audio_playlists))
 
@@ -154,7 +163,19 @@ class HlsMaster(object):
 		# just simple default filter that gets the best stream by bandwidth
 		playlists = self.video_playlists
 		playlists = sorted(playlists, key=lambda p: int(str(p.get('BANDWIDTH',0))), reverse=True)
-		self.video_playlists = [playlists[0]]
+
+		if max_bandwidth:
+			max_bandwidth = int(max_bandwidth)
+			playlists2 = playlists
+			playlists = list(filter(lambda p: int(str(p.get('BANDWIDTH',0))) <= max_bandwidth, playlists))
+
+			if not playlists:
+				# no stream passed max bandwith filtering, so choose only the worst one
+				playlists = [playlists2[-1]]
+
+		if video_variants == False:
+			# if no video variants are enabled, then use only one video stream
+			self.video_playlists = [playlists[0]]
 
 	# ##################################################################################################################
 
@@ -178,7 +199,8 @@ class HlsMaster(object):
 
 	def process_playlist_urls(self):
 		for p in self.audio_playlists:
-			p.playlist_url = urljoin(self.mp_url, p.playlist_url)
+			if p.playlist_url:
+				p.playlist_url = urljoin(self.mp_url, p.playlist_url)
 
 		for p in self.subtitles_playlists:
 			p.playlist_url = urljoin(self.mp_url, p.playlist_url)
@@ -213,6 +235,6 @@ class HlsMaster(object):
 			if video_idx is None or i in video_idx:
 				data.append(str(p))
 
-		return '\n'.join(data)
+		return '\n'.join(data) + '\n'
 
 	# ##################################################################################################################
