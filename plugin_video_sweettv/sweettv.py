@@ -609,7 +609,7 @@ class SweetTV:
 			self.showError(self._("Error by loading movie stream address") + ": %s" % data['message'] if 'message' in data else data.get('status', ''))
 			return None
 
-		if data.get('link_type') != 'HLS':
+		if data.get('link_type') not in ('HLS', 'DASH'):
 			self.showError(self._("Unsupported stream type") + ": %s" % data.get('link_type', ''))
 			return None
 

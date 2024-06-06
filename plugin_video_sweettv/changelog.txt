@@ -1,3 +1,6 @@
+1.13 - 06.06.2024
+    - pridanie podpory pre prehrávanie filmov vo formáte MPEG-DASH
+
 1.12 - 24.04.2024
     - úpravy kvôli exportu EPG priamo do enigma2 bez použitia XML-EPG
     - prechod na unifikovaný bouquet generátor (opravuje nesprávne EPG v niektorých prípadoch)
