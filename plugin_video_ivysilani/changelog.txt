@@ -1,3 +1,6 @@
+2024-06-06 [2.1]
+* oprava prehrávania zvuku ak program obsahuje viac jazykových stôp pri HLS formáte
+
 2024-05-24 [2.0]
 * kompltený prepis doplnku, no stále s použitím pôvodného API
 * dynamické pridávanie živého vysielania podľa dostupnosti

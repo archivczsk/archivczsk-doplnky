@@ -2,4 +2,5 @@
 <settings>
     <setting label="Maximum bandwidth of the offered stream" id="max_bitrate" type="keyenum" values="0;Unlimited|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
     <setting label="Prefered stream type" id="stream_type" type="keyenum" values="iPad;HLS|dash;DASH" default="iPad" />
+    <setting label="Allow multiple audio tracks for HLS" id="hls_multiaudio" type="bool" default="false" />
 </settings>

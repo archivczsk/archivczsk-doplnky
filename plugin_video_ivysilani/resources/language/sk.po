@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_ivysilani\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-23 21:22+0200\n"
-"PO-Revision-Date: 2024-05-23 21:22+0200\n"
+"POT-Creation-Date: 2024-06-06 13:04+0200\n"
+"PO-Revision-Date: 2024-06-06 13:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -16,83 +16,83 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_ivysilani/provider.py:28
+#: plugin_video_ivysilani/provider.py:27
 msgid "Live broadcasting"
 msgstr "Živé vysielanie"
 
-#: plugin_video_ivysilani/provider.py:29
+#: plugin_video_ivysilani/provider.py:28
 msgid "By date"
 msgstr "Podľa dátumu"
 
-#: plugin_video_ivysilani/provider.py:30
+#: plugin_video_ivysilani/provider.py:29
 msgid "By letter"
 msgstr "Podľa začiatočného písmena"
 
-#: plugin_video_ivysilani/provider.py:31
+#: plugin_video_ivysilani/provider.py:30
 msgid "By genre"
 msgstr "Podľa žánru"
 
-#: plugin_video_ivysilani/provider.py:32
+#: plugin_video_ivysilani/provider.py:31
 msgid "Tips"
 msgstr "Tipy"
 
-#: plugin_video_ivysilani/provider.py:33
+#: plugin_video_ivysilani/provider.py:32
 msgid "Today's most watched"
 msgstr "Najsledovanejšie dňa"
 
-#: plugin_video_ivysilani/provider.py:34
+#: plugin_video_ivysilani/provider.py:33
 msgid "Week's most watched"
 msgstr "Najsledovanejšie týždňa"
 
-#: plugin_video_ivysilani/provider.py:35
+#: plugin_video_ivysilani/provider.py:34
 msgid "Don't miss"
 msgstr "Nepremeškajte"
 
-#: plugin_video_ivysilani/provider.py:36
+#: plugin_video_ivysilani/provider.py:35
 msgid "From our archive"
 msgstr "Z nášho archívu"
 
-#: plugin_video_ivysilani/provider.py:37
+#: plugin_video_ivysilani/provider.py:36
 msgid "Others watching now"
 msgstr "Ostatní práve sledujú"
 
-#: plugin_video_ivysilani/provider.py:65
+#: plugin_video_ivysilani/provider.py:64
 msgid "Monday"
 msgstr "Pondelok"
 
-#: plugin_video_ivysilani/provider.py:65
+#: plugin_video_ivysilani/provider.py:64
 msgid "Tuesday"
 msgstr "Utorok"
 
-#: plugin_video_ivysilani/provider.py:65
+#: plugin_video_ivysilani/provider.py:64
 msgid "Wednesday"
 msgstr "Streda"
 
-#: plugin_video_ivysilani/provider.py:65
+#: plugin_video_ivysilani/provider.py:64
 msgid "Thursday"
 msgstr "Štvrtok"
 
-#: plugin_video_ivysilani/provider.py:65
+#: plugin_video_ivysilani/provider.py:64
 msgid "Friday"
 msgstr "Piatok"
 
-#: plugin_video_ivysilani/provider.py:65
+#: plugin_video_ivysilani/provider.py:64
 msgid "Saturday"
 msgstr "Sobota"
 
-#: plugin_video_ivysilani/provider.py:65
+#: plugin_video_ivysilani/provider.py:64
 msgid "Sunday"
 msgstr "Nedeľa"
 
-#: plugin_video_ivysilani/provider.py:107
+#: plugin_video_ivysilani/provider.py:106
 msgid "Related"
 msgstr "Súvisiace"
 
-#: plugin_video_ivysilani/provider.py:110
+#: plugin_video_ivysilani/provider.py:109
 msgid "Episodes"
 msgstr "Epizódy"
 
-#: plugin_video_ivysilani/provider.py:112
+#: plugin_video_ivysilani/provider.py:111
 msgid "Bonuses"
 msgstr "Bonusy"
 
@@ -125,3 +125,6 @@ msgstr ""
 
 msgid "DASH"
 msgstr ""
+
+msgid "Allow multiple audio tracks for HLS"
+msgstr "Povoliť viac audio stôp pre HLS"
