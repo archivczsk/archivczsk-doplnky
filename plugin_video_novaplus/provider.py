@@ -2,15 +2,11 @@
 from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
+from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.string_utils import _I, _C, _B, decode_html
-from tools_archivczsk.debug.http import dump_json_request
+from tools_archivczsk.cache import SimpleAutokeyExpiringCache
 import sys
 import re, json
-
-try:
-	from urllib import quote
-except:
-	from urllib.parse import quote
 
 try:
 	from bs4 import BeautifulSoup
@@ -50,10 +46,10 @@ class TVNovaContentProvider(CommonContentProvider):
 	def __init__(self, settings=None, data_dir=None, http_endpoint=None):
 		CommonContentProvider.__init__(self, 'TV Nova', settings=settings, data_dir=data_dir)
 		self.http_endpoint = http_endpoint
-		self.last_hls = None
 		self.login_optional_settings_names = ('username', 'password')
 		self.req_session = self.get_requests_session()
 		self.req_session.headers.update(COMMON_HEADERS)
+		self.scache = SimpleAutokeyExpiringCache()
 		self.login_ok = False
 
 	# ##################################################################################################################
@@ -310,9 +306,11 @@ class TVNovaContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def get_hls_info(self, stream_key):
+		cache_data = self.scache.get(stream_key['ck'])
+
 		return {
-			'url': self.last_hls,
-			'bandwidth': stream_key,
+			'url': cache_data['playlist_url'],
+			'bandwidth': stream_key['bandwidth'],
 			'headers': {
 				'referer': REFERER_MEDIA,
 				'origin': REFERER_MEDIA
@@ -321,28 +319,75 @@ class TVNovaContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def resolve_streams(self, url, max_bitrate=None):
+	def get_dash_info(self, stream_key):
+		cache_data = self.scache.get(stream_key['ck'])
+		drm = cache_data.get('drm')
+
+		ret = {
+			'url': cache_data['playlist_url'],
+			'bandwidth': stream_key['bandwidth'],
+			'headers': {
+				'referer': REFERER_MEDIA,
+				'origin': REFERER_MEDIA
+			},
+		}
+
+		if drm:
+			ret.update({
+				'drm' : {
+					'licence_url': drm["serverURL"],
+					'headers': { h['name']: h['value'] for h in drm["headers"] }
+				}
+			})
+
+		return ret
+
+	# ##################################################################################################################
+
+	def resolve_streams(self, url, max_bitrate=None, drm=None):
 		headers = {
 			'referer': REFERER_MEDIA,
 			'origin': REFERER_MEDIA
 		}
 
-#		self.log_debug("HLS master url: %s" % url)
-		streams = self.get_hls_streams(url, headers=headers, requests_session=self.req_session, max_bitrate=max_bitrate)
+		cached_data = {}
+		ret = []
+		cache_key = self.scache.put(cached_data)
 
-		self.last_hls = url
+		if drm:
+			streams = self.get_dash_streams(url, headers=headers, requests_session=self.req_session, max_bitrate=max_bitrate)
+			cached_data.update({
+				'playlist_url': streams[0]['playlist_url'] if streams else None,
+				'drm': drm
+			})
 
-		for stream in streams:
-			stream['url'] = stream_key_to_hls_url(self.http_endpoint, stream['bandwidth'])
-#			self.log_debug("HLS for bandwidth %s: %s" % (stream['bandwidth'], stream['url']))
+			for stream in streams:
+				ret.append({
+					'url': stream_key_to_dash_url(self.http_endpoint, {'ck': cache_key, 'bandwidth': stream['bandwidth']}),
+					'bandwidth': stream['bandwidth'],
+					'quality': stream['height'] + 'p' if stream.get('height') else "720p"
+				})
+		else:
+	#		self.log_debug("HLS master url: %s" % url)
+			streams = self.get_hls_streams(url, headers=headers, requests_session=self.req_session, max_bitrate=max_bitrate)
+			cached_data.update({
+				'playlist_url': streams[0]['playlist_url'] if streams else None
+			})
 
-		return streams
+			for stream in streams:
+				ret.append({
+					'url': stream_key_to_hls_url(self.http_endpoint, {'ck': cache_key, 'bandwidth': stream['bandwidth']}),
+					'bandwidth': stream['bandwidth'],
+					'quality': stream.get('resolution', 'x???').split('x')[1] + 'p'
+				})
+
+		return ret
 
 	# ##################################################################################################################
 
 	def resolve_video(self, video_title, url):
 		resolved_url = None
-		use_fallback = False
+		drm = None
 
 		if url.startswith('#live#'):
 			url = url[6:]
@@ -356,50 +401,49 @@ class TVNovaContentProvider(CommonContentProvider):
 					resolved_url = plr["tracks"]["HLS"][0]["src"]
 		else:
 			soup = self.call_api(url)
-			embeded_url = soup.find('iframe', src=re.compile(r"/embed/")).get('src')
 
-			if not embeded_url:
-				use_fallback = True
-				# fallback, but currently it returns only links with DRM, so will not work on enigma2
-				json_stream = json.loads(soup.find("script", type="application/ld+json", text=re.compile(r"embedUrl")).string)
-				if "video" in json_stream:
-					embeded_url = json_stream["video"]["embedUrl"]
-				elif "embedUrl" in json_stream:
-					embeded_url = json_stream["embedUrl"]
-				else:
-					self.show_info(self._("Video not found."))
+			json_stream = json.loads(soup.find("script", type="application/ld+json", string=re.compile(r"embedUrl")).string)
+			if "video" in json_stream:
+				embeded_url = json_stream["video"]["embedUrl"]
+			elif "embedUrl" in json_stream:
+				embeded_url = json_stream["embedUrl"]
+			else:
+				self.show_info(self._("Video not found."))
 
-#			self.log_info("Embedded url: %s" % embeded_url)
+			self.log_debug("Embedded url: %s" % embeded_url)
 			embeded = self.call_api(embeded_url)
 
 			try:
-				if use_fallback:
-					json_data = json.loads(
-						re.compile('{"tracks":(.+?),"duration"').findall(str(embeded))[0]
-					)
-				else:
-					json_data = json.loads(
-						re.compile('"sources":(.+?),"ads"').findall(str(embeded))[0]
-					)
+				json_data = json.loads(
+					re.compile('{"tracks":(.+?),"duration"').findall(str(embeded))[0]
+				)
 			except:
 				self.log_exception()
 				json_data = None
 
 			if json_data:
-#				self.log_info("json_data: %s" % json_data)
+				self.log_info("json_data: %s" % json.dumps(json_data))
 
-				if use_fallback:
-					stream_data = json_data['HLS'][0]
+				stream_data = json_data['HLS'][0]
 
-					if not "drm" in stream_data:
-						resolved_url = stream_data["src"]
+				if not "drm" in stream_data:
+					resolved_url = stream_data["src"]
+					self.log_info("Found unprotected HLS stream: %s" % resolved_url)
 				else:
-					for s in json_data:
-						if s['type'] == 'application/x-mpegurl':
-							resolved_url = s['src']
+					# drm protected content
+					stream_data = json_data['DASH'][0]
+					for d in stream_data['drm']:
+						if d['keySystem'] == 'com.widevine.alpha':
+							drm = d
 							break
+					else:
+						self.show_error(self._("No supported DRM protection system found"))
 
+					resolved_url = stream_data["src"]
+					self.log_info("Found DRM protected DASH stream: %s" % resolved_url)
 			else:
+				self.log_error("Player configuration not found - trying to extract error message")
+
 				embeded_text = embeded.get_text()
 #				self.log_info(embeded_text)
 
@@ -407,11 +451,13 @@ class TVNovaContentProvider(CommonContentProvider):
 					embeded_text = embeded_text.replace('Error', '').strip()
 					if '\n' in embeded_text:
 						embeded_text = embeded_text[embeded_text.rfind('\n'):]
+				else:
+					embeded_text = self._("Format of page has changed")
 
-					self.show_info(self._("Failed to play video") + ": %s" % embeded_text.replace('Error', '').strip())
+				self.show_info(self._("Failed to play video") + ": %s" % embeded_text.replace('Error', '').strip())
 
 		if resolved_url:
-			stream_links = self.resolve_streams(resolved_url, self.get_setting('max_bitrate'))
+			stream_links = self.resolve_streams(resolved_url, self.get_setting('max_bitrate'), drm)
 		else:
 			stream_links = []
 
@@ -426,7 +472,7 @@ class TVNovaContentProvider(CommonContentProvider):
 		for one in stream_links:
 			info_labels = {
 				'bandwidth': one['bandwidth'],
-				'quality': one.get('resolution', 'x???').split('x')[1] + 'p'
+				'quality': one['quality']
 			}
 			self.add_play(video_title, one['url'], info_labels=info_labels, settings=settings)
 

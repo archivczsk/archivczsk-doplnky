@@ -1,3 +1,6 @@
+2024-06-07 (verze 3.7)
+* pridanie podpory pre prehrávanie obsahu s DRM ochranou (nutný exteplayer3 s podporou MPEG-DASH)
+
 2024-01-27 (verze 3.6)
 * priadnie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
 
