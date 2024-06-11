@@ -1,3 +1,6 @@
+1.14 - 12.06.2024
+    - pridaná skratka do archívu podľa názvu stanice
+
 1.13 - 06.06.2024
     - pridanie podpory pre prehrávanie filmov vo formáte MPEG-DASH
 

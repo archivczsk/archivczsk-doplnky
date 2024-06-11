@@ -2,6 +2,7 @@
 
 from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPModuleLiveTV, CPModuleArchive, CPModuleTemplate
 from tools_archivczsk.string_utils import _I, _C, _B
+from tools_archivczsk.generator.lamedb import channel_name_normalise
 
 from .atk_loader import ATKClient
 from .bouquet import AntikTVBouquetXmlEpgGenerator
@@ -271,6 +272,19 @@ class AntikTVModuleArchive(CPModuleArchive):
 
 		return None
 
+	# #################################################################################################
+
+	def get_channel_id_from_sref(self, sref):
+		name = channel_name_normalise(sref.getServiceName())
+
+		for ch in self.cp.atk.get_channels('tv'):
+			ch_name = channel_name_normalise(ch['name'])
+
+			if name == ch_name:
+				return ch['id']
+
+		return None
+
 # #################################################################################################
 
 class AntikTVModuleExtra(CPModuleTemplate):
@@ -455,4 +469,3 @@ class AntikTVContentProvider(ModuleContentProvider):
 		return base64.b64decode(url.encode("utf-8")).decode("utf-8").split('$')
 
 # #################################################################################################
-

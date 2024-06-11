@@ -11,6 +11,7 @@ from tools_archivczsk.string_utils import _I, _C, _B
 from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.cache import SimpleAutokeyExpiringCache
 from tools_archivczsk.player.features import PlayerFeatures
+from tools_archivczsk.generator.lamedb import channel_name_normalise
 from .o2tv import O2TV
 from .bouquet import O2TVBouquetXmlEpgGenerator
 import base64
@@ -209,6 +210,12 @@ class O2TVModuleArchive(CPModuleArchive):
 			return channel_id if channel['timeshift'] else None
 
 		return None
+
+	# #################################################################################################
+
+	def get_channel_id_from_sref(self, sref):
+		name = channel_name_normalise(sref.getServiceName())
+		return self.cp.channels_by_norm_name.get(name, {}).get('key')
 
 # #################################################################################################
 
@@ -462,6 +469,7 @@ class O2TVContentProvider(ModuleContentProvider):
 		self.o2tv = None
 		self.channels = []
 		self.channels_by_key = {}
+		self.channels_by_norm_name = {}
 
 		o2tv = O2TV(self)
 		o2tv.refresh_configuration()
@@ -500,8 +508,10 @@ class O2TVContentProvider(ModuleContentProvider):
 		self.checksum = self.get_channels_checksum()
 
 		self.channels_by_key = {}
+		self.channels_by_norm_name = {}
 		for ch in self.channels:
 			self.channels_by_key[ch['key']] = ch
+			self.channels_by_norm_name[channel_name_normalise(ch['name'])] = ch
 
 		# allow channels reload once a hour
 		self.channels_next_load_time = act_time + 3600

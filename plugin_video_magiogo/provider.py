@@ -9,6 +9,7 @@ from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPM
 from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.string_utils import _I, _C, _B
+from tools_archivczsk.generator.lamedb import channel_name_normalise
 from .magiogo import MagioGO
 from .bouquet import MagioGOBouquetXmlEpgGenerator
 
@@ -135,6 +136,13 @@ class MagioGOModuleArchive(CPModuleArchive):
 
 		return None
 
+	# #################################################################################################
+
+	def get_channel_id_from_sref(self, sref):
+		name = channel_name_normalise(sref.getServiceName())
+		ch = self.cp.channels_by_norm_name.get(name)
+		return ch.id if ch else None
+
 # #################################################################################################
 
 
@@ -220,6 +228,8 @@ class MagioGOContentProvider(ModuleContentProvider):
 		self.magiogo = None
 		self.channels = []
 		self.channels_next_load_time = 0
+		self.channels_by_key = {}
+		self.channels_by_norm_name = {}
 		self.epg_next_load_time = 0
 		self.checksum = None
 		self.http_endpoint = http_endpoint
@@ -282,8 +292,11 @@ class MagioGOContentProvider(ModuleContentProvider):
 		self.checksum = self.get_channels_checksum()
 
 		self.channels_by_key = {}
+		self.channels_by_norm_name = {}
+
 		for ch in self.channels:
 			self.channels_by_key[int(ch.id)] = ch
+			self.channels_by_norm_name[channel_name_normalise(ch.name)] = ch
 
 		if fill_epg:
 			# allow channels reload once a hour and epg once a minute

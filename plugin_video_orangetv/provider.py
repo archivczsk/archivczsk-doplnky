@@ -7,6 +7,7 @@ from hashlib import md5
 from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPModuleLiveTV, CPModuleArchive, CPModuleTemplate
 from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.string_utils import _I, _C, _B
+from tools_archivczsk.generator.lamedb import channel_name_normalise
 from .orangetv import OrangeTV
 from .bouquet import OrangeTVBouquetXmlEpgGenerator
 import base64
@@ -129,6 +130,12 @@ class OrangeTVModuleArchive(CPModuleArchive):
 
 		return None
 
+	# #################################################################################################
+
+	def get_channel_id_from_sref(self, sref):
+		name = channel_name_normalise(sref.getServiceName())
+		return self.cp.channels_by_norm_name.get(name, {}).get('key')
+
 # #################################################################################################
 
 
@@ -188,6 +195,8 @@ class OrangeTVContentProvider(ModuleContentProvider):
 		self.orangetv = None
 		self.channels = []
 		self.channels_next_load_time = 0
+		self.channels_by_key = {}
+		self.channels_by_norm_name = {}
 		self.checksum = None
 		self.http_endpoint = http_endpoint
 		self.http_endpoint_rel = http_endpoint_rel
@@ -237,8 +246,11 @@ class OrangeTVContentProvider(ModuleContentProvider):
 		self.checksum = self.get_channels_checksum()
 
 		self.channels_by_key = {}
+		self.channels_by_norm_name = {}
+
 		for ch in self.channels:
 			self.channels_by_key[ch['key']] = ch
+			self.channels_by_norm_name[channel_name_normalise(ch['name'])] = ch
 
 		# allow channels reload once a hour
 		self.channels_next_load_time = act_time + 3600

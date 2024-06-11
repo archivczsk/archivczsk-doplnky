@@ -1,3 +1,6 @@
+2.12 - 12.06.2024
+- pridaná skratka do archívu podľa názvu stanice
+
 2.11 - 2024-04-24
 - úpravy kvôli exportu EPG priamo do enigma2 bez použitia XML-EPG
 - prechod na unifikovaný bouquet generátor (opravuje nesprávne EPG v niektorých prípadoch)

@@ -4,6 +4,7 @@ import time
 
 from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPModuleLiveTV, CPModuleArchive, CPModuleTemplate, CPModuleSearch
 from tools_archivczsk.string_utils import _I, _C, _B
+from tools_archivczsk.generator.lamedb import channel_name_normalise
 from .bouquet import SweetTVBouquetXmlEpgGenerator
 from .sweettv import SweetTV
 import base64
@@ -129,6 +130,12 @@ class SweetTVModuleArchive(CPModuleArchive):
 
 		return None
 
+	# #################################################################################################
+
+	def get_channel_id_from_sref(self, sref):
+		name = channel_name_normalise(sref.getServiceName())
+		return self.cp.channels_by_norm_name.get(name, {}).get('id')
+
 # #################################################################################################
 
 class SweetTVModuleVOD(CPModuleTemplate):
@@ -240,6 +247,8 @@ class SweetTVContentProvider(ModuleContentProvider):
 		self.sweettv = None
 		self.channels = []
 		self.channels_next_load_time = 0
+		self.channels_by_key = {}
+		self.channels_by_norm_name = {}
 		self.checksum = None
 		self.http_endpoint = http_endpoint
 		self.last_stream_id = None
@@ -288,8 +297,10 @@ class SweetTVContentProvider(ModuleContentProvider):
 		self.channels, self.checksum = self.sweettv.get_channels()
 
 		self.channels_by_key = {}
+		self.channels_by_norm_name = {}
 		for ch in self.channels:
 			self.channels_by_key[ch['id']] = ch
+			self.channels_by_norm_name[channel_name_normalise(ch['name'])] = ch
 
 		# allow channels reload once a hour
 		self.channels_next_load_time = act_time + 3600
