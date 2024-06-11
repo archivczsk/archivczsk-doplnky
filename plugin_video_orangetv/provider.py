@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
 import time
 import json
 from hashlib import md5
 
 from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPModuleLiveTV, CPModuleArchive, CPModuleTemplate
+from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.string_utils import _I, _C, _B
 from .orangetv import OrangeTV
 from .bouquet import OrangeTVBouquetXmlEpgGenerator
@@ -69,12 +69,8 @@ class OrangeTVModuleLiveTV(CPModuleLiveTV):
 
 	def get_livetv_stream(self, channel_title, channel_key):
 		enable_download = self.cp.get_setting('download_live')
-		for one in self.cp.orangetv.get_live_link(channel_key, self.cp.get_setting('max_bitrate')):
-			info_labels = {
-				'quality': one['quality'],
-				'bandwidth': one['bandwidth']
-			}
-			self.cp.add_play(channel_title, one['url'], info_labels, download=enable_download)
+		playlist = self.cp.orangetv.get_live_link(channel_key)
+		self.cp.resolve_hls_streams(channel_title, playlist, download=self.cp.get_setting('download_live'))
 
 # #################################################################################################
 
@@ -113,12 +109,8 @@ class OrangeTVModuleArchive(CPModuleArchive):
 	# #################################################################################################
 
 	def get_archive_stream(self, archive_title, channel_key, epg_id, ts_from, ts_to):
-		for one in self.cp.orangetv.get_archive_link(channel_key, epg_id, ts_from, ts_to, self.cp.get_setting('max_bitrate')):
-			info_labels = {
-				'quality': one['quality'],
-				'bandwidth': one['bandwidth']
-			}
-			self.cp.add_play(archive_title, one['url'], info_labels)
+		playlist = self.cp.orangetv.get_archive_link(channel_key, epg_id, ts_from, ts_to)
+		self.cp.resolve_hls_streams(archive_title, playlist)
 
 	# #################################################################################################
 
@@ -187,7 +179,7 @@ class OrangeTVModuleExtra(CPModuleTemplate):
 
 class OrangeTVContentProvider(ModuleContentProvider):
 
-	def __init__(self, settings, http_endpoint, data_dir=None, bgservice=None):
+	def __init__(self, settings, http_endpoint, http_endpoint_rel, data_dir=None, bgservice=None):
 		ModuleContentProvider.__init__(self, name='OrangeTV', settings=settings, data_dir=data_dir, bgservice=bgservice)
 
 		# list of settings used for login - used to auto call login when they change
@@ -198,6 +190,7 @@ class OrangeTVContentProvider(ModuleContentProvider):
 		self.channels_next_load_time = 0
 		self.checksum = None
 		self.http_endpoint = http_endpoint
+		self.http_endpoint_rel = http_endpoint_rel
 
 		if not self.get_setting('deviceid'):
 			self.set_setting('deviceid', OrangeTV.create_device_id())
@@ -252,12 +245,51 @@ class OrangeTVContentProvider(ModuleContentProvider):
 
 	# #################################################################################################
 
-	def get_url_by_channel_key(self, channel_key):
-		streams = self.orangetv.get_live_link(channel_key, self.get_setting('max_bitrate'))
+	def get_hls_info(self, stream_key):
+		resp = {
+			'url': stream_key['url'],
+			'bandwidth': stream_key['bandwidth'],
+		}
 
-		if len(streams) > 0:
-			return streams[0]['url']
-		else:
-			return None
+		return resp
+
+	# #################################################################################################
+
+	def get_url_by_channel_key(self, channel_key):
+		playlist = self.orangetv.get_live_link(channel_key)
+
+		for p in self.get_hls_streams(playlist, self.orangetv.req_session, max_bitrate=self.get_setting('max_bandwidth')):
+			if self.get_setting('hls_multiaudio'):
+				return stream_key_to_hls_url(self.http_endpoint_rel, {'url': p['playlist_url'], 'bandwidth': p['bandwidth']})
+			else:
+				return p['url']
+
+		return None
+
+	# #################################################################################################
+
+	def resolve_hls_streams(self, title, playlist_url, **kwargs):
+		for p in self.get_hls_streams(playlist_url, self.orangetv.req_session, max_bitrate=self.get_setting('max_bandwidth')):
+			bandwidth = int(p['bandwidth'])
+			if bandwidth < 2000000:
+				quality = "480p"
+			elif bandwidth < 3000000:
+				quality = "576p"
+			elif bandwidth < 6000000:
+				quality = "720p"
+			else:
+				quality = "1080p"
+
+			info_labels = {
+				'quality': quality,
+				'bandwidth': bandwidth
+			}
+
+			if self.get_setting('hls_multiaudio'):
+				url = stream_key_to_hls_url(self.http_endpoint, {'url': p['playlist_url'], 'bandwidth': p['bandwidth']})
+			else:
+				url = p['url']
+
+			self.add_play(title, url, info_labels, **kwargs)
 
 	# #################################################################################################

@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_orangetv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-24 15:01+0200\n"
-"PO-Revision-Date: 2024-04-24 15:02+0200\n"
+"POT-Creation-Date: 2024-06-11 20:27+0200\n"
+"PO-Revision-Date: 2024-06-11 20:27+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -16,35 +16,35 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_orangetv/provider.py:145
+#: plugin_video_orangetv/provider.py:138
 msgid "Special section"
 msgstr "Špeciálna sekcia"
 
-#: plugin_video_orangetv/provider.py:156
+#: plugin_video_orangetv/provider.py:149
 msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
 msgstr "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočné zariadenia, aby ste sa mohli znova inde prihlásiť."
 
-#: plugin_video_orangetv/provider.py:157
+#: plugin_video_orangetv/provider.py:150
 msgid "Registered devices"
 msgstr "Zaregistrované zariadenia"
 
-#: plugin_video_orangetv/provider.py:158
+#: plugin_video_orangetv/provider.py:151
 msgid "Run EPG export to enigma or XML files"
 msgstr "Spustiť EPG export do enigmy alebo do XML súborov"
 
-#: plugin_video_orangetv/provider.py:164
+#: plugin_video_orangetv/provider.py:157
 msgid "EPG export started"
 msgstr "EPG export bol spustený"
 
-#: plugin_video_orangetv/provider.py:173
+#: plugin_video_orangetv/provider.py:166
 msgid "In menu you can remove device using Remove device!"
 msgstr "V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!"
 
-#: plugin_video_orangetv/provider.py:176
+#: plugin_video_orangetv/provider.py:169
 msgid "Remove device!"
 msgstr "Zmazať zariadenie!"
 
-#: plugin_video_orangetv/provider.py:183
+#: plugin_video_orangetv/provider.py:176
 #, python-brace-format
 msgid "Device {device} was removed!"
 msgstr "Zariadenie {device} bolo vymazané!"
@@ -105,6 +105,9 @@ msgstr "Povoliť špeciálnu sekciu v hlavnom menu"
 
 msgid "Allow downloading of live broadcasting"
 msgstr "Povoliť sťahovanie u živého vysielania"
+
+msgid "Allow multiple audio tracks for HLS"
+msgstr "Povoliť viac audio stôp pre HLS"
 
 msgid "Userbouquet"
 msgstr "Userbouquet"

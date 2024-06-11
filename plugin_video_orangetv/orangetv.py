@@ -411,7 +411,7 @@ class OrangeTV:
 
 	# #################################################################################################
 
-	def get_live_link(self, channel_key, max_bitrate=None):
+	def get_live_link(self, channel_key):
 		self.refresh_configuration()
 		params = {
 			"serviceType": "LIVE_TV",
@@ -420,9 +420,11 @@ class OrangeTV:
 			"deviceType": self.quality
 		}
 
-		return self.__get_streams(params, max_bitrate)
+		return self.__get_playlist(params)
 
-	def get_archive_link(self, channel_key, epg_id, ts_from, ts_to, max_bitrate=None):
+	# #################################################################################################
+
+	def get_archive_link(self, channel_key, epg_id, ts_from, ts_to):
 		self.refresh_configuration()
 		params = {
 			"serviceType": "TIMESHIFT_TV",
@@ -433,9 +435,11 @@ class OrangeTV:
 			"fromTimestamp": ts_from * 1000,
 			"toTimestamp": ts_to * 1000
 		}
-		return self.__get_streams(params, max_bitrate)
+		return self.__get_playlist(params)
 
-	def __get_streams(self, params, max_bitrate=None):
+	# #################################################################################################
+
+	def __get_playlist(self, params):
 		playlist = None
 		while self.access_token:
 			json_data = self.call_api('server/streaming/uris.json', params=params)
@@ -458,34 +462,6 @@ class OrangeTV:
 					playlist = json_data["uris"][0]["uri"]
 				break
 
-		if max_bitrate and int(max_bitrate) > 0:
-			max_bitrate = int(max_bitrate) * 1000000
-		else:
-			max_bitrate = 100000000
-
-		result = []
-		r = self.req_session.get(playlist, headers=_COMMON_HEADERS).text
-		for m in re.finditer('#EXT-X-STREAM-INF:PROGRAM-ID=\d+,BANDWIDTH=(?P<bandwidth>\d+),AUDIO="\d+"\s(?P<chunklist>[^\s]+)', r, re.DOTALL):
-			bandwidth = int(m.group('bandwidth'))
-
-			if bandwidth > max_bitrate:
-				continue
-
-			quality = ""
-			if bandwidth < 2000000:
-				quality = "480p"
-			elif bandwidth < 3000000:
-				quality = "576p"
-			elif bandwidth < 6000000:
-				quality = "720p"
-			else:
-				quality = "1080p"
-			url = m.group('chunklist')
-			result.append( {"url": url, "quality": quality, 'bandwidth': bandwidth } )
-
-		result = sorted( result, key=lambda r: r['bandwidth'], reverse=True )
-		return result
+		return playlist
 
 # #################################################################################################
-
-
