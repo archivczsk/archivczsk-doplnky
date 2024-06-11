@@ -23,7 +23,7 @@ class CPModuleTemplate():
 	def __init__(self, content_provider, module_name, plot=None, img=None):
 		'''
 		Initialises module.
-		
+
 		Arguments:
 		content_provider - ModuleContentProvider class that will be used for content manipulation
 		module_name - Name of module
@@ -120,13 +120,13 @@ class CPModuleArchive(CPModuleTemplate):
 		content_provider.register_shortcut('archive', self.run_archive_shortcut)
 
 	# #################################################################################################
-	
+
 	def get_archive_hours(self, channel_id):
 		'''
 		Implement this function to get archive hours for channel_id - needed to run shortcuts
 		'''
 		return None
-	
+
 	# #################################################################################################
 
 	def get_channel_key_from_path(self, path):
@@ -134,11 +134,16 @@ class CPModuleArchive(CPModuleTemplate):
 		Implement this function to get channel_key from URL path
 		'''
 		return None
-	
+
 	# #################################################################################################
-	
-	def run_archive_shortcut(self, path, **kwargs):
-		channel_id = self.get_channel_id_from_path(path)
+
+	def run_archive_shortcut(self, path=None, sref=None, **kwargs):
+		if path:
+			channel_id = self.get_channel_id_from_path(path)
+		elif sref:
+			channel_id = self.get_channel_id_from_sref(sref)
+		else:
+			channel_id = None
 
 		if channel_id == None:
 			return
@@ -150,7 +155,7 @@ class CPModuleArchive(CPModuleTemplate):
 			return self.get_archive_program(channel_id, 0)
 
 		return self.get_archive_days_for_channels(channel_id, archive_hours)
-	
+
 	# #################################################################################################
 
 	def root(self):
@@ -239,10 +244,24 @@ class CPModuleArchive(CPModuleTemplate):
 		'''
 		Implement this function to list program for channel_id and archive day (0=today, 1=yesterday, ...)
 		It should call self.cp.add_video() or self.cp.add_play() to add videos, or resolved videos to menu
-		
-		Special case: If archive_day > 30, then it should be interpreted as minutes back 
+
+		Special case: If archive_day > 30, then it should be interpreted as minutes back
 		'''
 		return
+
+	def get_channel_id_from_path(self, path):
+		'''
+		This call should translate path from HTTP URI to channel_id. If standard bouquet generator is used, then
+		path starts with "playlive/" URI. It is used to support shortcuts to archive directly from generated userbouquet.
+		'''
+		return None
+
+	def get_channel_id_from_sref(self, sref):
+		'''
+		This call should translate channels service reference (object) to channel_id. sref is the service reference retrieved from enigma.
+		It is used to support archive for satelite channels. Name of service can be retrieved using sref.getServiceName() method.
+		'''
+		return None
 
 # #################################################################################################
 
@@ -340,4 +359,3 @@ class ModuleContentProvider(CommonContentProvider):
 				break
 		else:
 			self.log_error("Class name %s is not child of any registered modules - giving up" % class_name)
-
