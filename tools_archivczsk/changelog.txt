@@ -1,3 +1,7 @@
+1.32 - 12.06.2024
+    - implemented shortcuts by sref for archive module
+    - export channel name normalisation method from lamedb module
+
 1.31 - 06.06.2024
     - improvements in HLS master playlist parser
     - replaced HLS master playlist parser in HLS handler with improved version

@@ -1,29 +1,27 @@
 # -*- coding: utf-8 -*-
-import sys, os, re, io
+import re, io
+from ..string_utils import strip_accents
 
-try:
-	basestring
+def channel_name_normalise(name):
+	name = strip_accents(name).lower()
 
-	def py2_decode_utf8(str):
-		return str.decode('utf-8')
+	name = name.replace("television", "tv")
+	name = name.replace("(bonus)", "").strip()
+	name = name.replace("eins", "1")
 
-except:
+	if name.endswith(" hd"):
+		name = name[:-3]
 
-	def py2_decode_utf8(str):
-		return str
+	if name.endswith(" tv"):
+		name = name[:-3]
 
-try:
-	import unidecode
+	if name.startswith("tv "):
+		name = name[3:]
 
-	def strip_accents(s):
-		return unidecode.unidecode(s)
+	if name.endswith(" channel"):
+		name = name[:-8]
 
-except:
-	import unicodedata
-
-	def strip_accents(s):
-		return ''.join(c for c in unicodedata.normalize('NFD', py2_decode_utf8(s)) if unicodedata.category(c) != 'Mn')
-
+	return name.replace("&", " and ").replace("'", "").replace(".", "").replace(" ", "")
 
 class TransponderS():
 
@@ -182,26 +180,7 @@ class lameDB():
 				raise
 
 	def name_normalise(self, name):
-		name = strip_accents(name).lower()
-
-		name = name.replace("television", "tv")
-		name = name.replace("(bonus)", "").strip()
-		name = name.replace("eins", "1")
-
-		if name.endswith(" hd"):
-			name = name[:name.rfind(" hd")]
-
-		if name.endswith(" tv"):
-			name = name[:name.rfind(" tv")]
-
-		if name.startswith("tv "):
-			name = name[3:]
-
-		if name.endswith(" channel"):
-			name = name[:name.rfind(" channel")]
-
-		name = name.replace("&", " and ").replace("'", "").replace(".", "").replace(" ", "")
-		return name
+		return channel_name_normalise(name)
 
 	def _readServiceSection(self):
 		transpondersLine = self._file.readline().strip()
@@ -235,4 +214,3 @@ class lameDB():
 
 			self.Services[name].append(service)
 		return
-
