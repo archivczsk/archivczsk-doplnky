@@ -151,7 +151,7 @@ class KviffTv(object):
 		}
 
 		data = self.call_api('search', params)
-		return data['data']['items']
+		return data['data'].get('items', [])
 
 	# ##################################################################################################################
 
