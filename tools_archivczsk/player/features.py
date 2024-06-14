@@ -12,8 +12,8 @@ __addon__ = ArchivCZSK.get_addon('tools.archivczsk')
 def _(id):
 	return __addon__.get_localized_string(id)
 
-EXTEPLAYER3_NAME='exteplayer3_170'
-FFMPEG_NAME='ffmpeg_170'
+EXTEPLAYER3_NAME='exteplayer3_171'
+FFMPEG_NAME='ffmpeg_171'
 
 class PlayerFeatures(object):
 	DATA_LOADED = False
