@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <addons>
 <addon id="plugin.video.aktualne" name="Aktuálně (DVTV)" version="1.5" hash="8c554f18b9b631ffda616fadf3d20df7" rhash="8c554f18b9b631ffda616fadf3d20df7" />
-<addon id="plugin.video.antiktv" name="Antik TV" version="2.14" hash="d23d107e4ee281a28edbadc7829f342f" rhash="522e66d63a3965ad81758e66cad27566" />
+<addon id="plugin.video.antiktv" name="Antik TV" version="2.15" hash="0a5405753e592d49e2d2325e7b2147e5" rhash="f6e1af107c8778120096ba37e5ae9fb9" />
 <addon id="plugin.video.autosalontv" name="Autosalon" version="1.6" hash="dfbe5c50bcc0d52a2ba6331275e79962" rhash="dfbe5c50bcc0d52a2ba6331275e79962" />
 <addon id="plugin.video.disneyplus" name="Disney+" version="1.1" hash="960e9a9c18db541a783ab134c070e09d" rhash="e32d7d7f29098c9dde9c67979ebb89e8" />
 <addon id="plugin.video.dokumenty.tv" name="Dokumenty.tv" version="1.6" hash="feab95027a6fec159001a45dd123fc6f" rhash="feab95027a6fec159001a45dd123fc6f" />
@@ -10,27 +10,27 @@
 <addon id="plugin.video.iprima" name="iPrima.cz" version="1.13" hash="1865417fefc3ca2538b35c34f46852e2" rhash="1865417fefc3ca2538b35c34f46852e2" />
 <addon id="plugin.video.ivysilani" name="iVysílání - Česká televize" version="2.1" hash="5ef87326b87ee04fbf1e3b9ee4a7b701" rhash="f6f717414eaf93ad5f4894b50fc72ad3" />
 <addon id="plugin.video.joj.sk" name="joj.sk" version="1.6.1" hash="29cde0c219502b134d0d77bc697525ee" rhash="29cde0c219502b134d0d77bc697525ee" />
-<addon id="plugin.video.kvifftv" name="Kviff.tv" version="1.1" hash="ce70bc44f2bb127e4fee402c12823d88" rhash="9e551f9c92266a704182fb1519779bf0" />
-<addon id="plugin.video.magiogo" name="Magio TV" version="1.19" hash="42428805400e79bde947199c787ec950" rhash="7401abd0cbc486dab32e67483efa2b46" />
+<addon id="plugin.video.kvifftv" name="Kviff.tv" version="1.2" hash="d61420a008ca6ba70cc36bd8076306b6" rhash="d7bb722b5e6b12c90426c66d19dd17e2" />
+<addon id="plugin.video.magiogo" name="Magio TV" version="1.20" hash="d194bf506ffde0a6f85bcf9eab1bdae8" rhash="2ebeb3e9bd1d16d047f715c177fb6cfd" />
 <addon id="plugin.video.markiza" name="Markíza" version="2.8" hash="825f086b92c39b520f5182e37c7b91a6" rhash="d2f05f5046964dc98c57893446200bc6" />
 <addon id="plugin.video.mtr.sk" name="Mestská TV Ružomberok" version="1.3.0" hash="818e5787c0590cbf73e6075959f5d787" rhash="818e5787c0590cbf73e6075959f5d787" />
 <addon id="plugin.video.novaplus" name="TV Nova" version="3.7" hash="b8cbf73d93c80c567120a5d4a37f7b24" rhash="361620e3d9ba34a15b21e3b613cbd00e" />
-<addon id="plugin.video.o2tv" name="O2 TV 2.0" version="1.14" hash="9542e3c87814f1f7765bb1f744a2694f" rhash="a56e8465e5ead61236695fdaa3bdd2f6" />
-<addon id="plugin.video.orangetv" name="OrangeTV" version="2.16" hash="93c49b82c75216bbecc6cbe2248e6850" rhash="c68e740b7e2a4679d48cd112d5000030" />
+<addon id="plugin.video.o2tv" name="O2 TV 2.0" version="1.15" hash="f94e95b5bc5201e0ba26baa987ce9c72" rhash="4f38530060b0bd9b0364478df5f1c1fa" />
+<addon id="plugin.video.orangetv" name="OrangeTV" version="2.17" hash="d05e35c4e7d92a59723c275bc2a84155" rhash="56c6c36334067f863146d12aea7eac20" />
 <addon id="plugin.video.pohadkar.cz" name="Pohádkář.cz" version="1.4.0" hash="f9bee39e2b92304f7f5d4844ae9d5001" rhash="f9bee39e2b92304f7f5d4844ae9d5001" />
 <addon id="plugin.video.prehrajto" name="Prehraj.to" version="1.0" hash="8ca4539743d6e9b819a853a0a8d51b97" rhash="07be4eabb1567b542c41224a4bb0af5c" />
 <addon id="plugin.video.primaplus" name="Prima+" version="1.2" hash="b3a5441d13315e7e5400372a5f7aa3ba" rhash="d8b3c582c49cc2dda2026700ab71b2f6" />
-<addon id="plugin.video.rebittv" name="Rebit.tv" version="1.8" hash="7af65c81ad1f546b6d0bb488e3ea548b" rhash="ead41bb0f7bc7c966c67e8d63517c92f" />
+<addon id="plugin.video.rebittv" name="Rebit.tv" version="1.9" hash="ff6ada6a2847addfffb4ebc6637a4917" rhash="dfedb0f267481d858abb2e2acacd2e03" />
 <addon id="plugin.video.rtvs.sk" name="rtvs.sk" version="1.12.0" hash="3a7abf7b60168fc02e33efcaf557258d" rhash="3a7abf7b60168fc02e33efcaf557258d" />
 <addon id="plugin.video.sc2" name="Stream Cinema Community" version="3.14" hash="572ae0befe07e62f619eb5c178e50b62" rhash="b367cb85878ceac23ad544c608b5a87f" />
 <addon id="plugin.video.sktonline" name="SkTonline" version="2.6" hash="a6957fc78694ca5784f03ffac860ebb8" rhash="c5712196f9db4c52809b4354af5b3437" />
-<addon id="plugin.video.sledovanitv" name="Sledovani.tv" version="2.11" hash="77cc31716dda8802935dd3a3a6b7976a" rhash="8eb16b1b49a6bf520c1d7cb1ea3d5ab8" />
+<addon id="plugin.video.sledovanitv" name="Sledovani.tv" version="2.12" hash="da11d58e89823ad70d2f8f3d6701ad98" rhash="2b20939e58f79565731a5f1e7e1fa40b" />
 <addon id="plugin.video.sosac.ph" name="Sosáč" version="1.5.0" hash="08f9edf91a0213d8cdf6eb84cefbbee4" rhash="08f9edf91a0213d8cdf6eb84cefbbee4" />
 <addon id="plugin.video.stalker" name="Stalker" version="1.6" hash="4fd2a415b0d153663ed50e705e643619" rhash="4fd2a415b0d153663ed50e705e643619" />
 <addon id="plugin.video.stream-cinema" name="Stream Cinema" version="3.11" hash="4b1af596b0755e6f7f86ce21239e814a" rhash="0f882143b3faf321801463656bbca374" />
-<addon id="plugin.video.sweettv" name="Sweet.tv" version="1.13" hash="92a855f153e430e4513baac067f13e0d" rhash="07bc86448c14788bc3a90b06b00dfdc5" />
+<addon id="plugin.video.sweettv" name="Sweet.tv" version="1.14" hash="b4eb616a46274969ecdb81e5387e3abb" rhash="7f1eb0fe544cf0ef57c6d9701944f927" />
 <addon id="plugin.video.ta3.com" name="TA3.com" version="2.1" hash="2bf2a6ec47f1bd12fd8875c6899d0fe3" rhash="c16130c8fdcc101973dbc73d763e8595" />
-<addon id="plugin.video.telly" name="Telly" version="1.4.0" hash="054a96bebb2d83f184296630a15de0a8" rhash="984d4e5b1b012e06dc4e11ef0151e115" />
+<addon id="plugin.video.telly" name="Telly" version="1.5.0" hash="7e16d79ede4361d15df5f36f146ce350" rhash="e3df4644e426bbf56f0c0b9fd35a9ce0" />
 <addon id="plugin.video.tv.sme.sk" name="TV SME.sk" version="1.5" hash="b122bc13467bb6911e8abbf02dc3d54d" rhash="b122bc13467bb6911e8abbf02dc3d54d" />
 <addon id="plugin.video.tvcom.cz" name="tvcom.cz" version="1.4" hash="0f4f7eccdcf654c7b3b3911a92f499c1" rhash="0f4f7eccdcf654c7b3b3911a92f499c1" />
 <addon id="plugin.video.tvseznam" name="Televize Seznam" version="1.9" hash="4baa077aa6bdbe5a3f2f535d7c3c6643" rhash="4baa077aa6bdbe5a3f2f535d7c3c6643" />
@@ -38,7 +38,7 @@
 <addon id="plugin.video.voyo" name="VOYO" version="1.3" hash="e1577d8d12a8bb03e0a1070b35aba372" rhash="f179c29982bdf0f8ca0e077f66637aeb" />
 <addon id="plugin.video.webshare" name="Webshare.cz" version="1.0" hash="2e5887258acf73432bc6691303b4fb96" rhash="e6a82c15de0e3bef6a7a286e47d75a0c" />
 <addon id="plugin.video.yt" name="YouTube" version="1.9" hash="b713d4a11d91e2713d32b144b1bbd2a0" rhash="b713d4a11d91e2713d32b144b1bbd2a0" />
-<addon id="tools.archivczsk" name="Addons base" version="1.31" hash="60ecacdaaa2d058b1c6d5d13eb0e1fa4" rhash="339b020c5e3a02b4eb6293eaf2c78a99" />
+<addon id="tools.archivczsk" name="Addons base" version="1.32" hash="95753a680d87a1be7339c489582d4f95" rhash="60d1494a4d30b5bef596e8ed896c28e6" />
 <addon id="tools.cenc" name="Content encryption support" version="1.4" hash="0f3e872a0571229285e89bc1d74acc5f" rhash="0f3e872a0571229285e89bc1d74acc5f" />
 <addon id="tools.xbmc" name="xbmc addons helper" version="1.2" hash="024b71e73a91c082946f129af1764585" rhash="024b71e73a91c082946f129af1764585" />
 </addons>
