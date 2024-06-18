@@ -1,3 +1,6 @@
+2.16:
+- pridaná možnosť vypnúť pridávanie názvov kategórii do vygenerovaného userbouquetu
+
 2.15:
 - pridaná skratka do archívu podľa názvu stanice
 

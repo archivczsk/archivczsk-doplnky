@@ -8,7 +8,7 @@ from datetime import datetime
 class AntikTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
 	def __init__(self, content_provider, http_endpoint):
-		self.bouquet_settings_names = ('enable_userbouquet', 'enable_userbouquet_radio', 'enable_userbouquet_cam', 'enable_adult', 'enable_xmlepg', 'enable_picons', 'player_name')
+		self.bouquet_settings_names = ('enable_userbouquet', 'enable_userbouquet_radio', 'enable_userbouquet_cam', 'userbouquet_categories', 'enable_adult', 'enable_xmlepg', 'enable_picons', 'player_name')
 		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=('username', 'password'), channel_types=('tv', 'radio', 'cam'))
 
 	def logged_in(self):
@@ -44,7 +44,7 @@ class AntikTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 		'''
 
 		for cat in self.cp.atk.get_categories(channel_type):
-			if channel_type == 'tv':
+			if channel_type == 'tv' and self.cp.get_setting('userbouquet_categories'):
 				yield {
 					'name': cat['name'],
 					'adult': cat['name'].startswith(u'Erotic'),
