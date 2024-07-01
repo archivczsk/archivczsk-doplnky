@@ -28,11 +28,11 @@ class iVysilani(object):
 
 	# #################################################################################################
 
-	def call_api(self, endpoint, data=None, auto_refresh_token=True):
+	def call_api(self, endpoint, data=None, auto_refresh_token=True, old=False):
 		if not self.token and endpoint != 'token':
 			self.token = self.call_api('token', { "user": "iDevicesMotion" }).text
 
-		url = 'https://www.ceskatelevize.cz/services/ivysilani/xml/%s/' % endpoint
+		url = 'https://www.ceskatelevize.cz/services%s/ivysilani/xml/%s/' % ('-old' if old else '', endpoint)
 
 		if data:
 			post_data = data.copy()
@@ -131,7 +131,7 @@ class iVysilani(object):
 
 	def get_genres(self):
 		ret = []
-		for item in self.call_api('genrelist'):
+		for item in self.call_api('genrelist', old=True):
 			ret.append( (item.find("link").text, item.find("title").text,) )
 
 		return ret
@@ -140,7 +140,7 @@ class iVysilani(object):
 
 	def get_alphabet(self):
 		ret = []
-		for item in self.call_api('alphabetlist'):
+		for item in self.call_api('alphabetlist', old=True):
 			ret.append( (item.find("link").text, item.find("title").text,) )
 
 		return ret

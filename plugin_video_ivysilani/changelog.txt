@@ -1,3 +1,6 @@
+2024-07-01 [2.2]
+* oprava zobrazenia menu podľa začiatočného písmena a podľa žánru
+
 2024-06-06 [2.1]
 * oprava prehrávania zvuku ak program obsahuje viac jazykových stôp pri HLS formáte
 
