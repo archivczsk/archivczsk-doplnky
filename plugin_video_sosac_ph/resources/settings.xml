@@ -1,14 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-	<setting label="30000" type="text" id="keep-searches" default="20" />
-        <setting label="30063" id="subs" type="bool" default="true" />
-        <setting label="30057" id="order-episodes" type="enum" lvalues="30058|30059" default="0" />
-        <setting label="30106" id="streamujtv_user" type="text" default="" />
-        <setting label="30107" id="streamujtv_pass" type="text" default="" option="hidden" />
-        <setting label="30108" id="streamujtv_location" type="enum" lvalues="30061|30109|30110" default="0" />
-        <setting label="30050" id="quality" type="enum" lvalues="30051|30052|30053|30054|30055|30056" default="0" />
-	<!-- <setting label="30030" id="downloads" type="folder" default="" />
-	<setting label="30032" id="download-notify" type="bool" default="true" />
-	<setting label="30033" id="download-notify-every" type="enum" lvalues="30034|30035|30036" default="0" visible="eq(-1,true)" />
-	-->
+	<setting label="Number of remembered searches" id="keep-searches" type="labelenum" values="0|5|10|15|20|25|30|35|40|45|50" default="20"/>
+	<setting label="Number of last seen entries" id="keep-last-seen" type="labelenum" values="0|5|10|15|20|25|30|35|40|45|50" default="20"/>
+	<setting label="Prefered content location" id="streamujtv_location" type="enum" lvalues="Auto|CZ|PL" default="0" />
+	<setting label="Use secured (SSL) connection for communication" id="use_https" type="bool" default="false" />
+	<setting label="Store play position of last seen entries" id="save-last-play-pos" type="bool" default="true"/>
+	<setting label="Don't store if play position is more then (in %)" id="last-play-pos-limit" type="labelenum" values="80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100" default="95"/>
+	<!-- <setting label="Allow integration with Trakt.tv" id="trakt_enabled" type="bool" default="false"/> -->
+	<setting label="Start subtitles automatically" id="subs-autostart" type="keyenum" values="always;Always|undubbed;When undubbed|never;Never" default="undubbed" />
+	<setting label="Start forced subtitles automatically" id="forced-subs-autostart" type="bool" default="true" />
+	<category label="Accounts">
+		<setting label="Streamuj.tv login name" id="streamujtv_user" type="text" default="" />
+		<setting label="Streamuj.tv password" id="streamujtv_pass" type="password" default="" />
+		<setting label="Streamuj.tv premium expiration" id="streamujtv_exp" type="text" default="" />
+		<setting label="Sosac login name" id="sosac_user" type="text" default="" />
+		<setting label="Sosac password" id="sosac_pass" type="password" default="" />
+	</category>
+	<category label="Filters">
+		<setting label="Language of dubbed entries" id="dubbed-lang" type="keyenum" values="auto;Auto|cs;CZ|sk;SK|cs+sk;CZ &amp; SK|sk+cs;SK &amp; CZ|en;EN" default="auto" />
+		<setting label="Enable adult content" id="enable-adult" type="bool" default="true" />
+		<setting label="Filter items by lanuage" id="item-lang-filter" type="keyenum" values="all;All|dubsubs;Only dubbed or subs|dub;Only dubbed" default="all" />
+		<setting label="Filter streams by language" id="stream-lang-filter" type="keyenum" values="all;All|cs+sk;CZ &amp; SK|cs;CZ|sk;SK|en;EN" default="all" />
+		<setting label="Minimal offered stream quality" id="min-quality" type="keyenum" values="0;All|720;720p|1080;1080p|2160;4k" default="720" />
+		<setting label="Maximal offered stream quality" id="max-quality" type="keyenum" values="720;720p|1080;1080p|2160;4k" default="2160" />
+	</category>
 </settings>

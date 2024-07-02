@@ -1,355 +1,516 @@
-# -*- coding: UTF-8 -*-
-# /*
-# *		 Copyright (C) 2015 Libor Zoubek + jondas
-# *
-# *
-# *	 This Program is free software; you can redistribute it and/or modify
-# *	 it under the terms of the GNU General Public License as published by
-# *	 the Free Software Foundation; either version 2, or (at your option)
-# *	 any later version.
-# *
-# *	 This Program is distributed in the hope that it will be useful,
-# *	 but WITHOUT ANY WARRANTY; without even the implied warranty of
-# *	 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# *	 GNU General Public License for more details.
-# *
-# *	 You should have received a copy of the GNU General Public License
-# *	 along with this program; see the file COPYING.	 If not, write to
-# *	 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-# *	 http://www.gnu.org/copyleft/gpl.html
-# *
-# */
+# -*- coding: utf-8 -*-
 
-import hashlib
-import sys
-import json
-
-from tools_xbmc.contentprovider.provider import ContentProvider, cached, ResolveException
-from tools_xbmc.tools import util
+from tools_archivczsk.contentprovider.exception import AddonErrorException, AddonInfoException
+from tools_archivczsk.debug.http import dump_json_request
+from tools_archivczsk.cache import ExpiringLRUCache
 
 try:
-	from urllib2 import urlopen, Request, HTTPCookieProcessor, HTTPRedirectHandler, build_opener, install_opener
-	import cookielib
-	from urllib import quote_plus, addinfourl
+	from urllib import urlencode
 except:
-	from urllib.request import addinfourl, urlopen, Request, HTTPCookieProcessor, HTTPRedirectHandler, build_opener, install_opener
-	import http.cookiejar as cookielib
-	from urllib.parse import quote_plus
+	from urllib.parse import urlencode
 
+from hashlib import md5
+from datetime import datetime
 
-#sys.setrecursionlimit(10000)
+# ##################################################################################################################
 
-MOVIES_BASE_URL = "http://movies.prehraj.me"
-TV_SHOW_FLAG = "#tvshow#"
-ISO_639_1_CZECH = "cs"
+class Sosac(object):
+	PAGE_SIZE = 100
 
-# JSONs
-URL = "http://tv.sosac.to"
-J_MOVIES_A_TO_Z_TYPE = "/vystupy5981/souboryaz.json"
-J_MOVIES_GENRE = "/vystupy5981/souboryzanry.json"
-J_MOVIES_MOST_POPULAR = "/vystupy5981/moviesmostpopular.json"
-J_MOVIES_RECENTLY_ADDED = "/vystupy5981/moviesrecentlyadded.json"
-# hack missing json with a-z series
-J_TV_SHOWS_A_TO_Z_TYPE = "/vystupy5981/tvpismenaaz/"
-J_TV_SHOWS = "/vystupy5981/tvpismena/"
-J_SERIES = "/vystupy5981/serialy/"
-J_TV_SHOWS_MOST_POPULAR = "/vystupy5981/tvshowsmostpopular.json"
-J_TV_SHOWS_RECENTLY_ADDED = "/vystupy5981/tvshowsrecentlyadded.json"
-J_SEARCH = "/jsonsearchapi.php?q="
-STREAMUJ_URL = "http://www.streamuj.tv/video/"
-IMAGE_URL = "http://movies.sosac.tv/images/"
-IMAGE_MOVIE = IMAGE_URL + "75x109/movie-"
-IMAGE_SERIES = IMAGE_URL + "558x313/serial-"
-IMAGE_EPISODE = URL
+	CFG_ADDRESS = [
+		"https://kodi-api.sosac.to/settings",
+		"https://tv.sosac.ph/settings.json",
+		"https://sosac.eu/settings.json",
+    	"https://tv.prehraj.net/settings.json",
+		"https://tv.pustsi.me/settings.json",
+		"https://www.tvserialy.net/settings.json",
+        "http://178.17.171.217/settings.json"
+	]
 
-RATING = 'r'
-LANG = 'd'
-QUALITY = 'q'
+	def __init__(self, content_provider):
+		self.cp = content_provider
+		self.req_session = self.cp.get_requests_session()
+		self.configuration = {}
+		self.cache = ExpiringLRUCache(30, 1800)
+		self.username = None
+		self.password = None
+		self.streaming_username = None
+		self.streaming_password = None
 
+	# ##################################################################################################################
 
-class SosacContentProvider(ContentProvider):
-	ISO_639_1_CZECH = None
-	par = None
+	def _(self, s):
+		return self.cp._(s)
 
-	def __init__(self, username=None, password=None, filter=None, reverse_eps=False):
-		ContentProvider.__init__(self, name='sosac.ph', base_url=MOVIES_BASE_URL, username=username,
-								 password=password, filter=filter)
-		opener = build_opener(HTTPCookieProcessor(cookielib.LWPCookieJar()))
-		install_opener(opener)
-		self.reverse_eps = reverse_eps
-		self.streamujtv_user = None
-		self.streamujtv_pass = None
-		self.streamujtv_location = None
+	# ##################################################################################################################
 
+	def request_configuration(self):
+		cfg = None
 
-	def on_init(self):
-		kodilang = self.lang or 'cs'
-		if kodilang == ISO_639_1_CZECH or kodilang == 'sk':
-			self.ISO_639_1_CZECH = ISO_639_1_CZECH
+		for addr in self.CFG_ADDRESS:
+			try:
+				resp = self.req_session.get(addr)
+				resp.raise_for_status()
+
+				cfg = resp.json()
+				if cfg['domain'] and cfg['streaming_provider']:
+					self.configuration = cfg
+					break
+			except:
+				self.cp.log_exception()
+
+		if cfg:
+			self.api_address = 'http%s://%s/' % ('s' if self.cp.get_setting('use_https') else '', cfg['domain'])
+			self.api_label = cfg['domain_label']
+			self.streaming_address = 'http%s://%s/' % ('s' if self.cp.get_setting('use_https') else '', cfg['streaming_provider'])
+			self.streaming_label = cfg['streaming_provider_label']
 		else:
-			self.ISO_639_1_CZECH = 'en'
+			raise AddonErrorException(self._("Failed to load configuration from remote server. Check your internet connection."))
 
-	def capabilities(self):
-		return ['resolve', 'categories', 'search']
+	# ##################################################################################################################
 
-	def categories(self):
-		result = []
-		for title, url in [
-			("Movies", URL + J_MOVIES_A_TO_Z_TYPE),
-			("TV Shows", URL + J_TV_SHOWS_A_TO_Z_TYPE),
-			("Movies - by Genres", URL + J_MOVIES_GENRE),
-			("Movies - Most popular", URL + J_MOVIES_MOST_POPULAR),
-			("TV Shows - Most popular", URL + J_TV_SHOWS_MOST_POPULAR),
-			("Movies - Recently added", URL + J_MOVIES_RECENTLY_ADDED),
-			("TV Shows - Recently added", URL + J_TV_SHOWS_RECENTLY_ADDED)]:
-			item = self.dir_item(title=title, url=url)
-#			 if title == 'Movies' or title == 'TV Shows' or title == 'Movies - Recently added':
-#				 item['menu'] = {"[B][COLOR red]Add all to library[/COLOR][/B]": {
-#					 'action': 'add-all-to-library', 'title': title}}
-			result.append(item)
-		return result
+	def check_login(self, silent=False):
+		if self.password:
+			return
 
-	def search(self, keyword):
-		if len(keyword) < 3 or len(keyword) > 100:
-			return [self.dir_item(title="Search query must be between 3 and 100 characters long!", url="fail")]
-		return self.list_search(URL + J_SEARCH + quote_plus(keyword))
+		username = self.cp.get_setting('sosac_user')
+		password = self.cp.get_setting('sosac_pass')
 
-	def a_to_z(self, url):
-		result = []
-		for letter in ['0-9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'e', 'h', 'i', 'j', 'k', 'l', 'm',
-					   'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']:
-			item = self.dir_item(title=letter.upper())
-			item['url'] = URL + url + letter + ".json"
-			result.append(item)
-		return result
+		if not username or not password:
+			if not silent:
+				self.cp.show_info(self._('No sosac login credentials are set in addon settings. Create a free registration on {sosac_label} and enter login details in addon settings to enable all functionality.').format(sosac_label=self.api_label), noexit=True)
+			return
 
-	@staticmethod
-	def remove_flag_from_url(url, flag):
-		return url.replace(flag, "", count=1)
+		self.username = username
+		self.password = md5((md5(('%s:%s' % (username, password)).encode('utf-8')).hexdigest() + 'EWs5yVD4QF2sshGm22EWVa').encode('utf-8')).hexdigest()
 
-	@staticmethod
-	def particular_letter(url):
-		return "a-z/" in url
+		try:
+			resp = self.call_api('movies/lists/queue', params = {'pocet': 1, 'stranka': 1}, ignore_status_code=True)
+		except:
+			self.username = None
+			self.password = None
+			raise
 
-	def has_tv_show_flag(self, url):
-		return TV_SHOW_FLAG in url
+		if isinstance(resp, dict) and resp.get('code') == 401:
+			self.username = None
+			self.password = None
 
-	def remove_flags(self, url):
-		return url.replace(TV_SHOW_FLAG, "", 1)
+			if not silent:
+				self.cp.show_info(self._('Login name/password for sosac are wrong. Only base functionality will be available.'), noexit=True)
 
-	def list(self, url):
-		util.info("Examining url " + url)
-		if J_MOVIES_A_TO_Z_TYPE in url:
-			return self.load_json_list(url)
-		if J_MOVIES_GENRE in url:
-			return self.load_json_list(url)
-		if J_MOVIES_MOST_POPULAR in url:
-			return self.list_videos(url)
-		if J_MOVIES_RECENTLY_ADDED in url:
-			return self.list_videos(url)
-		if J_TV_SHOWS_A_TO_Z_TYPE in url:
-			return self.a_to_z(J_TV_SHOWS)
-		if J_TV_SHOWS in url:
-			return self.list_series_letter(url)
-		if J_SERIES in url:
-			return self.list_episodes(url)
-		if J_TV_SHOWS_MOST_POPULAR in url:
-			return self.list_series_letter(url)
-		if J_TV_SHOWS_RECENTLY_ADDED in url:
-			return self.list_recentlyadded_episodes(url)
-		return self.list_videos(url)
+	# ##################################################################################################################
 
-	def load_json_list(self, url):
-		result = []
-		data = util.request(url)
-		json_list = json.loads(data)
-		for key, value in json_list.items():
-			item = self.dir_item(title=self.upper_first_letter(key))
-			item['url'] = value
-			result.append(item)
+	def check_streaming_login(self, silent=False):
+		if self.streaming_password:
+			return
 
-		return sorted(result, key=lambda i: i['title'])
+		username = self.cp.get_setting('streamujtv_user')
+		password = self.cp.get_setting('streamujtv_pass')
 
-	def list_videos(self, url):
-		result = []
-		data = util.request(url)
-		json_video_array = json.loads(data)
-		for video in json_video_array:
-			item = self.video_item()
-			item['title'] = self.get_video_name(video)
-			item['img'] = IMAGE_MOVIE + video['i']
-			item['url'] = video['l'] if video['l'] else ""
-			if RATING in video:
-				item['rating'] = video[RATING]
-			if LANG in video:
-				item['lang'] = video[LANG]
-			if QUALITY in video:
-				item['quality'] = video[QUALITY]
-			result.append(item)
-		return result
+		if not username or not password:
+			if not silent:
+				self.cp.show_info(self._('No {streaming_label} login credentials are set in addon settings. In order to play content you need to have a valid {streaming_label} subscription and login credentials need to be set in addon settings.').format(streaming_label=self.streaming_label), noexit=True)
+			return
 
-	def list_series_letter(self, url):
-		result = []
-		data = util.request(url)
-		json_list = json.loads(data)
-		for serial in json_list:
-			item = self.dir_item()
-			item['title'] = self.get_localized_name(serial['n'])
-			item['img'] = IMAGE_SERIES + serial['i']
-			item['url'] = serial['l']
-			result.append(item)
-		return result
+		self.streaming_username = username
+		self.streaming_password = md5(password.encode('utf-8')).hexdigest()
 
-	def list_episodes(self, url):
-		result = []
-		data = util.request(url)
-		json_series = json.loads(data)
-		for series in json_series:
-			for series_key, episode in series.items():
-				for episode_key, video in episode.items():
-					item = self.video_item()
-					item['title'] = series_key + "x" + episode_key + " - " + video['n']
-					if video['i'] is not None: item['img'] = IMAGE_EPISODE + video['i']
-					item['url'] = video['l'] if video['l'] else ""
-					result.append(item)
-		if not self.reverse_eps:
-			result.reverse()
-		return result
+		try:
+			resp = self.call_streaming_api('check-user')
+		except:
+			self.streaming_username = None
+			self.streaming_password = None
+			raise
 
-	def list_recentlyadded_episodes(self, url):
-		result = []
-		data = util.request(url)
-		json_series = json.loads(data)
-		for episode in json_series:
-			item = self.video_item()
-			item['title'] = self.get_episode_recently_name(episode)
-			item['img'] = IMAGE_EPISODE + episode['i']
-			item['url'] = episode['l']
-			result.append(item)
-		return result
+		if resp.get('result') == 0:
+			self.streaming_username = None
+			self.streaming_password = None
+			self.cp.set_setting('streamujtv_exp', '')
 
-	def get_video_name(self, video):
-		name = self.get_localized_name(video['n'])
-		year = (" (" + video['y'] + ") ") if video['y'] else " "
-		quality = ("- " + video[QUALITY].upper()) if video[QUALITY] else ""
-		return name + year + quality
+			if not silent:
+				self.cp.show_info(self._('Login name/password for {streaming_label} are wrong.').format(streaming_label=self.streaming_label), noexit=True)
+		elif resp.get('result') == 1:
+			self.streaming_username = None
+			self.streaming_password = None
+			self.cp.set_setting('streamujtv_exp', 'expired')
 
-	def get_episode_recently_name(self, episode):
-		serial = self.get_localized_name(episode['t']) + ' '
-		series = episode['s'] + "x"
-		number = episode['e'] + " - "
-		name = self.get_localized_name(episode['n'])
-		return serial + series + number + name
-
-	def add_video_flag(self, items):
-		flagged_items = []
-		for item in items:
-			flagged_item = self.video_item()
-			flagged_item.update(item)
-			flagged_items.append(flagged_item)
-		return flagged_items
-
-	def add_directory_flag(self, items):
-		flagged_items = []
-		for item in items:
-			flagged_item = self.dir_item()
-			flagged_item.update(item)
-			flagged_items.append(flagged_item)
-		return flagged_items
-	
-	def get_localized_name(self, names):
-		return names[self.ISO_639_1_CZECH] if self.ISO_639_1_CZECH in names else names[ISO_639_1_CZECH]
-
-	@cached(ttl=24)
-	def get_data_cached(self, url):
-		return util.request(url)
-
-	def add_flag_to_url(self, item, flag):
-		item['url'] = flag + item['url']
-		return item
-
-	def add_url_flag_to_items(self, items, flag):
-		subs = self.get_subs()
-		for item in items:
-			if item['url'] in subs:
-				item['title'] = '[B][COLOR yellow]*[/COLOR][/B] ' + item['title']
-			self.add_flag_to_url(item, flag)
-		return items
-
-	def _url(self, url):
-		# DirtyFix nefunkcniho downloadu: Neznam kod tak se toho zkusenejsi chopte
-		# a prepiste to lepe :)
-		if '&authorize=' in url:
-			return url
+			if not silent:
+				self.cp.show_info(self._("You don't have valid premium subscription for {streaming_label}.").format(streaming_label=self.streaming_label), noexit=True)
+		elif resp.get('result') == 2:
+			self.cp.log_info("Premium subscription for streamuj.tv is valid.")
+			self.cp.set_setting('streamujtv_exp', resp.get('expiration', '?'))
 		else:
-			return self.base_url + "/" + url.lstrip('./')
+			self.cp.log_error("Unsupported return data returned from server: %s" % str(resp))
 
-	def list_tv_shows_by_letter(self, url):
-		util.info("Getting shows by letter " + url)
-		shows = self.list_by_letter(url)
-		util.info("Resolved shows " + str(shows))
-		shows = self.add_directory_flag(shows)
-		return self.add_url_flag_to_items(shows, TV_SHOW_FLAG)
+	# ##################################################################################################################
 
-	def list_movies_by_letter(self, url):
-		movies = self.list_by_letter(url)
-		util.info("Resolved movies " + str(movies))
-		return self.add_video_flag(movies)
+	def call_api(self, endpoint, params=None, data=None, ignore_status_code=False, use_cache=True):
+		if endpoint.startswith('http'):
+			url = endpoint
+		else:
+			url = self.api_address + endpoint
 
-	def resolve(self, item, captcha_cb=None, select_cb=None):
-		def probeHTML5(result):
+		default_params = {}
 
-			class NoRedirectHandler(HTTPRedirectHandler):
+		if self.password:
+			default_params.update({
+				'username': self.username,
+				'password': self.password
+			})
 
-				def http_error_302(self, req, fp, code, msg, headers):
-					infourl = addinfourl(fp, headers, req.get_full_url())
-					infourl.status = code
-					infourl.code = code
-					return infourl
-				http_error_300 = http_error_302
-				http_error_301 = http_error_302
-				http_error_303 = http_error_302
-				http_error_307 = http_error_302
+		if params:
+			default_params.update(params)
 
-			if result is not None:
-				opener = build_opener(NoRedirectHandler())
-				install_opener(opener)
+		headers = {
+			'User-Agent': 'ArchivCZSK/%s (plugin.video.sosac/%s)' % (self.cp.get_engine_version(), self.cp.get_addon_version()),
+		}
 
-				r = urlopen(Request(result['url'], headers=result['headers']))
-				if r.code == 200:
-					result['url'] = r.read().decode('utf-8')
-			return result
+		if data != None:
+			resp = self.req_session.post(url, json=data, params=default_params, headers=headers)
+		else:
+			rurl = url + '?' + urlencode(sorted(default_params.items(), key=lambda val: val[0]))
 
-		data = item['url']
-		if not data:
-			raise ResolveException('Video is not available.')
-		result = self.findstreams([STREAMUJ_URL + data])
-		if len(result) == 1:
-			return probeHTML5(self.set_streamujtv_info(result[0]))
-		elif len(result) > 1 and select_cb:
-			return probeHTML5(self.set_streamujtv_info(select_cb(result)))
+			if use_cache:
+				resp = self.cache.get(rurl)
+				if resp:
+					self.cp.log_debug("Request found in cache")
+					return resp
 
-	def set_streamujtv_info(self, stream):
-		if stream:
-			if len(self.streamujtv_user) > 0 and len(self.streamujtv_pass) > 0:
-				# set streamujtv credentials
-				m = hashlib.md5()
-				m.update(self.streamujtv_pass.encode('utf-8'))
-				h = m.hexdigest()
-				m = hashlib.md5()
-				m.update(h.encode('utf-8'))
-				stream['url'] = stream['url'] + \
-					"&pass=%s:::%s" % (self.streamujtv_user, m.hexdigest())
-			if self.streamujtv_location in ['1', '2']:
-				stream['url'] = stream['url'] + "&location=%s" % self.streamujtv_location
-		return stream
+			resp = self.req_session.get(url, params=default_params, headers=headers)
+#		dump_json_request(resp)
+
+		if resp.status_code == 200 or ignore_status_code:
+			resp = resp.json()
+
+			if use_cache and data == None:
+				self.cache.put(rurl, resp, 3600)
+
+			return resp
+		else:
+			self.cp.log_error("Remote server returned status code %d" % resp.status_code)
+
+			if resp.status_code == 401:
+				raise AddonInfoException(self._("You don't have access to this content!"))
+			else:
+				raise AddonErrorException(self._("Unexpected return code from server") + ": %d" % resp.status_code)
+
+	# ##################################################################################################################
+
+	def make_paging_params(self, page):
+		if page is not None:
+			return {
+				'pocet': self.PAGE_SIZE,
+				'stranka': page
+			}
+		else:
+			return {}
+
+	# ##################################################################################################################
+
+	def convert_movie_item(self, item, parent_item={}):
+		ret = {
+			'id': item['_id'],
+			'parent_id': item.get('id') or parent_item.get('id'),
+			'title': item['n'] or {'en': ['! Not provided'], 'cs': ['! Neuvedeno']},
+			'ep_title': item.get('ne'),
+			'img': item['i'],
+			'rating': item.get('c'),
+			'plot': item['p'],
+			'duration': item.get('dl'),
+			'year': int(item['y']) if item.get('y') else None,
+			'genre': item.get('g') or [],
+			'lang': item['d'],
+			'stream_id': item.get('l'),
+			'watched': item.get('w') if self.password else 0,
+			'adult': u'Erotické' in (item.get('g') or [])
+		}
+
+		if parent_item and not ret['ep_title']:
+			ret['ep_title'] = ret['title']
+			ret['title'] = parent_item['title']
+
+		return ret
+
+	# ##################################################################################################################
+
+	def get_movies_list(self, stream, page, letter=None, genre=None, year=None, quality=None):
+		result = []
+
+		params = self.make_paging_params(page)
+
+		if letter is not None:
+			params.update({'l': letter})
+
+		if genre is not None:
+			params.update({'g': genre})
+
+		if year is not None:
+			params.update({'y': year})
+
+		if quality is not None:
+			params.update({'q': quality})
 
 
-	def get_subs(self):
-		return self.parent.get_subs()
+		for item in self.call_api('movies/lists/' + stream, params=params, use_cache=(stream not in ('queue', 'unfinished', 'finished'))):
+			result.append(self.convert_movie_item(item))
 
-	def list_search(self, url):
-		return self.list_videos(url)
+		return result
 
-	def upper_first_letter(self, name):
-		return name[:1].upper() + name[1:]
+	# ##################################################################################################################
+
+	def get_tvshow_list(self, stream, page, letter=None, genre=None, year=None):
+		result = []
+
+		params = self.make_paging_params(page)
+
+		if letter is not None:
+			params.update({'l': letter})
+
+		if genre is not None:
+			params.update({'g': genre})
+
+		if year is not None:
+			params.update({'y': year})
+
+		for item in self.call_api('serials/lists/' + stream, params=params, use_cache=(stream not in ('queue', 'unfinished', 'finished'))):
+			result.append(self.convert_movie_item(item))
+
+		return result
+
+	# ##################################################################################################################
+
+	def get_episodes_list(self, stream, page, date_from=None, date_to=None):
+		result = []
+
+		params = self.make_paging_params(page)
+
+		if date_from is not None:
+			params.update({'f': date_from})
+
+		if date_to is not None:
+			params.update({'t': date_to})
+
+		for item in self.call_api('episodes/lists/' + stream, params=params, use_cache=(stream not in ('queue', 'unfinished', 'finished'))):
+			result.append(self.convert_movie_item(item))
+
+		return result
+
+	# ##################################################################################################################
+
+	def get_tvshow_detail(self, item):
+		result = []
+
+		for season_name, season_data in self.call_api('serials/' + str(item['id'])).items():
+			if season_name == 'info':
+				continue
+
+			episodes = []
+			result.append({
+				'season': season_name,
+				'episodes': episodes
+			})
+
+#			for episode_name, episode_data in sorted(season_data.items(), key=lambda i: int(i[0])):
+			for episode_name, episode_data in season_data.items():
+				movie_item = self.convert_movie_item(episode_data, item)
+				movie_item['episode'] = int(episode_name)
+				movie_item['season'] = int(season_name)
+				episodes.append(movie_item)
+
+			episodes.sort(key=lambda i: i['episode'])
+
+		return result
+
+	# ##################################################################################################################
+
+	def search_simple(self, category, keyword, page):
+		result = []
+
+		params = self.make_paging_params(page)
+
+		params.update({'q': keyword})
+
+		for item in self.call_api(category + '/simple-search', params=params):
+			result.append(self.convert_movie_item(item))
+
+		return result
+
+	# ##################################################################################################################
+
+	def search_advanced(self, category, search_params, page):
+		result = []
+
+		params = self.make_paging_params(page)
+
+		params.update({
+			'k': search_params.get('keyword'),
+			'y': '%s,%s' % (search_params.get('year_from',1900), search_params.get('year_to', datetime.now().year)),
+			'g': search_params.get('genre'),
+			'q': search_params.get('quality'),
+			'c': search_params.get('origin'),
+			'l': search_params.get('lang'),
+			'd': search_params.get('director'),
+			's': search_params.get('screenwriter'),
+			'a': search_params.get('actor'),
+			'o': search_params.get('sort'),
+		})
+
+		for item in self.call_api(category + '/advanced-search', params=params):
+			result.append(self.convert_movie_item(item))
+
+		return result
+
+	# ##################################################################################################################
+
+	def get_tvguide(self, day, page):
+		result = []
+
+		params = self.make_paging_params(page)
+
+		params.update({'d': day})
+
+		for item in self.call_api('tv/program', params=params):
+			if item.get('movie'):
+				media_item = item['movie']
+				media_type = 'movie'
+			elif item.get('episode'):
+				media_item = item['episode']
+				media_type = 'episode'
+			elif item.get('serial'):
+				media_item = item['serial']
+				media_type = 'tvshow'
+			else:
+				# workaround for empty data - without that paging will not work
+				media_type = 'dummy'
+				media_item = {}
+
+			if media_item:
+				ritem = self.convert_movie_item(media_item)
+			else:
+				ritem = {}
+
+			ritem.update({
+				'channel': {
+					'name': item['stanice'],
+					'start': int(item['start'])
+				},
+				'type': media_type
+			})
+			result.append(ritem)
+
+		return result
+
+	# ##################################################################################################################
+
+	def call_streaming_api(self, action, params=None):
+		url = self.streaming_address + 'json_api_player.php'
+
+		default_params = {
+			'action': action
+		}
+
+		if self.streaming_password:
+			default_params.update({
+				'login': self.streaming_username,
+				'password': self.streaming_password,
+				'passwordinmd5': 1
+			})
+
+		if params:
+			default_params.update(params)
+
+		headers = {
+			'User-Agent': 'ArchivCZSK/%s (plugin.video.sosac/%s)' % (self.cp.get_engine_version(), self.cp.get_addon_version()),
+		}
+
+		resp = self.req_session.get(url, params=default_params, headers=headers)
+#		dump_json_request(resp)
+
+		if resp.status_code == 200:
+			return resp.json()
+		else:
+			self.cp.log_error("Remote server returned status code %d" % resp.status_code)
+
+			if resp.status_code == 401:
+				raise AddonInfoException(self._("You don't have access to this content!"))
+			else:
+				raise AddonErrorException(self._("Unexpected return code from server") + ": %d" % resp.status_code)
+
+	# ##################################################################################################################
+
+	def get_streams(self, item_id):
+		qual_dict = {"UHD":"2160p","FHD":"1080p","HD":"720p","SD":"480p"}
+
+		self.check_streaming_login()
+
+		location = self.cp.get_setting('streamujtv_location')
+
+		params = {
+			'link': item_id,
+			'location': 1 if location == '0' else location
+		}
+
+		result = self.call_streaming_api('get-video-links', params)
+
+		if result.get('errormessage'):
+			if result.get('result') == 0:
+				raise AddonErrorException(result['errormessage'])
+			else:
+				self.cp.show_info(result['errormessage'], noexit=True)
+
+		ret = []
+
+		for lang, data in result.get('URL',{}).items():
+			for quality, url in data.items():
+				if quality == 'subtitles':
+					continue
+
+				ret.append({
+					'url': url,
+					'quality': quality,
+					'resolution': qual_dict.get(quality, 'unknown'),
+					'lang': lang.upper(),
+					'sub_lang': None,
+					'sub_url': None
+				})
+
+				for sub_lang, sub_url in data.get('subtitles', {}).items():
+					ret.append({
+						'url': url,
+						'quality': quality,
+						'resolution': qual_dict.get(quality, 'unknown'),
+						'lang': lang.upper(),
+						'sub_lang': sub_lang.upper(),
+						'sub_url': sub_url
+					})
+
+		return ret
+
+	# ##################################################################################################################
+
+	def watchlist_add(self, category, item_id):
+		if self.password:
+			return self.call_api('%s/%s/into-queue' % (category, item_id), data={})
+		else:
+			return None
+
+	# ##################################################################################################################
+
+	def watchlist_delete(self, category, item_id):
+		if self.password:
+			return self.call_api('%s/%s/off-queue' % (category, item_id), data={}, ignore_status_code=True)
+		else:
+			return None
+
+	# ##################################################################################################################
+
+	def set_watching_time(self, category, item_id, seconds):
+		if self.password:
+			data = {
+				'time': seconds
+			}
+			return self.call_api('%s/%s/watching-time' % (category, item_id), data=data)
+		else:
+			return None
+
+	# ##################################################################################################################

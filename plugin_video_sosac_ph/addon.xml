@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.sosac.ph" name="Sosáč" provider-name="L. Zoubek + jondas" version="1.5.0">
+<addon id="plugin.video.sosac.ph" name="Sosáč" version="2.0">
 	<requires>
-		<import addon="enigma2.archivczsk" version="2.5.0"/>
-		<import addon="tools.xbmc" version="1.2" />
+		<import addon="enigma2.archivczsk" version="2.7.0"/>
+		<import addon="tools.archivczsk" version="1.33" />
 	</requires>
-	<extension point="archivczsk.addon.seeker"/>
+	<extension point="archivczsk.addon.seeker" name="Sosac - Movies" id="movies"/>
+	<extension point="archivczsk.addon.seeker" name="Sosac - Series" id="tvshows"/>
 	<extension point="archivczsk.addon.video"/>
 	<extension point="archivczsk.addon.metadata">
-		<description lang="en">Watch online movies and tv shows from www.sosac.ph.</description>
-		<description lang="cs">Sledujte online videa a serialy z www.sosac.ph.</description>
+		<description lang="en">Play thousands of movies and series with CZ/SK dubbing or subtitles available on sosac.tv.</description>
+		<description lang="cs">Přehrávejte tisíce filmů a seriálů s CZ/SK dabingem či titulky dostupných na sosac.tv.</description>
+		<description lang="sk">Prehrávajte tisíce filmov a seriálov s CZ/SK dabingom či titulkami dostupných na sosac.tv.</description>
 	</extension>
 </addon>

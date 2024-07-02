@@ -1,3 +1,10 @@
+2.0: 16.07.2024
+- kompletne nový doplnok postavený na novom API
+- pre plnú funkcionalitu je potrebné:
+    * mať účet na sosac.tv
+    * mat aktívny premium účet na streamuj.tv
+    * zadať v nastaveniach doplnku prihlasovacie údaje pre obidve služby
+
 1.5.0: 27.01.2024
 - priadnie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
 
