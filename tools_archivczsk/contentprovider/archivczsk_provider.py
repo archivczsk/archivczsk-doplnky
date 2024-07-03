@@ -8,6 +8,15 @@ from .exception import LoginException, AddonErrorException, AddonInfoException, 
 from ..string_utils import _B
 from collections import OrderedDict
 
+try:
+	basestring
+
+	def is_string(s):
+		return isinstance(s, basestring)
+except:
+	def is_string(s):
+		return isinstance(s, str)
+
 __addon__ = ArchivCZSK.get_addon('tools.archivczsk')
 
 
@@ -496,9 +505,14 @@ class ArchivCZSKContentProvider(object):
 			'year': 'Rok ako int',
 			'duration': 'Dlzka v sekundach ako int'
 		}
+		or if info_labels is a string, then it contains only plot data
 		"""
 		if not isinstance(menu, dict):
 			menu = menu.menu
+
+		if is_string(info_labels):
+			info_labels = {'plot': info_labels}
+
 		client.add_dir(title, self.action(cmd, **cmd_args), image=img, infoLabels=info_labels, menuItems=menu, video_item=False, dataItem=data_item, traktItem=trakt_item)
 
 	# #################################################################################################
@@ -554,6 +568,9 @@ class ArchivCZSKContentProvider(object):
 		if not isinstance(menu, dict):
 			menu = menu.menu
 
+		if is_string(info_labels):
+			info_labels = {'plot': info_labels}
+
 		if cmd == None or callable(cmd):
 			item = client.create_directory_it(title, self.action(cmd, **cmd_args), image=img, infoLabels=info_labels, menuItems=menu, video_item=True, dataItem=data_item, traktItem=trakt_item, download=download)
 		else:
@@ -568,9 +585,15 @@ class ArchivCZSKContentProvider(object):
 	# #################################################################################################
 
 	def create_play_item(self, title, url, info_labels={}, data_item=None, trakt_item=None, subs=None, settings=None, live=False, download=True):
+		if is_string(info_labels):
+			info_labels = {'plot': info_labels}
+
 		return client.create_video_it(name=title, url=url, subs=subs, infoLabels=info_labels, live=live, settings=settings, dataItem=data_item, traktItem=trakt_item, download=download, filename=info_labels.get('filename'))
 
 	def add_play(self, title, url, info_labels={}, data_item=None, trakt_item=None, subs=None, settings=None, live=False, download=True, playlist_autogen=True):
+		if is_string(info_labels):
+			info_labels = {'plot': info_labels}
+
 		kwargs = {
 			'title': title,
 			'url': url,
