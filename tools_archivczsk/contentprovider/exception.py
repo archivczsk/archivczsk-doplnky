@@ -14,3 +14,6 @@ class AddonInfoException(Exception):
 
 class AddonWarningException(Exception):
 	pass
+
+class AddonSilentExitException(Exception):
+	pass

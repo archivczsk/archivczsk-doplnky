@@ -4,7 +4,7 @@ import sys, os, re, traceback, time, json
 from Plugins.Extensions.archivCZSK.engine import client
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.version import version as archivczsk_version
-from .exception import LoginException, AddonErrorException, AddonInfoException, AddonWarningException
+from .exception import LoginException, AddonErrorException, AddonInfoException, AddonWarningException, AddonSilentExitException
 from ..string_utils import _B
 from collections import OrderedDict
 
@@ -391,6 +391,9 @@ class ArchivCZSKContentProvider(object):
 
 		except AddonWarningException as e:
 			client.showWarning(str(e))
+
+		except AddonSilentExitException as e:
+			client.silentExit(str(e))
 
 	# #################################################################################################
 
