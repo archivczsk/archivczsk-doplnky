@@ -628,9 +628,12 @@ class CommonContentProvider(object):
 		# just dummy one
 		return False
 
-	def get_list_input(self, lst, title=""):
+	def get_list_input(self, lst, title="", selection=0):
 		'''
 		Asks user to choose from list items. It returns index of selected item or None if user hits cancel.
+		lst - list of items to show
+		title - window title
+		selection - index of item that should be selected by default
 		'''
 		# just dummy one
 		return 0

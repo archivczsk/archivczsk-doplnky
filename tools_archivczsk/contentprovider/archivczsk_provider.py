@@ -662,8 +662,8 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 
-	def get_list_input(self, lst, title=""):
-		return client.getListInput(self.session, lst, title)
+	def get_list_input(self, lst, title="", selection=0):
+		return client.getListInput(self.session, lst, title, selection)
 
 	# #################################################################################################
 
