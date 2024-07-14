@@ -647,9 +647,10 @@ class CommonContentProvider(object):
 		'''
 		return ""
 
-	def refresh_screen(self):
+	def refresh_screen(self, parent=False):
 		'''
 		Refreshes/reloads the actual screen. Usefull when something changes on actual screen.
+		parent - if set to true, then parent screen will be reloaded (when's activated)
 		'''
 		return
 

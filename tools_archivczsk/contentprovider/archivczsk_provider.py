@@ -155,6 +155,7 @@ class ArchivCZSKContentProvider(object):
 		self.provider.get_parental_settings = client.parental_pin.get_settings
 		self.provider.call_another_addon = self.call_another_addon
 		self.provider.get_addon_id = self.get_addon_id
+		self.provider.update_last_command = self.update_last_command
 
 		self.initialised_cbk_called = False
 		self.login_tries = 0
@@ -338,6 +339,13 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 
+	def update_last_command(self, cmd, **cmd_args):
+		self.log_debug("Updating params - before: %s" % self.params)
+		self.params.update(self.action(cmd, **cmd_args))
+		self.log_debug("Updating params - after: %s" % self.params)
+
+	# #################################################################################################
+
 	def run(self, session, params, silent=False, allow_retry=True):
 		self.session = session
 
@@ -357,6 +365,7 @@ class ArchivCZSKContentProvider(object):
 
 		try:
 			self.provider.silent_mode = silent
+			self.params = params
 
 			if params == {}:
 				self.provider.root()
@@ -374,6 +383,8 @@ class ArchivCZSKContentProvider(object):
 							self.log_error("Failed to run shortcut for action: %s\n%s" % (cp_action, traceback.format_exc()))
 
 				self.__process_playlist()
+
+			del self.params
 		except LoginException as e:
 			# login exception handler - try once more with new login
 			self.logged_in = False
@@ -681,8 +692,8 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 
-	def refresh_screen(self):
-		client.refresh_screen()
+	def refresh_screen(self, parent=False):
+		client.refresh_screen(parent=parent)
 
 	# #################################################################################################
 
