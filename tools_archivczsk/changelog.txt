@@ -1,3 +1,10 @@
+1.33 - 15.07.2024
+    - simpler setting plot field in info_labels
+    - new type of exception for silent exit
+    - enhanced get_list_input() api
+    - added api to update last command
+    - workaround for old twisted library without IPolicyForHTTPS
+
 1.32 - 12.06.2024
     - implemented shortcuts by sref for archive module
     - export channel name normalisation method from lamedb module
