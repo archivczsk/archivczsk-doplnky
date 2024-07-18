@@ -582,7 +582,7 @@ class SosacContentProvider(CommonContentProvider):
 
 	# #################################################################################################
 
-	def get_episode_title(self, item, simple=False, red=False):
+	def get_episode_title(self, item, simple=False, red=False, lang_info=True):
 		def _title(item_tile):
 			if not item_tile:
 				return ''
@@ -614,7 +614,11 @@ class SosacContentProvider(CommonContentProvider):
 
 		if simple:
 			title = _title(item['ep_title'] or item['title'])
-			return '{title}{watched}'.format(title=_C('red', title) if red else title, watched=watched)
+			return '{title}{lang}{watched}'.format(
+				title=_C('red', title) if red else title,
+				lang=(' - %s' % _I(_lang())) if lang_info and item['lang'] else '',
+				watched=watched
+			)
 		else:
 			title = '%s: %s' % (_title(item['title']), _title(item['ep_title']))
 
@@ -632,7 +636,7 @@ class SosacContentProvider(CommonContentProvider):
 			return f.format(
 				date=d,
 				title=_C('red', title) if red else title,
-				lang=(' - %s' % _I(_lang())) if item['lang'] else '',
+				lang=(' - %s' % _I(_lang())) if lang_info and item['lang'] else '',
 				year=(' (%d)' % item['year']) if item['year'] else '',
 				channel=channel,
 				watched=watched
