@@ -1,3 +1,12 @@
+2.1: 18.07.2024
+- oprava správneho zoradenia sezón/epizód u seriálov pre python2
+- jemné úpravy vo formáte zobrazenia epizód
+- oprava nastavovania názvu pri sťahovaní filmu/seriálu
+- oprava stránkovania pokiaľ server vráti menej položiek ako by mal
+- v info okne sa zobrazuje rozšírené hodnotenie filmu/seriálu
+    * pridané hodnotenie z CSFD a IMDB
+    * pridaný počet hodnotení
+
 2.0: 16.07.2024
 - kompletne nový doplnok postavený na novom API
 - pre plnú funkcionalitu je potrebné:
