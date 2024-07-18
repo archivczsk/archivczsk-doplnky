@@ -693,7 +693,7 @@ class SosacContentProvider(CommonContentProvider):
 			'title': self.get_title(item, True),
 			'plot': genre_prefix + item['plot'],
 			'duration': item['duration'],
-			'genre': ', '.join(item['genre']),
+			'genre': item['genre'],
 			'year': item['year'],
 			'rating': item['rating'],
 			'adult': item['adult']
@@ -729,7 +729,7 @@ class SosacContentProvider(CommonContentProvider):
 			'title': self.get_title(item, True),
 			'plot': genre_prefix + item['plot'],
 			'duration': item['duration'],
-			'genre': ', '.join(item['genre']),
+			'genre': item['genre'],
 			'year': item['year'],
 			'rating': item['rating'],
 			'adult': item['adult']
@@ -760,7 +760,7 @@ class SosacContentProvider(CommonContentProvider):
 		info_labels = {
 			'title': self.get_title(item, True),
 			'plot': genre_prefix + item['plot'],
-			'genre': ', '.join(item.get('genre',[])),
+			'genre': item.get('genre'),
 			'year': item['year'],
 			'duration': item['duration'],
 			'rating': item['rating'],

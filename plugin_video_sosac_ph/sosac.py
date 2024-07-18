@@ -3,6 +3,7 @@
 from tools_archivczsk.contentprovider.exception import AddonErrorException, AddonInfoException
 from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.cache import ExpiringLRUCache
+from collections import OrderedDict
 
 try:
 	from urllib import urlencode
@@ -216,6 +217,30 @@ class Sosac(object):
 
 	# ##################################################################################################################
 
+	def convert_rating(self, item):
+		ret = OrderedDict()
+
+		def _set_rating(name, key):
+			if item.get(key):
+				rating = [item[key]]
+
+				if item.get(key + 'p'):
+					n = item[key + 'p']
+					if n > 1000000:
+						n = '%.1f M' % (n / 1000000.0)
+					elif n > 1000:
+						n = '%.1f k' % (n / 1000.0)
+					rating.append(' (%s)' % n)
+
+				ret[name] = rating
+
+		_set_rating('CSFD', 'c')
+		_set_rating('IMDB', 'm')
+
+		return ret
+
+	# ##################################################################################################################
+
 	def convert_movie_item(self, item, parent_item={}):
 		ret = {
 			'id': item['_id'],
@@ -223,7 +248,7 @@ class Sosac(object):
 			'title': item['n'] or {'en': ['! Not provided'], 'cs': ['! Neuvedeno']},
 			'ep_title': item.get('ne'),
 			'img': item['i'],
-			'rating': item.get('c'),
+			'rating': self.convert_rating(item),
 			'plot': item['p'],
 			'duration': item.get('dl'),
 			'year': int(item['y']) if item.get('y') else None,
