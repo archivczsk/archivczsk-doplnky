@@ -1142,7 +1142,7 @@ class SosacContentProvider(CommonContentProvider):
 
 	# #################################################################################################
 
-	def simple_resolve(self, media_title, url, subs_url, play_params={}):
+	def simple_resolve(self, media_title, url, subs_url, settings, play_params={}):
 		self.add_play(media_title, self.sosac.req_session.get(url).text, subs=subs_url, **play_params)
 
 	# #################################################################################################
