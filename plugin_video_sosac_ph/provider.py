@@ -437,7 +437,7 @@ class SosacContentProvider(CommonContentProvider):
 
 			add_item(item)
 
-		if len(result) >= self.sosac.PAGE_SIZE:
+		if self.sosac.next_page_available(result):
 			self.add_next(cmd=self.search_advanced, category=category, page=page+1)
 
 	# #################################################################################################
@@ -517,7 +517,7 @@ class SosacContentProvider(CommonContentProvider):
 			else:
 				self.log_error("Unknown item type: %s" % item['type'])
 
-		if len(result) >= self.sosac.PAGE_SIZE:
+		if self.sosac.next_page_available(result):
 			self.add_next(cmd=self.list_tvguide, day=day, page=page+1)
 
 	# #################################################################################################
@@ -700,7 +700,7 @@ class SosacContentProvider(CommonContentProvider):
 		}
 
 		menu = self.create_ctx_menu()
-		# TODO: Add watchlist items management
+
 		if in_playlist:
 			menu.add_menu_item(self._("Delete from playlist"), cmd=self.manage_item, category='movies', command='playlist_delete', item=item)
 		else:
@@ -736,7 +736,7 @@ class SosacContentProvider(CommonContentProvider):
 		}
 
 		menu = self.create_ctx_menu()
-		# TODO: Add watchlist items management
+
 		if in_playlist:
 			menu.add_menu_item(self._("Delete from playlist"), cmd=self.manage_item, category='serials', command='playlist_delete', item=item)
 		else:
@@ -783,7 +783,6 @@ class SosacContentProvider(CommonContentProvider):
 			tvshow_item['parent_id'] = None
 			menu.add_menu_item(self._("Open TV Show"), cmd=self.list_series, item=tvshow_item)
 
-		# TODO: Add watchlist items management
 		menu.add_menu_item(self._("Add to playlist"), cmd=self.manage_item, category='serials', command='playlist_add', item=item)
 		menu.add_menu_item(self._("Mark as watched"), cmd=self.manage_item, category='episodes', command='watched', item=item)
 
@@ -805,7 +804,7 @@ class SosacContentProvider(CommonContentProvider):
 
 			self.add_movie(item, in_playlist)
 
-		if len(result) >= self.sosac.PAGE_SIZE:
+		if self.sosac.next_page_available(result):
 			self.add_next(cmd=self.list_movies, stream=stream, page=page+1, **kwargs)
 
 	# #################################################################################################
@@ -827,7 +826,7 @@ class SosacContentProvider(CommonContentProvider):
 			else:
 				self.add_tvshow(item, in_playlist)
 
-		if len(result) >= self.sosac.PAGE_SIZE:
+		if self.sosac.next_page_available(result):
 			self.add_next(cmd=self.list_tvshows, stream=stream, episodes=episodes, page=page+1, **kwargs)
 
 	# #################################################################################################
@@ -923,7 +922,7 @@ class SosacContentProvider(CommonContentProvider):
 
 			add_item(item)
 
-		if len(result) >= self.sosac.PAGE_SIZE:
+		if self.sosac.next_page_available(result):
 			self.add_next(cmd=self.search, keyword=keyword, search_id=search_id, page=page+1)
 
 	# #################################################################################################

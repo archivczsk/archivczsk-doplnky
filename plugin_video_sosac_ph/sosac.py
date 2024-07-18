@@ -207,6 +207,15 @@ class Sosac(object):
 
 	# ##################################################################################################################
 
+	def next_page_available(self, result):
+		# ugly workaround - server sometimes doesn't return full page size
+		if len(result) > (self.PAGE_SIZE - 10):
+			return True
+
+		return False
+
+	# ##################################################################################################################
+
 	def convert_movie_item(self, item, parent_item={}):
 		ret = {
 			'id': item['_id'],
