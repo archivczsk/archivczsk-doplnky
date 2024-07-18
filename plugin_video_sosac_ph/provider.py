@@ -716,6 +716,7 @@ class SosacContentProvider(CommonContentProvider):
 		info_labels = {
 			'title': self.get_title(item, True),
 			'plot': genre_prefix + item['plot'],
+			'duration': item['duration'],
 			'genre': ', '.join(item['genre']),
 			'year': item['year'],
 			'rating': item['rating'],
