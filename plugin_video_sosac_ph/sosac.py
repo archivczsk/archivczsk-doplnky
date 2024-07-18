@@ -222,7 +222,9 @@ class Sosac(object):
 			'lang': item['d'],
 			'stream_id': item.get('l'),
 			'watched': item.get('w') if self.password else 0,
-			'adult': u'Erotické' in (item.get('g') or [])
+			'adult': u'Erotické' in (item.get('g') or []),
+			'season': item.get('s'),
+			'episode': item.get('ep'),
 		}
 
 		if parent_item and not ret['ep_title']:

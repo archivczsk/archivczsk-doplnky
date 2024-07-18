@@ -620,7 +620,11 @@ class SosacContentProvider(CommonContentProvider):
 				watched=watched
 			)
 		else:
-			title = '%s: %s' % (_title(item['title']), _title(item['ep_title']))
+			title = '{title}{ep_info}: {ep_title}'.format(
+				title=_title(item['title']),
+				ep_info=' {}x{}'.format( _I('%02d' % item['season']), _I('%02d' % item['episode']) ) if item['season'] and item['episode'] else '',
+				ep_title=_title(item['ep_title'])
+			)
 
 			if 'channel' in item:
 				f = '{date} {title}{lang}{year} ({channel}){watched}'
