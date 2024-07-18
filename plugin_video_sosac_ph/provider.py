@@ -868,9 +868,9 @@ class SosacContentProvider(CommonContentProvider):
 		else:
 			for season in result:
 				info_labels = {
-					'title': '%s %s' % (self.get_title(item, True), int_to_roman(int(season['season'])))
+					'title': '%s %s' % (self.get_title(item, True), int_to_roman(season['season']))
 				}
-				self.add_dir('%s %02d' % (self._("Season"), int(season['season'])), info_labels=info_labels, cmd=self.list_episodes, data=season['episodes'])
+				self.add_dir('%s %02d' % (self._("Season"), season['season']), info_labels=info_labels, cmd=self.list_episodes, data=season['episodes'])
 
 	# #################################################################################################
 

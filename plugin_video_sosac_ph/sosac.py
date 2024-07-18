@@ -306,12 +306,11 @@ class Sosac(object):
 
 			episodes = []
 			result.append({
-				'season': season_name,
+				'season': int(season_name),
 				'episodes': episodes
 			})
 
-#			for episode_name, episode_data in sorted(season_data.items(), key=lambda i: int(i[0])):
-			for episode_name, episode_data in season_data.items():
+			for episode_name, episode_data in sorted(season_data.items(), key=lambda i: int(i[0])):
 				movie_item = self.convert_movie_item(episode_data, item)
 				movie_item['episode'] = int(episode_name)
 				movie_item['season'] = int(season_name)
@@ -319,7 +318,7 @@ class Sosac(object):
 
 			episodes.sort(key=lambda i: i['episode'])
 
-		return result
+		return sorted(result, key=lambda i: i['season'])
 
 	# ##################################################################################################################
 
