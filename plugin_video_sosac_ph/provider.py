@@ -522,7 +522,7 @@ class SosacContentProvider(CommonContentProvider):
 
 	# #################################################################################################
 
-	def get_title(self, item, simple=False, red=False):
+	def get_title(self, item, simple=False, red=False, lang_info=True, watched_info=True, channel_info=True):
 		def _title():
 			item_title = item['title']
 			for l in self.lang_list:
@@ -552,7 +552,7 @@ class SosacContentProvider(CommonContentProvider):
 		if simple:
 			return _C('red', _title()) if red else _title()
 		else:
-			if 'channel' in item:
+			if channel_info and 'channel' in item:
 				f = '{date} {title}{lang}{year} ({channel}){watched}'
 
 				start = datetime.fromtimestamp(item['channel']['start'])
@@ -563,7 +563,7 @@ class SosacContentProvider(CommonContentProvider):
 				d=''
 				channel=''
 
-			if item['duration'] and item['watched']:
+			if watched_info and item['duration'] and item['watched']:
 				if  item['watched'] > (item['duration'] * 0.85):
 					watched = _B(' *')
 				else:
@@ -574,7 +574,7 @@ class SosacContentProvider(CommonContentProvider):
 			return f.format(
 				date=d,
 				title=_C('red', _title()) if red else _title(),
-				lang=(' - %s' % _I(_lang())) if item['lang'] else '',
+				lang=(' - %s' % _I(_lang())) if lang_info and item['lang'] else '',
 				year=(' (%d)' % item['year']) if item['year'] else '',
 				channel=channel,
 				watched=watched
@@ -582,16 +582,24 @@ class SosacContentProvider(CommonContentProvider):
 
 	# #################################################################################################
 
-	def get_episode_title(self, item, simple=False, red=False, lang_info=True):
-		def _title(item_tile):
-			if not item_tile:
+	def get_episode_title(self, item, simple=False, red=False, lang_info=True, watched_info=True, channel_info=True):
+		def _title(item_title):
+			if not item_title:
 				return ''
 
 			for l in self.lang_list:
-				if l in item_tile:
-					return item_tile[l]
+				if l in item_title:
+					if isinstance(item_title[l], type([])):
+						return item_title[l][0]
+					else:
+						return item_title[l]
 			else:
-				return list(item_tile.values())[0]
+				t = list(item_title.values())[0]
+				if isinstance(t, type([])):
+					return t[0]
+				else:
+					return t
+
 
 		def _lang():
 			def _up(i):
@@ -604,7 +612,7 @@ class SosacContentProvider(CommonContentProvider):
 
 			return ', '.join(_up(i) for i in item['lang'])
 
-		if item['duration'] and item['watched']:
+		if watched_info and item['duration'] and item['watched']:
 			if  item['watched'] > (item['duration'] * 0.85):
 				watched = _B(' *')
 			else:
@@ -626,7 +634,7 @@ class SosacContentProvider(CommonContentProvider):
 				ep_title=_title(item['ep_title'])
 			)
 
-			if 'channel' in item:
+			if channel_info and 'channel' in item:
 				f = '{date} {title}{lang}{year} ({channel}){watched}'
 
 				start = datetime.fromtimestamp(item['channel']['start'])
@@ -1099,7 +1107,7 @@ class SosacContentProvider(CommonContentProvider):
 		stream = streams[idx]
 		subs_url = stream.get('sub_url')
 
-		media_title = self.get_title(item, simple=True)
+		media_title = self.get_episode_title(item, watched_info=False, lang_info=False, channel_info=False) if item['ep_title'] else self.get_title(item, watched_info=False, lang_info=False, channel_info=False)
 
 		duration = item.get('duration')
 		info_labels = { 'title': media_title }
