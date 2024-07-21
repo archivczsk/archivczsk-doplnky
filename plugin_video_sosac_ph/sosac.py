@@ -65,6 +65,7 @@ class Sosac(object):
 			self.api_label = cfg['domain_label']
 			self.streaming_address = 'http%s://%s/' % ('s' if self.cp.get_setting('use_https') else '', cfg['streaming_provider'])
 			self.streaming_label = cfg['streaming_provider_label']
+			self.news = (self._("News from {sosac_label}").format(sosac_label=self.api_label) + ':\n' + cfg['news']) if cfg.get('news') else None
 		else:
 			raise AddonErrorException(self._("Failed to load configuration from remote server. Check your internet connection."))
 

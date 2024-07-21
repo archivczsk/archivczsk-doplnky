@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_sosac_ph\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-21 16:26+0200\n"
-"PO-Revision-Date: 2024-07-21 16:28+0200\n"
+"POT-Creation-Date: 2024-07-21 16:45+0200\n"
+"PO-Revision-Date: 2024-07-21 16:45+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -16,44 +16,49 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_sosac_ph/sosac.py:69
+#: plugin_video_sosac_ph/sosac.py:68
+#, python-brace-format
+msgid "News from {sosac_label}"
+msgstr "Novinky zo {sosac_label}"
+
+#: plugin_video_sosac_ph/sosac.py:70
 msgid "Failed to load configuration from remote server. Check your internet connection."
 msgstr "Nepodarilo sa získať nastavenia zo vzdialeného servera. Skontrolujte vaše internetové pripojenie."
 
-#: plugin_video_sosac_ph/sosac.py:84
+#: plugin_video_sosac_ph/sosac.py:85
 #, python-brace-format
 msgid "No sosac login credentials are set in addon settings. Create a free registration on {sosac_label} and enter login details in addon's settings to enable all functionality. More info on {archivczsk_help}."
 msgstr "V nastaveniach doplnku nie sú zadané prihlasovacie údaje pre sosáč. Aby bola dostupná celá funkcionalita, tak si vytvorte bezplatnú registráciu na {sosac_label} a zadajte prihlasovacie údaje v nastaveniach doplnku. Viac informácií na {archivczsk_help}."
 
-#: plugin_video_sosac_ph/sosac.py:102
+#: plugin_video_sosac_ph/sosac.py:103
 #, python-brace-format
 msgid "Login name/password for sosac are wrong. Only base functionality will be available. More info on {archivczsk_help}."
 msgstr "Prihlasovacie meno a heslo pre sosáč nie je správne. Bude dostupná len základná funkcionalita doplnku. Viac informácií na {archivczsk_help}."
 
-#: plugin_video_sosac_ph/sosac.py:117
+#: plugin_video_sosac_ph/sosac.py:118
 #, python-brace-format
 msgid "No {streaming_label} login credentials are set in addon settings. In order to play content you need to have a valid {streaming_label} subscription and login credentials need to be set in addon settings."
 msgstr "V nastaveniach doplnku nie sú zadané prihlasovacie údaje pre {streaming_label}. Pre prehrávanie obsahu je nutné platné {streaming_label} predplatné a prihlasovacie údaje musia byť zadané v nastaveniach doplnku."
 
-#: plugin_video_sosac_ph/sosac.py:136
+#: plugin_video_sosac_ph/sosac.py:137
 #, python-brace-format
 msgid "Login name/password for {streaming_label} are wrong."
 msgstr "Prihlasovacie meno/heslo pre {streaming_label} je nesprávne."
 
-#: plugin_video_sosac_ph/sosac.py:143
+#: plugin_video_sosac_ph/sosac.py:144
 #, python-brace-format
 msgid "You don't have valid premium subscription for {streaming_label}."
 msgstr "Nemáte platné prémiové predplatné pre {streaming_label}."
 
-#: plugin_video_sosac_ph/sosac.py:198
+#: plugin_video_sosac_ph/sosac.py:199
 msgid "You don't have access to this content! Set correct login username and password for sosac in addon's settings to enable all functionality."
 msgstr "K tomuto obsahu nemáte prístup! V nastaveniach doplnku zadajte správne prihlasovacie meno a heslo pre sosáč pre sprístupnenie kompletnej funkcionality."
 
-#: plugin_video_sosac_ph/sosac.py:200 plugin_video_sosac_ph/sosac.py:476
+#: plugin_video_sosac_ph/sosac.py:201 plugin_video_sosac_ph/sosac.py:477
 msgid "Unexpected return code from server"
 msgstr "Neočakávaný návratový kód zo servera"
 
-#: plugin_video_sosac_ph/sosac.py:474
+#: plugin_video_sosac_ph/sosac.py:475
 msgid "You don't have access to this content!"
 msgstr "K tomuto obsahu nemáte prístup!"
 
@@ -478,391 +483,391 @@ msgstr "Sobota"
 msgid "Sunday"
 msgstr "Nedeľa"
 
-#: plugin_video_sosac_ph/provider.py:207
+#: plugin_video_sosac_ph/provider.py:210
 msgid "Simple and advanced search for movies and series."
 msgstr "Jednoduché a pokročilé vyhľadávanie filmov a seriálov."
 
-#: plugin_video_sosac_ph/provider.py:208
+#: plugin_video_sosac_ph/provider.py:211
 msgid "Search"
 msgstr "Vyhľadať"
 
-#: plugin_video_sosac_ph/provider.py:209
+#: plugin_video_sosac_ph/provider.py:212
 msgid "You can choose movies to watch on the web page movies.sosac.tv."
 msgstr "Filmy pre pozeranie môžete vybrať na movies.sosac.tv."
 
-#: plugin_video_sosac_ph/provider.py:210
+#: plugin_video_sosac_ph/provider.py:213
 msgid "Movies"
 msgstr "Filmy"
 
-#: plugin_video_sosac_ph/provider.py:211
+#: plugin_video_sosac_ph/provider.py:214
 msgid "You can choose series to watch on the web page tv.sosac.tv."
 msgstr "Seriály pre pozeranie môžete vybrať na tv.sosac.tv."
 
-#: plugin_video_sosac_ph/provider.py:212
+#: plugin_video_sosac_ph/provider.py:215
 msgid "Tv Shows"
 msgstr "Seriály"
 
-#: plugin_video_sosac_ph/provider.py:213
+#: plugin_video_sosac_ph/provider.py:216
 msgid "Movies and series as they were shown on TV."
 msgstr "Filmy a seriály ako boli odvysielané v televízii."
 
-#: plugin_video_sosac_ph/provider.py:214
+#: plugin_video_sosac_ph/provider.py:217
 msgid "Tv Guide"
 msgstr "TV Sprievodca"
 
-#: plugin_video_sosac_ph/provider.py:221 plugin_video_sosac_ph/provider.py:283
-#: plugin_video_sosac_ph/provider.py:336 plugin_video_sosac_ph/provider.py:341
+#: plugin_video_sosac_ph/provider.py:224 plugin_video_sosac_ph/provider.py:286
+#: plugin_video_sosac_ph/provider.py:339 plugin_video_sosac_ph/provider.py:344
 msgid "Advanced search by many parameters"
 msgstr "Pokročilé vyhľadávanie podľa mnohých parametrov"
 
-#: plugin_video_sosac_ph/provider.py:222 plugin_video_sosac_ph/provider.py:284
+#: plugin_video_sosac_ph/provider.py:225 plugin_video_sosac_ph/provider.py:287
 msgid "Advanced search"
 msgstr "Pokročilé vyhľadávanie"
 
-#: plugin_video_sosac_ph/provider.py:224
+#: plugin_video_sosac_ph/provider.py:227
 msgid "Here you will find your favourite movies. You can add items to favourite by using context menu or on the web movies.sosac.tv."
 msgstr "Tu nájdete vaše obľúbené filmy. Filmy môžete pridať medzi obľúbené pomocou kontextového menu alebo na stránke movies.sosac.tv."
 
-#: plugin_video_sosac_ph/provider.py:225 plugin_video_sosac_ph/provider.py:287
+#: plugin_video_sosac_ph/provider.py:228 plugin_video_sosac_ph/provider.py:290
 msgid "My playlist"
 msgstr "Môj playlist"
 
-#: plugin_video_sosac_ph/provider.py:227
+#: plugin_video_sosac_ph/provider.py:230
 msgid "Your unfinished movies."
 msgstr "Vaše nedopozerané filmy."
 
-#: plugin_video_sosac_ph/provider.py:228 plugin_video_sosac_ph/provider.py:290
+#: plugin_video_sosac_ph/provider.py:231 plugin_video_sosac_ph/provider.py:293
 msgid "Unfinished"
 msgstr "Nedopozerané"
 
-#: plugin_video_sosac_ph/provider.py:230
+#: plugin_video_sosac_ph/provider.py:233
 msgid "History of watched movies"
 msgstr "História sledovaných filmov"
 
-#: plugin_video_sosac_ph/provider.py:231 plugin_video_sosac_ph/provider.py:293
+#: plugin_video_sosac_ph/provider.py:234 plugin_video_sosac_ph/provider.py:296
 msgid "Watched"
 msgstr "Sledované"
 
-#: plugin_video_sosac_ph/provider.py:233
+#: plugin_video_sosac_ph/provider.py:236
 msgid "New movies with dubbing"
 msgstr "Nové filmy s dabingom"
 
-#: plugin_video_sosac_ph/provider.py:234 plugin_video_sosac_ph/provider.py:299
+#: plugin_video_sosac_ph/provider.py:237 plugin_video_sosac_ph/provider.py:302
 msgid "News with dubbing"
 msgstr "Novinky s dabingom"
 
-#: plugin_video_sosac_ph/provider.py:236
+#: plugin_video_sosac_ph/provider.py:239
 msgid "New movies with subtitles"
 msgstr "Nové filmy s titulkami"
 
-#: plugin_video_sosac_ph/provider.py:237 plugin_video_sosac_ph/provider.py:302
+#: plugin_video_sosac_ph/provider.py:240 plugin_video_sosac_ph/provider.py:305
 msgid "News with subtitles"
 msgstr "Novinky s titulkami"
 
-#: plugin_video_sosac_ph/provider.py:239
+#: plugin_video_sosac_ph/provider.py:242
 msgid "Last added new or older movies."
 msgstr "Posledné pridané nové alebo staršie filmy."
 
-#: plugin_video_sosac_ph/provider.py:240
+#: plugin_video_sosac_ph/provider.py:243
 msgid "Last added"
 msgstr "Posledné pridané"
 
-#: plugin_video_sosac_ph/provider.py:244
+#: plugin_video_sosac_ph/provider.py:247
 msgid "Actual thematic movies category"
 msgstr "Filmy s aktuálnou tématikou"
 
-#: plugin_video_sosac_ph/provider.py:254
+#: plugin_video_sosac_ph/provider.py:257
 msgid "Popular movies released in the last 3 years."
 msgstr "Populárne filmy vydané za posledné 3 roky."
 
-#: plugin_video_sosac_ph/provider.py:255 plugin_video_sosac_ph/provider.py:311
+#: plugin_video_sosac_ph/provider.py:258 plugin_video_sosac_ph/provider.py:314
 msgid "Popular news"
 msgstr "Populárne novinky"
 
-#: plugin_video_sosac_ph/provider.py:257
+#: plugin_video_sosac_ph/provider.py:260
 msgid "All popular movies"
 msgstr "Všetky populárne filmy"
 
-#: plugin_video_sosac_ph/provider.py:258 plugin_video_sosac_ph/provider.py:314
+#: plugin_video_sosac_ph/provider.py:261 plugin_video_sosac_ph/provider.py:317
 msgid "Popular"
 msgstr "Populárne"
 
-#: plugin_video_sosac_ph/provider.py:260
+#: plugin_video_sosac_ph/provider.py:263
 msgid "Top rated movies released in the last 3 years."
 msgstr "Najlepšie hodnotené filmy vydané za posledné 3 roky."
 
-#: plugin_video_sosac_ph/provider.py:261 plugin_video_sosac_ph/provider.py:317
+#: plugin_video_sosac_ph/provider.py:264 plugin_video_sosac_ph/provider.py:320
 msgid "Top rated news"
 msgstr "Najlepšie hodnotené novinky"
 
-#: plugin_video_sosac_ph/provider.py:263
+#: plugin_video_sosac_ph/provider.py:266
 msgid "All top rated movies"
 msgstr "Všetky najlepšie hodnotené filmy"
 
-#: plugin_video_sosac_ph/provider.py:264 plugin_video_sosac_ph/provider.py:320
+#: plugin_video_sosac_ph/provider.py:267 plugin_video_sosac_ph/provider.py:323
 msgid "Top rated"
 msgstr "Najlepšie hodnotené"
 
-#: plugin_video_sosac_ph/provider.py:266
+#: plugin_video_sosac_ph/provider.py:269
 msgid "All movies sorted by starting letter"
 msgstr "Všetky filmy zoradené podľa začiatočného písmena"
 
-#: plugin_video_sosac_ph/provider.py:267 plugin_video_sosac_ph/provider.py:323
+#: plugin_video_sosac_ph/provider.py:270 plugin_video_sosac_ph/provider.py:326
 msgid "By letter"
 msgstr "Podľa písmena"
 
-#: plugin_video_sosac_ph/provider.py:269
+#: plugin_video_sosac_ph/provider.py:272
 msgid "All movies sorted by genre"
 msgstr "Všetky filmy zoradené podľa žánru"
 
-#: plugin_video_sosac_ph/provider.py:270 plugin_video_sosac_ph/provider.py:326
+#: plugin_video_sosac_ph/provider.py:273 plugin_video_sosac_ph/provider.py:329
 msgid "By genre"
 msgstr "Podľa žánru"
 
-#: plugin_video_sosac_ph/provider.py:272
+#: plugin_video_sosac_ph/provider.py:275
 msgid "All movies sorted by year of release"
 msgstr "Všetky filmy zoradené podľa roku vydania"
 
-#: plugin_video_sosac_ph/provider.py:273 plugin_video_sosac_ph/provider.py:329
+#: plugin_video_sosac_ph/provider.py:276 plugin_video_sosac_ph/provider.py:332
 msgid "By year"
 msgstr "Podľa roku"
 
-#: plugin_video_sosac_ph/provider.py:275
+#: plugin_video_sosac_ph/provider.py:278
 msgid "All movies sorted by available stream quality"
 msgstr "Všetky filmy zoradené podľa dostupnej kvality streamu"
 
-#: plugin_video_sosac_ph/provider.py:276
+#: plugin_video_sosac_ph/provider.py:279
 msgid "By quality"
 msgstr "Podľa kvality"
 
-#: plugin_video_sosac_ph/provider.py:286
+#: plugin_video_sosac_ph/provider.py:289
 msgid "Here you will find your favourite tv shows. You can add new tv shows by using context menu or on the web tv.sosac.tv."
 msgstr "Tu nájdete vaše obľúbené seriály. Seriály môžete pridať medzi obľúbené pomocou kontextového menu alebo na stránke tv.sosac.tv."
 
-#: plugin_video_sosac_ph/provider.py:289
+#: plugin_video_sosac_ph/provider.py:292
 msgid "Tv shows with at least one not fully watched episode."
 msgstr "Seriály s aspoň jednou kompletne videnou epizódou."
 
-#: plugin_video_sosac_ph/provider.py:292
+#: plugin_video_sosac_ph/provider.py:295
 msgid "Tv shows where all episodes are maked as watched."
 msgstr "Seriály so všetkými epizódami označenými ako videné."
 
-#: plugin_video_sosac_ph/provider.py:295
+#: plugin_video_sosac_ph/provider.py:298
 msgid "Last added new or older tv shows."
 msgstr "Posledné pridané nové alebo staršie seriály."
 
-#: plugin_video_sosac_ph/provider.py:296
+#: plugin_video_sosac_ph/provider.py:299
 msgid "Last added tv shows"
 msgstr "Posledné pridané seriály"
 
-#: plugin_video_sosac_ph/provider.py:298
+#: plugin_video_sosac_ph/provider.py:301
 msgid "New episodes with dubbing or older episodes with newly added dubbing."
 msgstr "Nové epizódy s dabingom alebo staršie epizódy s novo pridaným dabingom."
 
-#: plugin_video_sosac_ph/provider.py:301
+#: plugin_video_sosac_ph/provider.py:304
 msgid "New episodes with subtitles"
 msgstr "Nové epizódy s titulkami"
 
-#: plugin_video_sosac_ph/provider.py:304
+#: plugin_video_sosac_ph/provider.py:307
 msgid "Last added episodes."
 msgstr "Posledné pridané epizódy."
 
-#: plugin_video_sosac_ph/provider.py:305
+#: plugin_video_sosac_ph/provider.py:308
 msgid "Last added episodes"
 msgstr "Posledné pridané epizódy"
 
-#: plugin_video_sosac_ph/provider.py:307
+#: plugin_video_sosac_ph/provider.py:310
 msgid "The broadcast schedule of tv show episodes. This list also include inactive episodes that will be added after they air."
 msgstr "Plán vysielania seriálových epizód. Tento zoznam obsahuje aj neaktívne epizódy ktoré budú pridané po ich odvysielaní."
 
-#: plugin_video_sosac_ph/provider.py:308
+#: plugin_video_sosac_ph/provider.py:311
 msgid "Episodes calendar"
 msgstr "Kalendár epizód"
 
-#: plugin_video_sosac_ph/provider.py:310
+#: plugin_video_sosac_ph/provider.py:313
 msgid "Popular tv shows released in the last 3 years with highest number of views or number of ratings (good or bad)."
 msgstr "Populárne seriály vydané za posledné 3 roky s najväčším počtom videní alebo hodnotení (dobrým alebo zlým)."
 
-#: plugin_video_sosac_ph/provider.py:313
+#: plugin_video_sosac_ph/provider.py:316
 msgid "Popular tv shows with highest number of views or number of ratings (good or bad)."
 msgstr "Populárne seriály s najväčším počtom videní alebo hodnotení (dobrým alebo zlým)."
 
-#: plugin_video_sosac_ph/provider.py:316
+#: plugin_video_sosac_ph/provider.py:319
 msgid "Top rated tv shows released in the last 3 years."
 msgstr "Najlepšie hodnotené seriály vydané za posledné 3 roky."
 
-#: plugin_video_sosac_ph/provider.py:319
+#: plugin_video_sosac_ph/provider.py:322
 msgid "All top rated tv shows"
 msgstr "Všetky najlepšie hodnotené seriály"
 
-#: plugin_video_sosac_ph/provider.py:322
+#: plugin_video_sosac_ph/provider.py:325
 msgid "All tv shows sorted by starting letter"
 msgstr "Všetky seriály zoradené podľa začiatočného písmena"
 
-#: plugin_video_sosac_ph/provider.py:325
+#: plugin_video_sosac_ph/provider.py:328
 msgid "All tv shows sorted by genre"
 msgstr "Všetky seriály zoradené podľa žánru"
 
-#: plugin_video_sosac_ph/provider.py:328
+#: plugin_video_sosac_ph/provider.py:331
 msgid "All tv shows sorted by year of release"
 msgstr "Všetky seriály zoradené podľa roku vydania"
 
-#: plugin_video_sosac_ph/provider.py:334
+#: plugin_video_sosac_ph/provider.py:337
 msgid "Simple movies search"
 msgstr "Jednoduché vyhľadávanie filmov"
 
-#: plugin_video_sosac_ph/provider.py:337
+#: plugin_video_sosac_ph/provider.py:340
 msgid "Advanced movies search"
 msgstr "Pokročilé vyhľadávanie filmov"
 
-#: plugin_video_sosac_ph/provider.py:339
+#: plugin_video_sosac_ph/provider.py:342
 msgid "Simple TV shows search"
 msgstr "Jednoduché vyhľadávanie seriálov"
 
-#: plugin_video_sosac_ph/provider.py:342
+#: plugin_video_sosac_ph/provider.py:345
 msgid "Advanced TV shows search"
 msgstr "Pokročilé vyhľadávanie seriálov"
 
-#: plugin_video_sosac_ph/provider.py:355
+#: plugin_video_sosac_ph/provider.py:358
 msgid "Select sort method"
 msgstr "Vyberte spôsob triedenia"
 
-#: plugin_video_sosac_ph/provider.py:356
+#: plugin_video_sosac_ph/provider.py:359
 msgid "Select genre"
 msgstr "Vyberte žáner"
 
-#: plugin_video_sosac_ph/provider.py:357
+#: plugin_video_sosac_ph/provider.py:360
 msgid "Select origin country"
 msgstr "Vyberte krajinu pôvodu"
 
-#: plugin_video_sosac_ph/provider.py:358
+#: plugin_video_sosac_ph/provider.py:361
 msgid "Select language"
 msgstr "Vyberte jazyk"
 
-#: plugin_video_sosac_ph/provider.py:359
+#: plugin_video_sosac_ph/provider.py:362
 msgid "Select quality"
 msgstr "Vyberte kvalitu"
 
-#: plugin_video_sosac_ph/provider.py:369
+#: plugin_video_sosac_ph/provider.py:372
 msgid "Enter search keyword"
 msgstr "Zadajte kľúčové slovo"
 
-#: plugin_video_sosac_ph/provider.py:370
+#: plugin_video_sosac_ph/provider.py:373
 msgid "Enter director name"
 msgstr "Zadajte meno režiséra"
 
-#: plugin_video_sosac_ph/provider.py:371
+#: plugin_video_sosac_ph/provider.py:374
 msgid "Enter screenwriter name"
 msgstr "Zadajte meno scenáristu"
 
-#: plugin_video_sosac_ph/provider.py:372
+#: plugin_video_sosac_ph/provider.py:375
 msgid "Enter actor name"
 msgstr "Zadajte meno herca"
 
-#: plugin_video_sosac_ph/provider.py:380
+#: plugin_video_sosac_ph/provider.py:383
 msgid "Enter year"
 msgstr "Zadajte rok"
 
-#: plugin_video_sosac_ph/provider.py:395
+#: plugin_video_sosac_ph/provider.py:398
 msgid "Reset search parameters"
 msgstr "Resetovať parametre vyhľadávania"
 
-#: plugin_video_sosac_ph/provider.py:396
+#: plugin_video_sosac_ph/provider.py:399
 msgid "Sort by"
 msgstr "Zoradiť podľa"
 
-#: plugin_video_sosac_ph/provider.py:397
+#: plugin_video_sosac_ph/provider.py:400
 msgid "Search word(s)"
 msgstr "Vyhľadávané slovo"
 
-#: plugin_video_sosac_ph/provider.py:398
+#: plugin_video_sosac_ph/provider.py:401
 msgid "Director"
 msgstr "Režisér"
 
-#: plugin_video_sosac_ph/provider.py:399
+#: plugin_video_sosac_ph/provider.py:402
 msgid "Screenwriter"
 msgstr "Scénarista"
 
-#: plugin_video_sosac_ph/provider.py:400
+#: plugin_video_sosac_ph/provider.py:403
 msgid "Actor"
 msgstr "Herec"
 
-#: plugin_video_sosac_ph/provider.py:401
+#: plugin_video_sosac_ph/provider.py:404
 msgid "From year"
 msgstr "Od roku"
 
-#: plugin_video_sosac_ph/provider.py:402
+#: plugin_video_sosac_ph/provider.py:405
 msgid "To year"
 msgstr "Do roku"
 
-#: plugin_video_sosac_ph/provider.py:403
+#: plugin_video_sosac_ph/provider.py:406
 msgid "Genre"
 msgstr "Žáner"
 
-#: plugin_video_sosac_ph/provider.py:404
+#: plugin_video_sosac_ph/provider.py:407
 msgid "Origin country"
 msgstr "Krajina pôvodu"
 
-#: plugin_video_sosac_ph/provider.py:405
+#: plugin_video_sosac_ph/provider.py:408
 msgid "Language"
 msgstr "Jazyk"
 
-#: plugin_video_sosac_ph/provider.py:406
+#: plugin_video_sosac_ph/provider.py:409
 msgid "Quality"
 msgstr "Kvalita"
 
-#: plugin_video_sosac_ph/provider.py:407
+#: plugin_video_sosac_ph/provider.py:410
 msgid "Run search"
 msgstr "Spustiť vyhľadávanie"
 
-#: plugin_video_sosac_ph/provider.py:459 plugin_video_sosac_ph/provider.py:465
+#: plugin_video_sosac_ph/provider.py:462 plugin_video_sosac_ph/provider.py:468
 msgid "Next"
 msgstr "Ďalšie"
 
-#: plugin_video_sosac_ph/provider.py:459 plugin_video_sosac_ph/provider.py:465
+#: plugin_video_sosac_ph/provider.py:462 plugin_video_sosac_ph/provider.py:468
 msgid "Previous"
 msgstr "Predchádzajúce"
 
-#: plugin_video_sosac_ph/provider.py:486
+#: plugin_video_sosac_ph/provider.py:489
 msgid "Select date"
 msgstr "Vyberte dátum"
 
-#: plugin_video_sosac_ph/provider.py:711 plugin_video_sosac_ph/provider.py:747
+#: plugin_video_sosac_ph/provider.py:714 plugin_video_sosac_ph/provider.py:750
 msgid "Delete from playlist"
 msgstr "Vymazať z playlistu"
 
-#: plugin_video_sosac_ph/provider.py:713 plugin_video_sosac_ph/provider.py:749
-#: plugin_video_sosac_ph/provider.py:792
+#: plugin_video_sosac_ph/provider.py:716 plugin_video_sosac_ph/provider.py:752
+#: plugin_video_sosac_ph/provider.py:795
 msgid "Add to playlist"
 msgstr "Pridať do playlistu"
 
-#: plugin_video_sosac_ph/provider.py:715 plugin_video_sosac_ph/provider.py:750
-#: plugin_video_sosac_ph/provider.py:793
+#: plugin_video_sosac_ph/provider.py:718 plugin_video_sosac_ph/provider.py:753
+#: plugin_video_sosac_ph/provider.py:796
 msgid "Mark as watched"
 msgstr "Označiť ako videné"
 
-#: plugin_video_sosac_ph/provider.py:718 plugin_video_sosac_ph/provider.py:751
-#: plugin_video_sosac_ph/provider.py:796
+#: plugin_video_sosac_ph/provider.py:721 plugin_video_sosac_ph/provider.py:754
+#: plugin_video_sosac_ph/provider.py:799
 msgid "Reset watched time"
 msgstr "Resetovať pozíciu prehrávania"
 
-#: plugin_video_sosac_ph/provider.py:790
+#: plugin_video_sosac_ph/provider.py:793
 msgid "Open TV Show"
 msgstr "Otvoriť seriál"
 
-#: plugin_video_sosac_ph/provider.py:842
+#: plugin_video_sosac_ph/provider.py:845
 msgid "Select beginnig date"
 msgstr "Vyberte začiatočný dátum"
 
-#: plugin_video_sosac_ph/provider.py:848
+#: plugin_video_sosac_ph/provider.py:851
 msgid "Select end date"
 msgstr "Vyberte konečný dátum"
 
-#: plugin_video_sosac_ph/provider.py:895
+#: plugin_video_sosac_ph/provider.py:898
 msgid "Season"
 msgstr "Sezóna"
 
-#: plugin_video_sosac_ph/provider.py:1108
+#: plugin_video_sosac_ph/provider.py:1111
 msgid "Please select a stream"
 msgstr "Prosím zvoľte stream"
 

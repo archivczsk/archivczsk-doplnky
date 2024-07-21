@@ -204,6 +204,9 @@ class SosacContentProvider(CommonContentProvider):
 		if self.login_msg:
 			self.show_info(self.login_msg, noexit=True)
 
+		if self.sosac.news:
+			self.show_info(self.sosac.news, noexit=True)
+
 		info_labels = self._('Simple and advanced search for movies and series.')
 		self.add_dir(self._("Search"), self.get_icon('search'), info_labels, cmd=self.list_search_menu)
 		info_labels = self._('You can choose movies to watch on the web page movies.sosac.tv.')
