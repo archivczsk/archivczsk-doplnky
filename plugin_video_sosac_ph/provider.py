@@ -176,13 +176,17 @@ class SosacContentProvider(CommonContentProvider):
 		self.icons_dir = icons_dir
 		self.login_optional_settings_names = ('streamujtv_user', 'streamujtv_pass', 'sosac_user', 'sosac_pass')
 		self.sosac = None
+		self.login_msg = None
 
 	# ##################################################################################################################
 
 	def login(self, silent):
 		self.sosac = Sosac(self)
 		self.sosac.request_configuration()
-		self.sosac.check_login(True)
+		self.login_msg = self.sosac.check_login()
+
+		if silent and self.login_msg:
+			self.show_info(self.login_msg, noexit=True)
 
 		return True
 
@@ -195,8 +199,10 @@ class SosacContentProvider(CommonContentProvider):
 
 	def root(self):
 		self.sosac.request_configuration()
-		self.sosac.check_login()
 		self.build_lang_lists()
+
+		if self.login_msg:
+			self.show_info(self.login_msg, noexit=True)
 
 		info_labels = self._('Simple and advanced search for movies and series.')
 		self.add_dir(self._("Search"), self.get_icon('search'), info_labels, cmd=self.list_search_menu)
@@ -287,7 +293,7 @@ class SosacContentProvider(CommonContentProvider):
 		self.add_dir(self._("Watched"), self.get_icon('watchedtvshows'), info_labels, cmd=self.list_tvshows, stream='finished')
 
 		info_labels = self._('Last added new or older tv shows.')
-		self.add_dir(self._("Last added"), self.get_icon('lastaddedtvshows'), info_labels, cmd=self.list_tvshows, stream='last-added')
+		self.add_dir(self._("Last added tv shows"), self.get_icon('lastaddedtvshows'), info_labels, cmd=self.list_tvshows, stream='last-added')
 
 		info_labels = self._('New episodes with dubbing or older episodes with newly added dubbing.')
 		self.add_dir(self._("News with dubbing"), self.get_icon('newmostpopular'), info_labels, cmd=self.list_tvshows, stream='news-with-dubbing', episodes=True)
@@ -296,7 +302,7 @@ class SosacContentProvider(CommonContentProvider):
 		self.add_dir(self._("News with subtitles"), self.get_icon('withsubtitles'), info_labels, cmd=self.list_tvshows, stream='news-with-subtitles', episodes=True)
 
 		info_labels = self._('Last added episodes.')
-		self.add_dir(self._("Last added"), self.get_icon('newmostpopular'), info_labels, cmd=self.list_tvshows, stream='last-added', episodes=True)
+		self.add_dir(self._("Last added episodes"), self.get_icon('newmostpopular'), info_labels, cmd=self.list_tvshows, stream='last-added', episodes=True)
 
 		info_labels = self._('The broadcast schedule of tv show episodes. This list also include inactive episodes that will be added after they air.')
 		self.add_dir(self._("Episodes calendar"), self.get_icon('tvtracker'), info_labels, cmd=self.list_episodes_by_date)

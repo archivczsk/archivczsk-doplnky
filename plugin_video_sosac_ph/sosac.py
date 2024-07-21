@@ -70,17 +70,18 @@ class Sosac(object):
 
 	# ##################################################################################################################
 
-	def check_login(self, silent=False):
+	def check_login(self):
 		if self.password:
-			return
+			self.cp.log_debug("Check login result: login status already checked")
+			return None
 
 		username = self.cp.get_setting('sosac_user')
 		password = self.cp.get_setting('sosac_pass')
+		archivczsk_help='archivczsk.' + self.api_label.lower()
 
 		if not username or not password:
-			if not silent:
-				self.cp.show_info(self._('No sosac login credentials are set in addon settings. Create a free registration on {sosac_label} and enter login details in addon settings to enable all functionality.').format(sosac_label=self.api_label), noexit=True)
-			return
+			self.cp.log_debug("Check login result: no username or password provided")
+			return self._("No sosac login credentials are set in addon settings. Create a free registration on {sosac_label} and enter login details in addon's settings to enable all functionality. More info on {archivczsk_help}.").format(sosac_label=self.api_label, archivczsk_help=archivczsk_help)
 
 		self.username = username
 		self.password = md5((md5(('%s:%s' % (username, password)).encode('utf-8')).hexdigest() + 'EWs5yVD4QF2sshGm22EWVa').encode('utf-8')).hexdigest()
@@ -88,16 +89,19 @@ class Sosac(object):
 		try:
 			resp = self.call_api('movies/lists/queue', params = {'pocet': 1, 'stranka': 1}, ignore_status_code=True)
 		except:
+			self.cp.log_debug("Check login result: movies/lists/queue raised exception")
 			self.username = None
 			self.password = None
 			raise
 
 		if isinstance(resp, dict) and resp.get('code') == 401:
+			self.cp.log_debug("Check login result: movies/lists/queue returned 401")
 			self.username = None
 			self.password = None
 
-			if not silent:
-				self.cp.show_info(self._('Login name/password for sosac are wrong. Only base functionality will be available.'), noexit=True)
+			return self._('Login name/password for sosac are wrong. Only base functionality will be available. More info on {archivczsk_help}.'.format(archivczsk_help=archivczsk_help))
+
+		return None
 
 	# ##################################################################################################################
 
@@ -191,7 +195,7 @@ class Sosac(object):
 			self.cp.log_error("Remote server returned status code %d" % resp.status_code)
 
 			if resp.status_code == 401:
-				raise AddonInfoException(self._("You don't have access to this content!"))
+				raise AddonInfoException(self._("You don't have access to this content! Set correct login username and password for sosac in addon's settings to enable all functionality."))
 			else:
 				raise AddonErrorException(self._("Unexpected return code from server") + ": %d" % resp.status_code)
 
