@@ -1,3 +1,6 @@
+2.3: 22.07.2024
+- oprava prekladu ak je nesprávne prihlasovacie meno/heslo
+
 2.2: 22.07.2024
 - upravený spôsob prihlásenia
 - vylepšenie informačných hlášok, aby boli viac zrozumiteľné

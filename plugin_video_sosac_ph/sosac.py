@@ -100,7 +100,7 @@ class Sosac(object):
 			self.username = None
 			self.password = None
 
-			return self._('Login name/password for sosac are wrong. Only base functionality will be available. More info on {archivczsk_help}.'.format(archivczsk_help=archivczsk_help))
+			return self._('Login name/password for sosac are wrong. Only base functionality will be available. More info on {archivczsk_help}.').format(archivczsk_help=archivczsk_help)
 
 		return None
 
