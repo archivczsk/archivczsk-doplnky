@@ -1,3 +1,8 @@
+2.2: 22.07.2024
+- upravený spôsob prihlásenia
+- vylepšenie informačných hlášok, aby boli viac zrozumiteľné
+- pridané zobrazenie noviniek zo servera
+
 2.1: 18.07.2024
 - oprava správneho zoradenia sezón/epizód u seriálov pre python2
 - jemné úpravy vo formáte zobrazenia epizód

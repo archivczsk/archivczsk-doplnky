@@ -487,7 +487,8 @@ class Sosac(object):
 
 		params = {
 			'link': item_id,
-			'location': 1 if location == '0' else location
+			'location': 1 if location == '0' else location,
+			'd': 15 # client type identification
 		}
 
 		result = self.call_streaming_api('get-video-links', params)
@@ -546,10 +547,14 @@ class Sosac(object):
 
 	def set_watching_time(self, category, item_id, seconds):
 		if self.password:
+			params = {
+				'd': 15 # client type identification
+			}
+
 			data = {
 				'time': seconds
 			}
-			return self.call_api('%s/%s/watching-time' % (category, item_id), data=data)
+			return self.call_api('%s/%s/watching-time' % (category, item_id), params=params, data=data)
 		else:
 			return None
 
