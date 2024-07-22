@@ -27,6 +27,9 @@ from hashlib import md5
 import xml.etree.ElementTree as ET
 from .exception import LoginException
 
+# this import is needed to run shortcuts with serialised OrderedDict()
+from collections import OrderedDict
+
 try:
 	from Plugins.Extensions.archivCZSK.settings import USER_AGENT
 except:

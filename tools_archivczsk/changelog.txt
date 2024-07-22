@@ -1,3 +1,6 @@
+1.34 - 22.07.2024
+    - fixed shortcuts with OrderedDict
+
 1.33 - 15.07.2024
     - simpler setting plot field in info_labels
     - new type of exception for silent exit
