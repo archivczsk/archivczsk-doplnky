@@ -1,5 +1,8 @@
 vvv CESKA VERZE JE UPLNE DOLE vvv
 
+1.12:
+- eurosport premium was discontinued - mark addon as broken/not working anymore
+
 1.11:
 - added support for virtual profiles in ArchivCZSK >= 2.5.0
 
