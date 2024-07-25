@@ -200,6 +200,7 @@ class SosacContentProvider(CommonContentProvider):
 	def root(self):
 		self.sosac.request_configuration()
 		self.build_lang_lists()
+		self.sosac.reset_streaming_login()
 
 		if self.login_msg:
 			self.show_info(self.login_msg, noexit=True)

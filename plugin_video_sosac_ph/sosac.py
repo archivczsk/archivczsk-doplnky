@@ -37,6 +37,8 @@ class Sosac(object):
 		self.password = None
 		self.streaming_username = None
 		self.streaming_password = None
+		self.login_checksum = None
+		self.streaming_checksum = None
 
 	# ##################################################################################################################
 
@@ -71,16 +73,34 @@ class Sosac(object):
 
 	# ##################################################################################################################
 
+	def check_login_change(self):
+		login_checksum = self.login_checksum
+		msg = self.check_login()
+
+		if login_checksum != self.login_checksum:
+			self.cp.login_msg = msg
+			if msg:
+				self.cp.show_info(msg, noexit=True)
+
+	# ##################################################################################################################
+
 	def check_login(self):
-		if self.password:
+		self.cp.log_debug("Checking user login status")
+		login_checksum = self.cp.get_settings_checksum( ('sosac_user', 'sosac_pass',) )
+
+		if self.login_checksum == login_checksum:
 			self.cp.log_debug("Check login result: login status already checked")
 			return None
 
 		username = self.cp.get_setting('sosac_user')
 		password = self.cp.get_setting('sosac_pass')
 		archivczsk_help='archivczsk.' + self.api_label.lower()
+		self.login_checksum = login_checksum
 
 		if not username or not password:
+			self.username = None
+			self.password = None
+			self.login_checksum = None
 			self.cp.log_debug("Check login result: no username or password provided")
 			return self._("No sosac login credentials are set in addon settings. Create a free registration on {sosac_label} and enter login details in addon's settings to enable all functionality. More info on {archivczsk_help}.").format(sosac_label=self.api_label, archivczsk_help=archivczsk_help)
 
@@ -88,7 +108,7 @@ class Sosac(object):
 		self.password = md5((md5(('%s:%s' % (username, password)).encode('utf-8')).hexdigest() + 'EWs5yVD4QF2sshGm22EWVa').encode('utf-8')).hexdigest()
 
 		try:
-			resp = self.call_api('movies/lists/queue', params = {'pocet': 1, 'stranka': 1}, ignore_status_code=True)
+			resp = self.call_api('movies/lists/queue', params = {'pocet': 1, 'stranka': 1}, ignore_status_code=True, check_login=False)
 		except:
 			self.cp.log_debug("Check login result: movies/lists/queue raised exception")
 			self.username = None
@@ -102,12 +122,21 @@ class Sosac(object):
 
 			return self._('Login name/password for sosac are wrong. Only base functionality will be available. More info on {archivczsk_help}.').format(archivczsk_help=archivczsk_help)
 
+		self.cp.log_debug("Check login result: username/password combination is correct")
+
 		return None
 
 	# ##################################################################################################################
 
+	def reset_streaming_login(self):
+		self.streaming_password = None
+
+	# ##################################################################################################################
+
 	def check_streaming_login(self, silent=False):
-		if self.streaming_password:
+		streaming_checksum = self.cp.get_settings_checksum( ('streamujtv_user', 'streamujtv_pass',) )
+
+		if self.streaming_password and self.streaming_checksum == streaming_checksum:
 			return
 
 		username = self.cp.get_setting('streamujtv_user')
@@ -120,6 +149,7 @@ class Sosac(object):
 
 		self.streaming_username = username
 		self.streaming_password = md5(password.encode('utf-8')).hexdigest()
+		self.streaming_checksum = streaming_checksum
 
 		try:
 			resp = self.call_streaming_api('check-user')
@@ -150,7 +180,10 @@ class Sosac(object):
 
 	# ##################################################################################################################
 
-	def call_api(self, endpoint, params=None, data=None, ignore_status_code=False, use_cache=True):
+	def call_api(self, endpoint, params=None, data=None, ignore_status_code=False, use_cache=True, check_login=True):
+		if check_login:
+			self.check_login_change()
+
 		if endpoint.startswith('http'):
 			url = endpoint
 		else:
