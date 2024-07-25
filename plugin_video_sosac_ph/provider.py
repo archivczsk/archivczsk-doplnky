@@ -169,6 +169,7 @@ LANG_LIST = [
 ]
 
 class SosacContentProvider(CommonContentProvider):
+	WATCHED_TRESHOLD = 0.8
 
 	def __init__(self, settings=None, data_dir=None, icons_dir=None):
 		CommonContentProvider.__init__(self, 'sosac', settings=settings, data_dir=data_dir)
@@ -574,7 +575,7 @@ class SosacContentProvider(CommonContentProvider):
 				channel=''
 
 			if watched_info and item['duration'] and item['watched']:
-				if  item['watched'] > (item['duration'] * 0.85):
+				if item['watched'] > (item['duration'] * self.WATCHED_TRESHOLD):
 					watched = _B(' *')
 				else:
 					watched = ' *'
@@ -623,7 +624,7 @@ class SosacContentProvider(CommonContentProvider):
 			return ', '.join(_up(i) for i in item['lang'])
 
 		if watched_info and item['duration'] and item['watched']:
-			if  item['watched'] > (item['duration'] * 0.85):
+			if  item['watched'] > (item['duration'] * self.WATCHED_TRESHOLD):
 				watched = _B(' *')
 			else:
 				watched = ' *'
@@ -686,6 +687,7 @@ class SosacContentProvider(CommonContentProvider):
 				self.sosac.set_watching_time(category, item['id'], 0 if reset else int(item['duration']))
 				item['watched'] = int(item['duration'])
 
+		self.sosac.clear_cache()
 		self.refresh_screen()
 
 	# #################################################################################################
@@ -716,10 +718,16 @@ class SosacContentProvider(CommonContentProvider):
 		else:
 			menu.add_menu_item(self._("Add to playlist"), cmd=self.manage_item, category='movies', command='playlist_add', item=item)
 
-		menu.add_menu_item(self._("Mark as watched"), cmd=self.manage_item, category='movies', command='watched', item=item)
-
 		if item['watched']:
-			menu.add_menu_item(self._("Reset watched time"), cmd=self.manage_item, category='movies', command='reset', item=item)
+			fully_watched = item['duration'] and (item['watched'] > (item['duration'] * self.WATCHED_TRESHOLD))
+
+			if fully_watched:
+				menu.add_menu_item(self._("Mark as unwatched"), cmd=self.manage_item, category='movies', command='reset', item=item)
+			else:
+				menu.add_menu_item(self._("Mark as watched"), cmd=self.manage_item, category='movies', command='watched', item=item)
+				menu.add_menu_item(self._("Reset watched time"), cmd=self.manage_item, category='movies', command='reset', item=item)
+		else:
+			menu.add_menu_item(self._("Mark as watched"), cmd=self.manage_item, category='movies', command='watched', item=item)
 
 		self.add_video(self.get_title(item, red=item.get('stream_id') is None), item['img'], info_labels=info_labels, menu=menu, cmd=self.resolve_video_streams, item=item )
 
@@ -794,10 +802,16 @@ class SosacContentProvider(CommonContentProvider):
 			menu.add_menu_item(self._("Open TV Show"), cmd=self.list_series, item=tvshow_item)
 
 		menu.add_menu_item(self._("Add to playlist"), cmd=self.manage_item, category='serials', command='playlist_add', item=item)
-		menu.add_menu_item(self._("Mark as watched"), cmd=self.manage_item, category='episodes', command='watched', item=item)
 
 		if item['watched']:
-			menu.add_menu_item(self._("Reset watched time"), cmd=self.manage_item, category='episodes', command='reset', item=item)
+			fully_watched = item['duration'] and (item['watched'] > (item['duration'] * self.WATCHED_TRESHOLD))
+			if fully_watched:
+				menu.add_menu_item(self._("Mark as unwatched"), cmd=self.manage_item, category='episodes', command='reset', item=item)
+			else:
+				menu.add_menu_item(self._("Mark as watched"), cmd=self.manage_item, category='episodes', command='watched', item=item)
+				menu.add_menu_item(self._("Reset watched time"), cmd=self.manage_item, category='episodes', command='reset', item=item)
+		else:
+			menu.add_menu_item(self._("Mark as watched"), cmd=self.manage_item, category='episodes', command='watched', item=item)
 
 		self.add_video(title, item['img'], info_labels=info_labels, menu=menu, cmd=self.resolve_video_streams, item=item )
 
@@ -1164,6 +1178,7 @@ class SosacContentProvider(CommonContentProvider):
 					self.sosac.set_watching_time('episodes' if data_item['parent_id'] else 'movies', data_item['id'], position)
 					data_item['watched'] = position
 
+				self.sosac.clear_cache()
 		except:
 			self.log_error("Stats processing failed")
 			self.log_exception()

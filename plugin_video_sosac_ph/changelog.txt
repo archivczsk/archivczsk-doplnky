@@ -1,3 +1,8 @@
+2.4: 25.07.2024
+- oprava sosáč prihlásenia pre staré OpenATV image
+- reset kontroly platnosti premium predplatného pri každom spustení doplnku
+- vylepšenie označovania videných položiek
+
 2.3: 22.07.2024
 - oprava prekladu ak je nesprávne prihlasovacie meno/heslo
 
