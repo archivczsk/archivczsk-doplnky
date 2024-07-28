@@ -33,6 +33,8 @@ class Sosac(object):
 		self.req_session = self.cp.get_requests_session()
 		self.configuration = {}
 		self.cache = ExpiringLRUCache(30, 1800)
+#		self.user_agent =  'ArchivCZSK/%s (plugin.video.sosac/%s)' % (self.cp.get_engine_version(), self.cp.get_addon_version())
+		self.user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'
 		self.username = None
 		self.password = None
 		self.streaming_username = None
@@ -206,7 +208,7 @@ class Sosac(object):
 			default_params.update(params)
 
 		headers = {
-			'User-Agent': 'ArchivCZSK/%s (plugin.video.sosac/%s)' % (self.cp.get_engine_version(), self.cp.get_addon_version()),
+			'User-Agent': self.user_agent
 		}
 
 		if data != None:
@@ -498,7 +500,7 @@ class Sosac(object):
 			default_params.update(params)
 
 		headers = {
-			'User-Agent': 'ArchivCZSK/%s (plugin.video.sosac/%s)' % (self.cp.get_engine_version(), self.cp.get_addon_version()),
+			'User-Agent': self.user_agent
 		}
 
 		resp = self.req_session.get(url, params=default_params, headers=headers)

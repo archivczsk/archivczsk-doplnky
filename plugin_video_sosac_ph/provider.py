@@ -1134,7 +1134,9 @@ class SosacContentProvider(CommonContentProvider):
 
 		duration = item.get('duration')
 		info_labels = { 'title': media_title }
-		settings = {}
+		settings = {
+			'user-agent': self.sosac.user_agent
+		}
 
 		last_position = item['watched']
 
