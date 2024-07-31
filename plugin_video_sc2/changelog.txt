@@ -1,3 +1,7 @@
+2024-07-31 [3.15]
+* oprava pádu pri nesprávne nastavenej informácie o sezóne u epizód
+* vylepšené reportovanie chýb z webshare serverov
+
 2024-03-05 [3.14]
 * nahradenie interného klienta prehraj.to za priame volanie nového prehraj.to doplnku
 

@@ -131,7 +131,7 @@ class Webshare():
 #			f.write("-----------------------------------\n")
 
 		if response.status_code != 200:
-			raise WebshareApiError("Wrong response status code: %d" % response.status_code)
+			raise WebshareApiError(self.cp._("Webshare server returned error") + ': %s (%d)' % (response.reason, response.status_code))
 
 		return response.text
 

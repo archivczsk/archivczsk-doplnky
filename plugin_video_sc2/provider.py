@@ -10,7 +10,7 @@ from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman, strip_accents
 from tools_archivczsk.cache import lru_cache
 from bisect import bisect
-from .webshare import Webshare, WebshareLoginFail, ResolveException
+from .webshare import Webshare, WebshareLoginFail, ResolveException, WebshareApiError
 from .scc_api import SCC_API
 from .watched import SCWatched
 from .lang_lists import lang_code_to_lang
@@ -977,7 +977,7 @@ class SccContentProvider(CommonContentProvider):
 		playlist = self.add_playlist(media_title, variant=True)
 		try:
 			playlist.add_play(titles[idx], self.webshare.resolve(ident, file_name), **play_params)
-		except (WebshareLoginFail, ResolveException) as e:
+		except (WebshareLoginFail, ResolveException, WebshareApiError) as e:
 			self.show_error(str(e))
 
 		for i in range(len(data)):
@@ -989,7 +989,7 @@ class SccContentProvider(CommonContentProvider):
 	def webshare_resolve(self, media_title, ident, file_name, settings, play_params={}):
 		try:
 			self.add_play(media_title, self.webshare.resolve(ident, file_name), **play_params)
-		except (WebshareLoginFail, ResolveException) as e:
+		except (WebshareLoginFail, ResolveException, WebshareApiError) as e:
 			self.show_error(str(e))
 
 	# ##################################################################################################################

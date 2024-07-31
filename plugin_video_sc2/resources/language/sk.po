@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_scc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-17 15:00+0200\n"
-"PO-Revision-Date: 2023-04-17 15:02+0200\n"
+"POT-Creation-Date: 2024-07-31 22:39+0200\n"
+"PO-Revision-Date: 2024-07-31 22:39+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -1272,194 +1272,197 @@ msgstr "Inuitčina"
 msgid "No Language"
 msgstr "Žiadny jazyk"
 
-#: plugin_video_sc2/scc_api.py:92 plugin_video_sc2/csfd.py:33
-#: plugin_video_sc2/prehrajto.py:67
+#: plugin_video_sc2/scc_api.py:86 plugin_video_sc2/csfd.py:28
 msgid "Unexpected return code from server"
 msgstr "Neočakávaný návratový kód zo servera"
 
-#: plugin_video_sc2/webshare.py:213
+#: plugin_video_sc2/webshare.py:134
+msgid "Webshare server returned error"
+msgstr "Webshare server vrátil chybu"
+
+#: plugin_video_sc2/webshare.py:231
 msgid "Wrong webshare login data provided"
 msgstr "Nesprávne prihlasovacie údaje pre Webshare"
 
-#: plugin_video_sc2/webshare.py:216
+#: plugin_video_sc2/webshare.py:234
 msgid "Webshare subscription expired. Only very low quality videos will play and seeking forward/backwad will not work at all."
 msgstr "Webshare predplatné vypršalo. Prehrávanie bude fungovať len u videí s veľmi nízkou kvalitou a pretáčanie vpred/vzad nebude fungovať vôbec."
 
-#: plugin_video_sc2/webshare.py:224
+#: plugin_video_sc2/webshare.py:255
 msgid "Failed to resolve file"
 msgstr "Nepodarilo sa získať adresu súboru"
 
-#: plugin_video_sc2/provider.py:76
+#: plugin_video_sc2/provider.py:72
 msgid "Webshare VIP account expired"
 msgstr "Webshare VIP predplatné vypršalo"
 
-#: plugin_video_sc2/provider.py:84
+#: plugin_video_sc2/provider.py:80
 msgid "No Webshare username and password provided - continuing with free account"
 msgstr "Nezadané prihlasovacie údaje pre Webshare - pokračujem s free predplatným"
 
-#: plugin_video_sc2/provider.py:114 plugin_video_sc2/provider.py:124
-#: plugin_video_sc2/provider.py:251
+#: plugin_video_sc2/provider.py:110 plugin_video_sc2/provider.py:120
+#: plugin_video_sc2/provider.py:247
 msgid "Movies"
 msgstr "Filmy"
 
-#: plugin_video_sc2/provider.py:115 plugin_video_sc2/provider.py:125
-#: plugin_video_sc2/provider.py:252
+#: plugin_video_sc2/provider.py:111 plugin_video_sc2/provider.py:121
+#: plugin_video_sc2/provider.py:248
 msgid "Series"
 msgstr "Seriály"
 
-#: plugin_video_sc2/provider.py:118
+#: plugin_video_sc2/provider.py:114
 msgid "CSFD Tips"
 msgstr "ČSFD Tipy"
 
-#: plugin_video_sc2/provider.py:119
+#: plugin_video_sc2/provider.py:115
 msgid "Concerts"
 msgstr "Koncerty"
 
-#: plugin_video_sc2/provider.py:120
+#: plugin_video_sc2/provider.py:116
 msgid "Anime"
 msgstr "Anime"
 
-#: plugin_video_sc2/provider.py:121
+#: plugin_video_sc2/provider.py:117
 msgid "Thematic lists"
 msgstr "Tématické zoznamy"
 
-#: plugin_video_sc2/provider.py:123
+#: plugin_video_sc2/provider.py:119
 msgid "All"
 msgstr "Všetky"
 
-#: plugin_video_sc2/provider.py:132 plugin_video_sc2/provider.py:248
+#: plugin_video_sc2/provider.py:128 plugin_video_sc2/provider.py:244
 msgid "Trending"
 msgstr "Trendy"
 
-#: plugin_video_sc2/provider.py:134
+#: plugin_video_sc2/provider.py:130
 msgid "New episodes"
 msgstr "Nové epizódy"
 
-#: plugin_video_sc2/provider.py:135 plugin_video_sc2/provider.py:249
+#: plugin_video_sc2/provider.py:131 plugin_video_sc2/provider.py:245
 msgid "Popular"
 msgstr "Populárne"
 
-#: plugin_video_sc2/provider.py:136
+#: plugin_video_sc2/provider.py:132
 msgid "Most watched"
 msgstr "Najsledovanejšie"
 
-#: plugin_video_sc2/provider.py:137
+#: plugin_video_sc2/provider.py:133
 msgid "New releases"
 msgstr "Novinky"
 
-#: plugin_video_sc2/provider.py:138
+#: plugin_video_sc2/provider.py:134
 msgid "New dubbed releases"
 msgstr "Novinky dabované"
 
-#: plugin_video_sc2/provider.py:139
+#: plugin_video_sc2/provider.py:135
 msgid "New releases with subtitles"
 msgstr "Novinky s vloženými titulkami"
 
-#: plugin_video_sc2/provider.py:140
+#: plugin_video_sc2/provider.py:136
 msgid "Latest added"
 msgstr "Posledné pridané"
 
-#: plugin_video_sc2/provider.py:141
+#: plugin_video_sc2/provider.py:137
 msgid "Latest added streams"
 msgstr "Posledné pridané streamy"
 
-#: plugin_video_sc2/provider.py:144
+#: plugin_video_sc2/provider.py:140
 msgid "CSFD Top 100"
 msgstr "ČSFD Top 100"
 
-#: plugin_video_sc2/provider.py:145
+#: plugin_video_sc2/provider.py:141
 msgid "CSFD Top 100 CZ & SK"
 msgstr "ČSFD Top 100 CZ & SK"
 
-#: plugin_video_sc2/provider.py:146
+#: plugin_video_sc2/provider.py:142
 msgid "CSFD Top 100 CZ"
 msgstr "ČSFD Top 100 CZ"
 
-#: plugin_video_sc2/provider.py:147
+#: plugin_video_sc2/provider.py:143
 msgid "CSFD Top 100 SK"
 msgstr "ČSFD Top 100 SK"
 
-#: plugin_video_sc2/provider.py:149
+#: plugin_video_sc2/provider.py:145
 msgid "By alphabet"
 msgstr "Podľa abecedy"
 
-#: plugin_video_sc2/provider.py:150
+#: plugin_video_sc2/provider.py:146
 msgid "By genre"
 msgstr "Podľa žánru"
 
-#: plugin_video_sc2/provider.py:151
+#: plugin_video_sc2/provider.py:147
 msgid "By country"
 msgstr "Poľa krajiny"
 
-#: plugin_video_sc2/provider.py:152
+#: plugin_video_sc2/provider.py:148
 msgid "By language"
 msgstr "Podľa jazyka"
 
-#: plugin_video_sc2/provider.py:153
+#: plugin_video_sc2/provider.py:149
 msgid "By year"
 msgstr "Podľa roku"
 
-#: plugin_video_sc2/provider.py:154
+#: plugin_video_sc2/provider.py:150
 msgid "By studio"
 msgstr "Podľa štúdia"
 
-#: plugin_video_sc2/provider.py:168
+#: plugin_video_sc2/provider.py:164
 msgid "Last seen"
 msgstr "Naposledy sledované"
 
-#: plugin_video_sc2/provider.py:174
+#: plugin_video_sc2/provider.py:170
 msgid "Fairy Tales"
 msgstr "Rozprávky"
 
-#: plugin_video_sc2/provider.py:175
+#: plugin_video_sc2/provider.py:171
 msgid "Golden fund"
 msgstr "Zlatý fond"
 
-#: plugin_video_sc2/provider.py:176
+#: plugin_video_sc2/provider.py:172
 msgid "Czech and Slovak"
 msgstr "České a Slovenské"
 
-#: plugin_video_sc2/provider.py:177
+#: plugin_video_sc2/provider.py:173
 msgid "Movie Club"
 msgstr "Filmový klub"
 
-#: plugin_video_sc2/provider.py:178
+#: plugin_video_sc2/provider.py:174
 msgid "Religious"
 msgstr "Náboženské"
 
-#: plugin_video_sc2/provider.py:244
+#: plugin_video_sc2/provider.py:240
 msgid "Trakt.tv"
 msgstr "Trakt.tv"
 
-#: plugin_video_sc2/provider.py:246
+#: plugin_video_sc2/provider.py:242
 msgid "My lists"
 msgstr "Moje zoznamy"
 
-#: plugin_video_sc2/provider.py:247
+#: plugin_video_sc2/provider.py:243
 msgid "History"
 msgstr "História"
 
-#: plugin_video_sc2/provider.py:394
+#: plugin_video_sc2/provider.py:384
 msgid "Episode"
 msgstr "Epizóda"
 
-#: plugin_video_sc2/provider.py:638
+#: plugin_video_sc2/provider.py:643
 msgid "Remove from seen"
 msgstr "Odstrániť z videných"
 
-#: plugin_video_sc2/provider.py:641
+#: plugin_video_sc2/provider.py:646
 msgid "Search on prehraj.to"
 msgstr "Vyhľadať na prehraj.to"
 
-#: plugin_video_sc2/provider.py:644
+#: plugin_video_sc2/provider.py:649
 msgid "Play trailer"
 msgstr "Prehrať trailer"
 
-#: plugin_video_sc2/provider.py:657
+#: plugin_video_sc2/provider.py:662
 msgid "Related"
 msgstr "Súvisiace"
 
-#: plugin_video_sc2/provider.py:658
+#: plugin_video_sc2/provider.py:663
 msgid "Similar"
 msgstr "Podobné"
 
@@ -1480,15 +1483,6 @@ msgstr "Povoliť integráciu s Trakt.tv"
 
 msgid "DeviceId"
 msgstr "DeviceId"
-
-msgid "Protocol used for API communication"
-msgstr "Protokol pre komunikáciu s API"
-
-msgid "http"
-msgstr ""
-
-msgid "https"
-msgstr ""
 
 msgid "Start subtitles automatically"
 msgstr "Automaticky spustiť titulky"
@@ -1516,12 +1510,6 @@ msgstr "Prihlasovacie heslo (webshare.cz)"
 
 msgid "VIP days remaining (webshare.cz)"
 msgstr "Zostávajúci počet VIP (webshare.cz)"
-
-msgid "Login name (prehraj.to)"
-msgstr "Prihlasovacie meno (prehraj.to)"
-
-msgid "Login password (prehraj.to)"
-msgstr "Prihlasovacie heslo (prehraj.to)"
 
 msgid "Use primary prehraj.to search"
 msgstr "Primárne použiť vyhľadávanie na prehraj.to"
@@ -1594,6 +1582,15 @@ msgstr "Povoliť h265/hevc  kodek"
 
 msgid "Maximum size of stream (in GB)"
 msgstr "Maximálna veľkosť streamu (v GB)"
+
+#~ msgid "Protocol used for API communication"
+#~ msgstr "Protokol pre komunikáciu s API"
+
+#~ msgid "Login name (prehraj.to)"
+#~ msgstr "Prihlasovacie meno (prehraj.to)"
+
+#~ msgid "Login password (prehraj.to)"
+#~ msgstr "Prihlasovacie heslo (prehraj.to)"
 
 #~ msgid "Webshare subscription expired"
 #~ msgstr "Webshare predplatné vypršalo"
