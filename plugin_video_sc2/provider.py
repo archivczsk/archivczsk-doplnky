@@ -384,7 +384,7 @@ class SccContentProvider(CommonContentProvider):
 			title = self._("Episode") + ' %02d' % info['episode']
 			info_labels['episode'] = info['episode']
 
-			if 'season' in info and info['season'] != 0:
+			if info.get('season'):
 				ep_code = ' %s (%d)' % (int_to_roman(info['season']), info['episode'])
 				ep_code2 = ' S%02dE%02d' % (int(info['season']), int(info['episode']))
 				info_labels['season'] = info['season']
@@ -392,7 +392,7 @@ class SccContentProvider(CommonContentProvider):
 				ep_code = ' (%d)' % info['episode']
 				ep_code2 = ' E%02d' % int(info['episode'])
 		elif media_type == 'season':
-			if 'season' in info and info['season'] != 0:
+			if info.get('season'):
 				ep_code = ' %s' % int_to_roman(info['season'])
 				info_labels['season'] = info['season']
 
