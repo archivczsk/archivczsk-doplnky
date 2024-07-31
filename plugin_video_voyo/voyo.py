@@ -318,7 +318,7 @@ class Voyo(object):
 
 	@staticmethod
 	def get_image_url(url):
-		return url.replace('{WIDTH}', '512').replace('{HEIGHT}', '512')
+		return url.replace('{WIDTH}', '512').replace('{HEIGHT}', '512') if url else None
 
 	# ##################################################################################################################
 
