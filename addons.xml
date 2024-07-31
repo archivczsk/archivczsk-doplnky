@@ -22,7 +22,7 @@
 <addon id="plugin.video.primaplus" name="Prima+" version="1.2" hash="b3a5441d13315e7e5400372a5f7aa3ba" rhash="d8b3c582c49cc2dda2026700ab71b2f6" />
 <addon id="plugin.video.rebittv" name="Rebit.tv" version="1.9" hash="ff6ada6a2847addfffb4ebc6637a4917" rhash="dfedb0f267481d858abb2e2acacd2e03" />
 <addon id="plugin.video.rtvs.sk" name="rtvs.sk" version="1.12.0" hash="3a7abf7b60168fc02e33efcaf557258d" rhash="3a7abf7b60168fc02e33efcaf557258d" />
-<addon id="plugin.video.sc2" name="Stream Cinema Community" version="3.14" hash="572ae0befe07e62f619eb5c178e50b62" rhash="b367cb85878ceac23ad544c608b5a87f" />
+<addon id="plugin.video.sc2" name="Stream Cinema Community" version="3.15" hash="82d96ea46755c311bb0c2fd016ef4da5" rhash="4238ead692bfe2962764209cdb5b7ddc" />
 <addon id="plugin.video.sktonline" name="SkTonline" version="2.6" hash="a6957fc78694ca5784f03ffac860ebb8" rhash="c5712196f9db4c52809b4354af5b3437" />
 <addon id="plugin.video.sledovanitv" name="Sledovani.tv" version="2.12" hash="da11d58e89823ad70d2f8f3d6701ad98" rhash="2b20939e58f79565731a5f1e7e1fa40b" />
 <addon id="plugin.video.sosac.ph" name="Sosáč" version="2.5" hash="cd34cb9ac68afee220f8893f639c6e11" rhash="4bf3a51546081a106699e1c0d5be1f54" />
