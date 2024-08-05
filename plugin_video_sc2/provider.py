@@ -718,6 +718,7 @@ class SccContentProvider(CommonContentProvider):
 
 	def play_trailer(self, media_id):
 		media = self.api.call_filter_api('ids', params={'id': media_id }).get('hits', {}).get('hits',[{}])
+		playlist = self.add_playlist('Trailers')
 
 		for video in sorted(media[0].get('_source', {}).get('videos', []), key=lambda i: i.get('lang', '') in ('cs', 'sk'), reverse=True):
 			if video.get('type', '').lower() != 'trailer':
@@ -741,7 +742,7 @@ class SccContentProvider(CommonContentProvider):
 				if video_formats and len(video_formats) > 0:
 					video_url = video_formats[-1].get('url')
 					if video_url:
-						self.add_play(title, video_url)
+						playlist.add_play(title, video_url)
 			else:
 				subs = None
 				for s in video.get('subtitles', []):
@@ -753,7 +754,7 @@ class SccContentProvider(CommonContentProvider):
 				if subs and not subs.startswith('http'):
 					subs = "https://" + subs.lstrip('./')
 
-				self.add_play(title, url, subs=subs)
+				playlist.add_play(title, url, subs=subs)
 
 	# ##################################################################################################################
 
