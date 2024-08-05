@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import sys, os, re, traceback, time, json
+import sys, os, re, traceback, time, json, errno
 from Plugins.Extensions.archivCZSK.engine import client
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.version import version as archivczsk_version
@@ -70,8 +70,15 @@ class SearchProvider(object):
 
 		local = os.path.join(self.data_dir, self.name + server)
 
-		with open(local, 'w') as f:
-			json.dump(searches, f)
+		try:
+			with open(local, 'w') as f:
+				json.dump(searches, f)
+		except IOError as e:
+			client.log.error(traceback.format_exc())
+			if e.errno == errno.ENOSPC:
+				raise AddonErrorException(_("There is no space left in directory {dir}.").format(dir=self.data_dir))
+			else:
+				raise AddonErrorException(str(e))
 
 	# #################################################################################################
 

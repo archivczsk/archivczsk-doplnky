@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tools_archivczsk\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-08 14:52+0200\n"
-"PO-Revision-Date: 2024-03-25 20:00+0100\n"
+"POT-Creation-Date: 2024-08-05 19:18+0200\n"
+"PO-Revision-Date: 2024-08-05 19:19+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -59,6 +59,43 @@ msgid ""
 msgstr ""
 "Odporúča sa nainštalovať poslednú upravenú verziu exteplayer3 a ffmpeg so vstavanou podporou všetkých potrebných funkcií.\n"
 "Mám stiahnuť a nainštalovať odporúčanú verziu?"
+
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:79
+#, python-brace-format
+msgid "There is no space left in directory {dir}."
+msgstr "V adresári {dir} nie je dostatok voľného miesta."
+
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:238
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:402
+msgid "Login failed"
+msgstr "Prihlásenie zlyhalo"
+
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:244
+msgid "Login ended with error"
+msgstr "Prihlásenie skončilo chybou"
+
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:449
+msgid "New search"
+msgstr "Nové hľadanie"
+
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:458
+msgid "Remove"
+msgstr "Odstrániť"
+
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:459
+msgid "Edit"
+msgstr "Upraviť"
+
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:472
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:482
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:542
+#: tools_archivczsk/contentprovider/extended.py:275
+msgid "Search"
+msgstr "Vyhľadať"
+
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:547
+msgid "Next"
+msgstr "Ďalšie"
 
 #: tools_archivczsk/contentprovider/extended.py:68
 msgid "Here you will find list of Live TV channels"
@@ -128,45 +165,13 @@ msgstr "hodiny"
 msgid "hours5+"
 msgstr "dní"
 
-#: tools_archivczsk/contentprovider/extended.py:202
+#: tools_archivczsk/contentprovider/extended.py:207
 msgid "Today"
 msgstr "Dnes"
 
-#: tools_archivczsk/contentprovider/extended.py:204
+#: tools_archivczsk/contentprovider/extended.py:209
 msgid "Yesterday"
 msgstr "Včera"
-
-#: tools_archivczsk/contentprovider/extended.py:256
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:436
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:446
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:501
-msgid "Search"
-msgstr "Vyhľadať"
-
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:215
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:369
-msgid "Login failed"
-msgstr "Prihlásenie zlyhalo"
-
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:221
-msgid "Login ended with error"
-msgstr "Prihlásenie skončilo chybou"
-
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:413
-msgid "New search"
-msgstr "Nové hľadanie"
-
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:422
-msgid "Remove"
-msgstr "Odstrániť"
-
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:423
-msgid "Edit"
-msgstr "Upraviť"
-
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:506
-msgid "Next"
-msgstr "Ďalšie"
 
 #~ msgid "It was not possible to determine, if you have installed exteplayer3 and if it can play DRM protected streams needed by this addon."
 #~ msgstr "Nebolo možné zistiť, či máte nainštalovaný prehrávač exteplayer3 a či podporuje prehrávanie streamov s DRM ochranou, ktorá je potrebná pre tento doplnok."
