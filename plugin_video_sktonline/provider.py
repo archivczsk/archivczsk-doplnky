@@ -2,7 +2,7 @@
 import os
 from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from tools_archivczsk.contentprovider.exception import AddonErrorException
-from tools_archivczsk.string_utils import _I, _C, _B, decode_html
+from tools_archivczsk.string_utils import _I, _C, _B, decode_html, strip_accents
 from tools_archivczsk.debug.http import dump_json_request
 import re
 
@@ -80,6 +80,7 @@ class SkTContentProvider(CommonContentProvider):
 			raise AddonErrorException(self._('HTTP reponse code') + ': %d' % response.status_code)
 
 	def search(self, keyword, search_id):
+		keyword = strip_accents(keyword)
 		return self.list_videos('search/videos?t=a&o=mr&type=public&search_query=' + quote(keyword))
 
 	def root(self):

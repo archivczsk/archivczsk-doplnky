@@ -1,3 +1,6 @@
+2.7: 05.08.2024
+- fixed crash when searching string with unicode characters
+
 2.6: 25.04.2024
 - removed login using name and password, because of site changes
 - added login method using provided AVS cookie
