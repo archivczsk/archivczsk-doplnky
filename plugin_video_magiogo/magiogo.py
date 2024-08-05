@@ -69,7 +69,7 @@ class MagioGO(object):
 	]
 
 	os_version = '12.0'
-	app_version = '4.0.10'
+	app_version = '4.0.16'
 
 	def __init__(self, content_provider):
 		self.cp = content_provider
@@ -407,10 +407,12 @@ class MagioGO(object):
 		if response["success"] == True:
 			url = response["url"]
 		else:
+			self.cp.log_error("Failed to resolve stream url: %s" % response.get('errorMessage', response["errorCode"]))
+
 			if response["errorCode"] == "NO_PACKAGE":
 				url = None
 			else:
-				raise Exception( 'Magio GO: %s' % response['errorMessage'])
+				raise AddonErrorException( '%s' % response.get('errorMessage', response["errorCode"]))
 
 #		self.log_function("Stream URL for channel %s: %s" % (channel_id, url))
 

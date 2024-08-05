@@ -364,6 +364,10 @@ class MagioGOContentProvider(ModuleContentProvider):
 	# ##################################################################################################################
 
 	def resolve_streams(self, url, video_title, event_start = None):
+		if not url:
+			self.log_error("No stream url passed")
+			return
+
 		player_settings = {
 			"resume_time_sec": int(time.time()) - event_start if event_start != None else None,
 			"resume_popup": False
