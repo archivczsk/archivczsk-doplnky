@@ -541,7 +541,7 @@ class Sosac(object):
 
 		ret = []
 
-		for lang, data in result.get('URL',{}).items():
+		for lang, data in (result.get('URL') or {}).items():
 			for quality, url in data.items():
 				if quality == 'subtitles':
 					continue

@@ -1,3 +1,7 @@
+2.6: 05.08.2024
+- oprava pádu pri zobrazení zoznamu podľa roku
+- oprava pádu ak server nevráti správny zoznam dostupných streamov
+
 2.5: 28.07.2024
 - oprava pretáčania pri použití iného prehrávača ako exteplayer3 (thx mtester270)
 
