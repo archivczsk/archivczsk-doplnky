@@ -28,6 +28,7 @@ import json
 
 from tools_xbmc.contentprovider.provider import ContentProvider, ResolveException
 from tools_xbmc.tools import util
+from tools_archivczsk.string_utils import strip_accents
 
 try:
 	from urllib2 import HTTPCookieProcessor, build_opener, install_opener
@@ -60,6 +61,7 @@ class VideaceskyContentProvider(ContentProvider):
 			return self.list_content(util.request(self._url(url)), self._url(url))
 
 	def search(self, keyword):
+		keyword = strip_accents(keyword)
 		return self.list('/hledat?q=' + quote(keyword))
 
 	def mmss_to_seconds(self, mmss):
@@ -177,12 +179,12 @@ class VideaceskyContentProvider(ContentProvider):
 		p = re.sub('\[B\]\[B\]', '[B]', p)
 		p = re.sub('\[/B\]\[/B\]', '[/B]', p)
 		p = re.sub('\[B\][ ]*\[/B\]', '', p)
-		
+
 		plot = util.decode_html(''.join(p))
-		
+
 		if sys.version_info[0] == 2:
 			plot = plot.encode('utf-8')
-			
+
 		rating = self.format_rating(m)
 		return "{0}\n{1}".format(rating, plot.strip())
 
@@ -190,20 +192,20 @@ class VideaceskyContentProvider(ContentProvider):
 		def js2json( js_txt ):
 			# strip white chars
 			js_txt = re.sub( ' +', ' ', js_txt ).strip()
-			
+
 			# fix true/false properties
 			js_txt = js_txt.replace( ': true ', ': "true" ')
 			js_txt = js_txt.replace( ': false ', ': "false" ')
-			
+
 			# quote keys
 			js_txt = re.sub(r'([\{\s,])(\w+)(:)(\s+["\'\[\{])', r'\1"\2"\3\4', js_txt)
-			
+
 			# replace single to double quotes
 			js_txt = js_txt.replace("'", '"')
 			# correct end of json
 			if js_txt.endswith(','):
 				js_txt = js_txt[:-1]
-			
+
 			# remove 'playlist:' keyword
 			if js_txt.startswith('playlist:'):
 				js_txt = js_txt[9:]
@@ -266,6 +268,6 @@ class VideaceskyContentProvider(ContentProvider):
 
 		if len(result) > 0 and select_cb:
 			return select_cb(result)
-			
+
 		return result
 
