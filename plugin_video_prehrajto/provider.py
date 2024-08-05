@@ -67,7 +67,11 @@ class PrehrajtoContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def resolve(self, video_title, video_id, item=None):
-		videos, subtitles = self.prehrajto.resolve_video(video_id)
+		try:
+			videos, subtitles = self.prehrajto.resolve_video(video_id)
+		except:
+			self.log_exception()
+			self.show_error(self._("Failed to find video stream. If this message appears on every video, then site was probably changed and addon needs to be updated. In that case report this info to addon author."))
 
 		subs_url = None
 		if len(subtitles) > 0 and self.get_setting('enable_subtitles'):
