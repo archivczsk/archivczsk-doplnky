@@ -885,7 +885,7 @@ class SosacContentProvider(CommonContentProvider):
 			listvalue = [ (q[0], q[1], False,) for q in QUALITY_LIST[1:]]
 			key_name = 'quality'
 		elif stream == "by-year" :
-			listvalue = [ (y, y, False,) for y in range(datetime.now().year, 1900, -1)]
+			listvalue = [ (str(y), y, False,) for y in range(datetime.now().year, 1900, -1)]
 			key_name = 'year'
 
 		for val in listvalue:
