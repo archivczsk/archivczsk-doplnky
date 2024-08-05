@@ -25,14 +25,17 @@ from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProv
 from tools_xbmc.contentprovider.provider import ContentProvider
 from tools_xbmc.tools import util
 from tools_xbmc.compat import XBMCCompatInterface
+from tools_archivczsk.string_utils import strip_accents
 
 try:
 	import cookielib
 	from urllib2 import HTTPCookieProcessor, HTTPError, build_opener, install_opener
+	from urllib import quote
 except:
 	from urllib.request import HTTPCookieProcessor, build_opener, install_opener
 	from urllib.error import HTTPError
 	import http.cookiejar as cookielib
+	from urllib.parse import quote
 
 BASE = 'http://dokumenty.tv/'
 HEADERS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36', 'Referer': BASE}
@@ -77,7 +80,8 @@ class DokumentyTVContentProvider(ContentProvider):
 
 	def search(self,keyword):
 		result = []
-		html = util.request(self.base_url+"?s="+keyword, headers=HEADERS)
+		keyword=strip_accents(keyword)
+		html = util.request(self.base_url+"?s="+quote(keyword), headers=HEADERS)
 		result = self.parseHtml(html)
 		return result
 

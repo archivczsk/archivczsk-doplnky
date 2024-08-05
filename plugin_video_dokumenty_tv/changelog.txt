@@ -1,3 +1,6 @@
+v1.7
+- oprava pádu pri vyhľadávaní s diakritikou a práznymi znakmi
+
 v1.6
 - priadnie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
 
