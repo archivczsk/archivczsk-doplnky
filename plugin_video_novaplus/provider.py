@@ -402,12 +402,17 @@ class TVNovaContentProvider(CommonContentProvider):
 		else:
 			soup = self.call_api(url)
 
-			json_stream = json.loads(soup.find("script", type="application/ld+json", string=re.compile(r"embedUrl")).string)
-			if "video" in json_stream:
-				embeded_url = json_stream["video"]["embedUrl"]
-			elif "embedUrl" in json_stream:
-				embeded_url = json_stream["embedUrl"]
-			else:
+			script_element = soup.find("script", type="application/ld+json", string=re.compile(r"embedUrl"))
+			embeded_url = None
+
+			if script_element is not None:
+				json_stream = json.loads(script_element.string)
+				if "video" in json_stream:
+					embeded_url = json_stream["video"]["embedUrl"]
+				elif "embedUrl" in json_stream:
+					embeded_url = json_stream["embedUrl"]
+
+			if not embeded_url:
 				self.show_info(self._("Video not found."))
 
 			self.log_debug("Embedded url: %s" % embeded_url)

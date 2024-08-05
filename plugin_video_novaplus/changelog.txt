@@ -1,3 +1,6 @@
+2024-08-05 (verze 3.8)
+* oprava pádu ak sa na stránke nenájde video element
+
 2024-06-07 (verze 3.7)
 * pridanie podpory pre prehrávanie obsahu s DRM ochranou (nutný exteplayer3 s podporou MPEG-DASH)
 
