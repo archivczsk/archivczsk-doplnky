@@ -2,6 +2,7 @@
 
 import re
 from tools_archivczsk.contentprovider.exception import AddonErrorException
+from tools_archivczsk.string_utils import strip_accents
 import ast
 
 try:
@@ -88,8 +89,14 @@ class PrehrajTo(object):
 		if BeautifulSoup == None:
 			return [], None
 
+		if not keyword:
+			return [], None
+
 		next_page = None
 		videos = []
+
+		keyword = strip_accents(keyword)
+
 		while True:
 			soup = self.call_api('hledej/' + quote(keyword.encode('utf-8')), params={'vp-page': page})
 
