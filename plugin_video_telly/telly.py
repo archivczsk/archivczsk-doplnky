@@ -230,14 +230,14 @@ class Telly:
 
 	def get_channel_list(self):
 		if not self.device_token:
-			return None
+			return []
 
 		self.refresh_settings()
 
 		ret = self.call_telly_api('api/device/getSources/', data={ 'device_token': self.device_token })
 		if not ret or not ret.get('success'):
 			self.check_token()
-			return None
+			return []
 
 		channels = []
 		for ch in ret.get('channels', []):
