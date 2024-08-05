@@ -62,7 +62,11 @@ def yt_time(duration="P1W2DT6H21M32S"):
 		'(?:(?P<minutes>\d+)M)?'
 		'(?:(?P<seconds>\d+)S)?'
 		')?')
-	units = list(ISO_8601.match(duration).groups()[-3:])
+	m = ISO_8601.match(duration)
+
+	if m == None:
+		return ""
+	units = list(m.groups()[-3:])
 	units = list(reversed([int(x) if x != None else 0 for x in units]))
 	return str(datetime.timedelta(seconds=sum([x*60**units.index(x) for x in units])))
 
