@@ -372,10 +372,11 @@ class OrangeTV:
 			j = self.getChannelEpg(ch,fromts,tots)
 			self.fillChannelEpgCache(ch, j)
 
-			# cache already filled with fresh entries, so the first one is current event
-			title = self.epg_cache[ch][0]['title']
-			desc = self.epg_cache[ch][0]['desc']
-			img = self.epg_cache[ch][0].get('img')
+			if self.epg_cache.get(ch):
+				# cache already filled with fresh entries, so the first one is current event
+				title = self.epg_cache[ch][0]['title']
+				desc = self.epg_cache[ch][0]['desc']
+				img = self.epg_cache[ch][0].get('img')
 
 		if title == "":
 			return None
