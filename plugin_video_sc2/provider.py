@@ -251,10 +251,22 @@ class SccContentProvider(CommonContentProvider):
 		elif dir_type == 'history_shows':
 			self.show_trakt_history('tvshow')
 		elif dir_type == 'my_lists':
-			for titem in self.tapi.get_lists():
+			try:
+				tlist = self.tapi.get_lists()
+			except Exception as e:
+				self.log_exception()
+				raise AddonErrorException("%s: %s" % (self._("Failed to load trakt.tv list"), str(e)))
+
+			for titem in tlist:
 				self.add_dir(titem['name'], info_labels={'plot': titem.get('description')}, cmd=self.show_trakt_list, user='me', list_id=titem['id'])
 		elif dir_type in ('trending', 'popular'):
-			for titem in self.tapi.get_global_lists(dir_type, page):
+			try:
+				tlist = self.tapi.get_global_lists(dir_type, page)
+			except Exception as e:
+				self.log_exception()
+				raise AddonErrorException("%s: %s" % (self._("Failed to load trakt.tv list"), str(e)))
+
+			for titem in tlist:
 				if titem['id'] and titem['user']:
 					self.add_dir(titem['name'], info_labels={'plot': titem.get('description')}, cmd=self.show_trakt_list, user=titem['user'], list_id=titem['id'])
 			self.add_next(cmd=self.show_trakt_dir, page_info=(page + 2), dir_type=dir_type, page=page + 1)
