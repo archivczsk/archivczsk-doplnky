@@ -5,7 +5,7 @@
 
 from Plugins.Extensions.archivCZSK.engine import client
 
-import re
+import re, sys
 try:
 	from bs4 import BeautifulSoup
 	bs4_available = True

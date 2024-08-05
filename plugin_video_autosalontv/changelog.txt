@@ -1,3 +1,6 @@
+1.7 - 05.08.2024
+- oprava pádu ak nie je dostupný beautifulsoup
+
 1.6 - 27.01.2024
 - added support for virtual profiles in ArchivCZSK >= 2.5.0
 
