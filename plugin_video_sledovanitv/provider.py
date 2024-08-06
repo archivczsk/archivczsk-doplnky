@@ -32,7 +32,7 @@ class SledovaniTVModuleHome(CPModuleTemplate):
 				'title': event['title'],
 			}
 
-			day_name = self.cp.day_nane_short[datetime.fromtimestamp(event['start']).weekday()]
+			day_name = self.cp.day_name_short[datetime.fromtimestamp(event['start']).weekday()]
 			title = day_name + ' ' + self.cp.timestamp_to_str(event['start'], format='%d.%m. %H:%M') + ' - ' + self.cp.timestamp_to_str(event['end'], format='%H:%M') + ' ' + _I(event['title']) + ' '
 
 			if event['start'] > int(time.time()):
@@ -326,7 +326,7 @@ class SledovaniTVModuleRecordings(CPModuleTemplate):
 				day_name = self._("Tomorrow") + ' ' + day.strftime("%d.%m.%Y")
 			else:
 				day = date.today() + timedelta(days=i)
-				day_name = self.cp.day_name[day.weekday()] + " " + day.strftime("%d.%m.%Y")
+				day_name = self.day_name[day.weekday()] + " " + day.strftime("%d.%m.%Y")
 
 			self.cp.add_dir(day_name, cmd=self.plan_recordings_for_channel, channel_id=channel_id, day=i)
 
