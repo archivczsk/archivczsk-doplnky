@@ -1,3 +1,6 @@
+v1.8
+- oprava pádu pri nesprávnom formáte URL
+
 v1.7
 - oprava pádu pri vyhľadávaní s diakritikou a práznymi znakmi
 

@@ -19,7 +19,7 @@
 # *
 # */
 from Plugins.Extensions.archivCZSK.engine import client
-import re,datetime,json
+import re,datetime,json,traceback
 
 from tools_xbmc.contentprovider.xbmcprovider import XBMCMultiResolverContentProvider
 from tools_xbmc.contentprovider.provider import ContentProvider
@@ -104,18 +104,23 @@ class DokumentyTVContentProvider(ContentProvider):
 		result = []
 		if 'cat#' in url:
 			tmp, cat = url.split("#")
-			html = util.request(self.base_url+cat, headers=HEADERS)
-			result = self.parseHtml(html)
-			page = re.search('page/([0-9]+)', url, re.DOTALL)
-			if page:
-				result.append(self.dir_item('další',re.sub(r'page\/\d+\/','page/%s/' % (int(page.group(1))+1), url)))
+			try:
+				html = util.request(self.base_url+cat, headers=HEADERS)
+				result = self.parseHtml(html)
+			except:
+				client.log.error(traceback.format_exc())
 			else:
-				result.append(self.dir_item('další',url + 'page/2/'))
+				page = re.search('page/([0-9]+)', url, re.DOTALL)
+				if page:
+					result.append(self.dir_item('další',re.sub(r'page\/\d+\/','page/%s/' % (int(page.group(1))+1), url)))
+				else:
+					result.append(self.dir_item('další',url + 'page/2/'))
 		else:
 			try:
 				html = util.request(url, headers=HEADERS)
 			except HTTPError as e:
-				if e.code == 403: showInfo(self.session, 'Toto video není dostupné.')
+				client.log.error(traceback.format_exc())
+				showInfo(self.session, 'Toto video není dostupné.')
 				return []
 			items = re.compile('<iframe.*?src="(.*?)"', re.DOTALL).findall(html)
 			for (url) in items:
