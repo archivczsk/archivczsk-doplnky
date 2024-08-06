@@ -814,7 +814,7 @@ class SccContentProvider(CommonContentProvider):
 					continue
 
 			# hevc filter
-			video = strm.get('video', [{}])[0]
+			video = (strm.get('video') or [{}])[0]
 			if not enable_hevc and video.get('codec') == 'HEVC':
 				self.log_debug("Stream filtered due HEVC")
 				continue
