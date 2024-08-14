@@ -1,3 +1,13 @@
+2.0: 20.08.2024
+- z dôvodu zmien na strane youtube bol doplnok prepísaný na nové API
+- doplnok po novom služi pre prehrávanie videí aj pre ostatné doplnky, ktoré potrebujú prehrať youtube videa (napr. pre SC a SCC trailery u filmov)
+
+- !!! DÔLEŽITÉ - čítajte prosím pozorne !!!
+- u väčšiny videí youtube obmedzuje dostupné rozlíšenie pre neadaptívny streaming na 320p
+- preto ak chcete sledovať videá vo väčšom rozlíšení, je NUTNÉ v nastaveniach doplnku nastaviť prehrávač na exteplayer3
+- v inom prehrávači adaptívny streaming nie je podporovaný a bude dostupné len rozlíšenie 320p
+- oficiálne je podporovaný len exteplayer3 ver. >= 172 ktorý vám doplnok automaticky ponúkne na inštaláciu
+
 1.10: 05.08.2024
 - oprava pádu pri neznámej dĺžke videa
 
