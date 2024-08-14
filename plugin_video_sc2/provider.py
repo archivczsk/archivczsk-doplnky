@@ -716,6 +716,15 @@ class SccContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
+	def resolve_yt_trailer(self, video_title, video_id):
+		youtube_params = {
+			'url': video_id,
+			'title': video_title
+		}
+		self.call_another_addon('plugin.video.yt', youtube_params, 'resolve')
+
+	# ##################################################################################################################
+
 	def play_trailer(self, media_id):
 		media = self.api.call_filter_api('ids', params={'id': media_id }).get('hits', {}).get('hits',[{}])
 		playlist = self.add_playlist('Trailers')
@@ -738,11 +747,7 @@ class SccContentProvider(CommonContentProvider):
 				title += ' ' + _I('(' + lang.upper() + ')')
 
 			if 'youtube.com' in url  or 'youtu.be' in url:
-				video_formats = self.youtube_resolve(url)
-				if video_formats and len(video_formats) > 0:
-					video_url = video_formats[-1].get('url')
-					if video_url:
-						playlist.add_play(title, video_url)
+				playlist.add_video(title, cmd=self.resolve_yt_trailer, video_title=title, video_id=url)
 			else:
 				subs = None
 				for s in video.get('subtitles', []):

@@ -1,3 +1,9 @@
+1.4.0: 21.8.2024
+- prehrávanie youtube videí priamo pomocou Youtube doplnku
+- kvalita prehrávania aj použitý prehrávač sa pre youtube videa nastavuje priamo v youtube doplnku
+- pre lepšiu kvalitu ako 320p je nutné v youtube doplnku nastaviť prehrávač na exteplayer3
+- pre podporu titulkov je nutné mať v systéme nainštalovaný SubsSupport plugin
+
 1.3.1 05.08.2024
 - oprava pádu pri hľadaní znakov s diakritikou
 

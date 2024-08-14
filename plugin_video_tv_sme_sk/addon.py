@@ -171,25 +171,14 @@ class TVSMEContentProvider(ContentProvider):
 	def _getYT(self, url):
 		print( "url: %s" % url )
 		result = []
-		video_formats = client.getVideoFormats(url)
-		if video_formats and len(video_formats) > 0:
-			video_url = [video_formats[-1]]
-			print( 'videourl: %s' % video_url[:] )
-		else:
+		video_url, forced_player = self.youtube_resolve(self.session, url)
+		if not video_url:
 			raise ResolveException('Video nenalezeno')
-		i = video_url[:][0]
+
 		item = self.video_item()
-		try:
-			item['title'] = i['title']
-		except KeyError:
-			pass
-		item['url'] = i['url']
-		item['quality'] = i['format_note']
-		item['headers'] = {}
-		try:
-			item['fmt'] = i['fmt']
-		except KeyError:
-			pass
+		item['url'] = video_url
+		if forced_player:
+			item['playerSettings'] = {'forced_player': forced_player}
 		result.append(item)
 		return result
 

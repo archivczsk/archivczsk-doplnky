@@ -2,5 +2,4 @@
 <settings>
 	<setting label="30000" type="text" id="keep-searches" default="20" />
 	<setting label="30050" id="quality" type="enum" lvalues="30051|30052|30053|30054" default="1" />
-	<setting label="30058" id="filter_vp8" type="bool" default="true" />
 </settings>

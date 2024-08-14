@@ -155,7 +155,6 @@ class ArchivCZSKContentProvider(object):
 		self.provider.refresh_screen = self.refresh_screen
 		self.provider._ = addon.get_localized_string
 		self.provider.get_lang_code = addon.language.get_language
-		self.provider.youtube_resolve = client.getVideoFormats
 		self.provider.get_profile_info = self.get_profile_info
 		self.provider.get_addon_version = lambda: addon.version
 		self.provider.get_engine_version = lambda: archivczsk_version

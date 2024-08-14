@@ -217,7 +217,7 @@ class ContentProvider(object):
 
 		"""
 		pass
-	
+
 	def stats_ext(self, item, action, extra_params):
 		"""
 		Lists content on given url
@@ -229,7 +229,7 @@ class ContentProvider(object):
 
 		"""
 		pass
-	
+
 	def trakt(self, item, action, result, msg):
 		"""
 		make some action with trakt.tv
@@ -241,6 +241,41 @@ class ContentProvider(object):
 
 		"""
 		return None
+
+	def youtube_resolve(self, session, url, settings=None):
+		'''
+		This is hacky implementation used for legacy xbmc addons to resolve youtube videos. It is needed because xbmc addons don't use content provider base from tools_archivczsk
+		and therefore they can't use call_another_addon() interface to interact with plugin.video.yt addon.
+		It is needed because build in implementation of yt-dlp was removed from archivczsk >= 2.7.5 and client.getVideoFormats() is just dummy function that does nothing
+		'''
+		try:
+			from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
+			class FakePlaylist(object):
+				'''
+				Fake playlist interface, that simulates one from tools_archivczsk - used to catch resolved URL for plugin.video.yt
+				'''
+				def __init__(self):
+					self.resolved_url = None
+					self.forced_player = None
+
+				def add_play(self, title, url, info_labels={}, data_item=None, trakt_item=None, subs=None, settings=None, *args, **kwargs):
+					self.resolved_url = url
+					if isinstance(settings, dict):
+						self.forced_player = settings.get('forced_player')
+
+			addon = ArchivCZSK.get_addon('plugin.video.yt')
+			addon.provider.resolve_addon_interface()
+			fake_playlist = FakePlaylist()
+			youtube_params = {
+				'url': url,
+				'playlist': fake_playlist,
+				'settings': settings
+			}
+			addon.provider.addon_interface.search(session, youtube_params, 'resolve')
+			return fake_playlist.resolved_url, fake_playlist.forced_player
+		except:
+			self.error('Exception caught:\n%s' % traceback.format_exc())
+			return None, None
 
 
 class cached(object):

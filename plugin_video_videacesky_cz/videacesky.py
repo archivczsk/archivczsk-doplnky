@@ -41,13 +41,14 @@ except:
 
 
 class VideaceskyContentProvider(ContentProvider):
-	def __init__(self, username=None, password=None, filter=None,
+	def __init__(self, session, username=None, password=None, filter=None,
 				 tmp_dir='/tmp'):
 		ContentProvider.__init__(self, 'videacesky.cz',
 								 'http://www.videacesky.cz',
 								 username, password, filter, tmp_dir)
 		opener = build_opener(HTTPCookieProcessor(cookielib.LWPCookieJar()))
 		install_opener(opener)
+		self.session = session
 
 	def capabilities(self):
 		return ['categories', 'resolve', 'search']
@@ -212,7 +213,6 @@ class VideaceskyContentProvider(ContentProvider):
 			return js_txt
 
 		result = []
-		resolved = []
 		item = item.copy()
 		url = self._url(item['url'])
 		data = util.substr(util.request(url), 'async type', '</script>')
@@ -234,40 +234,25 @@ class VideaceskyContentProvider(ContentProvider):
 		for playlist_item in jsondata:
 			playlist_item['file'] = playlist_item['file'].replace('time_continue=1&', '')
 
-			from Plugins.Extensions.archivCZSK.engine import client
-			video_formats = client.getVideoFormats(playlist_item['file'])
-			if video_formats and len(video_formats) > 0:
-				video_url = [video_formats[-1]]
-				print( video_url )
-			else:
+			video_url, forced_player = self.youtube_resolve(self.session, playlist_item['file'])
+			if not video_url:
 				raise ResolveException('Video nenalezeno')
+
 			subs = playlist_item['tracks']
-			if video_url and subs:
-				for i in video_url:
-					i['subs'] = self.base_url[:-1]+subs[0]['file']
-			resolved += video_url[:]
+			if subs:
+				subs = self.base_url[:-1]+subs[0]['file']
 
-			if not resolved:
-				raise ResolveException('Video nenalezeno')
+			item = self.video_item()
 
-			for i in resolved:
-				item = self.video_item()
-				try:
-					item['title'] = i['title']
-				except KeyError:
-					pass
-				item['url'] = i['url']
-				item['quality'] = i['format_note']
-				item['subs'] = i['subs']
-				item['headers'] = {}
-				try:
-					item['fmt'] = i['fmt']
-				except KeyError:
-					pass
-				result.append(item)
+			item['url'] = video_url
+			item['subs'] = subs or ''
+			if forced_player:
+				self.debug("Setting forced player to %s" % forced_player)
+				item['playerSettings'] = {'forced_player': forced_player}
+
+			result.append(item)
 
 		if len(result) > 0 and select_cb:
 			return select_cb(result)
 
 		return result
-

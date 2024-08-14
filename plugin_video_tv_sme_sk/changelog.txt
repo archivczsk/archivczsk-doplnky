@@ -1,3 +1,7 @@
+1.6:
+- prehrávanie youtube videí priamo pomocou Youtube doplnku
+- kvalita prehrávania aj použitý prehrávač sa pre youtube videa nastavuje priamo v youtube doplnku
+
 1.5:
 - added support for virtual profiles in ArchivCZSK >= 2.5.0
 

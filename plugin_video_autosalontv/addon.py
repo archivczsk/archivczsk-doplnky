@@ -34,8 +34,9 @@ def get_page(url):
 
 class autosalontvContentProvider(ContentProvider):
 
-	def __init__(self, filter=None, tmp_dir='/tmp'):
+	def __init__(self, session, filter=None, tmp_dir='/tmp'):
 		ContentProvider.__init__(self, 'autosalon.tv', 'https://autosalon.tv/', None, None, filter, tmp_dir)
+		self.session = session
 
 	# ##################################################################################################################
 
@@ -208,16 +209,9 @@ class autosalontvContentProvider(ContentProvider):
 		req = requests.get(url_link).text
 		id = re.findall('https://www.youtube.com/embed/(.*?)"',str(req), re.DOTALL)[0]
 
-		try:
-			video_formats = client.getVideoFormats('https://youtube.com/watch?v=' + str(id))
-		except Exception as e:
-			self.error("Failed to extract youtube video link: %s" % str(e))
-			video_formats = None
-
-		if video_formats:
-			for vf in video_formats:
-				if vf.get('fmt', 0) not in [38, 44, 43, 45, 46, 100, 101, 102]:
-					result.append( { 'url': vf['url'], 'quality': vf['format_note'] } )
+		resolved_url, forced_player = self.youtube_resolve(self.session, id)
+		if resolved_url:
+			result.append( { 'url': resolved_url, 'forced_player': forced_player } )
 
 		return result
 
@@ -240,10 +234,12 @@ class autosalontvContentProvider(ContentProvider):
 
 		result = []
 		for one in stream_links:
-			item = item.copy()
-			item['url'] = one['url']
-			item['quality'] = one['quality']
-			result.append(item)
+			ritem = item.copy()
+			ritem['url'] = one['url']
+			ritem['quality'] = one.get('quality', item['quality'])
+			if one.get('forced_player'):
+				ritem['playerSettings'] = {'forced_player': one['forced_player']}
+			result.append(ritem)
 
 		if select_cb and len(result) > 0:
 			return select_cb(result)
@@ -255,7 +251,7 @@ class autosalontvContentProvider(ContentProvider):
 
 def autosalon_run(session, params, addon):
 	settings = {'quality':addon.getSetting('quality')}
-	XBMCMultiResolverContentProvider(autosalontvContentProvider(), settings, addon, session).run(params)
+	XBMCMultiResolverContentProvider(autosalontvContentProvider(session), settings, addon, session).run(params)
 
 # #################################################################################################
 

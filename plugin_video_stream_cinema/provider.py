@@ -161,11 +161,11 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			url = "https://" + url.lstrip('./')
 
 		if 'youtube.com' in url  or 'youtu.be' in url:
-			video_formats = self.youtube_resolve(url)
-			if video_formats and len(video_formats) > 0:
-				video_url = video_formats[-1].get('url')
-				if video_url:
-					self.add_play(media_title, video_url)
+			youtube_params = {
+				'url': url,
+				'title': media_title
+			}
+			self.call_another_addon('plugin.video.yt', youtube_params, 'resolve')
 		else:
 			self.add_play(media_title, url)
 

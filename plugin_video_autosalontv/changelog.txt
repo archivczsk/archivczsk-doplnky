@@ -1,3 +1,7 @@
+1.8 - 21.08.2024
+- prehrávanie youtube videí priamo pomocou Youtube doplnku
+- kvalita prehrávania aj použitý prehrávač sa pre youtube videa nastavuje priamo v youtube doplnku
+
 1.7 - 05.08.2024
 - oprava pádu ak nie je dostupný beautifulsoup
 

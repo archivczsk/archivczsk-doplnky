@@ -666,7 +666,7 @@ class CommonContentProvider(object):
 
 	def youtube_resolve(self, url):
 		'''
-		Resolves youtube link to video streams using youtube_dl
+		Resolves youtube link to video streams using youtube_dl - just dummy one and not working anymore - use call_another_addon() to call directly plugin.video.yt
 		'''
 		return None
 
