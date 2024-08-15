@@ -1138,7 +1138,7 @@ class SosacContentProvider(CommonContentProvider):
 			'user-agent': self.sosac.user_agent
 		}
 
-		last_position = item['watched']
+		last_position = item['watched'] or 0
 
 		if self.silent_mode == False and self.get_setting('save-last-play-pos') and last_position > 0 and (not duration or last_position < (duration * int(self.get_setting('last-play-pos-limit'))) // 100):
 			settings['resume_time_sec'] = last_position

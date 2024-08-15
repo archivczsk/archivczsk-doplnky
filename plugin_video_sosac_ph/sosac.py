@@ -385,15 +385,27 @@ class Sosac(object):
 			if season_name == 'info':
 				continue
 
+			try:
+				int(season_name)
+			except:
+				self.cp.log_error("Season name (%s) for item %s is not integer! Ignoring ..." % (season_name, item['id']))
+				continue
+
 			episodes = []
 			result.append({
 				'season': int(season_name),
 				'episodes': episodes
 			})
 
-			for episode_name, episode_data in sorted(season_data.items(), key=lambda i: int(i[0])):
+			for episode_name, episode_data in season_data.items():
+				try:
+					e = int(episode_name)
+				except:
+					self.cp.log_error("Episode name (%s) for item %s is not integer! Ignoring ..." % (episode_name, item['id']))
+					continue
+
 				movie_item = self.convert_movie_item(episode_data, item)
-				movie_item['episode'] = int(episode_name)
+				movie_item['episode'] = e
 				movie_item['season'] = int(season_name)
 				episodes.append(movie_item)
 
