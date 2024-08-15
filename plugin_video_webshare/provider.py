@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from tools_archivczsk.contentprovider.provider import CommonContentProvider
+from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.string_utils import _I, _C, _B, decode_html
-from .webshare import Webshare, WebshareLoginFail
+from .webshare import Webshare, WebshareLoginFail, ResolveException
 from time import time
 
 class WebshareContentProvider(CommonContentProvider):
@@ -64,7 +65,11 @@ class WebshareContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def resolve(self, video_title, video_id, item=None):
-		url = self.webshare.resolve(video_id)
+		try:
+			url = self.webshare.resolve(video_id)
+		except ResolveException as e:
+			raise AddonErrorException(str(e))
+
 		self.add_play(video_title, url)
 		self.add_watched_item(item)
 

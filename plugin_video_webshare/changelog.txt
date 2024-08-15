@@ -1,2 +1,5 @@
+1.1: 15.08.2024
+- zobrazenie chyby spolu s dôvodom ak sa nepodarí získať adresa streamu
+
 1.0: 06.03.2024
 - úvodná verzia
