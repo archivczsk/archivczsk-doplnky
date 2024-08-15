@@ -137,7 +137,7 @@ class MarkizaContentProvider(CommonContentProvider):
 
 		try:
 			if data:
-				response = self.req_session.post(url, params=params, data=data, headers=req_headers, )
+				response = self.req_session.post(url, params=params, data=data, headers=req_headers)
 			else:
 				response = self.req_session.get(url, params=params, headers=req_headers)
 		except Exception as e:
@@ -212,7 +212,12 @@ class MarkizaContentProvider(CommonContentProvider):
 		for article in articles:
 			show_title = article["data-tracking-tile-show-name"]
 			if not show_title:
-				show_title = article.find("div", { 'class': 'content'}).find('a', {'class': 'category'}).get_text()
+				try:
+					show_title = article.find("div", { 'class': 'content'}).find('a', {'class': 'category'}).get_text()
+				except:
+					self.log_exception()
+					continue
+
 			title = article["data-tracking-tile-name"]
 			dur = article.find("time", {"class": "duration"})
 			show_url = article.find("a", {"class": "category"})["href"]
@@ -426,4 +431,3 @@ class MarkizaContentProvider(CommonContentProvider):
 				'quality': one.get('resolution', 'x???').split('x')[1] + 'p'
 			}
 			self.add_play(video_title, one['url'], info_labels=info_labels, settings=settings)
-

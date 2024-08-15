@@ -1,3 +1,6 @@
+2.9: 15.08.2024
+- oprava načítavania posledných epizod po zmene na stránke
+
 2.8: 06.06.2024
 - oprava prehrávania pre niektoré verzie python3-beautifulsoup4 (napr. v OpenPLi 9.0)
 
