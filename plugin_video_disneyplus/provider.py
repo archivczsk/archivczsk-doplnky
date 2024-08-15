@@ -198,7 +198,7 @@ class DisneyPlusContentProvider(CommonContentProvider):
 	def search(self, keyword, search_id=''):
 		if self.disneyplus.feature_flags().get('wpnx-disney-searchOnExplore'):
 			data = self.disneyplus.explore_search(keyword)
-			return self._process_explore(data['containers'][0]).items
+			return self._process_explore(data['containers'][0]).items if data['containers'] else []
 		else:
 			data = self.disneyplus.search(keyword)
 			hits = [x['hit'] for x in data['hits']]
@@ -708,7 +708,7 @@ class DisneyPlusContentProvider(CommonContentProvider):
 					'season': row['visuals']['seasonNumber'],
 					'episode': row['visuals']['episodeNumber'],
 					'tvshowtitle': row['visuals']['title'],
-					'duration': int(row['visuals']['durationMs'] / 1000),
+					'duration': int(row['visuals'].get('durationMs',0) / 1000),
 				}
 
 				self.add_video(row['visuals']['episodeTitle'], self._get_explore_art(row).get('poster'), info_labels=info_labels, cmd=self.play_explore, resource_id=row['actions'][0]['resourceId'])
