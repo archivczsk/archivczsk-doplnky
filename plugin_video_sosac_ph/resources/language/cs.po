@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_sosac_ph\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-25 11:58+0200\n"
-"PO-Revision-Date: 2024-07-25 11:59+0200\n"
+"POT-Creation-Date: 2024-08-21 11:55+0200\n"
+"PO-Revision-Date: 2024-08-21 11:56+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -16,49 +16,53 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_sosac_ph/sosac.py:70
+#: plugin_video_sosac_ph/sosac.py:77
 #, python-brace-format
 msgid "News from {sosac_label}"
 msgstr "Novinky ze {sosac_label}"
 
-#: plugin_video_sosac_ph/sosac.py:72
+#: plugin_video_sosac_ph/sosac.py:79
 msgid "Failed to load configuration from remote server. Check your internet connection."
 msgstr "Nepodařilo se načíst konfiguraci ze vzdáleného serveru. Zkontrolujte své internetové připojení."
 
-#: plugin_video_sosac_ph/sosac.py:105
+#: plugin_video_sosac_ph/sosac.py:112
 #, python-brace-format
 msgid "No sosac login credentials are set in addon settings. Create a free registration on {sosac_label} and enter login details in addon's settings to enable all functionality. More info on {archivczsk_help}."
 msgstr "V nastaveních doplňku nebyly nastaveny přihlašovací údaje pro sosáč. Vytvořte si bezplatnou registraci na {sosac_label} a zadejte přihlašovací údaje v nastaveních doplňku. Více informací na {archivczsk_help}."
 
-#: plugin_video_sosac_ph/sosac.py:123
+#: plugin_video_sosac_ph/sosac.py:130
 #, python-brace-format
 msgid "Login name/password for sosac are wrong. Only base functionality will be available. More info on {archivczsk_help}."
 msgstr "Přihlašovací jméno/heslo pro sosáč je nesprávné. Bude dostupná pouze základní funkcionalita. Více informací na {archivczsk_help}."
 
-#: plugin_video_sosac_ph/sosac.py:147
+#: plugin_video_sosac_ph/sosac.py:154
 #, python-brace-format
 msgid "No {streaming_label} login credentials are set in addon settings. In order to play content you need to have a valid {streaming_label} subscription and login credentials need to be set in addon settings."
 msgstr "V nastaveních doplňku nejsou zadány přihlašovací údaje pro {streaming_label}. Pro přehrávání obsahu je nutné mít platné {streaming_label} předplatné a zadat přihlašovací údaje v nastaveních doplňku."
 
-#: plugin_video_sosac_ph/sosac.py:167
+#: plugin_video_sosac_ph/sosac.py:174
 #, python-brace-format
 msgid "Login name/password for {streaming_label} are wrong."
 msgstr "Přihlašovací jméno/heslo pro {streaming_label} je nesprávné."
 
-#: plugin_video_sosac_ph/sosac.py:174
+#: plugin_video_sosac_ph/sosac.py:181
 #, python-brace-format
 msgid "You don't have valid premium subscription for {streaming_label}."
 msgstr "Nemáte platné premium předplatné pro {streaming_label}."
 
-#: plugin_video_sosac_ph/sosac.py:232
+#: plugin_video_sosac_ph/sosac.py:234
+msgid "Server returned invalid response. Try again later."
+msgstr "Server vrátil neplatnou odpověď. Zkuste to opět později."
+
+#: plugin_video_sosac_ph/sosac.py:244
 msgid "You don't have access to this content! Set correct login username and password for sosac in addon's settings to enable all functionality."
 msgstr "K tomuto obsahu nemáte přístup! V nastaveních doplňku zadejte správné přihlašovací údaje pro sosáč pro zpřístupnění kompletní funkcionality."
 
-#: plugin_video_sosac_ph/sosac.py:234 plugin_video_sosac_ph/sosac.py:510
+#: plugin_video_sosac_ph/sosac.py:246 plugin_video_sosac_ph/sosac.py:534
 msgid "Unexpected return code from server"
 msgstr "Neočekávaný návratový kód ze serveru"
 
-#: plugin_video_sosac_ph/sosac.py:508
+#: plugin_video_sosac_ph/sosac.py:532
 msgid "You don't have access to this content!"
 msgstr "K tomuto obsahu nemáte přístup!"
 
@@ -832,47 +836,47 @@ msgstr "Předcházející"
 msgid "Select date"
 msgstr "Zvolte datum"
 
-#: plugin_video_sosac_ph/provider.py:716 plugin_video_sosac_ph/provider.py:758
+#: plugin_video_sosac_ph/provider.py:717 plugin_video_sosac_ph/provider.py:759
 msgid "Delete from playlist"
 msgstr "Vymazat z playlistu"
 
-#: plugin_video_sosac_ph/provider.py:718 plugin_video_sosac_ph/provider.py:760
-#: plugin_video_sosac_ph/provider.py:803
+#: plugin_video_sosac_ph/provider.py:719 plugin_video_sosac_ph/provider.py:761
+#: plugin_video_sosac_ph/provider.py:804
 msgid "Add to playlist"
 msgstr "Přidat do playlistu"
 
-#: plugin_video_sosac_ph/provider.py:724 plugin_video_sosac_ph/provider.py:808
+#: plugin_video_sosac_ph/provider.py:725 plugin_video_sosac_ph/provider.py:809
 msgid "Mark as unwatched"
 msgstr "Označit jako neviděno"
 
-#: plugin_video_sosac_ph/provider.py:726 plugin_video_sosac_ph/provider.py:729
-#: plugin_video_sosac_ph/provider.py:761 plugin_video_sosac_ph/provider.py:810
-#: plugin_video_sosac_ph/provider.py:813
+#: plugin_video_sosac_ph/provider.py:727 plugin_video_sosac_ph/provider.py:730
+#: plugin_video_sosac_ph/provider.py:762 plugin_video_sosac_ph/provider.py:811
+#: plugin_video_sosac_ph/provider.py:814
 msgid "Mark as watched"
 msgstr "Označit jako viděno"
 
-#: plugin_video_sosac_ph/provider.py:727 plugin_video_sosac_ph/provider.py:762
-#: plugin_video_sosac_ph/provider.py:811
+#: plugin_video_sosac_ph/provider.py:728 plugin_video_sosac_ph/provider.py:763
+#: plugin_video_sosac_ph/provider.py:812
 msgid "Reset watched time"
 msgstr "Resetovat pozici přehrávání"
 
-#: plugin_video_sosac_ph/provider.py:801
+#: plugin_video_sosac_ph/provider.py:802
 msgid "Open TV Show"
 msgstr "Otevřít seriál"
 
-#: plugin_video_sosac_ph/provider.py:859
+#: plugin_video_sosac_ph/provider.py:860
 msgid "Select beginnig date"
 msgstr "Zvolte začáteční datum"
 
-#: plugin_video_sosac_ph/provider.py:865
+#: plugin_video_sosac_ph/provider.py:866
 msgid "Select end date"
 msgstr "Zvolte koneční datum"
 
-#: plugin_video_sosac_ph/provider.py:912
+#: plugin_video_sosac_ph/provider.py:913
 msgid "Season"
 msgstr "Sezona"
 
-#: plugin_video_sosac_ph/provider.py:1125
+#: plugin_video_sosac_ph/provider.py:1126
 msgid "Please select a stream"
 msgstr "Prosím zvolte stream"
 

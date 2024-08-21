@@ -226,7 +226,12 @@ class Sosac(object):
 #		dump_json_request(resp)
 
 		if resp.status_code == 200 or ignore_status_code:
-			resp = resp.json()
+			try:
+				resp = resp.json()
+			except:
+				self.cp.log_exception()
+				self.cp.log_error("No json data returned:\n%s" % resp.content)
+				raise AddonErrorException(self._('Server returned invalid response. Try again later.'))
 
 			if use_cache and data == None:
 				self.cache.put(rurl, resp, 3600)
