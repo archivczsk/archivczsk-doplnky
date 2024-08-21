@@ -1,3 +1,8 @@
+1.5.0:
+- oprava pádu pri písmenách s diakritikou
+- prehrávanie youtube videí priamo pomocou Youtube doplnku
+- kvalita prehrávania aj použitý prehrávač sa pre youtube videa nastavuje priamo v youtube doplnku
+
 1.4.0:
 - priadnie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
 

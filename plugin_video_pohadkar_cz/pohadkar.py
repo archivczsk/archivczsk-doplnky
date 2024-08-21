@@ -38,11 +38,12 @@ except:
 
 class PohadkarContentProvider(ContentProvider):
 
-	def __init__(self,username=None,password=None,filter=None,tmp_dir='.'):
+	def __init__(self,session, username=None,password=None,filter=None,tmp_dir='.'):
 		ContentProvider.__init__(self,'pohadkar.cz','http://www.pohadkar.cz/',username,password,filter)
 		opener = build_opener(HTTPCookieProcessor(cookielib.LWPCookieJar()))
 		install_opener(opener)
 		self.tmp_dir = tmp_dir
+		self.session = session
 
 	def capabilities(self):
 		return ['resolve','cagegories','!download']
@@ -112,9 +113,9 @@ class PohadkarContentProvider(ContentProvider):
 					self._filter(list, item)
 			lock = Lock()
 			util.run_parallel_in_threads(process_match, matches)
-			
+
 		letter = LETTERS[int(index)]
-		data = util.request(self.base_url+'system/load-vypis/?znak='+letter+'&typ=1&zar=hp')
+		data = util.request(self.base_url+'system/load-vypis/?znak='+quote(letter)+'&typ=1&zar=hp')
 		pattern = '<a href=\"(?P<url>[^\"]+)[^>]+>(?P<name>[^<]+)'
 		result = []
 		matches = []
@@ -160,7 +161,26 @@ class PohadkarContentProvider(ContentProvider):
 		page = util.request(self._url(item['url']))
 		data = util.substr(page,'<div id=\"video','<div id=\"controller')
 		data = re.sub('youtube-nocookie.com','youtube.com',data)
-		resolved = resolver.findstreams(data,['<embed( )src=\"(?P<url>[^\"]+)','<object(.+?)data=\"(?P<url>[^\"]+)','<iframe(.+?)src=\"(?P<url>[^\"]+)'])
+
+		patterns = ['<embed( )src=\"(?P<url>[^\"]+)','<object(.+?)data=\"(?P<url>[^\"]+)','<iframe(.+?)src=\"(?P<url>[^\"]+)']
+
+		# youtube videos needs to be handled other way
+		urls = []
+		for pattern in patterns:
+			for match in re.finditer(pattern, data, re.IGNORECASE | re.DOTALL):
+				urls.append(match.group('url'))
+
+		for u in urls:
+			if 'youtube.com' in u or 'youtu.be' in u:
+				video_url, forced_player = self.youtube_resolve(self.session, u)
+				if video_url:
+					item = self.video_item()
+					item['url'] = video_url
+					if forced_player:
+						item['playerSettings'] = {'forced_player': forced_player}
+					return item
+
+		resolved = resolver.findstreams(data,patterns)
 		result = []
 		if not resolved:
 			raise ResolveException('Video nenalezeno')
