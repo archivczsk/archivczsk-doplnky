@@ -373,12 +373,12 @@ class MagioGO(object):
 			return None
 
 		channels = []
-		for ch in ret.get('items', []):
+		for ch in (ret.get('items') or []):
 			channel = MagioGOChannel(ch['channel'])
-			channel.set_aditional(ch.get('live', {}))
+			channel.set_aditional(ch.get('live') or {})
 
 			if fill_epg:
-				channel.set_current_epg(ch.get('live', {}))
+				channel.set_current_epg(ch.get('live') or {})
 
 			channels.append(channel)
 
