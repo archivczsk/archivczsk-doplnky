@@ -1,3 +1,7 @@
+1.36 - 21.08.2024
+    - removed youtube_resolve() api from CommonContentProvider
+    - updated available exteplayer3 version
+
 1.35 - 05.08.2024
     - handle exception when there is no space left on device
 
