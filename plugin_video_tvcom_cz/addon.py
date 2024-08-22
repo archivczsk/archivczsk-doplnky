@@ -53,7 +53,7 @@ class TvcomContentProvider(ContentProvider):
 		headers = {"referer": self.base_url}
 		data = util.request("https://archivczsk.eu/api/tvcom.php?search=%s" % quote(keyword), headers=headers)
 		items = json.loads(data)
-		for item in items['items']:
+		for item in (items.get('items') or []):
 			itm=self.video_item()
 			id = re.search("\/([0-9]+)\-.*?.htm", item['url'], re.DOTALL)
 			if id:

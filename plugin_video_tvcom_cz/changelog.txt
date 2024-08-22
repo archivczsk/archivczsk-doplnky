@@ -1,3 +1,6 @@
+1.5:
+- fixed crash when search returns empty result
+
 1.4:
 - added support for virtual profiles in ArchivCZSK >= 2.5.0
 
