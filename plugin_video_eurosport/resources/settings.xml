@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<settings>
-	<setting id="quality" type="enum" label="30050" lvalues="30051|30052|30053" default="1" />
-	<setting id="ondemandsortorder" type="enum" label="30002" lvalues="30010|30011|30012" default="0" visible="false" />
-	<setting id="engine" type="enum" label="30006" lvalues="inputstream.adaptive|ffmpeg" default="0" visible="false" />
-	<setting id="streamtype" type="enum" label="30007" lvalues="hls|ism" default="0" visible="false" />
-	<setting id="eurosporttoken" type="text" label="30004" default="" visible="false" />
-</settings>
