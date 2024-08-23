@@ -324,7 +324,7 @@ class SweetTV:
 
 		movie_ids = []
 
-		for item in data.get('result', []):
+		for item in (data.get('result') or []):
 			if item['type'] == 'Movie':
 				movie_ids.append(item['id'])
 
@@ -372,7 +372,7 @@ class SweetTV:
 
 		epgdata = {}
 
-		for channel in data.get('list',[]):
+		for channel in (data.get('list') or []):
 			if 'epg' in channel:
 				epgdata[str(channel['id'])] = channel['epg']
 
@@ -399,7 +399,7 @@ class SweetTV:
 
 		channels = []
 
-		for channel in data.get('list', []):
+		for channel in (data.get('list') or []):
 			if not channel['available']:
 				continue
 
@@ -436,7 +436,7 @@ class SweetTV:
 			return []
 
 		result = []
-		for one in data.get('collection', []):
+		for one in (data.get('collection') or []):
 			if one['type'] == 'Movie':
 				result.append(one)
 
@@ -451,9 +451,9 @@ class SweetTV:
 			self.showError(self._("Error by loading collections of movies") + ": %s" % data.get('message', ''))
 			return None
 
-		movie_ids = data['movies']
+		movie_ids = data.get('movies')
 
-		if len(movie_ids) == 0:
+		if not movie_ids:
 			return []
 
 		return self.get_movie_info(movie_ids)
@@ -467,9 +467,9 @@ class SweetTV:
 			self.showError(self._("Error by loading movie genres") + ": %s" % data.get('message', ''))
 			return None
 
-		movie_ids = data['movies']
+		movie_ids = data.get('movies')
 
-		if len(movie_ids) == 0:
+		if not movie_ids:
 			return []
 
 		return self.get_movie_info(movie_ids)
@@ -493,7 +493,7 @@ class SweetTV:
 
 		movies = []
 
-		for movie in data.get('movies',[]):
+		for movie in (data.get('movies') or []):
 			movies.append({
 				'id': str(movie['external_id_pairs'][0]['external_id']),
 				'owner_id': str(movie['external_id_pairs'][0]['owner_id']),
@@ -516,7 +516,7 @@ class SweetTV:
 			req = self.api_session.get(url, headers=self.common_headers_stream)
 		except:
 			self.log_function("%s" % traceback.format_exc())
-			self.showError("Nastal problém pri načítení videa.")
+			self.showError(self._("Error by loading video"))
 			return None
 
 		if req.status_code != 200:

@@ -1,3 +1,6 @@
+1.15 - 23.06.2024
+    - oprava pádu ak server nevráti požadované dáta
+
 1.14 - 12.06.2024
     - pridaná skratka do archívu podľa názvu stanice
 
