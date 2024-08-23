@@ -330,7 +330,7 @@ class MagioGOContentProvider(ModuleContentProvider):
 	# ##################################################################################################################
 
 	def resolve_hls_streams(self, url, video_title, player_settings):
-		for one in self.get_hls_streams(url, self.magiogo.req_session, max_bitrate=self.get_setting('max_bitrate')):
+		for one in (self.get_hls_streams(url, self.magiogo.req_session, max_bitrate=self.get_setting('max_bitrate')) or []):
 			key = {
 				'url': one['playlist_url'],
 				'bandwidth': one['bandwidth'],
@@ -346,7 +346,7 @@ class MagioGOContentProvider(ModuleContentProvider):
 	# ##################################################################################################################
 
 	def resolve_dash_streams(self, url, video_title, player_settings):
-		for one in self.get_dash_streams(url, self.magiogo.req_session, max_bitrate=self.get_setting('max_bitrate')):
+		for one in (self.get_dash_streams(url, self.magiogo.req_session, max_bitrate=self.get_setting('max_bitrate')) or []):
 			key = {
 				'url': one['playlist_url'],
 				'bandwidth': one['bandwidth'],

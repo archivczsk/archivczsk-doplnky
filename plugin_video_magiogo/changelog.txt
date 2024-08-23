@@ -1,3 +1,7 @@
+1.23 - 23.08.2024
+    - oprava pádu pri nastavenom nekompatiblinom profile streamu v sekcii "Pre pokročilých"
+    - pri nastavení nesprávneho profilu nebude fungovať prehrávanie
+
 1.22 - 21.08.2024
     - oprava pádov pri chybných dátach vrátených zo servera
 
