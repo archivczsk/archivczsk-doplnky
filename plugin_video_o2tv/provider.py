@@ -205,7 +205,10 @@ class O2TVModuleArchive(CPModuleArchive):
 
 	def get_channel_id_from_path(self, path):
 		if path.startswith('playlive/'):
-			channel_id = base64.b64decode(path[9:].encode('utf-8')).decode("utf-8")
+			path = path[9:]
+			if path.endswith('/index.mpd'):
+				path = path[:-10]
+			channel_id = base64.b64decode(path.encode('utf-8')).decode("utf-8")
 			channel = self.cp.channels_by_key.get(channel_id)
 			return channel_id if channel['timeshift'] else None
 

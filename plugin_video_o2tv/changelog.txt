@@ -1,3 +1,6 @@
+1.16 - 27.08.2024
+    - oprava skratky pre vstup do archívu
+
 1.15 - 12.06.2024
     - pridaná skratka do archívu podľa názvu stanice
 
