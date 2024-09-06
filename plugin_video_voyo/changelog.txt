@@ -1,3 +1,7 @@
+1.5 - 06.09.2024
+    - oprava prehrávania živého vysielania
+    - oprava pádov pri zobrazení zariadení a informácii o účte
+
 1.4 - 31.07.2024
     - oprava pádu pri načítavaní EPG živých programov
 

@@ -606,7 +606,7 @@ class Voyo(object):
 			'id': user_id,
 			'name': resp['shownUsername'],
 			'from_partner': resp['isFromPartner'],
-			'devices_count': resp['devices']['count'],
+			'devices_count': (resp.get('devices') or {}).get('count') or len(self.get_devices()),
 			'subscription_type': resp['subscriptionLevel']['type'],
 			'subscription_name': resp['subscriptionLevel']['title'],
 		}
@@ -620,7 +620,7 @@ class Voyo(object):
 				'id': d['id'],
 				'name': d['name'],
 				'this': d['isCurrent'],
-				'last_profile': d['lastUsedBy']['name']
+				'last_profile': (d.get('lastUsedBy') or {}).get('name', "?")
 			})
 
 		return ret

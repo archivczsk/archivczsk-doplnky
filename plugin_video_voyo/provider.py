@@ -81,7 +81,7 @@ class VoyoContentProvider(CommonContentProvider):
 		result = []
 		result.append(self._("Name") + ': %s' % data['name'])
 		result.append(self._("Customer ID") + ": %s" % data["id"])
-		result.append(self._("Login from partner") + ": %s" %  self._("Yes") if data["from_partner"] else self._("No"))
+		result.append(self._("Login from partner") + ": %s" % (self._("Yes") if data["from_partner"] else self._("No")))
 		result.append("")
 		result.append(self._("Active subscription") + ": %s (%s)" % (data["subscription_name"], data['subscription_type']))
 		result.append("")
