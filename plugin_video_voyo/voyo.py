@@ -524,8 +524,9 @@ class Voyo(object):
 
 	def get_content_info(self, id):
 		params = {
-			'acceptVideo': 'dash,drm-widevine'
+			'acceptVideo': 'dash,hls,drm-widevine'
 		}
+
 		resp = self.call_api('content/%s/plays' % str(id), params=params, method="POST")
 		content = resp['content']
 		result = {

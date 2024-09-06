@@ -2,6 +2,7 @@
 from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
+from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman
 from tools_archivczsk.cache import SimpleAutokeyExpiringCache
 from tools_archivczsk.player.features import PlayerFeatures
@@ -243,6 +244,11 @@ class VoyoContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
+	def get_hls_info(self, stream_key):
+		return self.get_dash_info(stream_key)
+
+	# ##################################################################################################################
+
 	def resolve_dash_streams(self, url, video_title, drm_info):
 		streams = self.get_dash_streams(url, self.voyo.req_session, max_bitrate=self.get_setting('max_bitrate'))
 		if not streams:
@@ -268,12 +274,42 @@ class VoyoContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
+	def resolve_hls_streams(self, url, video_title, drm_info):
+		streams = self.get_hls_streams(url, self.voyo.req_session, max_bitrate=self.get_setting('max_bitrate'))
+		if not streams:
+			return
+
+		data = {
+			'url': streams[0]['playlist_url'],
+			'drm_info': drm_info
+		}
+
+		cache_key = self.scache.put(data)
+		for one in streams:
+			key = {
+				'key': cache_key,
+				'bandwidth': one['bandwidth']
+			}
+
+			info_labels = {
+				'bandwidth': one['bandwidth'],
+				'quality': one.get('resolution', 'x720').split('x')[1] + 'p'
+			}
+			self.add_play(video_title, stream_key_to_hls_url(self.http_endpoint, key), info_labels=info_labels)
+
+	# ##################################################################################################################
+
 	def play_item(self, item_id, play_title):
 		content = self.voyo.get_content_info(item_id)
+
 		drm_info = {
 			'licence_url': content.get('licenseUrl'),
 			'licence_key': content.get('licenseKey')
 		}
-		self.resolve_dash_streams(content['videoUrl'], play_title, drm_info)
+
+		if content['videoType'] == 'hls':
+			self.resolve_hls_streams(content['videoUrl'], play_title, drm_info)
+		else:
+			self.resolve_dash_streams(content['videoUrl'], play_title, drm_info)
 
 	# ##################################################################################################################
