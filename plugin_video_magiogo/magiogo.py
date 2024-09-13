@@ -50,8 +50,8 @@ class MagioGOChannel(object):
 		else:
 			self.epg_name = info.get('name')
 		self.epg_desc = info.get('longDescription')
-		self.epg_start = info.get('start') // 1000
-		self.epg_stop = info.get('end') // 1000
+		self.epg_start = (info.get('start') or 0) // 1000
+		self.epg_stop = (info.get('end') or 0) // 1000
 		self.epg_year = info.get('creationYear')
 		self.epg_duration = int(info['runtimeMinutes']) * 60 if info.get('runtimeMinutes') else None
 

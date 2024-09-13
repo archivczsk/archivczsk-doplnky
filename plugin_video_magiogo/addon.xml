@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.magiogo" name="Magio TV" provider-name="archivczsk" version="1.23">
+<addon id="plugin.video.magiogo" name="Magio TV" provider-name="archivczsk" version="1.24">
 	<requires>
-		<import addon="enigma2.archivczsk" version="2.6.6"/>
-		<import addon="tools.archivczsk" version="1.32" />
+		<import addon="enigma2.archivczsk" version="2.8.0"/>
+		<import addon="tools.archivczsk" version="1.36" />
 	</requires>
 	<extension point="archivczsk.addon.video" preload="yes"/>
 	<extension point="archivczsk.addon.shortcut" name="archive"/>
