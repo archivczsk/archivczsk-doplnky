@@ -249,7 +249,7 @@ class PrimaPlusContentProvider(CommonContentProvider):
 		for ch in self.primaplus.get_channels():
 			epg = epg_data.get(ch['id'])
 
-			if epg:
+			try:
 				title = ch['title'] + '  ' + _I(epg['title'])
 				epg_start = datetime.strptime(epg["programStartTime"][:19], "%Y-%m-%dT%H:%M:%S") + utc_offset
 				epg_stop = datetime.strptime(epg["programEndTime"][:19], "%Y-%m-%dT%H:%M:%S") + utc_offset
@@ -260,7 +260,10 @@ class PrimaPlusContentProvider(CommonContentProvider):
 					'genre': ', '.join(epg.get('genres',[])),
 					'duration': epg.get('duration') // 1000 if epg.get('duration') else 0
 				}
-			else:
+			except Exception as e:
+				if epg:
+					self.log_error("Wrong EPG for channel %s:\n%s" % (str(ch), str(e)))
+
 				title = ch['title']
 				info_labels = {}
 
