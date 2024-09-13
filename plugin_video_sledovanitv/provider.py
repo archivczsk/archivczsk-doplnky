@@ -263,6 +263,9 @@ class SledovaniTVModuleRecordings(CPModuleTemplate):
 			if check_recording_state(record["enabled"], 1):
 				event = record.get('event', {})
 
+				if not event:
+					continue
+
 				desc = event.get("title", '')
 
 				if 'expires' in record:
