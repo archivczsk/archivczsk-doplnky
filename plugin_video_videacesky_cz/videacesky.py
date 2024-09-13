@@ -69,6 +69,12 @@ class VideaceskyContentProvider(ContentProvider):
 		minutes, seconds = [int(x) for x in mmss.split(':')]
 		return (minutes * 60 + seconds)
 
+	def fix_url(self, url):
+		if url.startswith('http://') or url.startswith('https://'):
+			return url
+		else:
+			return quote(url)
+
 	def categories(self):
 		result = []
 		item = self.dir_item()
@@ -87,7 +93,7 @@ class VideaceskyContentProvider(ContentProvider):
 				continue
 			item = self.dir_item()
 			item['title'] = m.group('name')
-			item['url'] = m.group('url')
+			item['url'] = self.fix_url(m.group('url'))
 			result.append(item)
 		return result
 
@@ -100,7 +106,7 @@ class VideaceskyContentProvider(ContentProvider):
 		for m in re.finditer(pattern, data, re.IGNORECASE | re.DOTALL):
 			item = self.video_item()
 			item['title'] = self.format_title(m)
-			item['url'] = self.base_url[:-1] + m.group('url')
+			item['url'] = self.base_url[:-1] + self.fix_url(m.group('url'))
 			item['img'] = m.group('img').strip()
 			item['plot'] = self.format_rating(m)
 			self._filter(result, item)
@@ -118,7 +124,7 @@ class VideaceskyContentProvider(ContentProvider):
 			item['img'] = m.group('img').strip()
 			item['plot'] = self.decode_plot(m)
 			item['year'] = re.search('[0-9]{4}', m.group('date')).group()
-			item['url'] = self.base_url[:-1] + m.group('url')
+			item['url'] = self.base_url[:-1] + self.fix_url(m.group('url'))
 			item['menu'] = {'$30060': {'list': '#related#' + item['url'],
 									   'action-type': 'list'}}
 			try:
@@ -133,13 +139,13 @@ class VideaceskyContentProvider(ContentProvider):
 			item = self.dir_item()
 			item['type'] = 'prev'
 			# item['title'] = '%s - %s' % (m.group(1), n.group('name'))
-			item['url'] = n.group('url')
+			item['url'] = self.fix_url(n.group('url'))
 			result.append(item)
 		if k is not None:
 			item = self.dir_item()
 			item['type'] = 'next'
 			# item['title'] = '%s - %s' % (m.group(1), k.group('name'))
-			item['url'] = k.group('url')
+			item['url'] = self.fix_url(k.group('url'))
 			result.append(item)
 		return result
 
@@ -153,7 +159,7 @@ class VideaceskyContentProvider(ContentProvider):
 			item = self.video_item()
 			item['title'] = self.format_title(m)
 			item['img'] = m.group('img')
-			item['url'] = m.group('url')
+			item['url'] = self.fix_url(m.group('url'))
 			self._filter(result, item)
 		return result
 
