@@ -241,6 +241,9 @@ class Webshare():
 
 		salt = self.get_file_password_salt(ident)
 		if salt:
+			if file_name is None:
+				raise ResolveException(self.cp._("File is password protected, but SCC server hasn't returned enough information to compute it."))
+
 			self.cp.log_debug("Salt for password protected file: %s" % salt)
 			file_password = sha512((file_name + ident).encode('utf-8')).hexdigest()
 			request_data['password'] = self.get_password_hash(file_password, salt)
