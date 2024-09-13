@@ -59,13 +59,13 @@ class AntikTVModuleLiveTV(CPModuleLiveTV):
 
 				time_prefix = self.cp.convert_time(epg["start"], epg["stop" ]) + "\n"
 			except:
-				epg = { "title": channel.get('desc_short', ''), "desc": channel.get('desc_long', '') }
+				epg = { "title": str(channel.get('desc_short', '')), "desc": str(channel.get('desc_long', '')) }
 				epg_str = "  " + _I(channel.get('desc_short', ''))
 				title = str(channel.get('desc_short', ''))
 				time_prefix = ""
 
 			info_labels = {
-				'plot': time_prefix + epg.get("desc", ""),
+				'plot': time_prefix + str(epg.get("desc", "")),
 				'title': title,
 				'adult': channel['adult']
 			}

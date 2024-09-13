@@ -1,3 +1,6 @@
+2.18:
+- oprava pádu ak popis programu neobsahuje text
+
 2.17:
 - oprava prehrávania archívu pokiaľ server vracia nevalídnu adresu
 
