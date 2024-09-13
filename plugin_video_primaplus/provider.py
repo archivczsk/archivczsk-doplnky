@@ -67,7 +67,10 @@ class PrimaPlusContentProvider(CommonContentProvider):
 		if data.get("address"):
 			result.append(self._("Address") + ': %s, %s %s' % (data["address"]['streetAddress'] or '', data["address"]['postalCode'] or '', data["address"]['locality'] or ''))
 		result.append(self._("E-Mail") + ': ' + data["email"])
-		result.append(self._("Year of birth") + ': %d' % data["birthYear"])
+
+		if data.get("birthYear"):
+			result.append(self._("Year of birth") + ': %d' % data["birthYear"])
+
 		result.append(self._("Customer key") + ": " + data["uuid"])
 		result.append("")
 		result.append(self._("Active subscription") + ": " + data["primaPlay"]['userLevel'])
