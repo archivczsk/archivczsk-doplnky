@@ -43,10 +43,11 @@ CLEANR = re.compile('<.*?>|&lt;.*?&gt;')
 
 
 def showInfo(session, mmsg):
-	client.show_message(session, mmsg, msg_type='info', timeout=4)
+#	client.show_message(session, mmsg, msg_type='info', timeout=4)
+	client.showInfo(mmsg)
 
 def showError(session, mmsg):
-	client.show_message(session, mmsg, msg_type='error', timeout=4)
+	client.showError(mmsg)
 
 class DokumentyTVContentProvider(ContentProvider):
 
