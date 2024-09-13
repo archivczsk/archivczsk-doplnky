@@ -19,6 +19,7 @@ except:
 	from configparser import ConfigParser
 
 from tools_archivczsk.debug.http import dump_json_request
+from tools_archivczsk.contentprovider.archivczsk_provider import client
 
 # #################################################################################################
 
@@ -123,7 +124,7 @@ class Stalker:
 
 	def showError(self, msg):
 		self.log_function("Stalker API ERROR: %s" % msg )
-		raise Exception("Stalker: %s" % msg)
+		client.showError(msg)
 
 	# #################################################################################################
 
