@@ -1,3 +1,6 @@
+2024-09-13 (verze 3.9)
+* oprava pádu ak sa nepodarí získať adresa streamu
+
 2024-08-05 (verze 3.8)
 * oprava pádu ak sa na stránke nenájde video element
 

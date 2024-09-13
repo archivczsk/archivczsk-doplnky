@@ -374,7 +374,7 @@ class TVNovaContentProvider(CommonContentProvider):
 				'playlist_url': streams[0]['playlist_url'] if streams else None
 			})
 
-			for stream in streams:
+			for stream in (streams or []):
 				ret.append({
 					'url': stream_key_to_hls_url(self.http_endpoint, {'ck': cache_key, 'bandwidth': stream['bandwidth']}),
 					'bandwidth': stream['bandwidth'],
@@ -480,4 +480,3 @@ class TVNovaContentProvider(CommonContentProvider):
 				'quality': one['quality']
 			}
 			self.add_play(video_title, one['url'], info_labels=info_labels, settings=settings)
-
