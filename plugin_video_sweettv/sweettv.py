@@ -154,6 +154,9 @@ class SweetTV:
 		headers = self.common_headers
 
 		if auth_header:
+			if not self.access_token:
+				self.showLoginError(self._("Can't access this content. You are not logged in!"))
+
 			headers['authorization'] = "Bearer " + self.access_token
 		else:
 			if 'authorization' in headers:

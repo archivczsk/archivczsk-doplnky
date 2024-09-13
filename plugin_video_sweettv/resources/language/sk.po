@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_sweettv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-24 15:03+0200\n"
-"PO-Revision-Date: 2024-04-24 15:04+0200\n"
+"POT-Creation-Date: 2024-09-13 11:23+0200\n"
+"PO-Revision-Date: 2024-09-13 11:24+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -16,116 +16,120 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_sweettv/provider.py:143
+#: plugin_video_sweettv/provider.py:150
 msgid "By genre"
 msgstr "Podľa žánru"
 
-#: plugin_video_sweettv/provider.py:144
+#: plugin_video_sweettv/provider.py:151
 msgid "By collection"
 msgstr "Podľa kolekcie"
 
-#: plugin_video_sweettv/provider.py:181
+#: plugin_video_sweettv/provider.py:188
 msgid "Special section"
 msgstr "Špeciálna sekcia"
 
-#: plugin_video_sweettv/provider.py:192
+#: plugin_video_sweettv/provider.py:199
 msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
 msgstr "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočné zariadenia, aby ste sa mohli znova inde prihlásiť."
 
-#: plugin_video_sweettv/provider.py:193
+#: plugin_video_sweettv/provider.py:200
 msgid "Registered devices"
 msgstr "Zaregistrované zariadenia"
 
-#: plugin_video_sweettv/provider.py:194
+#: plugin_video_sweettv/provider.py:201
 msgid "Run EPG export to enigma or XML files"
 msgstr "Spustiť EPG export do enigmy alebo do XML súborov"
 
-#: plugin_video_sweettv/provider.py:195
+#: plugin_video_sweettv/provider.py:202
 msgid "Forces logout from this devices and does new login. Use if you have problem with playback. After running this option it's necessary to go out of this addon to force new automatic login."
 msgstr "Vynúti odhlásenie z tohto zariadenia a vykoná nové prihlásenie. Použite to v prípade problémov s prehrávaním. Po spustení tejto voľby je nutné doplnok opustiť a vrátiť sa späť pre opätovné prihlásenie."
 
-#: plugin_video_sweettv/provider.py:196
+#: plugin_video_sweettv/provider.py:203
 msgid "Logout from this device"
 msgstr "Odhlásiť sa z tohto zariadenia"
 
-#: plugin_video_sweettv/provider.py:202
+#: plugin_video_sweettv/provider.py:209
 msgid "EPG export started"
 msgstr "EPG export bol spustený"
 
-#: plugin_video_sweettv/provider.py:209 plugin_video_sweettv/provider.py:210
+#: plugin_video_sweettv/provider.py:216 plugin_video_sweettv/provider.py:217
 msgid "You have been logged out!"
 msgstr "Boli ste odhlásený!"
 
-#: plugin_video_sweettv/provider.py:218
+#: plugin_video_sweettv/provider.py:225
 msgid "In menu you can remove device using Remove device!"
 msgstr "V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!"
 
-#: plugin_video_sweettv/provider.py:221
+#: plugin_video_sweettv/provider.py:228
 msgid "Remove device!"
 msgstr "Zmazať zariadenie!"
 
-#: plugin_video_sweettv/provider.py:228
+#: plugin_video_sweettv/provider.py:235
 #, python-brace-format
 msgid "Device {device} was removed!"
 msgstr "Zariadenie {device} bolo vymazané!"
 
-#: plugin_video_sweettv/provider.py:326
+#: plugin_video_sweettv/provider.py:337
 msgid "Play trailer"
 msgstr "Prehrať trailer"
 
-#: plugin_video_sweettv/sweettv.py:188
+#: plugin_video_sweettv/sweettv.py:158
+msgid "Can't access this content. You are not logged in!"
+msgstr "Nemôžem pristúpiť k tomuto obsahu. Nie ste prihlásený!"
+
+#: plugin_video_sweettv/sweettv.py:191
 msgid "Unexpected return code from server"
 msgstr "Neočakávaný návratový kód zo servera"
 
-#: plugin_video_sweettv/sweettv.py:230
+#: plugin_video_sweettv/sweettv.py:233
 msgid "Error by login"
 msgstr "Problém pri prihlásení"
 
-#: plugin_video_sweettv/sweettv.py:258
+#: plugin_video_sweettv/sweettv.py:261
 msgid "Error by refresing login token"
 msgstr "Nastala chyba pri obnove prihlasovacieho tokenu"
 
-#: plugin_video_sweettv/sweettv.py:370
+#: plugin_video_sweettv/sweettv.py:373
 msgid "Error by loading EPG"
 msgstr "Pri načítaní EPG nastala chyba"
 
-#: plugin_video_sweettv/sweettv.py:397
+#: plugin_video_sweettv/sweettv.py:400
 msgid "Error by loading channnel list"
 msgstr "Pri načítaní zoznamu programov nastala chyba"
 
-#: plugin_video_sweettv/sweettv.py:424
+#: plugin_video_sweettv/sweettv.py:427
 msgid "Error by loading movie configuration"
 msgstr "Nastala chyba pri načítaní konfigurácie filmov"
 
-#: plugin_video_sweettv/sweettv.py:435
+#: plugin_video_sweettv/sweettv.py:438
 msgid "Error by loading list of collections"
 msgstr "Nastala chyba pri načítaní zoznamu kolekcií"
 
-#: plugin_video_sweettv/sweettv.py:451
+#: plugin_video_sweettv/sweettv.py:454
 msgid "Error by loading collections of movies"
 msgstr "Nastala chyba pri načítaní kolekcie filmov"
 
-#: plugin_video_sweettv/sweettv.py:467
+#: plugin_video_sweettv/sweettv.py:470
 msgid "Error by loading movie genres"
 msgstr "Nastala chyba pri načítaní žánrov"
 
-#: plugin_video_sweettv/sweettv.py:491
+#: plugin_video_sweettv/sweettv.py:494
 msgid "Error by loading movie informations"
 msgstr "Nastala chyba pri načítaní informácii o filmoch"
 
-#: plugin_video_sweettv/sweettv.py:523
+#: plugin_video_sweettv/sweettv.py:522 plugin_video_sweettv/sweettv.py:526
 msgid "Error by loading video"
 msgstr "Nastal problém pri načítaní videa"
 
-#: plugin_video_sweettv/sweettv.py:585
+#: plugin_video_sweettv/sweettv.py:588
 msgid "Error by loading stream address"
 msgstr "Nastala chyba pri získavaní adresy streamu"
 
-#: plugin_video_sweettv/sweettv.py:609
+#: plugin_video_sweettv/sweettv.py:612
 msgid "Error by loading movie stream address"
 msgstr "Nastala chyba pri získavaní adresy filmu"
 
-#: plugin_video_sweettv/sweettv.py:613
+#: plugin_video_sweettv/sweettv.py:616
 msgid "Unsupported stream type"
 msgstr "Nepodporovaný typ streamu"
 
