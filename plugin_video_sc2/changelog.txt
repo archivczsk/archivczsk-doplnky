@@ -1,5 +1,6 @@
 2024-09-13 [3.19]
 * oprava pádu ak nie je možné získať heslo pre video stream
+* pokus o vyfiltrovanie/ignorovanie nezmyslov z SCC databázy
 
 2024-08-21 [3.18]
 * prehrávanie trailerov z youtube cez priame volanie yt doplnku

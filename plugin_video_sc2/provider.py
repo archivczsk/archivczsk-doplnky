@@ -378,7 +378,9 @@ class SccContentProvider(CommonContentProvider):
 	def get_media_info(self, media, title_hint=None):
 		# build title, img and info_labels dictionary
 
-		# title_hint is used when building title for a-z menu because of hirrible API and results - bleah :-(
+		# title_hint is used when building title for a-z menu because of horrible API and results - bleah :-(
+		if title_hint:
+			title_hint = re.sub(r'[^A-Za-z0-9]+|\s+', '', strip_accents(title_hint)).lower()
 
 		title = ''
 		ep_code = ''
@@ -410,7 +412,7 @@ class SccContentProvider(CommonContentProvider):
 
 		if i18n_info:
 			for l in i18n_info:
-				if 'title' in l:
+				if l.get('title'):
 					info_title = l['title']
 
 					if title_hint and info_title:
@@ -418,7 +420,8 @@ class SccContentProvider(CommonContentProvider):
 						if not stripped_value.startswith(title_hint):
 							info_title = None
 
-					if info_title:
+					# check if there is at leas one ascii char in title - there is a lot of mess in database ...
+					if info_title and any(c.isascii() and (not c.isspace()) for c in info_title):
 						if media_type == 'episode':
 							info_labels['epname'] = info_title
 							ep_name_postfix = ': ' + info_title
@@ -451,7 +454,7 @@ class SccContentProvider(CommonContentProvider):
 		info_labels['year'] = info.get('year')
 
 		if not title:
-			title = info.get('originaltitle', '')
+			title = info.get('originaltitle') or ''
 
 		info_labels['title'] = (se_title or title) + ep_code
 		info_labels['search_keyword'] = (se_title or title) + ep_code2
