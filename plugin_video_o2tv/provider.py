@@ -416,7 +416,7 @@ class O2TVModuleExtra(CPModuleTemplate):
 		self.cp.o2tv.activate_service(service_id)
 		self.cp.add_video(_C('red', self._('Service {service} was activated!').format(service=service_name)), download=False)
 		self.cp.load_channel_list(True)
-		self.cp.bxeg.bouquet_settings_changed()
+		self.cp.bxeg.bouquet_settings_changed("", "")
 
 	# #################################################################################################
 

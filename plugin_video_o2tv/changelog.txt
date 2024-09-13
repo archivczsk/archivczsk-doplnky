@@ -1,3 +1,6 @@
+1.17 - 13.09.2024
+    - oprava pádu pri zmene aktívnej služby
+
 1.16 - 27.08.2024
     - oprava skratky pre vstup do archívu
 
