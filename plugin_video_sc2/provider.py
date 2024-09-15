@@ -4,7 +4,7 @@ try:
 except:
 	trakttv = None
 
-import re
+import re, sys
 from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman, strip_accents
@@ -376,6 +376,16 @@ class SccContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def get_media_info(self, media, title_hint=None):
+		def check_ascii(s):
+			if sys.version_info[0] >= 3 and sys.version_info[1] >= 7:
+				return s.isascii()
+			else:
+				try:
+					s.decode('ascii')
+					return True
+				except:
+					return False
+
 		# build title, img and info_labels dictionary
 
 		# title_hint is used when building title for a-z menu because of horrible API and results - bleah :-(
@@ -421,7 +431,7 @@ class SccContentProvider(CommonContentProvider):
 							info_title = None
 
 					# check if there is at leas one ascii char in title - there is a lot of mess in database ...
-					if info_title and any(c.isascii() and (not c.isspace()) for c in info_title):
+					if info_title and any(check_ascii(c) and (not c.isspace()) for c in info_title):
 						if media_type == 'episode':
 							info_labels['epname'] = info_title
 							ep_name_postfix = ': ' + info_title
