@@ -284,7 +284,7 @@ class SweetTVContentProvider(ModuleContentProvider):
 		self.process_movie_data(events['movies'])
 
 		for event in events['events']:
-			self.add_video(event['title'] + _C('yellow', ' ' + event['time']), img=event['poster'], cmd=self.get_archive_stream, archive_name=event['title'], channel_id=event['channel_id'], epg_id=event['event_id'])
+			self.add_video(event['title'] + _C('yellow', ' ' + event['time']), img=event['poster'], cmd=self.get_archive_stream, archive_title=event['title'], channel_id=event['channel_id'], epg_id=event['event_id'])
 
 	# #################################################################################################
 
