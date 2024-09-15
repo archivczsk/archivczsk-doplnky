@@ -1,3 +1,6 @@
+1.10 - 15.09.2024
+    - úprava závislosti doplnku
+
 1.9 - 12.06.2024
     - pridaná skratka do archívu podľa názvu stanice
 

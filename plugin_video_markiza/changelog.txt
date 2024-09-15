@@ -1,3 +1,6 @@
+2.10: 15.09.2024
+- úprava závislosti doplnku
+
 2.9: 15.08.2024
 - oprava načítavania posledných epizod po zmene na stránke
 

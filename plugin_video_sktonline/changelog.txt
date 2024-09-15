@@ -1,3 +1,6 @@
+2.8: 15.09.2024
+- updated addon dependency
+
 2.7: 05.08.2024
 - fixed crash when searching string with unicode characters
 

@@ -1,3 +1,6 @@
+1.6 - 2024-09-15
+- úprava závislosti doplnku
+
 1.5 - 2024-01-27
 - added support for virtual profiles in ArchivCZSK >= 2.5.0
 

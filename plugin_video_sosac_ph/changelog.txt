@@ -1,3 +1,6 @@
+2.8: 15.09.2024
+- úprava závislosti doplnku
+
 2.7: 15.08.2024
 - oprava pádu ak sezóna/epizóda u seriálu nie je číslo (server vracia chybné dáta)
 

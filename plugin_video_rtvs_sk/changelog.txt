@@ -1,3 +1,6 @@
+1.13.0:
+- úprava závislosti doplnku
+
 1.12.0:
 - added support for virtual profiles in ArchivCZSK >= 2.5.0
 

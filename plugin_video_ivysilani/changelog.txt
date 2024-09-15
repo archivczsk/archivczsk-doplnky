@@ -1,3 +1,6 @@
+2024-09-15 [2.3]
+* úprava závislosti doplnku
+
 2024-07-01 [2.2]
 * oprava zobrazenia menu podľa začiatočného písmena a podľa žánru
 

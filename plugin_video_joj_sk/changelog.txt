@@ -1,3 +1,6 @@
+1.6.2
+- úprava závislosti doplnku
+
 1.6.1
 - fixed live TV playback and added full HD streams
 - fixed archive playback

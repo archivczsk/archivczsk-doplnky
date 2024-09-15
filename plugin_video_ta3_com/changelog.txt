@@ -1,3 +1,6 @@
+2.2:
+- úprava závislosti doplnku
+
 2.1:
 - úpravy kvôli kompatibilite s BeautifulSoup ver. 4.9
 

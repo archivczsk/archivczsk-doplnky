@@ -1,3 +1,6 @@
+2024-09-15 - 2.19
+* úprava závislosti doplnku
+
 2024-08-05 - 2.18
 * oprava pádu ak kanál nemá EPG
 
