@@ -894,17 +894,17 @@ class SccContentProvider(CommonContentProvider):
 			k3 = 'sk'
 
 		def sort_fn(strm):
-			video = strm.get('video', [{}])[0]
+			video = (strm.get('video') or [{}])[0]
 			height = video.get('height', 0)
 
 			auds = { 'cs': 0, 'sk': 0, 'en': 0 }
-			for audio in strm.get('audio', []):
+			for audio in (strm.get('audio') or []):
 				a = audio.get('language')
 				if a in auds:
 					auds[a] = 1
 
 			subs = { 'cs': 0, 'sk': 0, 'en': 0 }
-			for audio in strm.get('subtitles', []):
+			for audio in (strm.get('subtitles') or []):
 				s = audio.get('language')
 				if s in subs:
 					subs[s] = 1
