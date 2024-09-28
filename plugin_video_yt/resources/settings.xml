@@ -5,4 +5,5 @@
   <setting label="Max watched items" id="max_watched" type="number" default="10"/>
   <setting label="Preferred stream resolution" id="max_resolution" type="keyenum" values="38;4k|37;1080p|22;720p|35;480p|18;360p" default="37" />
   <setting label="Check exteplayer3 version on startup" id="player-check" type="bool" default="true" />
+  <setting label="Youtube API key" id="api_key" type="text" default=""/>
 </settings>

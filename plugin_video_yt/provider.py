@@ -6,7 +6,8 @@ from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.player.features import PlayerFeatures
 from time import time
 from datetime import timedelta
-import re, os
+from base64 import b64decode
+import re, os, json
 from .youtube import resolve as yt_resolve
 
 class YoutubeContentProvider(CommonContentProvider):
@@ -16,6 +17,8 @@ class YoutubeContentProvider(CommonContentProvider):
 		self.watched = self.load_cached_data('watched')
 		self.req_session = self.get_requests_session()
 		self.max_results = 100
+		self.api_keys = json.loads(b64decode(b'WyJBSXphU3lDTlJlTXZLTG5hV1JSNVQ1dUdXcHZuNEkyVlljNzhHeTQiLCAiQUl6YVN5Q1RXQzc1aTcwbW9KTHp5TmgzdHQ0anpDbGpaY1JrVThZIiwgIkFJemFTeUJTbk5RN3FPbUxQeEM1Q2FISDlCV0hxQWdyZWN3ekNWQSIsICJBSXphU3lDSU00RXpOcWkxaW4yMmY0WjNSdTNpWXZMYVk4dGMzYm8iLCAiQUl6YVN5RDJKMmxxbmpFNVYwZkh2aUVJQ0hNdGMyUFNLcVk3SVNrIiwgIkFJemFTeUNPbGxFS01OeEZTYldESVNBT1JvdnRWR193dnlHQVFCdyIsICJBSXphU3lCQ2wxSVNNU3FxSWU5YWpGa2ZJQndkVHgxaG9ySkZJOFEiLCAiQUl6YVN5QlVfb1dFSVVMaTMtbjk2dldLRVRZQ01zbGRZREFsejJNIiwgIkFJemFTeUM0QzNnelNTRXJ6bWMyRmVVVGxlUXFaR3p3OC16LWQ2dyIsICJBSXphU3lDckZXaVBmR2NiNUlzeVMtd3BBTWs2ZWFOZE1hQzhwWHMiLCAiQUl6YVN5RGxaUjJVaHdRWGVHdzJJaENSbnBvWkI4TEhaa2Fnd0k0IiwgIkFJemFTeUNYcWpzMlpQYjBQUVJlSVdpRU5NQUFrU3gwX3R2ZDRuayIsICJBSXphU3lDc0U5MVBURC1YalRVM09fSVpwWTBQdlZvbTJ0dzREcjgiLCAiQUl6YVN5QXJyaGtoNDliMkdObEM4VWRMb2RxM3VTcEt6Y2dkemVnIiwgIkFJemFTeUNQY0FLQzc0U3pnUUI4TVNYS2NQTzZ6SW9WZnF3bE9pZyIsICJBSXphU3lEQmtvSGREMUl3Nkhvb01oTW9PYmJIRkNYSEZTd0t6SVUiLCAiQUl6YVN5QzRDM2d6U1NFcnptYzJGZVVUbGVRcVpHenc4LXotZDZ3Il0=').decode('utf-8'))
+		self.api_key_blacklist = {}
 
 	# ##################################################################################################################
 
@@ -36,20 +39,54 @@ class YoutubeContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
+	def get_api_key(self):
+		api_key = self.get_setting('api_key')
+
+		if api_key:
+			api_keys = [api_key]
+		else:
+			api_keys = self.api_keys
+
+		act_time = int(time())
+
+		for api_key in api_keys:
+			if self.api_key_blacklist.get(api_key, 0) < act_time:
+				return api_key
+
+		return None
+
+	# ##################################################################################################################
+
+	def blacklist_api_key(self, api_key):
+		self.api_key_blacklist[api_key] = int(time()) + 3600
+
+	# ##################################################################################################################
+
 	def call_api(self, endpoint, params={}):
-		params.update({
-			'key': "AIzaSyCNReMvKLnaWRR5T5uGWpvn4I2VYc78Gy4"
-		})
+		while True:
+			api_key = self.get_api_key()
+			if not api_key:
+				raise AddonErrorException(self._("This addon reached available limit of requests to youtube API. Try again later."))
 
-		try:
-			response = self.req_session.get("https://www.googleapis.com/youtube/v3/" + endpoint, params=params)
-			response.raise_for_status()
-		except Exception as e:
-			self.log_exception()
-			raise AddonErrorException(str(e))
+			params.update({
+				'key': api_key
+			})
 
-#		dump_json_request(response)
-		return response.json()
+			try:
+				response = self.req_session.get("https://www.googleapis.com/youtube/v3/" + endpoint, params=params)
+				if response.status_code in (403, 404):
+					# daily quata this used API key is exceeded
+					self.log_error("Request using API KEY %s FAILED - blacklisting" % api_key)
+					self.blacklist_api_key(api_key)
+					continue
+
+				response.raise_for_status()
+			except Exception as e:
+				self.log_exception()
+				raise AddonErrorException(str(e))
+
+	#		dump_json_request(response)
+			return response.json()
 
 	# ##################################################################################################################
 

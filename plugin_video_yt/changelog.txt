@@ -1,3 +1,8 @@
+2.1: 28.09.2024
+- zvýšenie limitu pre prístup k youtube API a vylepšenie hlásenia ak prístup zlyhá
+- možnosť v nastaveniach zadať vlastný kľúč k youtube API
+- oprava prehrávania po zmenách na strane youtube
+
 2.0: 20.08.2024
 - z dôvodu zmien na strane youtube bol doplnok prepísaný na nové API
 - doplnok po novom služi pre prehrávanie videí aj pre ostatné doplnky, ktoré potrebujú prehrať youtube videa (napr. pre SC a SCC trailery u filmov)
