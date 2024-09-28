@@ -225,7 +225,8 @@ class PrimaPlusContentProvider(CommonContentProvider):
 
 		for item in items:
 			if item['type'] == 'static' and item['slug'] != 'https://iprima.cz/subskripce':
-				self.add_dir(item['title'], menu=menu, cmd=self.list_strip, strip_id=strip_id, strip_filter=[{'type' : 'genre', 'value' : item['title']}])
+				if item.get('title'):
+					self.add_dir(item['title'], menu=menu, cmd=self.list_strip, strip_id=strip_id, strip_filter=[{'type' : 'genre', 'value' : item['title']}])
 			elif item['type'] in ('movie', 'series', 'episode'):
 				self.add_list_item(item, menu=menu)
 

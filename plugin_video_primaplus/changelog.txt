@@ -1,3 +1,6 @@
+1.4 - 28.09.2024
+- oprava pádu ak relácia nemá zadaný názov
+
 1.3 - 13.09.2024
 - oprava pádu ak program obsahuje nekompletné EPG
 - oprava pádu pri zobrazení infromácií o predplatnom
