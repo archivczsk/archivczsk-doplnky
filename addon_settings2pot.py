@@ -19,7 +19,7 @@ class SettingsXMLParser:
 			self.xml = None
 
 	def parse(self):
-		if not self.xml:
+		if self.xml is None:
 			return
 
 		categories = []
