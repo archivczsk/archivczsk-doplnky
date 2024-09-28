@@ -356,7 +356,7 @@ class MarkizaContentProvider(CommonContentProvider):
 
 		self.last_hls = url
 
-		for stream in streams:
+		for stream in (streams or []):
 			stream['url'] = stream_key_to_hls_url(self.http_endpoint, stream['bandwidth'])
 #			self.log_debug("HLS for bandwidth %s: %s" % (stream['bandwidth'], stream['url']))
 
