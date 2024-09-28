@@ -397,9 +397,8 @@ class JojContentProvider(ContentProvider):
 				vdata = util.substr(data, '<div style="position:relative !important;', '</div>')
 			iframe_url = re.search('<iframe src="([^"]+)"', vdata).group(1)
 			#print('iframe_url = ', iframe_url)
-			player_str = urlopen(iframe_url).read()
-			#print(player_str)
-			d_player_str = player_str.decode("utf-8")
+			d_player_str = requests.get(iframe_url, headers={'Referer': 'https://videoportal.joj.sk'}).text
+			#print(d_player_str)
 
 			labels_str = re.search(r'var labels = {(.+?)};', d_player_str, re.DOTALL).group(1)
 			#print('labels:', labels_str)

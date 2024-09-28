@@ -1,3 +1,6 @@
+1.6.3
+- oprava prehrávania starších epizód
+
 1.6.2
 - úprava závislosti doplnku
 
