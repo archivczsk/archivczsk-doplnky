@@ -400,7 +400,7 @@ class O2TV(object):
 			else:
 				total_count = response['result']['totalCount']
 				if total_count > 0:
-					for object in response['result']['objects']:
+					for object in response['result'].get('objects',[]):
 						result.append(object)
 					if total_count == len(result):
 						fetch = False
@@ -698,7 +698,7 @@ class O2TV(object):
 		data = self.call_o2_api('asset/action/getPlaybackContext',data=post)
 
 		if 'sources' not in data.get('result', {}):
-			raise Exception("Failed to resolve stream address")
+			raise AddonErrorException(self._("No playable stream was returned from server."))
 
 		sources = data['result']['sources']
 
