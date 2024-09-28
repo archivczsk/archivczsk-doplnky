@@ -30,6 +30,10 @@ print = lambda *args: log.debug(' '.join( [str(x) for x in args]))
 
 PRIORITY_VIDEO_FORMAT = ()
 
+def dump_response(resp, name):
+	import json
+	with open('/tmp/yt_resp_' + name + '.json', 'w') as f:
+		json.dump(resp or {}, f)
 
 def create_priority_formats():
 	global PRIORITY_VIDEO_FORMAT
@@ -341,21 +345,7 @@ class YouTubeVideoUrl():
 		}
 		if yt_auth:
 			headers['Authorization'] = yt_auth
-		if client == 5:
-			VERSION = '19.09.3'
-			USER_AGENT = 'com.google.ios.youtube/%s (iPhone14,3; U; CPU iOS 15_6 like Mac OS X)' % VERSION
-			data['context'] = {
-				'client': {
-					'hl': config.plugins.YouTube.searchLanguage.value,
-					'clientVersion': VERSION,
-					'clientName': 'IOS',
-					'deviceModel': 'iPhone14,3',
-					'userAgent': USER_AGENT
-				}
-			}
-			headers['X-YouTube-Client-Version'] = VERSION
-			headers['User-Agent'] = USER_AGENT
-		elif client == 85:
+		if client == 85:
 			player_id = self._extract_player_info()
 			if player_id:
 				if player_id not in self._player_cache:
@@ -378,22 +368,20 @@ class YouTubeVideoUrl():
 			}
 			headers['X-YouTube-Client-Version'] = '2.0'
 		else:
-			VERSION = '1.9'
-			USER_AGENT = 'com.google.android.youtube/%s (Linux; U; Android 12; US) gzip' % VERSION
+			VERSION = '19.09.3'
+			USER_AGENT = 'com.google.ios.youtube/%s (iPhone14,3; U; CPU iOS 15_6 like Mac OS X)' % VERSION
 			data['context'] = {
 				'client': {
 					'hl': config.plugins.YouTube.searchLanguage.value,
 					'clientVersion': VERSION,
-					'androidSdkVersion': 31,
-					'clientName': 'ANDROID_TESTSUITE',
-					'osName': 'Android',
-					'osVersion': '12',
+					'clientName': 'IOS',
+					'deviceModel': 'iPhone14,3',
 					'userAgent': USER_AGENT
 				}
 			}
-			data['params'] = '2AMB'
 			headers['X-YouTube-Client-Version'] = VERSION
 			headers['User-Agent'] = USER_AGENT
+
 		try:
 			return loads(self._download_webpage(url, data, headers)), player_id
 		except ValueError:  # pragma: no cover
@@ -427,17 +415,14 @@ class YouTubeVideoUrl():
 			print('[YouTubeVideoUrl] skip DASH MP4 format')
 			self.use_dash_mp4 = DASHMP4_FORMAT
 
-		player_response, player_id = self._extract_player_response(video_id, yt_auth, 30)
+		player_response, player_id = self._extract_player_response(video_id, yt_auth, 5)
+
 		if not player_response:
 			raise RuntimeError('Player response not found!')
 
-		if self.try_get(player_response, lambda x: x['videoDetails']['videoId']) != video_id:
-			if self.use_dash_mp4:
-				print('[YouTubeVideoUrl] Got wrong player response, try web response')
-				player_response, player_id = self._extract_web_response(video_id)
-			else:
-				print('[YouTubeVideoUrl] Got wrong player response, try ios client')
-				player_response, player_id = self._extract_player_response(video_id, yt_auth, 5)
+		if self.try_get(player_response, lambda x: x['videoDetails']['videoId']) != video_id or (player_response.get('playabilityStatus') or {}).get('status') == 'UNPLAYABLE':
+			print('[YouTubeVideoUrl] Got wrong player response, try web response')
+			player_response, player_id = self._extract_web_response(video_id)
 
 		is_live = self.try_get(player_response, lambda x: x['videoDetails']['isLive'])
 		playability_status = player_response.get('playabilityStatus', {})
@@ -445,6 +430,7 @@ class YouTubeVideoUrl():
 		if not is_live and playability_status.get('status') == 'LOGIN_REQUIRED':
 			print('[YouTubeVideoUrl] Age gate content')
 			player_response, player_id = self._extract_player_response(video_id, yt_auth, 85)
+
 			if not player_response:
 				raise RuntimeError('Age gate content player response not found!')
 
