@@ -1,3 +1,6 @@
+1.17 - 30.09.2024
+    - oprava archívu podľa názvu stanice
+
 1.16 - 15.09.2024
     - oprava pádu pri neplatnom prihlasovacom tokene
     - oprava pádu pri vyhľadávaní

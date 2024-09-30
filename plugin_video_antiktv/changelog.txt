@@ -1,3 +1,6 @@
+2.19:
+- oprava archívu pre SAT vysielanie
+
 2.18:
 - oprava pádu ak popis programu neobsahuje text
 

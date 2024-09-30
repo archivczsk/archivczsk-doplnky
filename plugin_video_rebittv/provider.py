@@ -130,8 +130,8 @@ class RebitTVModuleArchive(CPModuleArchive):
 	def get_channel_id_from_path(self, path):
 		if path.startswith('playlive/'):
 			channel_id = base64.b64decode(path[9:].encode('utf-8')).decode("utf-8")
-			channel = self.cp.channels_by_key.get(channel_id)
-			return channel_id if channel['timeshift'] else None
+			channel = self.cp.channels_by_key.get(channel_id, {})
+			return channel_id if channel.get('timeshift') else None
 
 		return None
 
@@ -139,7 +139,8 @@ class RebitTVModuleArchive(CPModuleArchive):
 
 	def get_channel_id_from_sref(self, sref):
 		name = channel_name_normalise(sref.getServiceName())
-		return self.cp.channels_by_norm_name.get(name, {}).get('id')
+		channel = self.cp.channels_by_norm_name.get(name, {})
+		return channel.get('id') if channel.get('timeshift') else None
 
 # #################################################################################################
 

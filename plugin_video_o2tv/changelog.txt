@@ -1,3 +1,6 @@
+1.19 - 30.09.2024
+    - oprava archívu podľa názvu stanice
+
 1.18 - 28.09.2024
     - oprava pádu ak sa vrátia nesprávne dáta
     - zobrazenie chyby ak server nevráti žiaden prehrávateľný stream

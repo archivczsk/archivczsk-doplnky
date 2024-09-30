@@ -1,3 +1,6 @@
+2024-09-30 - 2.20
+* oprava archívu podľa názvu stanice
+
 2024-09-15 - 2.19
 * úprava závislosti doplnku
 

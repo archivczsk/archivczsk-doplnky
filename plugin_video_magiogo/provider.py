@@ -132,7 +132,7 @@ class MagioGOModuleArchive(CPModuleArchive):
 				path = path[:-6]
 			channel_id = base64.b64decode(path.encode('utf-8')).decode("utf-8")
 			channel = self.cp.channels_by_key.get(int(channel_id))
-			return int(channel_id) if channel.timeshift else None
+			return int(channel_id) if channel and channel.timeshift else None
 
 		return None
 
@@ -141,7 +141,7 @@ class MagioGOModuleArchive(CPModuleArchive):
 	def get_channel_id_from_sref(self, sref):
 		name = channel_name_normalise(sref.getServiceName())
 		ch = self.cp.channels_by_norm_name.get(name)
-		return ch.id if ch else None
+		return ch.id if ch and ch.timeshift else None
 
 # #################################################################################################
 
