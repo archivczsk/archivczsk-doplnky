@@ -1,3 +1,6 @@
+2.2: 13.10.2024
+- oprava prehrávania, kým google opäť niečo nezmení
+
 2.1: 28.09.2024
 - zvýšenie limitu pre prístup k youtube API a vylepšenie hlásenia ak prístup zlyhá
 - možnosť v nastaveniach zadať vlastný kľúč k youtube API

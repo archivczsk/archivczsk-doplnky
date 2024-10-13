@@ -74,7 +74,7 @@ class YoutubeContentProvider(CommonContentProvider):
 
 			try:
 				response = self.req_session.get("https://www.googleapis.com/youtube/v3/" + endpoint, params=params)
-				if response.status_code in (403, 404):
+				if response.status_code >= 400:
 					# daily quata this used API key is exceeded
 					self.log_error("Request using API KEY %s FAILED - blacklisting" % api_key)
 					self.blacklist_api_key(api_key)
