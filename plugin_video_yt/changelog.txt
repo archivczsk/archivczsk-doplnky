@@ -1,3 +1,6 @@
+2.3: 17.10.2024
+- aktualizácia prístupových kľúčov
+
 2.2: 13.10.2024
 - oprava prehrávania, kým google opäť niečo nezmení
 
