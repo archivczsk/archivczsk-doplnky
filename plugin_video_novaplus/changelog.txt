@@ -1,3 +1,6 @@
+2024-10-21 (verze 3.10)
+* oprava prehrávania po zmene stránky
+
 2024-09-13 (verze 3.9)
 * oprava pádu ak sa nepodarí získať adresa streamu
 

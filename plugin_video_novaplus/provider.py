@@ -6,7 +6,7 @@ from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.string_utils import _I, _C, _B, decode_html
 from tools_archivczsk.cache import SimpleAutokeyExpiringCache
 import sys
-import re, json
+import re, json, ast
 
 try:
 	from bs4 import BeautifulSoup
@@ -335,8 +335,10 @@ class TVNovaContentProvider(CommonContentProvider):
 		if drm:
 			ret.update({
 				'drm' : {
-					'licence_url': drm["serverURL"],
-					'headers': { h['name']: h['value'] for h in drm["headers"] }
+					'licence_url': drm["license_url"],
+					'headers': {
+						'X-AxDRM-Message': drm['token']
+					}
 				}
 			})
 
@@ -361,7 +363,7 @@ class TVNovaContentProvider(CommonContentProvider):
 				'drm': drm
 			})
 
-			for stream in streams:
+			for stream in (streams or []):
 				ret.append({
 					'url': stream_key_to_dash_url(self.http_endpoint, {'ck': cache_key, 'bandwidth': stream['bandwidth']}),
 					'bandwidth': stream['bandwidth'],
@@ -385,6 +387,29 @@ class TVNovaContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
+	def get_js_data(self, data, pattern):
+		'''
+		Extracts piece of javascript data from data based on pattern and converts it to python object
+		'''
+		sources = re.compile(pattern, re.DOTALL)
+		js_obj = sources.findall(data)[0]
+
+		# remove all spaces not in double quotes
+		js_obj = re.sub(r'\s+(?=([^"]*"[^"]*")*[^"]*$)', '', js_obj)
+
+		# add double quotes around dictionary keys
+		js_obj = re.sub(r'([{,]+)(\w+):', '\\1"\\2":', js_obj)
+
+		# replace JS variables with python alternatives
+		js_obj = re.sub(r'(["\']):undefined([,}])', '\\1:None\\2', js_obj)
+		js_obj = re.sub(r'(["\']):null([,}])', '\\1:None\\2', js_obj)
+		js_obj = re.sub(r'(["\']):NaN([,}])', '\\1:None\\2', js_obj)
+		js_obj = re.sub(r'(["\']):true([,}])', '\\1:True\\2', js_obj)
+		js_obj = re.sub(r'(["\']):false([,}])', '\\1:False\\2', js_obj)
+		return ast.literal_eval(js_obj)
+
+	# ##################################################################################################################
+
 	def resolve_video(self, video_title, url):
 		resolved_url = None
 		drm = None
@@ -402,15 +427,22 @@ class TVNovaContentProvider(CommonContentProvider):
 		else:
 			soup = self.call_api(url)
 
-			script_element = soup.find("script", type="application/ld+json", string=re.compile(r"embedUrl"))
-			embeded_url = None
+			try:
+				embeded_url = soup.find("div", {"class": "js-login-player"}).find("iframe")["data-src"]
+			except:
+				try:
+					embeded_url = soup.find("div", {"class": "js-player-detach-container"}).find("iframe")["src"]
+				except:
+					# fallback, but we will get DRM protected stream ...
+					script_element = soup.find("script", type="application/ld+json", string=re.compile(r"embedUrl"))
+					embeded_url = None
 
-			if script_element is not None:
-				json_stream = json.loads(script_element.string)
-				if "video" in json_stream:
-					embeded_url = json_stream["video"]["embedUrl"]
-				elif "embedUrl" in json_stream:
-					embeded_url = json_stream["embedUrl"]
+					if script_element is not None:
+						json_stream = json.loads(script_element.string)
+						if "video" in json_stream:
+							embeded_url = json_stream["video"]["embedUrl"]
+						elif "embedUrl" in json_stream:
+							embeded_url = json_stream["embedUrl"]
 
 			if not embeded_url:
 				self.show_info(self._("Video not found."))
@@ -419,31 +451,43 @@ class TVNovaContentProvider(CommonContentProvider):
 			embeded = self.call_api(embeded_url)
 
 			try:
-				json_data = json.loads(
-					re.compile('{"tracks":(.+?),"duration"').findall(str(embeded))[0]
-				)
+				# search for player configuration
+				json_data = None
+				for s in embeded.find_all('script'):
+					try:
+						json_data = self.get_js_data(s.string, '\s+player:\s+(\{.*?)\};.*')
+						break
+					except:
+						pass
 			except:
 				self.log_exception()
 				json_data = None
 
 			if json_data:
-				self.log_info("json_data: %s" % json.dumps(json_data))
+#				self.log_info("json_data: %s" % json.dumps(json_data))
 
-				stream_data = json_data['HLS'][0]
+				try:
+					stream_data = sorted(json_data['lib']['source']['sources'], key=lambda s: s.get('type').lower() == "application/x-mpegurl", reverse=True)[0]
+				except:
+					self.log_exception()
+					self.show_error(self._("Format of site has been changed. Addon needs to be updated in order to work again."))
 
-				if not "drm" in stream_data:
+				if "contentProtection" not in stream_data:
 					resolved_url = stream_data["src"]
 					self.log_info("Found unprotected HLS stream: %s" % resolved_url)
 				else:
 					# drm protected content
-					stream_data = json_data['DASH'][0]
-					for d in stream_data['drm']:
-						if d['keySystem'] == 'com.widevine.alpha':
-							drm = d
-							break
-					else:
+					stream_data = sorted(json_data['lib']['source']['sources'], key=lambda s: s.get('type').lower() == "application/dash+xml", reverse=True)[0]
+
+					lic_url = stream_data.get('contentProtection',{}).get('widevine',{}).get('licenseAcquisitionURL')
+
+					if not lic_url:
 						self.show_error(self._("No supported DRM protection system found"))
 
+					drm = {
+						'license_url': lic_url,
+						'token': stream_data.get('contentProtection',{}).get('token')
+					}
 					resolved_url = stream_data["src"]
 					self.log_info("Found DRM protected DASH stream: %s" % resolved_url)
 			else:
