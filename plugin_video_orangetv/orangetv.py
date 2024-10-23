@@ -441,7 +441,7 @@ class OrangeTV:
 	# #################################################################################################
 
 	def __get_playlist(self, params):
-		playlist = None
+		playlist = []
 		while self.access_token:
 			json_data = self.call_api('server/streaming/uris.json', params=params)
 
@@ -451,16 +451,19 @@ class OrangeTV:
 					self.access_token = None
 					self.refresh_access_token()
 				else:
-					raise Exception("Error: " + status)
+					self.cp.log_exception()
+					raise AddonErrorException(status)
 			else:
-				playlist = ""
+				hd_found = False
 				for uris in json_data["uris"]:
 					if uris["resolution"] == "HD":
-						playlist = uris["uri"]
-						break
+						playlist.append(uris["uri"])
+						hd_found = True
 
-				if playlist == "":
-					playlist = json_data["uris"][0]["uri"]
+				if not hd_found:
+					for uris in json_data["uris"]:
+						playlist.append(uris["uri"])
+
 				break
 
 		return playlist

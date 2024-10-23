@@ -270,40 +270,52 @@ class OrangeTVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def get_url_by_channel_key(self, channel_key):
-		playlist = self.orangetv.get_live_link(channel_key)
+		playlists = self.orangetv.get_live_link(channel_key)
 
-		for p in self.get_hls_streams(playlist, self.orangetv.req_session, max_bitrate=self.get_setting('max_bandwidth')):
-			if self.get_setting('hls_multiaudio'):
-				return stream_key_to_hls_url(self.http_endpoint_rel, {'url': p['playlist_url'], 'bandwidth': p['bandwidth']})
-			else:
-				return p['url']
+		for playlist in playlists:
+			try:
+				for p in (self.get_hls_streams(playlist, self.orangetv.req_session, max_bitrate=self.get_setting('max_bitrate')) or []):
+					if self.get_setting('hls_multiaudio'):
+						return stream_key_to_hls_url(self.http_endpoint_rel, {'url': p['playlist_url'], 'bandwidth': p['bandwidth']})
+					else:
+						return p['url']
+			except:
+				self.log_exception()
 
 		return None
 
 	# #################################################################################################
 
-	def resolve_hls_streams(self, title, playlist_url, **kwargs):
-		for p in self.get_hls_streams(playlist_url, self.orangetv.req_session, max_bitrate=self.get_setting('max_bandwidth')):
-			bandwidth = int(p['bandwidth'])
-			if bandwidth < 2000000:
-				quality = "480p"
-			elif bandwidth < 3000000:
-				quality = "576p"
-			elif bandwidth < 6000000:
-				quality = "720p"
-			else:
-				quality = "1080p"
+	def resolve_hls_streams(self, title, playlist_urls, **kwargs):
+		for playlist_url in playlist_urls:
+			try:
+				streams = self.get_hls_streams(playlist_url, self.orangetv.req_session, max_bitrate=self.get_setting('max_bitrate'))
+				for p in (streams or []):
+					bandwidth = int(p['bandwidth'])
+					if bandwidth < 2000000:
+						quality = "480p"
+					elif bandwidth < 3000000:
+						quality = "576p"
+					elif bandwidth < 6000000:
+						quality = "720p"
+					else:
+						quality = "1080p"
 
-			info_labels = {
-				'quality': quality,
-				'bandwidth': bandwidth
-			}
+					info_labels = {
+						'quality': quality,
+						'bandwidth': bandwidth
+					}
 
-			if self.get_setting('hls_multiaudio'):
-				url = stream_key_to_hls_url(self.http_endpoint, {'url': p['playlist_url'], 'bandwidth': p['bandwidth']})
-			else:
-				url = p['url']
+					if self.get_setting('hls_multiaudio'):
+						url = stream_key_to_hls_url(self.http_endpoint, {'url': p['playlist_url'], 'bandwidth': p['bandwidth']})
+					else:
+						url = p['url']
 
-			self.add_play(title, url, info_labels, **kwargs)
+					self.add_play(title, url, info_labels, **kwargs)
+
+				if streams:
+					break
+			except:
+				self.log_exception()
 
 	# #################################################################################################
