@@ -4,10 +4,10 @@ import json
 from collections import OrderedDict
 
 try:
-	from urlparse import urlparse, urlunparse, parse_qsl
+	from urlparse import urlparse, urlunparse, parse_qs
 
 except:
-	from urllib.parse import urlparse, urlunparse, parse_qsl
+	from urllib.parse import urlparse, urlunparse, parse_qs
 
 __debug_nr = 0
 
@@ -38,16 +38,30 @@ def dump_json_request(response):
 				body = request.body.decode('utf-8')
 			except:
 				body = request.body
-			json_data = OrderedDict(parse_qsl(body))
+
+			json_data = OrderedDict()
+			for k, v in parse_qs(body).items():
+				if len(v) == 1:
+					json_data[k] = v[0]
+				else:
+					json_data[k] = v
+
 		except:
 			json_data = None
+
+	params = OrderedDict()
+	for k, v in parse_qs(u.query).items():
+		if len(v) == 1:
+			params[k] = v[0]
+		else:
+			params[k] = v
 
 	data = {
 		'request': {
 			'method': request.method,
 			'url': urlunparse((u.scheme, u.netloc, u.path, '', '', '')),
 			'full_url': request.url,
-			'params': OrderedDict(parse_qsl(u.query)),
+			'params': params,
 			'headers': OrderedDict(request.headers),
 			'data': json_data,
 		},
