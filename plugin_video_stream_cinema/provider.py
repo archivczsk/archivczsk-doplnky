@@ -4,12 +4,13 @@ try:
 except:
 	trakttv = None
 
-from datetime import date
+from datetime import date, datetime
 import json
 from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman
 from tools_archivczsk.cache import lru_cache
+from tools_archivczsk.simple_config import SimpleConfigSelection, SimpleConfigInteger, SimpleConfigYesNo, SimpleConfigMultiSelection
 
 from .kraska import Kraska, KraskaLoginFail, KraskaResolveException
 from .sc_api import SC_API
@@ -18,10 +19,10 @@ from .watched import SCWatched
 ######################
 
 try:
-	from urlparse import urlparse, urlunparse, parse_qsl
+	from urlparse import urlparse, urlunparse, parse_qs
 	from urllib import urlencode
 except:
-	from urllib.parse import urlparse, urlunparse, urlencode, parse_qsl
+	from urllib.parse import urlparse, urlunparse, urlencode, parse_qs
 
 # #################################################################################################
 
@@ -50,7 +51,8 @@ _KODI_SORT_METHODS = {
 	36: ('title', _("Title")), # wtf???
 	26: ('name', _("Name")), # results are funny ...
 	18: ('year', _("Year")), # works ok
-	21: ('datum', _("Date added")), # works ok?
+#	21: ('datum', _("Date added")), # works ok?
+	21: ('mindate', _("Date added")), # works ok
 }
 
 # #################################################################################################
@@ -185,8 +187,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			if trailer:
 				ctx_menu.add_media_menu_item(self._('Play trailer'), cmd=self.play_trailer, media_title="Trailer", url=trailer)
 
-			if '/latest' not in url:
-				self.add_filter_ctx_menu(ctx_menu, url, resp.get('filter'), resp.get('system', {}).get('addSortMethods'), params=params, data=data)
+			self.add_filter_ctx_menu(ctx_menu, url, resp.get('filter'), resp.get('system', {}).get('addSortMethods'), params=params, data=data)
 
 			is_watched = False
 			is_fully_watched = False
@@ -555,13 +556,13 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 	def update_url_filter(self, url, key, value ):
 		u = urlparse( url )
-		q = dict(parse_qsl( u.query ))
+		q = parse_qs( u.query )
 		if value:
 			q.update( { key: value } )
-		elif value in q:
-			del q[value]
+		elif key in q:
+			del q[key]
 
-		res = urlunparse( ('', '', u.path, '', urlencode(q), '') )
+		res = urlunparse( ('', '', u.path, '', urlencode(q, True), '') )
 		return res
 
 	# #################################################################################################
@@ -571,19 +572,22 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			# nothing to filter
 			return
 
-		od = filter_data.get('od', '')
-		if od == 'asc':
-			url2 = self.update_url_filter( url, 'od', 'desc')
-			ctx_menu.add_menu_item(self._("Order descending (Z-A)"), cmd=self.render_menu, url=url2, params=params, data=data)
-		elif od == "desc":
-			url2 = self.update_url_filter( url, 'od', 'asc')
-			ctx_menu.add_menu_item(self._("Order ascending (A-Z)"), cmd=self.render_menu, url=url2, params=params, data=data)
+		ctx_menu.add_menu_item(self._("Advanced filtering"), cmd=self.advanced_filter, url=url, params=params, data=data, sort_methods=sort_methods, filter_data=filter_data)
 
-		if sort_methods and 0 not in sort_methods:
-			ctx_menu.add_menu_item(self._("Sort"), cmd=self.set_sort, url=url, sort_methods=sort_methods, params=params, data=data)
+		if '/latest' not in url:
+			od = filter_data.get('od', '')
+			if od == 'asc':
+				url2 = self.update_url_filter( url, 'od', 'desc')
+				ctx_menu.add_menu_item(self._("Order descending (Z-A)"), cmd=self.render_menu, url=url2, params=params, data=data)
+			elif od == "desc":
+				url2 = self.update_url_filter( url, 'od', 'asc')
+				ctx_menu.add_menu_item(self._("Order ascending (A-Z)"), cmd=self.render_menu, url=url2, params=params, data=data)
 
-		if od != '':
-			ctx_menu.add_menu_item(self._("Filter by year"), cmd=self.filter_by_year, url=url, params=params, data=data)
+			if sort_methods and 0 not in sort_methods:
+				ctx_menu.add_menu_item(self._("Sort"), cmd=self.set_sort, url=url, sort_methods=sort_methods, params=params, data=data)
+
+			if od != '':
+				ctx_menu.add_menu_item(self._("Filter by year"), cmd=self.filter_by_year, url=url, params=params, data=data)
 
 	# #################################################################################################
 
@@ -628,6 +632,245 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			self.render_menu(url, params=params, data=data)
 		else:
 			self.refresh_screen()
+
+	# #################################################################################################
+
+	def load_genres(self):
+		if hasattr(self, 'genres'):
+			return
+
+		self.genres = {
+			'en': [],
+			'sk': [],
+			'cs': []
+		}
+		for item in (self.api.call_api('/FMovies/genre') or {}).get('menu', []):
+			if item.get('type') != 'dir':
+				continue
+
+			genre_id = item.get('url', '').split('/')[-1]
+
+			for lng, title_data in item.get('i18n_info',{}).items():
+				if lng not in self.genres:
+					self.genres[lng] = []
+
+				self.genres[lng].append( (genre_id, title_data.get('title'), ) )
+
+		self.genres['en'].append( ('70393', "Anime",) )
+		self.genres['cs'].append( ('70393', "Anime",) )
+		self.genres['sk'].append( ('70393', "Anime",) )
+
+		self.genres['en'].append( ('185109', "Sport",) )
+		self.genres['cs'].append( ('185109', "Sport",) )
+		self.genres['sk'].append( ('185109', "Šport",) )
+
+	# #################################################################################################
+
+	def load_countries(self):
+		if hasattr(self, 'countries'):
+			return
+
+		self.countries = {}
+		for item in (self.api.call_api('/FMovies/country') or {}).get('menu', []):
+			if item.get('type') != 'dir':
+				continue
+
+			country_id = item.get('url', '').split('/')[-1]
+
+			for lng, title_data in item.get('i18n_info',{}).items():
+				if lng not in self.countries:
+					self.countries[lng] = []
+
+				self.countries[lng].append( (country_id, title_data.get('title'), ) )
+
+	# #################################################################################################
+
+	def advanced_filter(self, url, params, data, sort_methods, filter_data):
+		self.load_genres()
+		self.load_countries()
+
+		def load_sort():
+			lang_code = self.dubbed_lang_list[0]
+
+			sm = []
+			for m in sort_methods:
+				m = int(m)
+				if m in _KODI_SORT_METHODS:
+					if m == 26:
+						sm.append( (_KODI_SORT_METHODS[m][0] + '_%s' % lang_code, self._(_KODI_SORT_METHODS[m][1]),) )
+					else:
+						sm.append( (_KODI_SORT_METHODS[m][0], self._(_KODI_SORT_METHODS[m][1]),) )
+
+			sm.append( ('random', self._("Random"),) )
+			return sm
+
+		def load_maturity_rating():
+			mr_cfg = int(self.get_setting('maturity-rating'))
+
+			ret = []
+			for x in [ (0, '0',), (6, '6'), (12, '12',), (15, '15',), (-1, self._('None'),) ]:
+				ret.append(x)
+				if mr_cfg == x[0]:
+					break
+
+			ret.reverse()
+			return ret
+
+		sort_methods = load_sort()
+		maturity_rating = load_maturity_rating()
+
+		# load default values from filter_data
+
+		default_year = filter_data.get('y', '<%d' % datetime.now().year)
+		if default_year[0] in ('<', '>'):
+			default_year_sign = default_year[0] + '='
+			default_year = default_year[1:]
+		else:
+			default_year_sign = '='
+
+		genres = self.genres.get(self.lang_list[0], self.genres.get('en',[]))
+		genres_pos = []
+		genres_neg = []
+
+		for g in filter_data.get('ge', filter_data.get('mu', [])):
+			g = str(g)
+			if g.startswith('!'):
+				genres_neg.append(g[1:])
+			else:
+				genres_pos.append(g)
+
+		# ranking is actually not fully supported, because sign can be < or >, but we support only >
+		# in reality I can't imagine why you will want to show only content with low rank, so I keep it so
+		filter_ranking = filter_data.get('r', '>0')
+		default_ranking = 0
+		if filter_ranking[0] in ('<', '>'):
+			# remove sign (we assume, that it will be always >) and convert it to number
+			filter_ranking = int(filter_ranking[1:])
+
+			# find the closes matching interval
+			for r in range(0, 100, 10):
+				if r <= filter_ranking:
+					default_ranking = r
+				else:
+					break
+
+		quality = [
+			(None, self._('Any')),
+			('SD', 'SD'),
+			('720p', '720p'),
+			('720p', '720p'),
+			('1080p', '1080p'),
+			('4K', '4K'),
+			('8K', '8K'),
+		]
+
+		default_order = filter_data.get('of', '')
+		if default_order not in [ m[0] for m in sort_methods ]:
+			sort_methods.append( (default_order, default_order,))
+
+		years = [str(y) for y in range(1900, datetime.now().year+1)]
+
+		countries = self.countries.get(self.lang_list[0], self.countries.get('en',[]))
+		countries_pos = []
+		countries_neg = []
+
+		for g in filter_data.get('co', []):
+			g = str(g)
+			if g.startswith('!'):
+				countries_neg.append(g[1:])
+			else:
+				countries_pos.append(g)
+
+		cfg = [
+			SimpleConfigSelection(self._('Year'), choices=years, default=default_year),                                         # 0
+			SimpleConfigSelection(self._('Year sign'), ['<=', '=', '>='], default=default_year_sign),                           # 1
+			SimpleConfigYesNo(self._('Show only dubbed'), default=int(filter_data.get('dub', '0')) == 1),                       # 2
+			SimpleConfigYesNo(self._('Show only content with subtitles'), default=int(filter_data.get('tit', '0')) == 1),       # 3
+			SimpleConfigMultiSelection(self._('Show only genre'), genres, selected=genres_pos),                                 # 4
+			SimpleConfigMultiSelection(self._("Don't show genre"), genres, selected=genres_neg),                                # 5
+			SimpleConfigMultiSelection(self._('Countries of origin'), countries, selected=countries_pos),                       # 6
+			SimpleConfigMultiSelection(self._("Exclude countries of origin"), countries, selected=countries_neg),               # 7
+			SimpleConfigSelection(self._('Ranking greater than'), [str(i) for i in range(0, 100, 10)], default=str(default_ranking)), # 8
+			SimpleConfigSelection(self._('Maturity rating'), maturity_rating, default=int(filter_data.get('m', -1))),           # 9
+			SimpleConfigSelection(self._('Stream quality'), quality, default=filter_data.get('q')),                             # 10
+			SimpleConfigYesNo(self._('Show only HDR content'), default=int(filter_data.get('HDR', '0')) == 2),                  # 11
+			SimpleConfigYesNo(self._('Show only DolbyVision content'), default=int(filter_data.get('DV', '0')) == 2),           # 12
+			SimpleConfigSelection(self._('Order by'), sort_methods, default=default_order),                                     # 13
+			SimpleConfigYesNo(self._('Order descending'), default=filter_data.get('od', 'asc') == 'desc'),                      # 14
+		]
+
+		if self.open_simple_config(cfg, title=self._("Advanced filtering")) != True:
+			return self.reload_screen()
+
+		self.log_debug("Advanced filter configuration")
+		for i, c in enumerate(cfg):
+			self.log_debug("Cfg value %d: %s" % (i, c.get_value()))
+
+		url = '/Filter'
+		if not params:
+			params = {}
+
+		# fill default params from filter
+		for k, v in filter_data.items():
+			if k == 'meta':
+				continue
+
+			if isinstance(v, type([])):
+				params[k + '[]'] = v
+			else:
+				params[k] = v
+
+		# update params based on user
+		params['y'] = '{}{}'.format(cfg[1].get_value().replace('=', ''), cfg[0].get_value())
+
+		if cfg[2].get_value():
+			params['dub'] = 1
+
+		if cfg[3].get_value():
+			params['tit'] = 1
+
+		ge = cfg[4].get_value()
+		ge.extend( ['!{}'.format(g) for g in cfg[5].get_value()] )
+
+		if 'mu' in params:
+			del params['mu']
+		params['mu[]'] = ge
+
+#		self.log_debug("Genres filter result: %s" % str(ge))
+
+		co = cfg[6].get_value()
+		co.extend( ['!{}'.format(g) for g in cfg[7].get_value()] )
+		if 'co' in params:
+			del params['co']
+		params['co[]'] = co
+
+		if cfg[8].get_value() != '0':
+			params['r'] = '>' + cfg[8].get_value()
+
+		mr = cfg[9].get_value()
+		if mr != -1:
+			params['m'] = [mr]
+
+		params['q'] = cfg[10].get_value()
+
+		# HDR: 0 = disable, 1 = enable, 2 = force
+		if cfg[11].get_value():
+			params['HDR'] = 2
+
+		# DV: 0 = disable, 1 = enable, 2 = force
+		if cfg[12].get_value():
+			params['DV'] = 2
+
+		params['of'] = cfg[13].get_value()
+		params['od'] = 'desc' if cfg[14].get_value() else 'asc'
+
+		if 'list' in filter_data:
+			# filter data contains list and that can be quite large for GET request, so use POST instead
+			data = params
+			params = None
+
+		# show result
+		self.render_menu(url, params=params, data=data)
 
 	# #################################################################################################
 

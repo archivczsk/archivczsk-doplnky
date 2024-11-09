@@ -5,10 +5,10 @@ from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.cache import ExpiringLRUCache
 
 try:
-	from urlparse import urlparse, urlunparse, parse_qsl
+	from urlparse import urlparse, urlunparse, parse_qs
 	from urllib import urlencode
 except:
-	from urllib.parse import urlparse, urlunparse, urlencode, parse_qsl
+	from urllib.parse import urlparse, urlunparse, urlencode, parse_qs
 
 # ##################################################################################################################
 
@@ -42,20 +42,31 @@ class SC_API(object):
 
 		# extract params from url and add them to default_params
 		u = urlparse(url)
-		default_params.update(dict(parse_qsl(u.query)))
+		default_params.update(parse_qs(u.query))
 		url = urlunparse((u.scheme, u.netloc, u.path, '', '', ''))
 
 		if params:
 			default_params.update(params)
 
 		if self.cp.get_setting('item-lang-filter') == 'dubsubs':
-			default_params.update({'dub': 1, "tit": 1}) # zobraz len filmy s dabingom alebo titulkami
+			# zobraz len filmy s dabingom alebo titulkami
+			if 'tit' not in default_params:
+				default_params.update({"tit": 1})
 
-		elif self.cp.get_setting('item-lang-filter') == 'dub':
+			if 'dub' not in default_params:
+				default_params.update({'dub': 1})
+
+		elif self.cp.get_setting('item-lang-filter') == 'dub' and 'dub' not in default_params:
 			default_params.update({'dub': 1}) # zobraz len dabovane filmy
 
-		if int(self.cp.get_setting('maturity-rating')) >= 0:
-			default_params.update({"m": self.cp.get_setting('maturity-rating')}) # rating pre rodicovsku kontrolu
+		# podla nastaveni skontroluj a pripadne uprav rating pre rodicovsku kontrlu
+		mr_setting = int(self.cp.get_setting('maturity-rating'))
+		mr_params = default_params.get('m', 1000)
+		if isinstance(mr_params, type([])):
+			mr_params = mr_params[0]
+
+		if mr_setting >= 0 and int(mr_params) > mr_setting:
+			default_params.update({"m": mr_setting})
 
 		default_params.update({'gen': 1 if self.cp.get_setting('show-genre') else 0 }) # zobraz zaner v nazve polozky
 
@@ -74,16 +85,17 @@ class SC_API(object):
 		}
 
 		if data:
-			resp = self.req_session.post(url, data=data, params=default_params, headers=headers)
+			rurl = url + '?' + urlencode(sorted(default_params.items(), key=lambda val: val[0]), True)
+			resp = self.req_session.post(rurl, data=data, headers=headers)
 		else:
-			rurl = url + '?' + urlencode(sorted(default_params.items(), key=lambda val: val[0]))
+			rurl = url + '?' + urlencode(sorted(default_params.items(), key=lambda val: val[0]), True)
 
 			resp = self.cache.get(rurl)
 			if resp:
 				self.cp.log_debug("Request found in cache")
 				return resp
 
-			resp = self.req_session.get(url, params=default_params, headers=headers)
+			resp = self.req_session.get(rurl, headers=headers)
 #		dump_json_request(resp)
 
 		if resp.status_code == 200:
