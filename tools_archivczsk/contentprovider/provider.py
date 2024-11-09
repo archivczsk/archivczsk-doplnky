@@ -717,3 +717,6 @@ class CommonContentProvider(object):
 
 		# this is just a dummy implementation
 		return self.name.lower()
+
+	def open_simple_config(self, config_entries, title=None, s=True):
+		return False

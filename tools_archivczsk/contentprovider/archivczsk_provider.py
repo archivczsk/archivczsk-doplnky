@@ -162,6 +162,7 @@ class ArchivCZSKContentProvider(object):
 		self.provider.call_another_addon = self.call_another_addon
 		self.provider.get_addon_id = self.get_addon_id
 		self.provider.update_last_command = self.update_last_command
+		self.provider.open_simple_config = self.open_simple_config
 
 		self.initialised_cbk_called = False
 		self.login_tries = 0
@@ -732,5 +733,10 @@ class ArchivCZSKContentProvider(object):
 			return self.addon_id[13:]
 
 		return self.addon_id
+
+	# #################################################################################################
+
+	def open_simple_config(self, config_entries, title=None, s=True):
+		return client.openSimpleConfig(self.session, config_entries, title, s)
 
 	# #################################################################################################
