@@ -50,8 +50,7 @@ _KODI_SORT_METHODS = {
 	30: ('mpaa', _("MPAA Rating")), # No idea if it works ok
 	36: ('title', _("Title")), # wtf???
 	26: ('name', _("Name")), # results are funny ...
-	18: ('year', _("Year")), # works ok
-#	21: ('datum', _("Date added")), # works ok?
+	18: ('yyear', _("Year")), # works ok
 	21: ('mindate', _("Date added")), # works ok
 }
 
@@ -664,6 +663,9 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		self.genres['cs'].append( ('185109', "Sport",) )
 		self.genres['sk'].append( ('185109', "Šport",) )
 
+		for items in self.genres.values():
+			items.sort(key=lambda x: x[1] or '')
+
 	# #################################################################################################
 
 	def load_countries(self):
@@ -682,6 +684,9 @@ class StreamCinemaContentProvider(CommonContentProvider):
 					self.countries[lng] = []
 
 				self.countries[lng].append( (country_id, title_data.get('title'), ) )
+
+		for items in self.countries.values():
+			items.sort(key=lambda x: x[1] or '')
 
 	# #################################################################################################
 
@@ -729,15 +734,28 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			default_year_sign = '='
 
 		genres = self.genres.get(self.lang_list[0], self.genres.get('en',[]))
+		genre_ids = {g[0]: True for g in genres}
 		genres_pos = []
 		genres_neg = []
+		mu_extra = []
 
-		for g in filter_data.get('ge', filter_data.get('mu', [])):
+		for g in filter_data.get('ge', []) + filter_data.get('mu', []):
 			g = str(g)
 			if g.startswith('!'):
-				genres_neg.append(g[1:])
+				g = g[1:]
+				my_list = genres_neg
+				sign = '!'
 			else:
-				genres_pos.append(g)
+				my_list = genres_pos
+				sign = ''
+
+			if g in genre_ids:
+				my_list.append(g)
+			else:
+				# in mu field can be many types of id's - not only genres
+				# so save ID's, that were not found in genres
+				mu_extra.append(sign + g)
+
 
 		# ranking is actually not fully supported, because sign can be < or >, but we support only >
 		# in reality I can't imagine why you will want to show only content with low rank, so I keep it so
@@ -833,6 +851,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		if 'mu' in params:
 			del params['mu']
 		params['mu[]'] = ge
+		params['mu[]'].extend(mu_extra)
 
 #		self.log_debug("Genres filter result: %s" % str(ge))
 

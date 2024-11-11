@@ -28,7 +28,7 @@ def _(s):
 
 class SccContentProvider(CommonContentProvider):
 
-	def __init__(self, settings=None, data_dir=None):
+	def __init__(self, settings=None, data_dir=None, bgservice=None):
 		CommonContentProvider.__init__(self, 'SCC', settings=settings, data_dir=data_dir)
 		self.login_optional_settings_names = ('wsuser', 'wspass')
 		self.tapi = trakttv
@@ -44,7 +44,7 @@ class SccContentProvider(CommonContentProvider):
 		# init SCC Api - will be good to cache its settings and reinit it when some of them change
 		self.api = SCC_API(self)
 		self.csfd = Csfd(self)
-		self.webshare = Webshare(self)
+		self.webshare = Webshare(self, bgservice)
 
 	# ##################################################################################################################
 

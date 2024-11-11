@@ -6,15 +6,35 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_scc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-13 12:53+0200\n"
-"PO-Revision-Date: 2024-09-13 12:55+0200\n"
+"POT-Creation-Date: 2024-11-11 15:36+0100\n"
+"PO-Revision-Date: 2024-11-11 15:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.5\n"
+
+#: plugin_video_sc2/webshare.py:135
+msgid "Webshare server returned error"
+msgstr "Webshare server vrátil chybu"
+
+#: plugin_video_sc2/webshare.py:229
+msgid "Wrong webshare login data provided"
+msgstr "Chybné přihlašovací údaje pro Webshare"
+
+#: plugin_video_sc2/webshare.py:232
+msgid "Webshare subscription expired. Only very low quality videos will play and seeking forward/backwad will not work at all."
+msgstr "Webshare předplatné vypršelo. Přehrávání bude fungovat jen u videí s velmi nízkou kvalitou a přetáčení vpřed/vzad nebude fungovat vůbec."
+
+#: plugin_video_sc2/webshare.py:243
+msgid "File is password protected, but SCC server hasn't returned enough information to compute it."
+msgstr "Soubor je chráněný heslem, no SCC server nevrátil dostatek informací pro jeho výpočet."
+
+#: plugin_video_sc2/webshare.py:254
+msgid "Failed to resolve file"
+msgstr "Nepodařilo se získat adresu souboru"
 
 #: plugin_video_sc2/seasonal_events.py:7
 msgid "Christmas"
@@ -1272,29 +1292,9 @@ msgstr "Inuitština"
 msgid "No Language"
 msgstr "Žádný jazyk"
 
-#: plugin_video_sc2/scc_api.py:86 plugin_video_sc2/csfd.py:28
+#: plugin_video_sc2/csfd.py:28 plugin_video_sc2/scc_api.py:86
 msgid "Unexpected return code from server"
 msgstr "Neočekávaný návratový kód ze serveru"
-
-#: plugin_video_sc2/webshare.py:134
-msgid "Webshare server returned error"
-msgstr "Webshare server vrátil chybu"
-
-#: plugin_video_sc2/webshare.py:231
-msgid "Wrong webshare login data provided"
-msgstr "Chybné přihlašovací údaje pro Webshare"
-
-#: plugin_video_sc2/webshare.py:234
-msgid "Webshare subscription expired. Only very low quality videos will play and seeking forward/backwad will not work at all."
-msgstr "Webshare předplatné vypršelo. Přehrávání bude fungovat jen u videí s velmi nízkou kvalitou a přetáčení vpřed/vzad nebude fungovat vůbec."
-
-#: plugin_video_sc2/webshare.py:245
-msgid "File is password protected, but SCC server hasn't returned enough information to compute it."
-msgstr "Soubor je chráněný heslem, no SCC server nevrátil dostatek informací pro jeho výpočet."
-
-#: plugin_video_sc2/webshare.py:258
-msgid "Failed to resolve file"
-msgstr "Nepodařilo se získat adresu souboru"
 
 #: plugin_video_sc2/provider.py:72
 msgid "Webshare VIP account expired"
@@ -1450,27 +1450,27 @@ msgstr "Historie"
 msgid "Failed to load trakt.tv list"
 msgstr "Nepodařilo se načíst trakt.tv seznam"
 
-#: plugin_video_sc2/provider.py:396
+#: plugin_video_sc2/provider.py:408
 msgid "Episode"
 msgstr "Epizoda"
 
-#: plugin_video_sc2/provider.py:655
+#: plugin_video_sc2/provider.py:668
 msgid "Remove from seen"
 msgstr "Vymazat ze sledovaných"
 
-#: plugin_video_sc2/provider.py:658
+#: plugin_video_sc2/provider.py:671
 msgid "Search on prehraj.to"
 msgstr "Vyhledat na prehraj.to"
 
-#: plugin_video_sc2/provider.py:661
+#: plugin_video_sc2/provider.py:674
 msgid "Play trailer"
 msgstr "Přehrát trailer"
 
-#: plugin_video_sc2/provider.py:674
+#: plugin_video_sc2/provider.py:687
 msgid "Related"
 msgstr "Související"
 
-#: plugin_video_sc2/provider.py:675
+#: plugin_video_sc2/provider.py:688
 msgid "Similar"
 msgstr "Podobné"
 
@@ -1518,6 +1518,9 @@ msgstr "Přihlašovací heslo (webshare.cz)"
 
 msgid "VIP days remaining (webshare.cz)"
 msgstr "Zůstávající dny VIP předplatného (webshare.cz)"
+
+msgid "Cleanup watched items from webshare history"
+msgstr "Vymaž sledované položky z webshare historie"
 
 msgid "Use primary prehraj.to search"
 msgstr "Primárně použít vyhledávání na prehraj.to"

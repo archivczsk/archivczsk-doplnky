@@ -12,6 +12,7 @@
 		<setting label="Login name (webshare.cz)" id="wsuser" type="text" default="" />
 		<setting label="Login password (webshare.cz)" id="wspass" type="password" default="" />
 		<setting label="VIP days remaining (webshare.cz)" id="wsvipdays" type="number" default="0" />
+		<setting label="Cleanup watched items from webshare history" id="cleanup_history" type="bool" default="false"/>
 		<setting label="Use primary prehraj.to search" id="prehrajto-primary" type="bool" default="false" />
 	</category>
 	<category label="Filters">

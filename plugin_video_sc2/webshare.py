@@ -34,11 +34,14 @@ def _log_dummy(message):
 
 class Webshare():
 
-	def __init__(self, content_provider):
+	def __init__(self, content_provider, bgservice=None):
 		self.cp = content_provider
 		self.data_dir = content_provider.data_dir
 		self.device_id = "123456"
 		self.login_data = {}
+		self.bgservice = bgservice
+		self.bg_task_id = None
+		self.cleanup_idents = {}
 		self.req_session = self.cp.get_requests_session()
 		self.load_login_data()
 
@@ -79,9 +82,8 @@ class Webshare():
 			return False
 
 		try:
-			data = self.call_ws_api('/api/salt/', { 'username_or_email':username })
+			xml = self.call_ws_api('salt', { 'username_or_email':username })
 
-			xml = ET.fromstring(data)
 			status = xml.find('status').text
 			if status != 'OK':
 				raise WebshareLoginFail( "Wrong response to salt command: %s" % xml.find('message').text )
@@ -93,9 +95,7 @@ class Webshare():
 			password = self.get_password_hash(password, salt)
 			digest = md5(username.encode('utf-8') + b':Webshare:' + password.encode('utf-8')).hexdigest()
 			# login
-			data = self.call_ws_api('/api/login/', { 'username_or_email':username, 'password':password, 'digest': digest, 'keep_logged_in':1 })
-
-			xml = ET.fromstring(data)
+			xml = self.call_ws_api('login', { 'username_or_email':username, 'password':password, 'digest': digest, 'keep_logged_in':1 })
 
 			status = xml.find('status').text
 			if status != 'OK':
@@ -123,9 +123,10 @@ class Webshare():
 			'Referer': BASE
 		}
 
-		response = self.req_session.post(BASE + endpoint, data=data, headers=headers)
+		url = '{}/api/{}/'.format(BASE, endpoint)
+		response = self.req_session.post(url, data=data, headers=headers)
 #		with open("/tmp/ws_request.txt", "a") as f:
-#			f.write("URL: %s\n" % (BASE + endpoint))
+#			f.write("ENDPOINT: %s\n" % endpoint)
 #			f.write("DATA: %s\n" % data)
 #			f.write("RESPONSE: %s\n" % response.text)
 #			f.write("-----------------------------------\n")
@@ -133,7 +134,7 @@ class Webshare():
 		if response.status_code != 200:
 			raise WebshareApiError(self.cp._("Webshare server returned error") + ': %s (%d)' % (response.reason, response.status_code))
 
-		return response.text
+		return ET.fromstring(response.content)
 
 	# #################################################################################################
 
@@ -148,12 +149,11 @@ class Webshare():
 
 	def get_user_info(self):
 		try:
-			data = self.call_ws_api('/api/user_data/')
+			xml = self.call_ws_api('user_data')
 		except Exception as e:
 			self.cp.log_error('Webshare get user info fail: {}'.format(traceback.format_exc()))
 			raise WebshareApiError( str(e) )
 
-		xml = ET.fromstring(data)
 		isVip = xml.find('vip').text
 		vipDays = xml.find('vip_days').text
 		ident = xml.find('ident').text
@@ -209,9 +209,7 @@ class Webshare():
 	# #################################################################################################
 
 	def get_file_password_salt(self, ident):
-		data = self.call_ws_api('/api/file_password_salt/', {'ident': ident})
-
-		xml = ET.fromstring(data)
+		xml = self.call_ws_api('file_password_salt', {'ident': ident})
 
 		if xml.find('status').text == 'OK':
 			return xml.find('salt').text
@@ -249,24 +247,49 @@ class Webshare():
 			request_data['password'] = self.get_password_hash(file_password, salt)
 			self.cp.log_debug("Computed file password hash: %s" % request_data['password'])
 
-		data = self.call_ws_api('/api/file_link/', request_data)
-
-		xml = ET.fromstring(data)
+		xml = self.call_ws_api('file_link', request_data)
 
 		if xml.find('status').text != 'OK':
 			self.login_data = {}
 			raise ResolveException(self.cp._("Failed to resolve file") + ": %s" % xml.find('message').text)
 
+		if self.cp.get_setting('cleanup_history') and self.bgservice is not None:
+			self.cleanup_idents[ident] = True
+
+			if self.bg_task_id == None:
+				self.bg_task_id = self.bgservice.run_in_loop('CleanupWsHistory', 900, self.cleanup_ws_histpry)
+
 		return xml.find('link').text
+
+	# #################################################################################################
+
+	def cleanup_ws_history(self):
+		if not self.cleanup_idents:
+			if self.bg_task_id != None:
+				# no idents to remove - stop task from being run
+				self.bgservice.run_in_loop_stop(self.bg_task_id)
+				self.bg_task_id = None
+
+			return
+
+		xml = self.call_ws_api('history', {'offset' : 0, 'limit': len(self.cleanup_idents) + 2})
+
+		for f in xml.findall('file'):
+			ident = f.find('ident').text
+
+			if ident in self.cleanup_idents:
+				download_id = f.find('download_id').text
+				self.cp.log_debug("Removing item with ident %s and download_id %s from webshare history" % (ident, download_id))
+				self.call_ws_api('clear_history', {'ids' : download_id})
+				del self.cleanup_idents[ident]
 
 	# #################################################################################################
 
 	def search( self, title ):
 		self.refresh_login_data()
 
-		data = self.call_ws_api('/api/search/', {'what': title, 'offset': 0, 'limit': 30, 'category': 'video', 'sort': 'rating' } )
+		xml = self.call_ws_api('search', {'what': title, 'offset': 0, 'limit': 30, 'category': 'video', 'sort': 'rating' } )
 
-		xml = ET.fromstring(data)
 		if not xml.find('status').text == 'OK':
 			self.cp.log_error('Server returned error status, response: %s' % xml.find('message').text)
 			return []
