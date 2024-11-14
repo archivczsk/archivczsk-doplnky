@@ -929,6 +929,8 @@ class SosacContentProvider(CommonContentProvider):
 	# #################################################################################################
 
 	def search(self, keyword, search_id, page=1):
+		self.build_lang_lists()
+
 		if search_id == 'movies':
 			result = self.sosac.search_simple('movies', keyword, page)
 			add_item = self.add_movie
