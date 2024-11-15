@@ -54,16 +54,14 @@ class SeasonalEventManager:
 		cz = [
 			SeasonalEvent(SEASONAL_EVENT.CHRISTMAS_CZ_SK, datetime(date.year, 12, 20), datetime(date.year, 12, 31, 23, 59, 59)),
 			SeasonalEvent(SEASONAL_EVENT.CHRISTMAS_CZ_SK, datetime(date.year, 1, 1), datetime(date.year, 1, 6)),
-			SeasonalEvent(SEASONAL_EVENT.SPRING_HOLIDAY, datetime(2022, 2, 5), datetime(2022, 3, 20)),
-			SeasonalEvent(SEASONAL_EVENT.SPRING_HOLIDAY, datetime(2023, 2, 6), datetime(2023, 3, 19)),
-			SeasonalEvent(SEASONAL_EVENT.SPRING_HOLIDAY, datetime(2024, 2, 19), datetime(2024, 3, 17)),
+			SeasonalEvent(SEASONAL_EVENT.SPRING_HOLIDAY, datetime(2025, 2, 3), datetime(2025, 3, 16)),
+			SeasonalEvent(SEASONAL_EVENT.SPRING_HOLIDAY, datetime(2026, 2, 2), datetime(2026, 3, 15)),
 		]
 		sk = [
 			SeasonalEvent(SEASONAL_EVENT.CHRISTMAS_CZ_SK, datetime(date.year, 12, 20), datetime(date.year, 12, 31, 23, 59, 59)),
 			SeasonalEvent(SEASONAL_EVENT.CHRISTMAS_CZ_SK, datetime(date.year, 1, 1), datetime(date.year, 1, 6)),
-			SeasonalEvent(SEASONAL_EVENT.SPRING_HOLIDAY, datetime(2022, 2, 19), datetime(2022, 3, 20)),
-			SeasonalEvent(SEASONAL_EVENT.SPRING_HOLIDAY, datetime(2023, 2, 20), datetime(2023, 3, 10)),
-			SeasonalEvent(SEASONAL_EVENT.SPRING_HOLIDAY, datetime(2024, 2, 16), datetime(2024, 3, 8)),
+			SeasonalEvent(SEASONAL_EVENT.SPRING_HOLIDAY, datetime(2025, 2, 15), datetime(2025, 3, 9)),
+			SeasonalEvent(SEASONAL_EVENT.SPRING_HOLIDAY, datetime(2026, 2, 14), datetime(2026, 3, 8)),
 		]
 		region_map = {
 			'cs': eu + cz,
