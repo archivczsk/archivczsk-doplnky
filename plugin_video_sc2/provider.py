@@ -9,13 +9,16 @@ from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman, strip_accents
 from tools_archivczsk.cache import lru_cache
+from tools_archivczsk.simple_config import SimpleConfigSelection, SimpleConfigInteger, SimpleConfigYesNo, SimpleConfigMultiSelection
 from bisect import bisect
+from datetime import datetime
 from .webshare import Webshare, WebshareLoginFail, ResolveException, WebshareApiError
 from .scc_api import SCC_API
 from .watched import SCWatched
-from .lang_lists import lang_code_to_lang
+from .lang_lists import lang_code_to_lang, country_to_country_code, genres_list
 from .seasonal_events import SeasonalEventManager
 from .csfd import Csfd
+from .custom_query import SCC_Query, SCC_Sort
 
 # ##################################################################################################################
 
@@ -302,7 +305,7 @@ class SccContentProvider(CommonContentProvider):
 
 		data = self.api.call_filter_api(filter_name, req_params).get('hits', {})
 
-		self.render_media_dir(data, **render_params)
+		self.render_media_dir(data, request={'filter_name': filter_name, 'params': params, 'page': page}, **render_params)
 
 		if 'total' in data:
 			total = data['total']['value']
@@ -430,7 +433,7 @@ class SccContentProvider(CommonContentProvider):
 						if not stripped_value.startswith(title_hint):
 							info_title = None
 
-					# check if there is at leas one ascii char in title - there is a lot of mess in database ...
+					# check if there is at least one ascii char in title - there is a lot of mess in database ...
 					if info_title and any(check_ascii(c) and (not c.isspace()) for c in info_title):
 						if media_type == 'episode':
 							info_labels['epname'] = info_title
@@ -622,7 +625,129 @@ class SccContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def render_media_dir(self, data, category=None, services=None, folder=None):
+	def advanced_filter(self, filter_name, params={}, render_params={}, page=0):
+		filter_data = SCC_Query.parse_filter_query(filter_name, params)
+
+		years = [str(y) for y in range(1900, datetime.now().year+1)]
+		default_year = filter_data.get('y', '<=%d' % datetime.now().year)
+		if default_year[0] in ('<', '>'):
+			default_year_sign = default_year[0] + '='
+			if default_year[1] == '=':
+				default_year = default_year[2:]
+			else:
+				if default_year_sign[0] == '<':
+					default_year = str(int(default_year[1:])+1)
+				else:
+					default_year = str(int(default_year[1:])-1)
+		else:
+			default_year_sign = '='
+			if default_year[0] == '=':
+				default_year = default_year[1:]
+
+		default_rating = filter_data.get('r', 0)
+
+		quality = [
+			(None, self._('Any')),
+			(320, 'SD'),
+			(640, '720p'),
+			(720, '1080p'),
+			(1080, '4K'),
+			(2160, '8K'),
+		]
+
+		scc_sort = SCC_Sort(self)
+		sort_methods = scc_sort.get_sort_list()
+		default_sort = scc_sort.sort_method_by_name(filter_data.get('of'))
+		self.log_debug('filter_data[of]: %s' % filter_data.get('of'))
+		self.log_debug('filter_data[od]: %s' % filter_data.get('od'))
+
+		self.log_debug("ds: %s" % default_sort)
+		for x in sort_methods:
+			self.log_debug("sm: %s: %s" % (x[0], x[0] == default_sort))
+
+		genres = sorted([(k, self._(k)) for k in genres_list], key=lambda x: x[1])
+		genres_pos = filter_data.get('mu', [])
+		genres_neg = filter_data.get('nmu', [])
+
+		countries = sorted([(k, self._(k)) for k in country_to_country_code.keys()], key=lambda x: x[1])
+		countries_pos = filter_data.get('co', [])
+		countries_neg = filter_data.get('nco', [])
+
+		cfg = [
+			SimpleConfigSelection(self._('Year'), choices=years, default=default_year),                                             # 0
+			SimpleConfigSelection(self._('Year sign'), ['<=', '=', '>='], default=default_year_sign),                               # 1
+			SimpleConfigYesNo(self._('Show only dubbed'), default=int(filter_data.get('dub', '0')) == 1),                           # 2
+			SimpleConfigYesNo(self._('Show only content with subtitles'), default=int(filter_data.get('tit', '0')) == 1),           # 3
+			SimpleConfigMultiSelection(self._('Show only genre'), genres, selected=genres_pos),                                     # 4
+			SimpleConfigMultiSelection(self._("Don't show genre"), genres, selected=genres_neg),                                    # 5
+			SimpleConfigMultiSelection(self._('Countries of origin'), countries, selected=countries_pos),                           # 6
+			SimpleConfigMultiSelection(self._("Exclude countries of origin"), countries, selected=countries_neg),                   # 7
+			SimpleConfigSelection(self._('Rating greater than'), [str(i) for i in range(0, 100, 10)], default=str(default_rating)), # 8
+			SimpleConfigSelection(self._('Stream quality'), quality, default=filter_data.get('q')),                                 # 9
+			SimpleConfigYesNo(self._('Show only HDR content'), default=int(filter_data.get('HDR', '0')) == 2),                      # 10
+			SimpleConfigSelection(self._('Order by'), sort_methods, default=default_sort),                                          # 11
+			SimpleConfigYesNo(self._('Order descending'), default=filter_data.get('od', 'asc') == 'desc'),                          # 12
+		]
+
+		if self.open_simple_config(cfg, title=self._("Advanced filtering")) != True:
+			return self.reload_screen()
+
+		# build custom query based on settings
+		must = []
+		must_not = []
+
+		must.append(SCC_Query.media_type(filter_data.get('type')))
+
+		if cfg[1].get_value() != default_year or cfg[0].get_value() != default_year_sign:
+			must.append(SCC_Query.year(cfg[1].get_value(), cfg[0].get_value()))
+
+		if cfg[2].get_value():
+			must.append(SCC_Query(self).dub())
+
+		if cfg[3].get_value():
+			must.append(SCC_Query(self).tit())
+
+		for g in cfg[4].get_value():
+			must.append(SCC_Query.genre(g))
+
+		for g in cfg[5].get_value():
+			must_not.append(SCC_Query.genre(g))
+
+		for c in cfg[6].get_value():
+			must.append(SCC_Query.country(c))
+
+		for c in cfg[7].get_value():
+			must_not.append(SCC_Query.country(c))
+
+		if int(cfg[8].get_value()) > 0:
+			must.append(SCC_Query.rating(int(cfg[8].get_value())))
+
+		if cfg[9].get_value():
+			must.append(SCC_Query.quality(cfg[9].get_value()))
+
+		if cfg[10].get_value():
+			must.append(SCC_Query.hdr())
+
+		if filter_data.get('s'):
+			must.append(SCC_Query.studio(filter_data.get('s')))
+
+		if filter_data.get('l'):
+			must.append(SCC_Query.language(filter_data.get('l')))
+
+		if filter_data.get('sws'):
+			must.append(SCC_Query.startswith(filter_data.get('sws')))
+
+		params = {
+			'config': SCC_Query.build_query(must, must_not),
+			'sortConfig': cfg[11].get_value()( cfg[12].get_value() ),
+			'sort': 'custom'
+		}
+
+		return self.call_filter_api('custom', params, render_params, page)
+
+	# ##################################################################################################################
+
+	def render_media_dir(self, data, request={}, category=None, services=None, folder=None):
 		# this is needed for trakt - we need unique id's of parent for seasons and episodes
 		prehrajto_primary = self.get_setting('prehrajto-primary')
 		services_parent = services
@@ -663,6 +788,8 @@ class SccContentProvider(CommonContentProvider):
 			title, img, info_labels, media_type = self.get_media_info(source, title_hint)
 			info_labels['adult'] = is_adult
 			menu = self.create_ctx_menu()
+
+			menu.add_menu_item(self._("Advanced filtering"), cmd=self.advanced_filter, filter_name=request['filter_name'], params=request['params'], render_params={'category': category, 'services': services_parent, 'folder': folder}, page=request['page'])
 
 			if folder == 'last_seen':
 				menu.add_menu_item(self._('Remove from seen'), cmd=self.remove_from_seen, category=cat, media_id=media['_id'])
