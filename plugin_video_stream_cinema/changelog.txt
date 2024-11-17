@@ -1,3 +1,7 @@
+2024-12-01 3.13
+    - pridané rozšírené triedenie a filtrovanie dostupné cez kontextové menu
+    - umožňuje filtrovať a triediť výsledky podľa rôznych kategórii
+
 2024-08-21 3.12
     - prehrávanie trailerov z youtube cez priame volanie yt doplnku
 

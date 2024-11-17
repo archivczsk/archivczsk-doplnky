@@ -758,7 +758,6 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			(None, self._('Any')),
 			('SD', 'SD'),
 			('720p', '720p'),
-			('720p', '720p'),
 			('1080p', '1080p'),
 			('4K', '4K'),
 			('8K', '8K'),
@@ -794,7 +793,6 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			SimpleConfigSelection(self._('Maturity rating'), maturity_rating, default=int(filter_data.get('m', -1))),           # 9
 			SimpleConfigSelection(self._('Stream quality'), quality, default=filter_data.get('q')),                             # 10
 			SimpleConfigYesNo(self._('Show only HDR content'), default=int(filter_data.get('HDR', '0')) == 2),                  # 11
-			SimpleConfigYesNo(self._('Show only DolbyVision content'), default=int(filter_data.get('DV', '0')) == 2),           # 12
 			SimpleConfigSelection(self._('Order by'), sort_methods, default=default_order),                                     # 13
 			SimpleConfigYesNo(self._('Order descending'), default=filter_data.get('od', 'asc') == 'desc'),                      # 14
 		]
@@ -857,12 +855,8 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		if cfg[11].get_value():
 			params['HDR'] = 2
 
-		# DV: 0 = disable, 1 = enable, 2 = force
-		if cfg[12].get_value():
-			params['DV'] = 2
-
-		params['of'] = cfg[13].get_value()
-		params['od'] = 'desc' if cfg[14].get_value() else 'asc'
+		params['of'] = cfg[12].get_value()
+		params['od'] = 'desc' if cfg[13].get_value() else 'asc'
 
 		if 'list' in filter_data:
 			# filter data contains list and that can be quite large for GET request, so use POST instead

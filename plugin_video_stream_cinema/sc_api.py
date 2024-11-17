@@ -74,7 +74,7 @@ class SC_API(object):
 			default_params.update({'HDR': 1 if self.cp.get_setting('show-hdr') else 0 }) #zobrazit HDR ano/nie 1/0
 
 		if not params or 'DV' not in params:
-			default_params.update({'DV': 1 if self.cp.get_setting('show-dv') else 0 }) # zobrazit dolby vidion filmy ano/nie 1/0
+			default_params.update({'DV': 0 }) # zobrazit dolby vidion filmy ano/nie 1/0 - ziaden enigma2 prijimac toto nepodoruje
 
 		if self.cp.get_setting('old-menu'):
 			default_params.update({'old': 1 }) # zobrazit povodny typ menu
