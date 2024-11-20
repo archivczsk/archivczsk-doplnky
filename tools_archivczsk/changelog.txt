@@ -1,3 +1,8 @@
+2.0 - 20.11.2024
+    - added simple config interface
+    - added exit_screen and reload_screen commands
+    - updated debug interface
+
 1.36 - 21.08.2024
     - removed youtube_resolve() api from CommonContentProvider
     - updated available exteplayer3 version

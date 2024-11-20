@@ -163,6 +163,9 @@ class ArchivCZSKContentProvider(object):
 		self.provider.get_addon_id = self.get_addon_id
 		self.provider.update_last_command = self.update_last_command
 		self.provider.open_simple_config = self.open_simple_config
+		self.provider.exit_screen = self.exit_screen
+		self.provider.reload_screen = self.reload_screen
+		self.provider.ensure_supporter = self.ensure_supporter
 
 		self.initialised_cbk_called = False
 		self.login_tries = 0
@@ -738,5 +741,22 @@ class ArchivCZSKContentProvider(object):
 
 	def open_simple_config(self, config_entries, title=None, s=True):
 		return client.openSimpleConfig(self.session, config_entries, title, s)
+
+	# #################################################################################################
+
+	def exit_screen(self):
+		client.clear_items()
+		client.set_command('exit')
+
+	# #################################################################################################
+
+	def reload_screen(self):
+		client.clear_items()
+		client.set_command('reload')
+
+	# #################################################################################################
+
+	def ensure_supporter(self):
+		client.ensure_supporter(self.session)
 
 	# #################################################################################################

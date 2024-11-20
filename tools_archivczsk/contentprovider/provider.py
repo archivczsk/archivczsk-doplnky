@@ -657,6 +657,18 @@ class CommonContentProvider(object):
 		'''
 		return
 
+	def exit_screen(self):
+		'''
+		Exits current screen and loads parent from cache without refreshing it
+		'''
+		return
+
+	def reload_screen(self):
+		'''
+		Reloads current screen from cache without refreshing it
+		'''
+		return
+
 	def get_lang_code(self):
 		'''
 		Returns current used language code for GUI
@@ -720,3 +732,6 @@ class CommonContentProvider(object):
 
 	def open_simple_config(self, config_entries, title=None, s=True):
 		return False
+
+	def ensure_supporter(self):
+		return
