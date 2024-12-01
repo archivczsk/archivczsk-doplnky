@@ -1,3 +1,7 @@
+2.9: 01.12.2024
+- oprava pádu pri vyhľadávaní z EPG
+- oprava pádu pri nedostupnosti streamuj.tv
+
 2.8: 15.09.2024
 - úprava závislosti doplnku
 

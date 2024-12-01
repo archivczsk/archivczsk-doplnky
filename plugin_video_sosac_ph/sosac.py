@@ -520,11 +520,24 @@ class Sosac(object):
 			'User-Agent': self.user_agent
 		}
 
-		resp = self.req_session.get(url, params=default_params, headers=headers)
+		try:
+			resp = self.req_session.get(url, params=default_params, headers=headers)
+		except:
+			self.cp.log_exception()
+			raise AddonErrorException(self._("{streaming_label} is currentrly unavailable. Try again later.").format(streaming_label=self.streaming_label))
+
 #		dump_json_request(resp)
 
 		if resp.status_code == 200:
-			return resp.json()
+			try:
+				return resp.json()
+			except:
+				try:
+					self.cp.log_error("Wrong response from streamuj.tv:\n%s" % str(resp.text))
+				except:
+					pass
+
+				raise AddonErrorException(self._("{streaming_label} is currentrly unavailable. Server is returing wrong response data. Try again later.").format(streaming_label=self.streaming_label))
 		else:
 			self.cp.log_error("Remote server returned status code %d" % resp.status_code)
 
