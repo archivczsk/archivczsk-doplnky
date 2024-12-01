@@ -1,3 +1,9 @@
+2024-12-01 [3.21]
+* pridané rozšírené triedenie a filtrovanie dostupné cez kontextové menu
+    - umožňuje filtrovať a triediť výsledky podľa rôznych kategórii
+* pridaná možnosť automatického mazania webshare histórie do nastavení doplnku
+* oprava pádu ak položka obsahuje nekompletné video informácie
+
 2024-09-15 [3.20]
 * oprava pádu pre python2 image
 

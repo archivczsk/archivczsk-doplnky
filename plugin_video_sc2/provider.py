@@ -1075,10 +1075,11 @@ class SccContentProvider(CommonContentProvider):
 
 		titles = []
 		for strm in data:
-			video = strm.get('video', [{}])[0]
+			video = strm.get('video') or []
+			video = video[0] if len(video) > 0 else {}
 
 			auds = []
-			for audio in strm.get('audio', []):
+			for audio in (strm.get('audio') or []):
 				if 'language' in audio:
 					if audio['language'] == "":
 						auds.append(audio.get('codec', '') + " " + audios.get(audio.get('channels', 2), "") + " ??")
