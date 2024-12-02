@@ -198,8 +198,25 @@ class O2TVModuleArchive(CPModuleArchive):
 				url = self.cp.o2tv.get_archive_link(mi['id'])
 				self.cp.resolve_dash_streams(url, mi['title'], playlist=playlist)
 		else:
-			url = self.cp.o2tv.get_archive_link(epg_id)
-			self.cp.resolve_dash_streams(url, epg_title)
+			archive_using_rec = self.cp.get_setting('archive_using_rec')
+
+			if archive_using_rec == 'ask':
+				archive_using_rec = self.cp.get_yes_no_input(self._("Play archive using recording? The recording has a larger amount of time added before and after the end of the selected program."))
+			elif archive_using_rec == 'true':
+				archive_using_rec = True
+			else:
+				archive_using_rec = False
+
+			if archive_using_rec:
+				# add new recording
+				self.cp.ensure_supporter()
+				rec_id = self.cp.o2tv.add_recording(epg_id)
+				self.cp.log_debug("Created new recording from EPG ID %s with rec_id %s" % (epg_id, rec_id))
+				url = self.cp.o2tv.get_recording_link(rec_id)
+				self.cp.resolve_dash_streams(url, epg_title, data_item={'del_rec_id': rec_id})
+			else:
+				url = self.cp.o2tv.get_archive_link(epg_id)
+				self.cp.resolve_dash_streams(url, epg_title)
 
 	# #################################################################################################
 
@@ -598,7 +615,7 @@ class O2TVContentProvider(ModuleContentProvider):
 
 	# ##################################################################################################################
 
-	def resolve_dash_streams(self, url, video_title, playlist=None):
+	def resolve_dash_streams(self, url, video_title, playlist=None, data_item=None):
 		streams = self.get_dash_streams(url, self.o2tv.req_session, max_bitrate=self.get_setting('max_bitrate'))
 		if not streams:
 			return
@@ -622,6 +639,14 @@ class O2TVContentProvider(ModuleContentProvider):
 				playlist.add_play(video_title, stream_key_to_dash_url(self.http_endpoint, key), info_labels=info_labels, settings=play_settings)
 				break
 			else:
-				self.add_play(video_title, stream_key_to_dash_url(self.http_endpoint, key), info_labels=info_labels, settings=play_settings)
+				self.add_play(video_title, stream_key_to_dash_url(self.http_endpoint, key), info_labels=info_labels, settings=play_settings, data_item=data_item)
+
+	# ##################################################################################################################
+
+	def stats(self, data_item, action, duration=None, position=None, **extra_params):
+		if action == 'end' and data_item:
+			if 'del_rec_id' in data_item:
+				self.log_debug("Deleting recording %s" % data_item['del_rec_id'])
+				self.o2tv.delete_recording(data_item['del_rec_id'])
 
 	# ##################################################################################################################

@@ -642,7 +642,11 @@ class O2TV(object):
 		}
 
 		response = self.call_o2_api('recording/action/add', data = post)
-		return response.get('result',{}).get('status') in ('SCHEDULED', 'RECORDED')
+
+		if response.get('result',{}).get('status') in ('SCHEDULED', 'RECORDED'):
+			return response['result'].get('id')
+
+		return None
 
 
 	# #################################################################################################

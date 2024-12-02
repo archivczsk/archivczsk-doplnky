@@ -1,3 +1,9 @@
+1.20 - 02.12.2024
+    - pridanie prehrávania archívu pomocou nahrávok
+        * pridá väčší časový úsek pred začiatok a za koniec prehrávaného programu
+        * nahrávka sa vytvorí automaticky a po skončení prehrávania sa zmaže
+        * dá sa zapnúť/vypnúť v nastaveniach doplnku
+
 1.19 - 30.09.2024
     - oprava archívu podľa názvu stanice
 
