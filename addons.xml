@@ -6,7 +6,7 @@
 <addon id="plugin.video.disneyplus" name="Disney+" version="1.3" hash="ae4bcabcdc6425517460a64c47c51d83" rhash="7bba15edfa9a06a3c81d9378b8957dc3" />
 <addon id="plugin.video.dokumenty.tv" name="Dokumenty.tv" version="1.9" hash="e33168f108e1f281230b07667afb82cb" rhash="e33168f108e1f281230b07667afb82cb" />
 <addon id="plugin.video.idnestv" name="iDNES.tv" version="1.4" hash="900e1eb110296239c92938b35e13ee04" rhash="900e1eb110296239c92938b35e13ee04" />
-<addon id="plugin.video.ivysilani" name="iVysílání - Česká televize" version="2.3" hash="48f606bf2cf53f7d814cfba51600791f" rhash="eafc83b43c927bb1a8cc555b345b8c6d" />
+<addon id="plugin.video.ivysilani" name="iVysílání - Česká televize" version="2.4" hash="153a662ba6b445e1dbefe5f16176a426" rhash="f2d0c10bcb28e8cb0f75f11c56407f51" />
 <addon id="plugin.video.joj.sk" name="joj.sk" version="1.6.3" hash="362e5d32e32d4666e2f8911f94fa67cd" rhash="362e5d32e32d4666e2f8911f94fa67cd" />
 <addon id="plugin.video.kvifftv" name="Kviff.tv" version="1.3" hash="0f31fd5e31abe7ba7b5e1c66adff14aa" rhash="893db8849b0f55c24845735baacd5cb0" />
 <addon id="plugin.video.magiogo" name="Magio TV" version="1.25" hash="5173f94d02e383f6895dcab6f90124ca" rhash="a685d48a9b05d4cc822af9d41912811c" />
@@ -36,7 +36,7 @@
 <addon id="plugin.video.voyo" name="VOYO" version="1.6" hash="cb829ab73b5aeb28732a9a54699637a5" rhash="bf10b49920cda42571c8f70547510a67" />
 <addon id="plugin.video.webshare" name="Webshare.cz" version="1.2" hash="b1c263eadaafdf2c8db5e9b3cd5b6149" rhash="ec562614179de55f34b6a8c962796e11" />
 <addon id="plugin.video.yt" name="YouTube" version="2.3" hash="9e55b6b045ee98f8980d957943f00446" rhash="ae7a0b571a8bdab2f00026b53d0dc55b" />
-<addon id="tools.archivczsk" name="Addons base" version="2.0" hash="f5930cafb6632b0fe802dc300e98a23a" rhash="1d7aac9e2d4915ddba6e67e3f5d6bde9" />
+<addon id="tools.archivczsk" name="Addons base" version="2.1" hash="0bf0717fda31d5b34433c0094a0c2421" rhash="c78af964c0bc516daa277902054025b2" />
 <addon id="tools.cenc" name="Content encryption support" version="1.4" hash="0f3e872a0571229285e89bc1d74acc5f" rhash="0f3e872a0571229285e89bc1d74acc5f" />
 <addon id="tools.xbmc" name="xbmc addons helper" version="1.3" hash="c0e51983cae53f22ef62694a9fa0fff0" rhash="c0e51983cae53f22ef62694a9fa0fff0" />
 </addons>
