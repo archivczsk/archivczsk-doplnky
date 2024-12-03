@@ -1,3 +1,6 @@
+2.1 - 03.12.2024
+    - string API enhanced
+
 2.0 - 20.11.2024
     - added simple config interface
     - added exit_screen and reload_screen commands

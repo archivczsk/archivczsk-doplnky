@@ -29,7 +29,7 @@ except:
 
 if sys.version[0] == '2':
 	is_py3 = False
-	
+
 	def py2_decode_utf8( text ):
 		return text.decode('utf-8', 'ignore')
 
@@ -75,7 +75,7 @@ def decode_html(data):
 		return entity_re.subn(_substitute_entity, data)[0]
 	except:
 		return data
-	
+
 # #################################################################################################
 
 
@@ -151,5 +151,17 @@ except:
 
 	def strip_accents(s):
 		return ''.join(c for c in unicodedata.normalize('NFD', py2_decode_utf8(s)) if unicodedata.category(c) != 'Mn')
+
+# #################################################################################################
+
+def clean_html(html):
+	"""Clean an HTML snippet into a readable string"""
+	# Newline vs <br />
+	html = html.replace('\n', ' ')
+	html = re.sub('\s*<\s*br\s*/?\s*>\s*', '\n', html)
+	# Strip html tags
+	html = re.sub('<.*?>', '', html)
+	# Replace html entities
+	return decode_html(html)
 
 # #################################################################################################
