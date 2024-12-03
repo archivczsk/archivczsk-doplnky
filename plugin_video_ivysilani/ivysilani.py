@@ -83,7 +83,7 @@ class iVysilani(object):
 		post_data['imageType'] = IMAGE_WIDTH
 
 		ret = []
-		for item in self.call_api('programmelist', post_data):
+		for item in self.call_api('programmelist', post_data, old=True):
 			ret.append( { child.tag: child.text for child in item } )
 
 		return ret
@@ -106,7 +106,7 @@ class iVysilani(object):
 		}
 
 		ret = {}
-		for item in self.call_api('programmelist', post_data):
+		for item in self.call_api('programmelist', post_data, old=True):
 			ret[item.tag[7:]] = { child.tag: child.text for child in item.find('live').find('programme') }
 
 		return ret
@@ -122,7 +122,7 @@ class iVysilani(object):
 			"type[0]": context_name }
 
 		ret = []
-		for item in self.call_api('programmelist', post_data).findall(context_name + "/programme"):
+		for item in self.call_api('programmelist', post_data, old=True).findall(context_name + "/programme"):
 			ret.append( { child.tag: child.text for child in item } )
 
 		return ret
@@ -178,34 +178,40 @@ class iVysilani(object):
 	# #################################################################################################
 
 	def get_stream_url(self, item_id, player_type='iPad'):
-		post_data = {
-			'ID': item_id,
+		params = {
+			'canPlayDrm': 'true',
 			'quality': 'web',
-			'playerType': player_type,
-			'playlistType': 'json',
+			'streamType': 'hls' if player_type == 'iPad' else 'dash',
+			'token': self.token,
+			'origin': 'ivysilani',
+			'usePlayability': 'true'
 		}
 
-		playlist_url = self.call_api('playlisturl', post_data).text
+		item_id = str(item_id)
+		if item_id.startswith('CT'):
+			# DRM handler can't properly process format of live manifest from ct, but it looks like it is sufficient to turn off drm here ...
+			params['canPlayDrm'] = 'false'
+			url = 'https://api.ceskatelevize.cz/video/v1/playlist-live/v1/stream-data/channel/CH_' + item_id[2:]
+		else:
+			url = 'https://api.ceskatelevize.cz/video/v1/playlist-vod/v1/stream-data/media/external/' + item_id
 
-		response = self.req_session.get(playlist_url)
+		response = self.req_session.get(url, params=params)
+
+		response.raise_for_status()
+		resp_json = response.json()
 
 		if DUMP_REQUESTS:
 			dump_json_request(response)
 
-		response.raise_for_status()
-
-		stream_config = response.json()
-
 		url = None
-		title = None
-
-		for p in stream_config.get('playlist',[]):
-			if p.get('type') != 'TRAILER':
-				url = p.get('streamUrls',{}).get('main')
-				title = p.get('title')
+		for s in resp_json.get('streams', []):
+			url = s.get('url')
 
 			if url:
 				break
+
+		else:
+			url = resp_json.get('streamUrls', {}).get('main')
 
 		if not url or (player_type == 'iPad' and "drmOnly=true" in url):
 			# stream is only available as drm protected dash
@@ -214,7 +220,7 @@ class iVysilani(object):
 		return {
 			'url': url,
 			'type': 'hls' if player_type == 'iPad' else 'dash',
-			'title': title
+			'title': resp_json.get('showTitle') or resp_json.get('title') or ""
 		}
 
 # #################################################################################################

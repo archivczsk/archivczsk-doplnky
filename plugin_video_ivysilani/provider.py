@@ -2,8 +2,7 @@
 from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
-from tools_archivczsk.string_utils import _I, _C, _B, decode_html
-from tools_archivczsk.debug.http import dump_json_request
+from tools_archivczsk.string_utils import _I, _C, _B, clean_html
 import sys, os
 
 from datetime import datetime, timedelta
@@ -38,12 +37,15 @@ class iVysilaniContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def list_live(self):
-		for channel_id, epg_data in self.ivysilani.get_current_epg().items():
-			channel_title = epg_data.get('channelTitle') or ''
+		channel_name_map = { k: v for k, v in self.ivysilani.get_live_channels() }
 
-			if epg_data.get('isOnline') != '1':
-				self.log_debug("Channel %s is not online now - skipping")
-				continue
+		for channel_id, epg_data in self.ivysilani.get_current_epg().items():
+			channel_title = channel_name_map.get(channel_id, '')
+
+#			this doesn't work anymore - it's not possible to know if channel is broadcasting or not ...
+#			if epg_data.get('isOnline') != '1':
+#				self.log_debug("Channel %s is not online now - skipping" % channel_title)
+#				continue
 
 			if epg_data.get('title'):
 				channel_title += ' %s' % _I(epg_data['title'])
@@ -52,10 +54,14 @@ class iVysilaniContentProvider(CommonContentProvider):
 				channel_title += ' [%s%%]' % epg_data['elapsedPercentage']
 
 			info_labels = {
-				'plot' : '[%s]\n%s' % (epg_data.get('time') or '', epg_data.get('synopsis') or '',)
+				'plot' : '[%s]\n%s' % (epg_data.get('time') or '', clean_html(epg_data.get('synopsis') or ''),)
 			}
 
-			self.add_video(channel_title, epg_data.get('imageURL'), info_labels=info_labels, cmd=self.play_item, item_id='CT' + channel_id + '|' + epg_data['ID'])
+			img = epg_data.get('imageURL')
+			if img and img.startswith('//'):
+				img = 'http:' + img
+
+			self.add_video(channel_title, img, info_labels=info_labels, cmd=self.play_item, item_id='CT' + channel_id + '|' + epg_data['ID'])
 
 	# ##################################################################################################################
 
@@ -110,10 +116,14 @@ class iVysilaniContentProvider(CommonContentProvider):
 
 		menu.add_menu_item(self._('Bonuses'), cmd=self.list_context, item_id=item.get('ID'), context_name='bonuses')
 
+		img = item.get('imageURL')
+		if img and img.startswith('//'):
+			img = 'http:' + img
+
 		if episodes:
-			self.add_dir(title, item.get('imageURL'), info_labels=info_labels, menu=menu, cmd=self.list_context, item_id=item.get('ID'), context_name='episodes')
+			self.add_dir(title, img, info_labels=info_labels, menu=menu, cmd=self.list_context, item_id=item.get('ID'), context_name='episodes')
 		else:
-			self.add_video(title, item.get('imageURL'), info_labels=info_labels, menu=menu, cmd=self.play_item, item_id=item.get('ID'))
+			self.add_video(title, img, info_labels=info_labels, menu=menu, cmd=self.play_item, item_id=item.get('ID'))
 
 	# ##################################################################################################################
 

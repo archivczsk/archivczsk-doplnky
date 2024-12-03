@@ -1,3 +1,6 @@
+2024-12-03 [2.4]
+* oprava funkčnosti po zmenách na strane ČT
+
 2024-09-15 [2.3]
 * úprava závislosti doplnku
 
@@ -8,7 +11,7 @@
 * oprava prehrávania zvuku ak program obsahuje viac jazykových stôp pri HLS formáte
 
 2024-05-24 [2.0]
-* kompltený prepis doplnku, no stále s použitím pôvodného API
+* kompletný prepis doplnku, no stále s použitím pôvodného API
 * dynamické pridávanie živého vysielania podľa dostupnosti
 * problémy API na strane ČT, nie doplnku:
   - niekedy sa stream nespustí na prvý krát a je nutné pokus opakovať
