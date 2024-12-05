@@ -107,7 +107,10 @@ class iVysilani(object):
 
 		ret = {}
 		for item in self.call_api('programmelist', post_data, old=True):
-			ret[item.tag[7:]] = { child.tag: child.text for child in item.find('live').find('programme') }
+			try:
+				ret[item.tag[7:]] = { child.tag: child.text for child in item.find('live').find('programme') }
+			except:
+				self.cp.log_exception()
 
 		return ret
 

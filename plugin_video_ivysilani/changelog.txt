@@ -1,3 +1,6 @@
+2024-12-05 [2.5]
+* oprava pádu ak sa naživo nevysiela žiaden program
+
 2024-12-03 [2.4]
 * oprava funkčnosti po zmenách na strane ČT
 
