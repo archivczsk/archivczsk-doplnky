@@ -194,7 +194,7 @@ class OrangeTVContentProvider(ModuleContentProvider):
 		# list of settings used for login - used to auto call login when they change
 		self.login_settings_names = ('username', 'password', 'deviceid')
 
-		self.orangetv = None
+		self.orangetv = self.get_nologin_helper()
 		self.channels = []
 		self.channels_next_load_time = 0
 		self.channels_by_key = {}
@@ -217,7 +217,7 @@ class OrangeTVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def login(self, silent):
-		self.orangetv = None
+		self.orangetv = self.get_nologin_helper()
 		self.channels = []
 
 		orangetv = OrangeTV(self)

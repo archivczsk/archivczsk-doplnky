@@ -426,7 +426,7 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 		self.login_settings_names = ('username', 'password', 'serialid')
 		self.login_optional_settings_names = ('pin')
 
-		self.sledovanitv = None
+		self.sledovanitv = self.get_nologin_helper()
 		self.channels = []
 		self.channels_by_id = {}
 		self.channels_by_norm_name = {}
@@ -453,7 +453,7 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def login(self, silent):
-		self.sledovanitv = None
+		self.sledovanitv = self.get_nologin_helper()
 		self.channels = []
 		self.channels_by_id = {}
 

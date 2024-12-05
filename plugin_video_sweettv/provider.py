@@ -245,7 +245,7 @@ class SweetTVContentProvider(ModuleContentProvider):
 		# list of settings used for login - used to auto call login when they change
 		self.login_settings_names = ('username', 'password', 'device_id')
 
-		self.sweettv = None
+		self.sweettv = self.get_nologin_helper()
 		self.channels = []
 		self.channels_next_load_time = 0
 		self.channels_by_key = {}
@@ -270,7 +270,7 @@ class SweetTVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def login(self, silent):
-		self.sweettv = None
+		self.sweettv = self.get_nologin_helper()
 		self.channels = []
 		sweettv = SweetTV(self)
 		self.sweettv = sweettv

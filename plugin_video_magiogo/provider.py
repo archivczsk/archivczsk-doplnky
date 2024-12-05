@@ -225,7 +225,7 @@ class MagioGOContentProvider(ModuleContentProvider):
 		# list of settings used for login - used to auto call login when they change
 		self.login_settings_names = ('region', 'username', 'password', 'deviceid', 'devicetype')
 
-		self.magiogo = None
+		self.magiogo = self.get_nologin_helper()
 		self.channels = []
 		self.channels_next_load_time = 0
 		self.channels_by_key = {}
@@ -249,7 +249,7 @@ class MagioGOContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def login(self, silent):
-		self.magiogo = None
+		self.magiogo = self.get_nologin_helper()
 		self.channels = []
 
 		magiogo = MagioGO(self)

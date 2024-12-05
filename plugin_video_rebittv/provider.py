@@ -196,7 +196,7 @@ class RebitTVContentProvider(ModuleContentProvider):
 		# list of settings used for login - used to auto call login when they change
 		self.login_settings_names = ('username', 'password', 'device_name')
 
-		self.rebittv = None
+		self.rebittv = self.get_nologin_helper()
 		self.channels = []
 		self.channels_by_key = {}
 		self.channels_by_norm_name = {}
@@ -215,7 +215,7 @@ class RebitTVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def login(self, silent):
-		self.rebittv = None
+		self.rebittv = self.get_nologin_helper()
 
 		rebittv = RebitTV(self)
 		self.rebittv = rebittv

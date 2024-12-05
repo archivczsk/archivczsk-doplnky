@@ -457,7 +457,7 @@ class O2TVContentProvider(ModuleContentProvider):
 		# list of settings used for login - used to auto call login when they change
 		self.login_settings_names = ('username', 'password')
 
-		self.o2tv = None
+		self.o2tv = self.get_nologin_helper()
 		self.channels = []
 		self.channels_by_key = {}
 		self.channels_next_load_time = 0
@@ -488,7 +488,7 @@ class O2TVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def login(self, silent):
-		self.o2tv = None
+		self.o2tv = self.get_nologin_helper()
 		self.channels = []
 		self.channels_by_key = {}
 		self.channels_by_norm_name = {}

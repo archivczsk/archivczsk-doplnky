@@ -178,7 +178,7 @@ class TellyContentProvider(ModuleContentProvider):
 	def __init__(self, settings, http_endpoint, data_dir=None, bgservice=None):
 		ModuleContentProvider.__init__(self, name='Telly', settings=settings, data_dir=data_dir, bgservice=bgservice)
 
-		self.telly = None
+		self.telly = self.get_nologin_helper()
 		self.channels = []
 		self.channels_next_load_time = 0
 		self.channels_by_id = {}
@@ -197,7 +197,7 @@ class TellyContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def login(self, silent):
-		self.telly = None
+		self.telly = self.get_nologin_helper()
 		self.channels = []
 		self.channels_by_id = {}
 

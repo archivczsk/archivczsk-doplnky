@@ -1,3 +1,6 @@
+1.21 - 05.12.2024
+    - oprava pádu pri nesprávnych prihlasovacích údajoch
+
 1.20 - 02.12.2024
     - pridanie prehrávania archívu pomocou nahrávok
         * pridá väčší časový úsek pred začiatok a za koniec prehrávaného programu
