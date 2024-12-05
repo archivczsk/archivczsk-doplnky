@@ -1,3 +1,6 @@
+2024-12-05 [3.22]
+* oprava preklepu pri mazaní histórie
+
 2024-12-01 [3.21]
 * pridané rozšírené triedenie a filtrovanie dostupné cez kontextové menu
     - umožňuje filtrovať a triediť výsledky podľa rôznych kategórii

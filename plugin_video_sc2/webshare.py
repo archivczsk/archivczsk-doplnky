@@ -257,7 +257,7 @@ class Webshare():
 			self.cleanup_idents[ident] = True
 
 			if self.bg_task_id == None:
-				self.bg_task_id = self.bgservice.run_in_loop('CleanupWsHistory', 900, self.cleanup_ws_histpry)
+				self.bg_task_id = self.bgservice.run_in_loop('CleanupWsHistory', 900, self.cleanup_ws_history)
 
 		return xml.find('link').text
 
