@@ -173,6 +173,9 @@ msgstr "Dnes"
 msgid "Yesterday"
 msgstr "Včera"
 
+msgid "You are not logged in! Check login credentials in addon settings."
+msgstr "Nie ste prihlásený! Skontrolujte prihlasovacie údaje v nastaveniach doplnku."
+
 #~ msgid "It was not possible to determine, if you have installed exteplayer3 and if it can play DRM protected streams needed by this addon."
 #~ msgstr "Nebolo možné zistiť, či máte nainštalovaný prehrávač exteplayer3 a či podporuje prehrávanie streamov s DRM ochranou, ktorá je potrebná pre tento doplnok."
 

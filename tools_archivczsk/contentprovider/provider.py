@@ -25,7 +25,7 @@ import requests
 from datetime import datetime
 from hashlib import md5
 import xml.etree.ElementTree as ET
-from .exception import LoginException
+from .exception import LoginException, AddonErrorException
 
 # this import is needed to run shortcuts with serialised OrderedDict()
 from collections import OrderedDict
@@ -51,6 +51,21 @@ except:
 		@staticmethod
 		def error(msg):
 			pass
+
+# #################################################################################################
+
+class NoLoginHelper(object):
+	def __init__(self, error_msg):
+		self.error_msg = error_msg
+
+	def __bool__(self):
+		return False
+
+	def __nonzero__(self):
+		return False
+
+	def __getattr__(self, name):
+		raise AddonErrorException(self.error_msg)
 
 # #################################################################################################
 
@@ -489,6 +504,18 @@ class CommonContentProvider(object):
 							streams.append(stream_info)
 
 		return sorted(streams, key=lambda i: int(i.get('bandwidth',0)), reverse=True)
+
+	# #################################################################################################
+
+	def get_nologin_helper(self, msg=None):
+		if not msg:
+			try:
+				from .archivczsk_provider import _
+			except:
+				_ = lambda x: x
+			msg = _("You are not logged in! Check login credentials in addon settings.")
+
+		return NoLoginHelper(msg)
 
 	# #################################################################################################
 
