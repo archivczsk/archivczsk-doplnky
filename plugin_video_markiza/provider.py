@@ -210,7 +210,8 @@ class MarkizaContentProvider(CommonContentProvider):
 		).find_all("article")
 
 		for article in articles:
-			show_title = article["data-tracking-tile-show-name"]
+			show_title = article.get("data-tracking-tile-show-name")
+
 			if not show_title:
 				try:
 					show_title = article.find("div", { 'class': 'content'}).find('a', {'class': 'category'}).get_text()
@@ -218,11 +219,11 @@ class MarkizaContentProvider(CommonContentProvider):
 					self.log_exception()
 					continue
 
-			title = article["data-tracking-tile-name"]
+			title = article.get("data-tracking-tile-name")
 			dur = article.find("time", {"class": "duration"})
 			show_url = article.find("a", {"class": "category"})["href"]
 
-			video_title = "{0} - [COLOR yellow]{1}[/COLOR]".format(show_title, title)
+			video_title = "{0} - [COLOR yellow]{1}[/COLOR]".format(show_title, title or '???')
 			img = img_res(article.find("picture").find("source")["data-srcset"])
 
 			info_labels = {

@@ -1,3 +1,6 @@
+2.12: 18.12.2024
+- oprava pádu pri zobrazovaní posledných epizód
+
 2.11: 28.09.2024
 - oprava pádu ak sa nepodarí získať info o dostupných streamoch
 
