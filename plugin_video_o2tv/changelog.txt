@@ -1,3 +1,7 @@
+1.22 - 11.12.2024
+    - oprava pádu ak sa nepodarí vytvoriť nahrávka z archívu
+        * bude automaticky spustené prehrávanie štandardného archívu
+
 1.21 - 05.12.2024
     - oprava pádu pri nesprávnych prihlasovacích údajoch
 

@@ -211,9 +211,14 @@ class O2TVModuleArchive(CPModuleArchive):
 				# add new recording
 				self.cp.ensure_supporter()
 				rec_id = self.cp.o2tv.add_recording(epg_id)
-				self.cp.log_debug("Created new recording from EPG ID %s with rec_id %s" % (epg_id, rec_id))
-				url = self.cp.o2tv.get_recording_link(rec_id)
-				self.cp.resolve_dash_streams(url, epg_title, data_item={'del_rec_id': rec_id})
+				if rec_id:
+					self.cp.log_debug("Created new recording from EPG ID %s with rec_id %s" % (epg_id, rec_id))
+					url = self.cp.o2tv.get_recording_link(rec_id)
+					self.cp.resolve_dash_streams(url, epg_title, data_item={'del_rec_id': rec_id})
+				else:
+					self.cp.log_error("Failed to create new recording from EPG ID %s - falling back to standard archive playback" % epg_id)
+					url = self.cp.o2tv.get_archive_link(epg_id)
+					self.cp.resolve_dash_streams(url, epg_title)
 			else:
 				url = self.cp.o2tv.get_archive_link(epg_id)
 				self.cp.resolve_dash_streams(url, epg_title)
