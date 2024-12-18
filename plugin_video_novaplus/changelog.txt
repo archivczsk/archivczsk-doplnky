@@ -1,4 +1,5 @@
 2024-12-22 (verze 3.11)
+* oprava pádu pri zobrazení posledných epizód
 * pridane vsechny zive programy po prihlaseni
 
 2024-10-21 (verze 3.10)

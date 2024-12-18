@@ -274,12 +274,15 @@ class TVNovaContentProvider(CommonContentProvider):
 
 		count = 0
 		for article in articles:
+			show_title = article.get("data-tracking-tile-show-name")
 
-			show_title = article["data-tracking-tile-show-name"]
-			title = article["data-tracking-tile-name"]
+			if not show_title:
+				continue
+
+			title = article.get("data-tracking-tile-name")
 			dur = article.find("time", {"class": "duration"})
 
-			video_title = "{0} - [COLOR yellow]{1}[/COLOR]".format(show_title, title)
+			video_title = "{0} - [COLOR yellow]{1}[/COLOR]".format(show_title, title or '???')
 			img = img_res(article.find("picture").find("source")["data-srcset"])
 
 			info_labels = {
