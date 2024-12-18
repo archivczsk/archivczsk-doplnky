@@ -110,8 +110,8 @@ class Service():
 		if DataLine:
 			try:
 				self.ServiceID = int(DataLine[0], 16)
-				self.ServiceType = int(DataLine[4], 16)
-				self.ServiceNumber = int(DataLine[5], 16)
+				self.ServiceType = int(DataLine[4], 10)
+				self.ServiceNumber = int(DataLine[5], 10)
 			except IndexError:
 				return None, None, None
 		return int(DataLine[1], 16), int(DataLine[2], 16), int(DataLine[3], 16)
