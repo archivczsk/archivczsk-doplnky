@@ -137,7 +137,7 @@ class CPModuleArchive(CPModuleTemplate):
 
 	# #################################################################################################
 
-	def run_archive_shortcut(self, path=None, sref=None, **kwargs):
+	def run_archive_shortcut(self, path=None, sref=None, event_begin=None, event_end=None, **kwargs):
 		if path:
 			channel_id = self.get_channel_id_from_path(path)
 		elif sref:
@@ -149,6 +149,15 @@ class CPModuleArchive(CPModuleTemplate):
 			return
 
 		archive_hours = self.get_archive_hours(channel_id)
+
+		current_time = int(time.time())
+
+		if event_begin and archive_hours:
+			if event_begin < (current_time - archive_hours*3600):
+				self.cp.log_debug("Don't trying to run archive shortcut for channel %s - event begin time is too old" % channel_id)
+				return
+
+			return self.get_archive_event(channel_id, event_begin, event_end)
 
 		if archive_hours == None:
 			# we don't have informations about archive hours, so show only current day from archive
@@ -262,6 +271,13 @@ class CPModuleArchive(CPModuleTemplate):
 		It is used to support archive for satelite channels. Name of service can be retrieved using sref.getServiceName() method.
 		'''
 		return None
+
+	def get_archive_event(self, channel_id, event_start, event_end=None):
+		'''
+		This call should return playable video for entered channel_id and event_start timestamp. event_end can be None if it's not known.
+		It is used to support direct archive playback from enigma's EPG plugin
+		'''
+		return
 
 # #################################################################################################
 
