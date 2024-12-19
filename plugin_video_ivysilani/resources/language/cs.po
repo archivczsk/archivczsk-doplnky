@@ -6,15 +6,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_ivysilani\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-06 13:04+0200\n"
-"PO-Revision-Date: 2024-06-06 13:05+0200\n"
+"POT-Creation-Date: 2024-12-18 16:28+0100\n"
+"PO-Revision-Date: 2024-12-18 16:31+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.5\n"
 
 #: plugin_video_ivysilani/provider.py:27
 msgid "Live broadcasting"
@@ -56,45 +56,49 @@ msgstr "Z našeho archivu"
 msgid "Others watching now"
 msgstr "Ostatní právě sledují"
 
-#: plugin_video_ivysilani/provider.py:64
+#: plugin_video_ivysilani/provider.py:71
 msgid "Monday"
 msgstr "Pondělí"
 
-#: plugin_video_ivysilani/provider.py:64
+#: plugin_video_ivysilani/provider.py:71
 msgid "Tuesday"
 msgstr "Úterý"
 
-#: plugin_video_ivysilani/provider.py:64
+#: plugin_video_ivysilani/provider.py:71
 msgid "Wednesday"
 msgstr "Středa"
 
-#: plugin_video_ivysilani/provider.py:64
+#: plugin_video_ivysilani/provider.py:71
 msgid "Thursday"
 msgstr "Čtvrtek"
 
-#: plugin_video_ivysilani/provider.py:64
+#: plugin_video_ivysilani/provider.py:71
 msgid "Friday"
 msgstr "Pátek"
 
-#: plugin_video_ivysilani/provider.py:64
+#: plugin_video_ivysilani/provider.py:71
 msgid "Saturday"
 msgstr "Sobota"
 
-#: plugin_video_ivysilani/provider.py:64
+#: plugin_video_ivysilani/provider.py:71
 msgid "Sunday"
 msgstr "Neděle"
 
-#: plugin_video_ivysilani/provider.py:106
+#: plugin_video_ivysilani/provider.py:113
 msgid "Related"
 msgstr "Související"
 
-#: plugin_video_ivysilani/provider.py:109
+#: plugin_video_ivysilani/provider.py:116
 msgid "Episodes"
 msgstr "Epizody"
 
-#: plugin_video_ivysilani/provider.py:111
+#: plugin_video_ivysilani/provider.py:118
 msgid "Bonuses"
 msgstr "Bonusy"
+
+#: plugin_video_ivysilani/provider.py:211
+msgid "Can't play video content. CT server is returning invalid data in response."
+msgstr "Nelze přehrávat video obsah. Server ČT vrací v odpovědi neplatná data."
 
 msgid "Maximum bandwidth of the offered stream"
 msgstr "Maximální datový tok nabízeného streamu"
@@ -103,7 +107,7 @@ msgid "Unlimited"
 msgstr "Bez omezení"
 
 msgid "8 Mbit/s"
-msgstr "Povolit více audio stop pro HLS"
+msgstr ""
 
 msgid "6 Mbit/s"
 msgstr ""
@@ -127,4 +131,4 @@ msgid "DASH"
 msgstr ""
 
 msgid "Allow multiple audio tracks for HLS"
-msgstr ""
+msgstr "Povolit více audio stop pro HLS"

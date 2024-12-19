@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from tools_archivczsk.contentprovider.provider import CommonContentProvider
+from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.string_utils import _I, _C, _B, clean_html
@@ -206,6 +207,9 @@ class iVysilaniContentProvider(CommonContentProvider):
 				self.log_debug("Failed to get stream info: %s" % str(e))
 				exc = e
 		else:
+			if exc and ('maximum recursion' in str(exc)):
+				raise AddonErrorException(self._("Can't play video content. CT server is returning invalid data in response."))
+
 			raise exc
 
 		self.log_debug("Original stream address: %s" % stream['url'])
