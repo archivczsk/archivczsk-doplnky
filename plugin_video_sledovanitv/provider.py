@@ -224,6 +224,27 @@ class SledovaniTVModuleArchive(CPModuleArchive):
 		channel = self.cp.channels_by_norm_name.get(name, {})
 		return channel.get('id') if channel.get('timeshift') else None
 
+	# #################################################################################################
+
+	def get_archive_event(self, channel_id, event_start, event_end=None):
+		for epg in self.cp.sledovanitv.get_epg(event_start - 14400, (event_end or event_start) + 14400).get(channel_id, []):
+			start_ts = self.cp.sledovanitv.convert_time(epg["startTime"])
+			end_ts = self.cp.sledovanitv.convert_time(epg["endTime"])
+
+			if (abs(start_ts) - event_start) > 60:
+#				self.cp.log_debug("Archive event %d - %d doesn't match: %s" % (start_ts, end_ts, epg.get("title") or '???'))
+				continue
+
+			title = '%s - %s - %s' % (self.cp.timestamp_to_str(start_ts), self.cp.timestamp_to_str(end_ts), _I(epg["title"]))
+
+			info_labels = {
+				'plot': epg.get('description'),
+				'title': epg['title']
+			}
+
+			self.cp.add_video(title, epg.get('poster'), info_labels, cmd=self.cp.get_event_stream, video_title=str(epg["title"]), event_id=epg['eventId'])
+			break
+
 # #################################################################################################
 
 

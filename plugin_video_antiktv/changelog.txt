@@ -1,3 +1,6 @@
+2.20:
+- pridanie podpory pre prehrávanie archívu priamo z EPG
+
 2.19:
 - oprava archívu pre SAT vysielanie
 

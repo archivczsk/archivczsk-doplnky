@@ -1,3 +1,6 @@
+1.27 - 19.12.2024
+    - pridaná podpora pre prehrávanie archívu priamo z EPG
+
 1.26 - 05.12.2024
     - oprava pádu pri nesprávnych prihlasovacích údajoch
 

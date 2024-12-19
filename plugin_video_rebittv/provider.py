@@ -142,6 +142,24 @@ class RebitTVModuleArchive(CPModuleArchive):
 		channel = self.cp.channels_by_norm_name.get(name, {})
 		return channel.get('id') if channel.get('timeshift') else None
 
+	# #################################################################################################
+
+	def get_archive_event(self, channel_id, event_start, event_end=None):
+		for event in self.cp.rebittv.get_epg(channel_id, event_start - 14400, (event_end or event_start) + 14400):
+			if abs(event["start"] - event_start) > 60:
+				self.cp.log_debug("Archive event %d - %d doesn't match: %s" % (event["start"], event["stop"], event.get("title") or '???'))
+				continue
+
+			title = '%s - %s - %s' % (self.cp.timestamp_to_str(event["start"]), self.cp.timestamp_to_str(event["stop"]), _I(event["title"]))
+
+			info_labels = {
+				'plot': event.get('description'),
+				'title': event["title"]
+			}
+
+			self.cp.add_video(title, None, info_labels, cmd=self.get_archive_stream, archive_title=str(event["title"]), channel_id=channel_id, event_id=event['id'])
+			break
+
 # #################################################################################################
 
 class RebitTVModuleExtra(CPModuleTemplate):

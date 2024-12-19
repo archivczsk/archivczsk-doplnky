@@ -1,3 +1,6 @@
+1.19 - 22.12.2024
+    - pridanie podpory pre prehrávanie archívu priamo z EPG
+
 1.18 - 05.12.2024
     - oprava pádu pri nesprávnych prihlasovacích údajoch
 
@@ -22,7 +25,7 @@
     - prechod na unifikovaný bouquet generátor (opravuje nesprávne EPG v niektorých prípadoch)
 
 1.11 - 27.01.2024
-    - priadnie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
+    - pridanie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
 
 1.10 - 08.01.2024
     - úpravy kvôli zmene spôsobu fungovania rodičovskej kontroly
@@ -30,7 +33,7 @@
 
 1.9 - 08.09.2023
     - oprava registrácie nového zariadenia (thx 005jon)
-    - oprava vynúteného odhásenia
+    - oprava vynúteného odhlásenia
 
 1.8 - 16.05.2023
     - pridaná podpora pre priame otvorenie archívu z userbouquetu

@@ -146,6 +146,25 @@ class TellyModuleArchive(CPModuleArchive):
 		ch = self.cp.channels_by_norm_name.get(name)
 		return ch.id if ch and ch.timeshift else None
 
+	# #################################################################################################
+
+	def get_archive_event(self, channel_id, event_start, event_end=None):
+		for epg in self.cp.telly.get_archiv_channel_programs(channel_id[1], event_start - 14400, (event_end or event_start) + 14400):
+			if abs(epg["start"] - event_start) > 60:
+#				self.cp.log_debug("Archive event %d - %d doesn't match: %s" % (epg["start"], epg["end"], epg.get("title") or '???'))
+				continue
+
+			title = '%s - %s - %s' % (self.cp.timestamp_to_str(epg["start"]), self.cp.timestamp_to_str(epg["end"]), _I(epg["title"]))
+
+			info_labels = {
+				'plot': epg['desc'],
+				'title': epg["title"],
+				'year': epg['year'],
+				'rating': epg['rating']
+			}
+			self.cp.add_video(title, epg['img'], info_labels, cmd=self.get_archive_stream, archive_title=str(epg["title"]), channel_id=channel_id[0], ts_from=epg['start'], ts_to=epg['end'])
+			break
+
 # #################################################################################################
 
 class TellyModuleExtra(CPModuleTemplate):

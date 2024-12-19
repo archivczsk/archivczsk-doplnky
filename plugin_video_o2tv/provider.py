@@ -244,6 +244,34 @@ class O2TVModuleArchive(CPModuleArchive):
 		channel = self.cp.channels_by_norm_name.get(name, {})
 		return channel.get('key') if channel.get('timeshift') else None
 
+	# #################################################################################################
+
+	def get_archive_event(self, channel_id, event_start, event_end=None):
+		adult = self.cp.channels_by_key.get(channel_id,{}).get('adult', False)
+
+		for epg in self.cp.o2tv.get_channel_epg(channel_id, event_start - 14400, (event_end or event_start) + 14400):
+			if abs(epg["start"] - event_start) > 60:
+#				self.cp.log_debug("Archive event %d - %d doesn't match: %s" % (epg["start"], epg["end"], epg.get("title") or '???'))
+				continue
+
+			mosaic_id = epg['mosaic_id']
+
+			if mosaic_id:
+				# if this is mosaic event, then replace current epg info with mosaic one
+				epg = self.cp.o2tv.get_mosaic_info(mosaic_id)
+
+			title = '%s - %s - %s' % (self.cp.timestamp_to_str(epg["start"]), self.cp.timestamp_to_str(epg["end"]), _I(epg["title"]))
+			self.cp.log_debug("Found matching archive event: %s" % title)
+
+			info_labels = {
+				'plot': epg.get('desc'),
+				'title': epg['title'],
+				'adult': adult
+			}
+
+			self.cp.add_video(title, epg.get('img'), info_labels, cmd=self.get_archive_stream, epg_title=str(epg["title"]), epg_id=epg['id'], mosaic_info=epg.get('mosaic_info',[]))
+			break
+
 # #################################################################################################
 
 

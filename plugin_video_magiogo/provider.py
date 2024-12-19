@@ -143,6 +143,28 @@ class MagioGOModuleArchive(CPModuleArchive):
 		ch = self.cp.channels_by_norm_name.get(name)
 		return ch.id if ch and ch.timeshift else None
 
+       # #################################################################################################
+
+	def get_archive_event(self, channel_id, event_start, event_end=None):
+		for event in self.cp.magiogo.get_archiv_channel_programs(channel_id, event_start - 14400, (event_end or event_start) + 14400):
+			title = '%s - %s - %s' % (self.cp.timestamp_to_str(event["start"]), self.cp.timestamp_to_str(event["stop"]), _I(event["title"]))
+
+			if abs(event["start"] - event_start) > 60:
+#				self.cp.log_debug("Archive event %d - %d doesn't match: %s - %s" % (event["start"], event["stop"], title, event.get("title") or '???'))
+				continue
+
+			self.cp.log_debug("Found matching archive event: %s" % title)
+
+			info_labels = {
+				'plot': event.get('plot'),
+				'title': event["title"],
+				'duration': event['duration'],
+				'year': event['year']
+			}
+
+			self.cp.add_video(title, event['image'], info_labels, cmd=self.get_archive_stream, archive_title=str(event["title"]), event_id=event['id'])
+			break
+
 # #################################################################################################
 
 

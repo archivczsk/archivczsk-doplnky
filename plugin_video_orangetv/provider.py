@@ -138,6 +138,23 @@ class OrangeTVModuleArchive(CPModuleArchive):
 
 		return channel.get('key') if channel.get('timeshift') else None
 
+	# #################################################################################################
+
+	def get_archive_event(self, channel_id, event_start, event_end=None):
+		for epg in self.cp.orangetv.getArchivChannelPrograms(channel_id, event_start - 14400, (event_end or event_start) + 14400):
+			if abs(epg["start"] - event_start) > 60:
+#				self.cp.log_debug("Archive event %d - %d doesn't match: %s" % (epg["start"], epg["stop"], epg.get("title") or '???'))
+				continue
+
+			title = '%s - %s - %s' % (self.cp.timestamp_to_str(epg["start"]), self.cp.timestamp_to_str(epg["stop"]), _I(epg["title"]))
+
+			info_labels = {
+				'plot': epg['plot'],
+				'title': epg["title"]
+			}
+			self.cp.add_video(title, epg['img'], info_labels, cmd=self.get_archive_stream, archive_title=str(epg["title"]), channel_key=channel_id, epg_id=epg['epg_id'], ts_from=epg['start'], ts_to=epg['stop'])
+			break
+
 # #################################################################################################
 
 

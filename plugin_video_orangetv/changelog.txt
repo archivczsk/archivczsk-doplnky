@@ -1,3 +1,6 @@
+2024-12-22 - 2.23
+* pridanie podpory pre prehrávanie archívu priamo z EPG
+
 2024-12-05 - 2.22
 * oprava pádu pri nesprávnych prihlasovacích údajoch
 

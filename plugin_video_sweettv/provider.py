@@ -137,6 +137,25 @@ class SweetTVModuleArchive(CPModuleArchive):
 		channel = self.cp.channels_by_norm_name.get(name, {})
 		return channel.get('id') if channel.get('timeshift') else None
 
+	# #################################################################################################
+
+	def get_archive_event(self, channel_id, event_start, event_end=None):
+		for event in self.cp.sweettv.get_epg(event_start - 14400, 20, [ channel_id ]).get(channel_id, []):
+			startts = event["time_start"]
+			endts = event["time_stop"]
+
+			if (abs(startts) - event_start) > 60:
+#				self.cp.log_debug("Archive event %d - %d doesn't match: %s" % (startts, endts, event.get("text") or '???'))
+				continue
+
+			title = '%s - %s - %s' % (self.cp.timestamp_to_str(startts), self.cp.timestamp_to_str(endts), _I(event["text"]))
+			info_labels = {
+				'title': event["text"]
+			}
+
+			self.cp.add_video(title, event.get('preview_url'), info_labels, cmd=self.cp.get_archive_stream, archive_title=str(event["text"]), channel_id=channel_id, epg_id=event['id'])
+			break
+
 # #################################################################################################
 
 class SweetTVModuleVOD(CPModuleTemplate):

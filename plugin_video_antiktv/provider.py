@@ -285,6 +285,50 @@ class AntikTVModuleArchive(CPModuleArchive):
 
 		return None
 
+	# #################################################################################################
+
+	def get_archive_event(self, channel_id, event_start, event_end=None):
+		date_from = datetime.fromtimestamp(event_start-14400)
+		date_to = datetime.fromtimestamp(event_end+14400 or event_start+14400)
+
+		channel = self.cp.atk.get_channel_by_id(self.channel_type, channel_id)
+		epg_list = self.cp.atk.get_channel_epg(channel['id_content'], date_from.isoformat() + "+0100", date_to.isoformat() + "+0100")
+
+		for epg in epg_list:
+			if epg.get("archived", False):
+				epg_start = datetime.strptime(epg["start"][:19], "%Y-%m-%dT%H:%M:%S")
+				epg_stop = datetime.strptime(epg["stop"][:19], "%Y-%m-%dT%H:%M:%S")
+
+				title = "{:02}:{:02} - {:02d}:{:02d}".format(epg_start.hour, epg_start.minute, epg_stop.hour, epg_stop.minute)
+
+				if abs(int( time.mktime(epg_start.timetuple()) ) - event_start) > 60:
+#					self.cp.log_debug("Archive event %d - %d doesn't match: %s - %s" % (int(time.mktime(epg_start.timetuple())), int(time.mktime(epg_stop.timetuple())), title, epg.get("title") or '???'))
+					continue
+
+				try:
+					title = title + " - " + epg["title"]
+				except:
+					pass
+
+				self.cp.log_debug("Found matching archive event: %s" % title)
+
+				info_labels = {
+					'plot': epg.get("description"),
+					'title': epg["title"],
+					'genre': ', '.join(epg.get('genres', [])),
+					'duration': epg['duration'],
+					'adult': channel['adult']
+				}
+
+				if channel['adult'] and self.cp.get_parental_settings('unlocked') == False:
+					img = None
+				else:
+					img = epg.get('image')
+
+				self.cp.add_video(title, img, info_labels, cmd=self.get_archive_url, epg_title=str(epg["title"]), channel_id=channel['id_content'], epg_start=epg_start, epg_stop=epg_stop)
+				break
+
+
 # #################################################################################################
 
 class AntikTVModuleExtra(CPModuleTemplate):
