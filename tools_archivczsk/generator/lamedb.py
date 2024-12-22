@@ -1,13 +1,29 @@
 # -*- coding: utf-8 -*-
-import re, io
+import re, io, os, json
 from ..string_utils import strip_accents
 
 def channel_name_normalise(name):
+	name_mapping = {
+		'natgeo': 'nationalgeographic',
+		'id': 'investigationdiscovery',
+	}
+
+	try:
+		from Components.config import config
+
+		with open(os.path.join(config.plugins.archivCZSK.dataPath.value, 'channel_mapping.json'), 'r') as f:
+			name_mapping.update(json.load(f))
+	except:
+		pass
+
 	name = strip_accents(name).lower()
 
 	name = name.replace("television", "tv")
 	name = name.replace("(bonus)", "").strip()
 	name = name.replace("eins", "1")
+
+	if name.endswith(" cz"):
+		name = name[:-3]
 
 	if name.endswith(" hd"):
 		name = name[:-3]
@@ -21,7 +37,8 @@ def channel_name_normalise(name):
 	if name.endswith(" channel"):
 		name = name[:-8]
 
-	return name.replace("&", " and ").replace("'", "").replace(".", "").replace(" ", "")
+	name = name.replace("&", " and ").replace("'", "").replace(".", "").replace(" ", "")
+	return name_mapping.get(name, name)
 
 class TransponderS():
 
