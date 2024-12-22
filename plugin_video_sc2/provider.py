@@ -195,7 +195,11 @@ class SccContentProvider(CommonContentProvider):
 	def show_trakt_list(self, user, list_id):
 		@lru_cache(30, timeout=1800)
 		def get_list_items(list_id, user):
-			return self.tapi.get_list_items(list_id, user)
+			try:
+				return self.tapi.get_list_items(list_id, user)
+			except:
+				self.log_exception()
+				raise AddonErrorException(self._("Failed to get list from Trakt.tv. If problem persists, unpair and newly pair your device to Trakt.tv."))
 
 		ids = []
 		# get list from Trakt.tv and extract trakt ID + type
@@ -221,10 +225,14 @@ class SccContentProvider(CommonContentProvider):
 	def show_trakt_history(self, media_type):
 		@lru_cache(30, timeout=1800)
 		def get_list_items(media_type):
-			if media_type == 'movie':
-				return self.tapi.get_watched_movies()
-			else:
-				return self.tapi.get_watched_shows()
+			try:
+				if media_type == 'movie':
+					return self.tapi.get_watched_movies()
+				else:
+					return self.tapi.get_watched_shows()
+			except:
+				self.log_exception()
+				raise AddonErrorException(self._("Failed to get list from Trakt.tv. If problem persists, unpair and newly pair your device to Trakt.tv."))
 
 		ids = []
 		# get list from Trakt.tv and extract trakt ID + type

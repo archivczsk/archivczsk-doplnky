@@ -1,3 +1,6 @@
+2024-12-22 [3.23]
+* oprava pádov pri problémoch na strane trakt.tv
+
 2024-12-05 [3.22]
 * oprava preklepu pri mazaní histórie
 

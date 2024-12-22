@@ -176,6 +176,9 @@ class SCWatched(object):
 		except:
 			self.items['trakt'] = { 'm': [], 's': [] }
 
+		if 'trakt' not in self.items:
+			self.items['trakt'] = { 'm': [], 's': [] }
+
 		self.trakt_need_reload = False
 
 		if reload_movies_index or len(self.trakt_movies) == 0:

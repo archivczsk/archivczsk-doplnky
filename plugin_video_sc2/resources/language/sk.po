@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_scc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-17 19:55+0100\n"
-"PO-Revision-Date: 2024-11-17 20:07+0100\n"
+"POT-Creation-Date: 2024-12-22 18:07+0100\n"
+"PO-Revision-Date: 2024-12-22 18:08+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -1309,12 +1309,12 @@ msgid "No Webshare username and password provided - continuing with free account
 msgstr "Nezadané prihlasovacie údaje pre Webshare - pokračujem s free predplatným"
 
 #: plugin_video_sc2/provider.py:113 plugin_video_sc2/provider.py:123
-#: plugin_video_sc2/provider.py:250
+#: plugin_video_sc2/provider.py:258
 msgid "Movies"
 msgstr "Filmy"
 
 #: plugin_video_sc2/provider.py:114 plugin_video_sc2/provider.py:124
-#: plugin_video_sc2/provider.py:251
+#: plugin_video_sc2/provider.py:259
 msgid "Series"
 msgstr "Seriály"
 
@@ -1338,7 +1338,7 @@ msgstr "Tématické zoznamy"
 msgid "All"
 msgstr "Všetky"
 
-#: plugin_video_sc2/provider.py:131 plugin_video_sc2/provider.py:247
+#: plugin_video_sc2/provider.py:131 plugin_video_sc2/provider.py:255
 #: plugin_video_sc2/custom_query.py:107
 msgid "Trending"
 msgstr "Trendy"
@@ -1347,7 +1347,7 @@ msgstr "Trendy"
 msgid "New episodes"
 msgstr "Nové epizódy"
 
-#: plugin_video_sc2/provider.py:134 plugin_video_sc2/provider.py:248
+#: plugin_video_sc2/provider.py:134 plugin_video_sc2/provider.py:256
 msgid "Popular"
 msgstr "Populárne"
 
@@ -1439,103 +1439,107 @@ msgstr "Filmový klub"
 msgid "Religious"
 msgstr "Náboženské"
 
-#: plugin_video_sc2/provider.py:243
+#: plugin_video_sc2/provider.py:202 plugin_video_sc2/provider.py:235
+msgid "Failed to get list from Trakt.tv. If problem persists, unpair and newly pair your device to Trakt.tv."
+msgstr "Nepodarilo sa získať zoznam z Trakt.tv. Ak problém pretrváva, zrušte párovanie a znovu spárujte zariadenie s Trakt.tv."
+
+#: plugin_video_sc2/provider.py:251
 msgid "Trakt.tv"
 msgstr "Trakt.tv"
 
-#: plugin_video_sc2/provider.py:245
+#: plugin_video_sc2/provider.py:253
 msgid "My lists"
 msgstr "Moje zoznamy"
 
-#: plugin_video_sc2/provider.py:246
+#: plugin_video_sc2/provider.py:254
 msgid "History"
 msgstr "História"
 
-#: plugin_video_sc2/provider.py:261 plugin_video_sc2/provider.py:270
+#: plugin_video_sc2/provider.py:269 plugin_video_sc2/provider.py:278
 msgid "Failed to load trakt.tv list"
 msgstr "Nepodarilo sa načítať trakt.tv zoznam"
 
-#: plugin_video_sc2/provider.py:411
+#: plugin_video_sc2/provider.py:419
 msgid "Episode"
 msgstr "Epizóda"
 
-#: plugin_video_sc2/provider.py:651
+#: plugin_video_sc2/provider.py:658
 msgid "Any"
 msgstr "Akákoľvek"
 
-#: plugin_video_sc2/provider.py:678 plugin_video_sc2/custom_query.py:102
+#: plugin_video_sc2/provider.py:685 plugin_video_sc2/custom_query.py:102
 msgid "Year"
 msgstr "Rok"
 
-#: plugin_video_sc2/provider.py:679
+#: plugin_video_sc2/provider.py:686
 msgid "Year sign"
 msgstr "Znamienko pre rok"
 
-#: plugin_video_sc2/provider.py:680
+#: plugin_video_sc2/provider.py:687
 msgid "Show only dubbed"
 msgstr "Zobrazovať len dabovaný obsah"
 
-#: plugin_video_sc2/provider.py:681
+#: plugin_video_sc2/provider.py:688
 msgid "Show only content with subtitles"
 msgstr "Zobrazovať len obsah s titulkami"
 
-#: plugin_video_sc2/provider.py:682
+#: plugin_video_sc2/provider.py:689
 msgid "Show only genre"
 msgstr "Zobraziť len žáner"
 
-#: plugin_video_sc2/provider.py:683
+#: plugin_video_sc2/provider.py:690
 msgid "Don't show genre"
 msgstr "Nezobrazovať žáner"
 
-#: plugin_video_sc2/provider.py:684
+#: plugin_video_sc2/provider.py:691
 msgid "Countries of origin"
 msgstr "Krajiny pôvodu"
 
-#: plugin_video_sc2/provider.py:685
+#: plugin_video_sc2/provider.py:692
 msgid "Exclude countries of origin"
 msgstr "Vynechať krajiny pôvodu"
 
-#: plugin_video_sc2/provider.py:686
+#: plugin_video_sc2/provider.py:693
 msgid "Rating greater than"
 msgstr "Hodnotenie viac ako"
 
-#: plugin_video_sc2/provider.py:687
+#: plugin_video_sc2/provider.py:694
 msgid "Stream quality"
 msgstr "Kvalita streamu"
 
-#: plugin_video_sc2/provider.py:688
+#: plugin_video_sc2/provider.py:695
 msgid "Show only HDR content"
 msgstr "Zobrazenie iba HDR obsahu"
 
-#: plugin_video_sc2/provider.py:689
+#: plugin_video_sc2/provider.py:696
 msgid "Order by"
 msgstr "Zoradiť podľa"
 
-#: plugin_video_sc2/provider.py:690
+#: plugin_video_sc2/provider.py:697
 msgid "Order descending"
 msgstr "Zoradiť zostupne"
 
-#: plugin_video_sc2/provider.py:693 plugin_video_sc2/provider.py:793
+#: plugin_video_sc2/provider.py:700 plugin_video_sc2/provider.py:800
 msgid "Advanced filtering"
 msgstr "Rozšírené filtrovanie"
 
-#: plugin_video_sc2/provider.py:796
+#: plugin_video_sc2/provider.py:803
 msgid "Remove from seen"
 msgstr "Odstrániť z videných"
 
-#: plugin_video_sc2/provider.py:799
+#: plugin_video_sc2/provider.py:806
 msgid "Search on prehraj.to"
 msgstr "Vyhľadať na prehraj.to"
 
-#: plugin_video_sc2/provider.py:802
+#: plugin_video_sc2/provider.py:809
 msgid "Play trailer"
 msgstr "Prehrať trailer"
 
-#: plugin_video_sc2/provider.py:815
+#: plugin_video_sc2/provider.py:822
 msgid "Related"
 msgstr "Súvisiace"
 
-#: plugin_video_sc2/provider.py:816
+#: plugin_video_sc2/provider.py:823
 msgid "Similar"
 msgstr "Podobné"
 
