@@ -157,7 +157,12 @@ class TVNovaContentProvider(CommonContentProvider):
 			return
 
 		if self.login_ok:
-			self.add_video('Nova Live', cmd=self.resolve_video, video_title="Nova Live", url="sledujte-zive/1-nova", download=False)
+			self.add_video('Nova', cmd=self.resolve_video, video_title="Nova", url="sledujte-zive/1-nova", download=False)
+			self.add_video('Nova Cinema', cmd=self.resolve_video, video_title="Nova Cinema", url="sledujte-zive/2-nova-cinema", download=False)
+			self.add_video('Nova Action', cmd=self.resolve_video, video_title="Nova Action", url="sledujte-zive/3-nova-action", download=False)
+			self.add_video('Nova Fun', cmd=self.resolve_video, video_title="Nova Fun", url="sledujte-zive/4-nova-fun", download=False)
+			self.add_video('Nova Gold', cmd=self.resolve_video, video_title="Nova Gold", url="sledujte-zive/5-nova-gold", download=False)
+			self.add_video('Nova Lady', cmd=self.resolve_video, video_title="Nova Lady", url="sledujte-zive/29-nova-lady", download=False)
 
 		self.add_video('TN Live', cmd=self.resolve_video, video_title="TN Live", url="#live#tn-live-live", download=False)
 

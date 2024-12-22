@@ -1,3 +1,6 @@
+2024-12-22 (verze 3.11)
+* pridane vsechny zive programy po prihlaseni
+
 2024-10-21 (verze 3.10)
 * oprava prehrávania po zmene stránky
 
