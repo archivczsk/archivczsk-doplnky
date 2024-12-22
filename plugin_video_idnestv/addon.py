@@ -64,7 +64,7 @@ def idnes_run(addon, session, params):
 	def get_url(url, encoding='windows-1250'):
 		req = Request(url)
 		req.add_header('User-Agent', _UserAgent_)
-		req.add_header('Cookie', 'mafra=1111,all=1,reklama=1,part=0,cpex=1,google=1,gemius=1,id5=1,next=0000,onlajny=0000,jenzeny=0000,databazeknih=0000,autojournal=0000,skodahome=0000,skodaklasik=0000,groupm=1,piano=1,seznam=1,geozo=0,czaid=1,click=1,verze=2,')
+		req.add_header('Cookie', 'dCMP=mafra=1111,all=1,reklama=1,part=0,cpex=1,google=1,gemius=1,id5=1,next=0000,onlajny=0000,jenzeny=0000,databazeknih=0000,autojournal=0000,skodahome=0000,skodaklasik=0000,groupm=1,piano=1,seznam=1,geozo=0,czaid=1,click=1,verze=2,')
 		response = urlopen(req)
 		data = response.read()
 		response.close()
