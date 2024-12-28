@@ -172,12 +172,30 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 	# #################################################################################################
 
-	def render_menu(self, url, params=None, data=None):
+	def render_menu(self, url, params=None, data=None, menu_item_patch_cbk=None):
 		result = []
 
 		resp = self.api.call_api(url, data=data, params=params)
 
+		url_path = urlparse(url).path
+		if url_path.endswith('Search/menu'):
+			self.add_search_dir(self._("Search by name"), '')
+			self.add_search_dir(self._("Search by actor name"), 'search-people')
+		elif url_path.endswith('FDocu/search'):
+			self.add_search_dir(self._("Search by name"), 'search-docu')
+		elif url_path.endswith('FKoncert/search'):
+			self.add_search_dir(self._("Search by name"), 'search-koncert')
+		elif (url_path.endswith('FAnime') or url_path.endswith('FAnime/search')):
+			self.add_search_dir(self._("Search by name"), 'search-anime')
+
+		# sport category contains only few items, so searching is useless
+#		elif (url_path.endswith('FSport') or url_path.endswith('FSport/search')):
+#			self.add_search_dir(self._("Search by name"), 'search-sport')
+
 		for menu_item in resp.get('menu', []):
+			if menu_item_patch_cbk:
+				menu_item_patch_cbk(menu_item)
+
 			ctx_menu = self.create_ctx_menu()
 			data_item = {}
 			trakt_item = None
@@ -242,14 +260,44 @@ class StreamCinemaContentProvider(CommonContentProvider):
 	# #################################################################################################
 
 	def search(self, keyword, search_id):
-		query = {
-			'search': keyword,
-			'id': search_id
+		filter_search = {
+			'search-docu': { 'mu[]': [ 1795 ] },
+			'search-koncert': { 'mu[]': [ 69801 ], 'dub': -1, 'tit': -1 },
+			'search-anime': { 'mu[]': [ 70393 ] },
+			'search-sport': { 'mu[]': [ 185109 ] },
+			'' : {}
 		}
-		if search_id.startswith('search-people'):
-			query['ms'] = '1'
 
-		return self.render_menu('/Search/' + search_id, params=query)
+		def_params = filter_search.get(search_id)
+
+		if search_id == 'search-people' or def_params != None:
+			self.ensure_supporter()
+
+		if def_params != None:
+			params = {
+				's' : keyword,
+				'typ': -1
+			}
+			params.update(def_params)
+			return self.render_menu('/Filter', params=params)
+		else:
+			params = {
+				'search': keyword,
+				'id': search_id
+			}
+
+			if search_id.startswith('search-people'):
+				params['ms'] = '1'
+
+			if search_id == 'search-people':
+				def patch_item_type(menu_item):
+					# this will add correct item type to filter query to get movies and series in response list
+					if 'url' in menu_item and menu_item['url'].startswith('/Filter'):
+						menu_item['url'] = menu_item['url'] + '&typ=-1'
+
+				return self.render_menu('/Search/' + search_id, params=params, menu_item_patch_cbk=patch_item_type)
+			else:
+				return self.render_menu('/Search/' + search_id, params=params)
 
 	# #################################################################################################
 
