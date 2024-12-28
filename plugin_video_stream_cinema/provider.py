@@ -889,9 +889,13 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 		if cfg[2].get_value():
 			params['dub'] = 1
+		else:
+			params['dub'] = -1
 
 		if cfg[3].get_value():
 			params['tit'] = 1
+		else:
+			params['tit'] = -1
 
 		ge = cfg[4].get_value()
 		ge.extend( ['!{}'.format(g) for g in cfg[5].get_value()] )
@@ -921,6 +925,8 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		# HDR: 0 = disable, 1 = enable, 2 = force
 		if cfg[11].get_value():
 			params['HDR'] = 2
+		else:
+			params['HDR'] = -1
 
 		params['of'] = cfg[12].get_value()
 		params['od'] = 'desc' if cfg[13].get_value() else 'asc'

@@ -1,3 +1,8 @@
+2024-12-28 3.14
+    - pridanie vyhľadania do kategórie dokumenty, anime a koncerty
+    - pridanie vyhľadávania podľa názvu a mena herca bez ohľadu na typ (nájde filmy aj seriály zároveň)
+    - oprava rozšíreného filtrovania dabovaných položiek a položiek s titulkami
+
 2024-12-01 3.13
     - pridané rozšírené triedenie a filtrovanie dostupné cez kontextové menu
     - umožňuje filtrovať a triediť výsledky podľa rôznych kategórii

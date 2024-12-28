@@ -79,6 +79,11 @@ class SC_API(object):
 		if self.cp.get_setting('old-menu'):
 			default_params.update({'old': 1 }) # zobrazit povodny typ menu
 
+		for k in ('HDR', 'tit', 'dub'):
+			# -1 means ANY for some parameters, but not for these, so remove them
+			if default_params.get(k) == -1:
+				del default_params[k]
+
 		headers = {
 			'User-Agent': 'ArchivCZSK/%s (plugin.video.stream-cinema/%s)' % (self.cp.get_engine_version(), self.cp.get_addon_version()),
 			'X-Uuid': self.device_id,
