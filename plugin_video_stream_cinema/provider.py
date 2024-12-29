@@ -7,7 +7,7 @@ except:
 from datetime import date, datetime
 import json
 from tools_archivczsk.contentprovider.provider import CommonContentProvider
-from tools_archivczsk.contentprovider.exception import AddonErrorException
+from tools_archivczsk.contentprovider.exception import AddonErrorException, AddonSilentExitException
 from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman
 from tools_archivczsk.cache import lru_cache
 from tools_archivczsk.simple_config import SimpleConfigSelection, SimpleConfigInteger, SimpleConfigYesNo, SimpleConfigMultiSelection
@@ -469,6 +469,10 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		info_labels['duration'] = int(info.get('duration', 0))
 		info_labels['rating'] = info.get('rating')
 
+		cast_list = [c['name'] for c in sorted(sc_item.get('cast') or [], key=lambda x: x.get('order', 0)) if c.get('name')]
+		if cast_list:
+			ctx_menu.add_menu_item(self._("Search by actor name"), cmd=self.search_by_actor, cast_list=cast_list)
+
 		if info.get('mediatype') == 'episode':
 			info_labels['episode'] = info.get('episode', 0)
 			info_labels['epname'] = info.get('epname')
@@ -501,6 +505,16 @@ class StreamCinemaContentProvider(CommonContentProvider):
 				ctx_menu.add_menu_item(self._('Search on prehraj.to'), cmd=self.prehrajto_search, keyword=otitle)
 
 		self.add_dir(title, img or self.get_poster_url(None), info_labels, menu=ctx_menu, data_item=data_item, trakt_item=trakt_item, cmd=self.render_menu, url=url)
+
+	# #################################################################################################
+
+	def search_by_actor(self, cast_list):
+		idx = self.get_list_input(cast_list, self._("Select actor"))
+
+		if idx == -1:
+			raise AddonSilentExitException()
+
+		return self.search(cast_list[idx], 'search-people')
 
 	# #################################################################################################
 
@@ -561,6 +575,10 @@ class StreamCinemaContentProvider(CommonContentProvider):
 				info_labels['title'] += ' (%s)' % info_labels['year']
 
 		search_query = otitle + ep_code2 + ' ' + str(info.get('year', ""))
+
+		cast_list = [c['name'] for c in sorted(sc_item.get('cast') or [], key=lambda x: x.get('order', 0)) if c.get('name')]
+		if cast_list:
+			ctx_menu.add_menu_item(self._("Search by actor name"), cmd=self.search_by_actor, cast_list=cast_list)
 
 		if self.get_setting('prehrajto-primary'):
 			self.add_dir(title, img, info_labels, menu=ctx_menu, data_item=data_item, trakt_item=trakt_item, cmd=self.prehrajto_search, keyword=search_query)
@@ -661,7 +679,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 		idx = self.get_list_input(titles, self._('Sort by'))
 		if idx == -1:
-			self.refresh_screen()
+			raise AddonSilentExitException()
 		else:
 			self.render_menu(sm_url[idx], params=params, data=data)
 
@@ -676,9 +694,11 @@ class StreamCinemaContentProvider(CommonContentProvider):
 				year = str(cur_year - idx2)
 				url = self.update_url_filter(url, 'y', [ '<', '>', ''][idx] + year)
 
-			self.render_menu(url, params=params, data=data)
+				self.render_menu(url, params=params, data=data)
+			else:
+				raise AddonSilentExitException()
 		else:
-			self.refresh_screen()
+			raise AddonSilentExitException()
 
 	# #################################################################################################
 

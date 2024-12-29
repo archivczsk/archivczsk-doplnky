@@ -2,6 +2,7 @@
     - pridanie vyhľadania do kategórie dokumenty, anime a koncerty
     - pridanie vyhľadávania podľa názvu a mena herca bez ohľadu na typ (nájde filmy aj seriály zároveň)
     - oprava rozšíreného filtrovania dabovaných položiek a položiek s titulkami
+    - pridanie vyhľadávania podľa mena herca do kontextového menu
 
 2024-12-01 3.13
     - pridané rozšírené triedenie a filtrovanie dostupné cez kontextové menu
