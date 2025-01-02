@@ -1,3 +1,6 @@
+2.4 - 2.1.2025
+    - updated available exteplayer3 version
+
 2.3 - 19.12.2024
     - added support for playing archive event
 
