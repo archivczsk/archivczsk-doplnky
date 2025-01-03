@@ -1,0 +1,124 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_dokumenty_tv\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-04 15:59+0100\n"
+"PO-Revision-Date: 2025-01-04 15:59+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: sk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.5\n"
+
+#: plugin_video_dokumenty_tv/provider.py:56
+msgid "Request to remote server failed. Try to repeat operation."
+msgstr "Požiadavka na vzdialený server zlyhala. Skúste operáciu zopakovať."
+
+#: plugin_video_dokumenty_tv/provider.py:69
+msgid "HTTP response code"
+msgstr "Kód odpovede HTTP"
+
+#: plugin_video_dokumenty_tv/provider.py:75
+#, python-brace-format
+msgid ""
+"In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\n"
+"python{0}-beautifulsoup4 or python{0}-bs4)"
+msgstr ""
+"Aby doplnok fungoval, musíte si nainštalovať BeautifulSoup4 pomocou správcu balíkov. Vyhľadajte balík s názvom:\n"
+"(python{0}-beautifulsoup4 alebo python{0}-bs4)"
+
+#: plugin_video_dokumenty_tv/provider.py:79
+msgid "Home"
+msgstr "Domov"
+
+#: plugin_video_dokumenty_tv/provider.py:80
+msgid "Geography and traveling"
+msgstr "Geografia a cestovanie"
+
+#: plugin_video_dokumenty_tv/provider.py:81
+msgid "History and retro"
+msgstr "História a retro"
+
+#: plugin_video_dokumenty_tv/provider.py:82
+msgid "Catastrophic"
+msgstr "Katastrofické"
+
+#: plugin_video_dokumenty_tv/provider.py:83
+msgid "Conspiracy"
+msgstr "Konšpirície a spiknutia"
+
+#: plugin_video_dokumenty_tv/provider.py:84
+msgid "Crime"
+msgstr "Krimi"
+
+#: plugin_video_dokumenty_tv/provider.py:85
+msgid "Thinking"
+msgstr "Myslenie"
+
+#: plugin_video_dokumenty_tv/provider.py:86
+msgid "Politics"
+msgstr "Politika"
+
+#: plugin_video_dokumenty_tv/provider.py:87
+msgid "Nature and animals"
+msgstr "Príroda a zvieratá"
+
+#: plugin_video_dokumenty_tv/provider.py:88
+msgid "Technology and science"
+msgstr "Technológia a veda"
+
+#: plugin_video_dokumenty_tv/provider.py:89
+msgid "War and army"
+msgstr "Vojna a armáda"
+
+#: plugin_video_dokumenty_tv/provider.py:90
+msgid "Universe and UFO"
+msgstr "Vesmír a UFO"
+
+#: plugin_video_dokumenty_tv/provider.py:91
+msgid "Mysteries and mythology"
+msgstr "Záhady a mytológia"
+
+#: plugin_video_dokumenty_tv/provider.py:92
+msgid "Lifestyle and sport"
+msgstr "Životný štýl a šport"
+
+#: plugin_video_dokumenty_tv/provider.py:172
+#, python-brace-format
+msgid "Not supported video provider: {provider}"
+msgstr "Nepodporovaný poskytovateľ videa: {provider}"
+
+#: plugin_video_dokumenty_tv/provider.py:176
+msgid "Episode"
+msgstr "Epizóda"
+
+msgid "Maximum bandwidth of the offered stream"
+msgstr "Maximálny dátový tok ponúkaného streamu"
+
+msgid "Unlimited"
+msgstr "Bez obmedzenia"
+
+msgid "8 Mbit/s"
+msgstr ""
+
+msgid "6 Mbit/s"
+msgstr ""
+
+msgid "4 Mbit/s"
+msgstr ""
+
+msgid "3 Mbit/s"
+msgstr ""
+
+msgid "2 Mbit/s"
+msgstr ""
+
+#~ msgid "Provider of this video is not supported."
+#~ msgstr "Poskytovateľ tohto videa nie je podporovaný."

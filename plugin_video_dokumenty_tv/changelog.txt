@@ -1,3 +1,9 @@
+v2.0
+- kompletný prepis doplnku po zmenách na stránke
+- podporované sú videá na ok.ru, youtube a dailymotion
+- odporúčaný je prehrávač exteplayer3
+- prehrávanie je dostupné len pre podporovateľov ArchivCZSK
+
 v1.9
 - oprava pádu pri nepodporovanom poskytovateľovi
 

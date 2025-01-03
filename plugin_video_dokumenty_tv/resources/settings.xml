@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-	<setting id="quality" type="enum" label="30050" lvalues="30051|30052|30053" default="1" />
+  <setting label="Maximum bandwidth of the offered stream" id="max_bitrate" type="keyenum" values="0;Unlimited|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
 </settings>
