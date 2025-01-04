@@ -1,3 +1,7 @@
+2.5 - 4.1.2025
+    - added javascript to python object converter
+    - added python 2/3 compatibility layer
+
 2.4 - 2.1.2025
     - updated available exteplayer3 version
 
