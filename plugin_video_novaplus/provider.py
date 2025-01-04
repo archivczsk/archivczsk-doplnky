@@ -5,8 +5,9 @@ from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.string_utils import _I, _C, _B, decode_html
 from tools_archivczsk.cache import SimpleAutokeyExpiringCache
+from tools_archivczsk.parser.js import get_js_data
 import sys
-import re, json, ast
+import re, json
 
 try:
 	from bs4 import BeautifulSoup
@@ -395,29 +396,6 @@ class TVNovaContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def get_js_data(self, data, pattern):
-		'''
-		Extracts piece of javascript data from data based on pattern and converts it to python object
-		'''
-		sources = re.compile(pattern, re.DOTALL)
-		js_obj = sources.findall(data)[0]
-
-		# remove all spaces not in double quotes
-		js_obj = re.sub(r'\s+(?=([^"]*"[^"]*")*[^"]*$)', '', js_obj)
-
-		# add double quotes around dictionary keys
-		js_obj = re.sub(r'([{,]+)(\w+):', '\\1"\\2":', js_obj)
-
-		# replace JS variables with python alternatives
-		js_obj = re.sub(r'(["\']):undefined([,}])', '\\1:None\\2', js_obj)
-		js_obj = re.sub(r'(["\']):null([,}])', '\\1:None\\2', js_obj)
-		js_obj = re.sub(r'(["\']):NaN([,}])', '\\1:None\\2', js_obj)
-		js_obj = re.sub(r'(["\']):true([,}])', '\\1:True\\2', js_obj)
-		js_obj = re.sub(r'(["\']):false([,}])', '\\1:False\\2', js_obj)
-		return ast.literal_eval(js_obj)
-
-	# ##################################################################################################################
-
 	def resolve_video(self, video_title, url):
 		resolved_url = None
 		drm = None
@@ -463,7 +441,7 @@ class TVNovaContentProvider(CommonContentProvider):
 				json_data = None
 				for s in embeded.find_all('script'):
 					try:
-						json_data = self.get_js_data(s.string, '\s+player:\s+(\{.*?)\};.*')
+						json_data = get_js_data(s.string, '\s+player:\s+(\{.*?)\};.*')
 						break
 					except:
 						pass

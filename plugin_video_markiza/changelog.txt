@@ -1,3 +1,6 @@
+2.13: 4.1.2025
+- úprava závislostí doplnku
+
 2.12: 18.12.2024
 - oprava pádu pri zobrazovaní posledných epizód
 

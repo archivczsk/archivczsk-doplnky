@@ -1,3 +1,6 @@
+2025-01-04 (verze 3.12)
+* úprava závislostí doplnku
+
 2024-12-22 (verze 3.11)
 * oprava pádu pri zobrazení posledných epizód
 * pridane vsechny zive programy po prihlaseni

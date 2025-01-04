@@ -3,7 +3,7 @@
 import re
 from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.string_utils import strip_accents
-import ast
+from tools_archivczsk.parser.js import get_js_data
 
 try:
 	from bs4 import BeautifulSoup
@@ -127,29 +127,6 @@ class PrehrajTo(object):
 
 	# ##################################################################################################################
 
-	def get_js_data(self, data, pattern):
-		'''
-		Extracts piece of javascript data from data based on pattern and converts it to python object
-		'''
-		sources = re.compile(pattern, re.DOTALL)
-		js_obj = sources.findall(data)[0]
-
-		# remove all spaces not in double quotes
-		js_obj = re.sub(r'\s+(?=([^"]*"[^"]*")*[^"]*$)', '', js_obj)
-
-		# add double quotes around dictionary keys
-		js_obj = re.sub(r'([{,]+)(\w+):', '\\1"\\2":', js_obj)
-
-		# replace JS variables with python alternatives
-		js_obj = re.sub(r'(["\']):undefined([,}])', '\\1:None\\2', js_obj)
-		js_obj = re.sub(r'(["\']):null([,}])', '\\1:None\\2', js_obj)
-		js_obj = re.sub(r'(["\']):NaN([,}])', '\\1:None\\2', js_obj)
-		js_obj = re.sub(r'(["\']):true([,}])', '\\1:True\\2', js_obj)
-		js_obj = re.sub(r'(["\']):false([,}])', '\\1:False\\2', js_obj)
-		return ast.literal_eval('[' + js_obj + ']')
-
-	# ##################################################################################################################
-
 	def resolve_video(self, video_id):
 		soup = self.call_api(video_id)
 
@@ -157,7 +134,7 @@ class PrehrajTo(object):
 		script = soup.find("script", text=pattern).string
 
 		videos = []
-		for v in self.get_js_data(script, '[{;\s]+var\s+sources\s+=\s+\[(.*?)\];.*'):
+		for v in get_js_data(script, '[{;\s]+var\s+sources\s+=\s+(\[.*?\]);.*'):
 			videos.append({
 				'url': v['file'],
 				'quality': v['label'],
@@ -165,7 +142,7 @@ class PrehrajTo(object):
 		videos.sort(key=lambda x: int(x['quality'].replace('p', '').replace('i','')), reverse=True)
 
 		subtitles = []
-		for s in self.get_js_data(script, '[{;\s]+var\s+tracks\s+=\s+\[(.*?)\];.*'):
+		for s in get_js_data(script, '[{;\s]+var\s+tracks\s+=\s+(\[.*?\]);.*'):
 			lang = s['label'].split('-')
 			if len(lang) == 3:
 				lang = lang[2]
