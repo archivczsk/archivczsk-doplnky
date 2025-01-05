@@ -3,7 +3,7 @@ from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.cache import SimpleAutokeyExpiringCache, ExpiringLRUCache
-from tools_archivczsk.compat.urllib import urlparse
+from tools_archivczsk.compat import urlparse
 from functools import partial
 import sys
 import re

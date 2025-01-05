@@ -1,3 +1,6 @@
+v2.1
+- oprava prehrávania pre python 2
+
 v2.0
 - kompletný prepis doplnku po zmenách na stránke
 - podporované sú videá na ok.ru, youtube a dailymotion

@@ -1,5 +1,5 @@
 from tools_archivczsk.parser.js import get_js_data
-from tools_archivczsk.compat.urllib import urlparse
+from tools_archivczsk.compat import urlparse
 
 # ##################################################################################################################
 
@@ -58,13 +58,14 @@ class OkResolver(GenericResolver):
 		self.name = 'ok.ru'
 
 	def read_data(self):
+#		self.cp.log_debug("Reading data from url: %s" % self.url)
 		soup = self.cp.call_api(self.url)
 
 		player_data = soup.find('div', {'data-module': "OKVideo"})
 		js = get_js_data(player_data.get('data-options'))
 		js = get_js_data(js['flashvars']['metadata'])
 
-		self.video_url = js['hlsManifestUrl']
+		self.video_url = js['hlsManifestUrl'].replace('\u0026','&')
 		self.video_url_type = 'hls'
 
 		video_div = soup.find('div', {'class': 'vid-card_cnt_w'})
