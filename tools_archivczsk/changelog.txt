@@ -1,3 +1,6 @@
+2.6 - 5.1.2025
+    - fixed python 2 compatibility
+
 2.5 - 4.1.2025
     - added javascript to python object converter
     - added python 2/3 compatibility layer
