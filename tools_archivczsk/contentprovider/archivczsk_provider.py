@@ -166,6 +166,8 @@ class ArchivCZSKContentProvider(object):
 		self.provider.exit_screen = self.exit_screen
 		self.provider.reload_screen = self.reload_screen
 		self.provider.ensure_supporter = self.ensure_supporter
+		self.provider.is_supporter = self.is_supporter
+		self.provider.open_donate_dialog = self.open_donate_dialog
 
 		self.initialised_cbk_called = False
 		self.login_tries = 0
@@ -756,7 +758,17 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 
-	def ensure_supporter(self):
-		client.ensure_supporter(self.session)
+	def ensure_supporter(self, msg=None):
+		client.ensure_supporter(self.session, msg)
+
+	# #################################################################################################
+
+	def is_supporter(self):
+		return client.is_supporter()
+
+	# #################################################################################################
+
+	def open_donate_dialog(self):
+		return client.open_donate_dialog(self.session)
 
 	# #################################################################################################

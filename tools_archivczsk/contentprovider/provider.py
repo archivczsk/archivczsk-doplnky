@@ -762,3 +762,9 @@ class CommonContentProvider(object):
 
 	def ensure_supporter(self):
 		return
+
+	def is_supporter(self):
+		return False
+
+	def open_donate_dialog(self):
+		return
