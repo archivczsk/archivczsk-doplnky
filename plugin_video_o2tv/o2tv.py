@@ -569,7 +569,8 @@ class O2TV(object):
 				'adult' : channel['metas']['Adult']['value'],
 				'picon' : picon,
 				'timeshift': 7 * 24,
-				'logo': logo
+				'logo': logo,
+				'startover': channel.get('enableStartOver', False)
 			})
 
 		# position MD subchannels after root MD channel
@@ -775,7 +776,10 @@ class O2TV(object):
 		channel_id = int(channel_key)
 		epg = self.get_current_epg([channel_id])
 
-		return self.get_stream_url(epg[channel_id]['id'], 'epg', 'START_OVER')
+		if channel_id in epg:
+			return self.get_stream_url(epg[channel_id]['id'], 'epg', 'START_OVER')
+		else:
+			return None
 
 	# #################################################################################################
 

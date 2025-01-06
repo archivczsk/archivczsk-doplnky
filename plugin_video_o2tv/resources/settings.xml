@@ -7,6 +7,7 @@
 	<setting label="Number of search history items" type="number" id="keep-searches" default="20"/>
 	<setting label="Enable special section in main menu" id="enable_extra" type="bool" default="false" />
 	<setting label="Allow downloading of live broadcasting" id="download_live" type="bool" default="false" />
+	<setting label="Fix high delay in live boroadcasting" id="fix_live" type="bool" default="false" />
 	<setting label="Show multidimension stream choice" id="show_md_choice" type="bool" default="true" />
 	<setting label="Show multidimension subchannels" id="show_md_subchannels" type="bool" default="true" />
 	<setting label="Play archive using recordings" id="archive_using_rec" type="keyenum" values="ask;Ask|true;Yes|false;No" default="ask" />

@@ -87,6 +87,10 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 				}
 
 			menu = {}
+			if channel['startover']:
+				self.cp.add_media_menu_item(menu, self._("Play from beginnig (static)"), cmd=self.get_livetv_stream, channel_title=channel['name'], channel_key=channel['key'], channel_id=channel['id'], startover='static')
+				self.cp.add_media_menu_item(menu, self._("Play from beginnig (dynamic)"), cmd=self.get_livetv_stream, channel_title=channel['name'], channel_key=channel['key'], channel_id=channel['id'], startover='dynamic')
+
 			if fav:
 				self.cp.add_menu_item(menu, self._("Remove from favourites"), cmd=self.del_fav, key=channel['key'])
 			else:
@@ -96,7 +100,11 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 
 	# #################################################################################################
 
-	def get_livetv_stream(self, channel_title, channel_key, channel_id):
+	def get_livetv_stream(self, channel_title, channel_key, channel_id, startover=None):
+		if startover:
+			self.cp.ensure_supporter()
+
+		live_offset = 0
 		epg_data = self.cp.o2tv.get_current_epg([channel_id])
 
 		mi_set = False
@@ -106,18 +114,35 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 			# this is mosaic event - extract mosaic streams and add it to playlist
 			playlist = self.cp.add_playlist(channel_title)
 			for mi in self.cp.o2tv.get_mosaic_info(mosaic_id, True).get('mosaic_info', []):
-				url = self.cp.o2tv.get_live_link(mi['id'])
-				self.cp.resolve_dash_streams(url, mi['title'], playlist=playlist)
+				if startover == 'static':
+					url = self.cp.o2tv.get_startover_link(mi['id'])
+					fix_live='playlist_type'
+				else:
+					url = self.cp.o2tv.get_live_link(mi['id'])
+					fix_live='delay'
+
+					if startover == 'dynamic':
+						start_time = int(mi.get("start", 0))
+						if start_time:
+							live_offset = int(time.time()) - start_time
+
+				self.cp.resolve_dash_streams(url, mi['title'], playlist=playlist, fix_live=fix_live, live_offset=live_offset)
 				mi_set = True
 
 		if mi_set == False:
-			url = self.cp.o2tv.get_live_link(channel_key)
-			self.cp.resolve_dash_streams(url, channel_title)
+			if startover == 'static':
+				url = self.cp.o2tv.get_startover_link(channel_key)
+				fix_live='playlist_type'
+			else:
+				url = self.cp.o2tv.get_live_link(channel_key)
+				fix_live='delay'
 
-			# Not working because of bugs in exteplayer3
-#			url = self.cp.o2tv.get_proxy_startover_link(channel_key)
-#			self.cp.add_play(self._('Play from beginning'), url, download=enable_download)
+				if startover == 'dynamic':
+					start_time = int(epg_data.get(channel_id, {}).get("start", 0))
+					if start_time:
+						live_offset = int(time.time()) - start_time
 
+			self.cp.resolve_dash_streams(url, channel_title, fix_live=fix_live, live_offset=live_offset)
 
 	# #################################################################################################
 
@@ -659,14 +684,22 @@ class O2TVContentProvider(ModuleContentProvider):
 		return {
 			'url': url,
 			'bandwidth': stream_key['bandwidth'],
+			'fix_live': stream_key['fix_live'],
+			'live_offset': stream_key['live_offset'],
 		}
 
 	# ##################################################################################################################
 
-	def resolve_dash_streams(self, url, video_title, playlist=None, data_item=None):
+	def resolve_dash_streams(self, url, video_title, playlist=None, data_item=None, fix_live=None, live_offset=0):
+		if not url:
+			return
+
 		streams = self.get_dash_streams(url, self.o2tv.req_session, max_bitrate=self.get_setting('max_bitrate'))
 		if not streams:
 			return
+
+		if fix_live == 'delay' and live_offset == 0 and self.get_setting('fix_live') == False:
+			fix_live = None
 
 		play_settings = {
 			'relative_seek_enabled': False,
@@ -677,6 +710,8 @@ class O2TVContentProvider(ModuleContentProvider):
 			key = {
 				'key': cache_key,
 				'bandwidth': one['bandwidth'],
+				'fix_live': fix_live if self.is_supporter() else None,
+				'live_offset': live_offset,
 			}
 
 			info_labels = {

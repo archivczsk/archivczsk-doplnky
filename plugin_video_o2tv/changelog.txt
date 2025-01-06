@@ -1,6 +1,8 @@
 1.23 - 06.01.2025
     - pridaná možnosť zobraziť subkanály z multidimenzie priamo v zozname live TV
     - pridaná možnosť exportovať subkanály z multidimenzie do userbouquetu
+    - do kontextového menu pridaná možnosť spustiť aktuálny program od začiatku
+    - v nastaveniach pribudla možnosť zapnúť opravu veľkého oneskorenia u live TV
 
 1.22 - 11.12.2024
     - oprava pádu ak sa nepodarí vytvoriť nahrávka z archívu
