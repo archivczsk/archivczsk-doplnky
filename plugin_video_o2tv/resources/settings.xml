@@ -8,9 +8,11 @@
 	<setting label="Enable special section in main menu" id="enable_extra" type="bool" default="false" />
 	<setting label="Allow downloading of live broadcasting" id="download_live" type="bool" default="false" />
 	<setting label="Show multidimension stream choice" id="show_md_choice" type="bool" default="true" />
+	<setting label="Show multidimension subchannels" id="show_md_subchannels" type="bool" default="true" />
 	<setting label="Play archive using recordings" id="archive_using_rec" type="keyenum" values="ask;Ask|true;Yes|false;No" default="ask" />
 	<category label="Userbouquet">
 		<setting label="Automatically export channel list as userbouquet" id="enable_userbouquet" type="bool" default="false" />
+		<setting label="Export multidimension subchannels" id="export_md_subchannels" type="bool" default="true" />
 		<setting label="Generate XML EPG for epgimport plugin (if installed)" id="enable_xmlepg" type="bool" default="false" />
 		<setting label="Directory for XML EPG data (need at least 20MB of free space)" id="xmlepg_dir" type="text" default="/media/hdd" />
 		<setting label="For how many days to generate XML EPG" id="xmlepg_days" type="enum" lvalues="1|2|3|4|5|6|7" default="4"/>

@@ -47,24 +47,27 @@ class O2HTTPRequestHandler(DashHTTPRequestHandler):
 	def get_stream_index_url(self, channel_id):
 		try:
 			key = channel_id
+			index_url = None
 
 			if key in self.live_cache and self.live_cache[key]['life'] > int(time()):
 #				self.cp.log_debug("Returning result from cache" )
 				index_url = self.live_cache[key]['index_url']
 				self.live_cache[key]['life'] = int(time())+20
 			else:
-				index_url = self.cp.o2tv.get_live_link(channel_id)
-				if index_url:
-					while True:
-						# follow redirects to get last URL and cache it
-						response = self.o2_session.get(index_url, allow_redirects=False)
-						if response.status_code > 300 and response.status_code < 310:
-							index_url = response.headers['Location']
-						else:
-							break
+				channel = self.cp.channels_by_key.get(key)
+				if channel and (channel['md_subchannel'] == False or self.cp.is_supporter()):
+					index_url = self.cp.o2tv.get_live_link(channel_id)
+					if index_url:
+						while True:
+							# follow redirects to get last URL and cache it
+							response = self.o2_session.get(index_url, allow_redirects=False)
+							if response.status_code > 300 and response.status_code < 310:
+								index_url = response.headers['Location']
+							else:
+								break
 
-				self.live_cache_cleanup()
-				self.live_cache[key] = { 'life': int(time())+20, 'index_url': index_url }
+					self.live_cache_cleanup()
+					self.live_cache[key] = { 'life': int(time())+20, 'index_url': index_url }
 		except:
 			self.cp.log_error(traceback.format_exc())
 			index_url = None

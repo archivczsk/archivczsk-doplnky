@@ -64,6 +64,10 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 			if not enable_adult and channel['adult']:
 				continue
 
+			if channel['md_subchannel']:
+				if self.cp.get_setting('show_md_subchannels') == False or not self.cp.is_supporter():
+					continue
+
 			epg = epg_data.get(channel['id'])
 			if epg and epg.get('mosaic_id'):
 				epg = self.cp.o2tv.get_mosaic_info(epg['mosaic_id'], True)
@@ -350,6 +354,9 @@ class O2TVModuleRecordings(CPModuleTemplate):
 			if not enable_adult and channel['adult']:
 				continue
 
+			if channel['md_subchannel']:
+				continue
+
 			self.cp.add_dir(channel['name'], img=channel['logo'], info_labels={'adult': channel['adult']}, cmd=self.plan_recordings_for_channel, channel_key=channel['key'])
 
 	# #################################################################################################
@@ -516,6 +523,13 @@ class O2TVContentProvider(ModuleContentProvider):
 
 	def root(self):
 		PlayerFeatures.request_ffmpeg_mpd_support(self)
+
+		if (self.get_setting('show_md_subchannels') or self.get_setting('export_md_subchannels')) and not self.is_supporter():
+			try:
+				self.ensure_supporter(self._("You have enabled showing or exporting to userbouquet multidimension subchannels in addon settings."))
+			except:
+				pass
+
 		ModuleContentProvider.root(self)
 
 	# #################################################################################################
@@ -549,6 +563,7 @@ class O2TVContentProvider(ModuleContentProvider):
 
 			ctx.update(json.dumps(item, sort_keys=True).encode('utf-8'))
 
+		ctx.update(str(self.is_supporter()).encode('utf-8'))
 		return ctx.hexdigest()
 
 	# #################################################################################################

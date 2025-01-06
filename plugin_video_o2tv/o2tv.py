@@ -538,35 +538,57 @@ class O2TV(object):
 		}
 
 		for channel in self.call_list_api(filer_data):
-			if 'ChannelNumber' in channel['metas']:
-				if 'tags' in channel and len(channel['tags']) > 0 and 'Genre' in channel['tags'] and len(channel['tags']['Genre']) > 0 and channel['tags']['Genre']['objects'][0]['value'] == 'radio':
+			try:
+				# skip radio channels
+				if channel.get('tags', {}).get('Genre', {}).get('objects',[{}])[0].get('value') == 'radio':
 					continue
+			except:
+				pass
 
-				logo = None
-				picon = None
-				for i in channel.get('images', []):
-					if i.get('ratio') == '2x3':
-						logo = i.get('url','') + '/height/720/width/480'
+			logo = None
+			picon = None
+			for i in channel.get('images', []):
+				if i.get('ratio') == '2x3':
+					logo = i.get('url','') + '/height/720/width/480'
 
-					if i.get('ratio') == '16x9':
-						picon = i.get('url')
-						if picon and not picon.endswith('.png'):
-							picon = picon + '.png'
+				if i.get('ratio') == '16x9':
+					picon = i.get('url')
+					if picon and not picon.endswith('.png'):
+						picon = picon + '.png'
 
-				channels.append({
-					'key': str(channel['id']),
-					'id': channel['id'],
-					'service': service['id'],
-					'number' : int(channel['metas']['ChannelNumber']['value']),
-					'name' : channel['name'],
-					'type' : 'TV',
-					'adult' : channel['metas']['Adult']['value'],
-					'picon' : picon,
-					'timeshift': 7 * 24,
-					'logo': logo
-				})
+			channels.append({
+				'key': str(channel['id']),
+				'id': channel['id'],
+				'service': service['id'],
+				'number' : int(channel['metas'].get('ChannelNumber',{}).get('value', 0)),
+				'md_subchannel' : 'ChannelNumber' not in channel['metas'],
+				'md_channel': channel['metas'].get('MosaicSupport', {}).get('value', False),
+				'sub_number': 0 if 'ChannelNumber' in channel['metas'] else int(channel['externalIds']),
+				'name' : channel['name'],
+				'type' : 'TV',
+				'adult' : channel['metas']['Adult']['value'],
+				'picon' : picon,
+				'timeshift': 7 * 24,
+				'logo': logo
+			})
 
-		return sorted(channels, key=lambda ch: ch['number'])
+		# position MD subchannels after root MD channel
+		md_subchannels = sorted(filter(lambda x: x['md_subchannel'], channels), key=lambda x: x['name'])
+		md_channels = list(filter(lambda x: x['md_channel'], channels))
+
+		for sub_ch in md_subchannels:
+			for i in range(len(sub_ch['name']), 0, -1):
+				if sub_ch['number'] != 0:
+					break
+
+				sub_name = sub_ch['name'][:i]
+
+				for md_ch in md_channels:
+					if md_ch['name'].startswith(sub_name):
+						sub_ch['number'] = md_ch['number']
+						break
+
+		return sorted(channels, key=lambda ch: (ch['number'], ch['sub_number'] != 0, ch['name']))
 
 	# #################################################################################################
 

@@ -14,6 +14,7 @@ class O2TVBouquetGenerator(BouquetGenerator):
 
 class O2TVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 	def __init__(self, content_provider, http_endpoint, user_agent):
+		self.bouquet_settings_names = ('enable_userbouquet', 'enable_adult', 'enable_xmlepg', 'enable_picons', 'player_name', 'export_md_subchannels')
 		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=('username', 'password'), user_agent=user_agent)
 		self.prefix = NAME_PREFIX # this is needed for compatiblity with old archivo2tv addon
 		self.bouquet_generator = O2TVBouquetGenerator
@@ -29,11 +30,15 @@ class O2TVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
 	def get_bouquet_channels(self, channel_type=None):
 		for channel in self.cp.channels:
+			if channel['md_subchannel']:
+				if self.cp.get_setting('export_md_subchannels') == False or not self.cp.is_supporter():
+					continue
+
 			yield {
 				'name': channel['name'],
 				'adult': channel['adult'],
 				'picon': channel['picon'],
-				'id': channel['number'],
+				'id': channel['number'] + channel['sub_number'],
 				'key': str(channel['key']),
 			}
 
@@ -41,7 +46,7 @@ class O2TVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 		for channel in self.cp.channels:
 			yield {
 				'name': channel['name'],
-				'id': channel['number'],
+				'id': channel['number'] + channel['sub_number'],
 				'key': channel['key'],
 			}
 
