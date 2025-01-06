@@ -81,7 +81,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			self.log_devel("Dash info: %s" % str(dash_info))
 
 			# resolve and process DASH playlist
-			self.get_dash_playlist_data_async(dash_info['url'], dash_info.get('bandwidth'), dash_info.get('headers'), dash_info.get('drm',{}), cbk=dash_continue)
+			self.get_dash_playlist_data_async(dash_info, cbk=dash_continue)
 			return self.NOT_DONE_YET
 
 		except:
@@ -232,9 +232,10 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 	# #################################################################################################
 
-	def handle_mpd_manifest(self, base_url, root, bandwidth, drm=None, cache_key=None):
+	def handle_mpd_manifest(self, base_url, root, bandwidth, dash_info={}, cache_key=None):
 		pssh_list = []
 		kid_rep_mapping = {}
+		drm = dash_info.get('drm',{})
 
 		# extract namespace of root element and set it as global namespace
 		ns = root.tag[1:root.tag.index('}')]
@@ -420,17 +421,18 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 	# #################################################################################################
 
-	def get_dash_playlist_data_async(self, url, bandwidth=None, headers=None, drm=None, cbk=None):
+	def get_dash_playlist_data_async(self, dash_info, cbk=None):
 		'''
 		Processes DASH playlist from given url and returns new one with only one video adaptive specified by bandwidth (or with best bandwidth if no bandwidth is given)
 		'''
-		def p_continue(response, bandwidth):
+		def p_continue(response):
 #			self.log_devel("MPD response received: %s" % response)
 
 			if response['status_code'] != 200:
 				self.cp.log_error("Status code response for MPD playlist: %d" % response['status_code'])
 				return cbk(None)
 
+			bandwidth = dash_info.get('bandwidth')
 			if bandwidth == None:
 				bandwidth = 1000000000
 			else:
@@ -446,10 +448,11 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			self.log_devel("Received MPD:\n%s" % response_data)
 
 			root = ET.fromstring(response_data)
-			self.handle_mpd_manifest(redirect_url, root, bandwidth, drm, cache_key)
+			self.handle_mpd_manifest(redirect_url, root, bandwidth, dash_info, cache_key)
 			cbk( ET.tostring(root, encoding='utf8', method='xml'))
 			return
 
-		self.request_http_data_async_simple(url, cbk=p_continue, headers=headers, bandwidth=bandwidth)
+
+		self.request_http_data_async_simple(dash_info['url'], cbk=p_continue, headers=dash_info.get('headers'))
 
 	# #################################################################################################
