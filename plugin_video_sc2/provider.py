@@ -874,7 +874,7 @@ class SccContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def play_trailer(self, media_id):
-		media = self.api.call_filter_api('ids', params={'id': media_id }).get('hits', {}).get('hits',[{}])
+		media = self.api.call_filter_api('ids', params={'id': media_id }).get('hits', {}).get('hits') or [{}]
 		playlist = self.add_playlist('Trailers')
 
 		for video in sorted(media[0].get('_source', {}).get('videos', []), key=lambda i: i.get('lang', '') in ('cs', 'sk'), reverse=True):
