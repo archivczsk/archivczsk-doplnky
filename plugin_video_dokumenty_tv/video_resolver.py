@@ -65,7 +65,8 @@ class OkResolver(GenericResolver):
 		js = get_js_data(player_data.get('data-options'))
 		js = get_js_data(js['flashvars']['metadata'])
 
-		self.video_url = js['hlsManifestUrl'].replace('\u0026','&')
+		self.video_url = js.get('hlsManifestUrl') or js.get('ondemandHls')
+		self.video_url = self.video_url.replace('\u0026','&')
 		self.video_url_type = 'hls'
 
 		video_div = soup.find('div', {'class': 'vid-card_cnt_w'})

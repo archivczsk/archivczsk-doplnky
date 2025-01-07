@@ -1,3 +1,6 @@
+v2.2
+- pridanie podpory pre on-demand video formát na ok.ru
+
 v2.1
 - oprava prehrávania pre python 2
 
