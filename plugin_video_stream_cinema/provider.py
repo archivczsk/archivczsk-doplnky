@@ -334,7 +334,11 @@ class StreamCinemaContentProvider(CommonContentProvider):
 	def show_trakt_list(self, user, list_id):
 		@lru_cache(30, timeout=1800)
 		def get_list_items(list_id, user):
-			return self.tapi.get_list_items(list_id, user)
+			try:
+				return self.tapi.get_list_items(list_id, user)
+			except Exception as e:
+				self.log_exception()
+				raise AddonErrorException(self._("Failed to get list from Trakt.tv. If problem persists, unpair and newly pair your device to Trakt.tv."))
 
 		track_ids = []
 		# get list from Trakt.tv and extract trakt ID + type
@@ -357,10 +361,14 @@ class StreamCinemaContentProvider(CommonContentProvider):
 	def show_trakt_history(self, media_type):
 		@lru_cache(30, timeout=1800)
 		def get_list_items(media_type):
-			if media_type == 'movie':
-				return self.tapi.get_watched_movies()
-			else:
-				return self.tapi.get_watched_shows()
+			try:
+				if media_type == 'movie':
+					return self.tapi.get_watched_movies()
+				else:
+					return self.tapi.get_watched_shows()
+			except Exception as e:
+				self.log_exception()
+				raise AddonErrorException(self._("Failed to get list from Trakt.tv. If problem persists, unpair and newly pair your device to Trakt.tv."))
 
 		track_ids = []
 		sc_type = 1 if media_type == 'movie' else 3
@@ -392,10 +400,22 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		elif dir_type == 'history_shows':
 			self.show_trakt_history('tvshow')
 		elif dir_type == 'my_lists':
-			for titem in self.tapi.get_lists():
+			try:
+				titems = self.tapi.get_lists()
+			except Exception as e:
+				self.log_exception()
+				raise AddonErrorException(self._("Failed to get list from Trakt.tv. If problem persists, unpair and newly pair your device to Trakt.tv."))
+
+			for titem in titems:
 				self.add_dir(titem['name'], info_labels={'plot': titem.get('description')}, cmd=self.show_trakt_list, user='me', list_id=titem['id'])
 		elif dir_type in ('trending', 'popular'):
-			for titem in self.tapi.get_global_lists(dir_type, page):
+			try:
+				titems = self.tapi.get_global_lists(dir_type, page)
+			except Exception as e:
+				self.log_exception()
+				raise AddonErrorException(self._("Failed to get list from Trakt.tv. If problem persists, unpair and newly pair your device to Trakt.tv."))
+
+			for titem in titems:
 				if titem['id'] and titem['user']:
 					self.add_dir(titem['name'], info_labels={'plot': titem.get('description')}, cmd=self.show_trakt_list, user=titem['user'], list_id=titem['id'])
 			self.add_next(cmd=self.add_sc_trakt_dir, page_info=(page + 2), dir_type=dir_type, page=page + 1)

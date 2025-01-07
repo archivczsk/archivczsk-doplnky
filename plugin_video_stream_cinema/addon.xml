@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<addon id="plugin.video.stream-cinema" name="Stream Cinema" version="3.14">
+<addon id="plugin.video.stream-cinema" name="Stream Cinema" version="3.15">
 	<requires>
 		<import addon="enigma2.archivczsk" version="3.0.0"/>
 		<import addon="tools.archivczsk" version="2.0" />

@@ -1,3 +1,6 @@
+2025-01-07 3.15
+    - oprava pádov pri chybe v komunikácii s Trakt.tv
+
 2024-12-28 3.14
     - pridanie vyhľadania do kategórie dokumenty, anime a koncerty
     - pridanie vyhľadávania podľa názvu a mena herca bez ohľadu na typ (nájde filmy aj seriály zároveň)
