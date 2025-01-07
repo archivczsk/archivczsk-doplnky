@@ -232,12 +232,7 @@ class DisneyPlusContentProvider(CommonContentProvider):
 			else:
 				result1[len(result1)-1] += '/notit'
 
-		releases = row.get('releases',[]) or []
-		year = None
-		if len(releases):
-			year = releases[0].get('releaseYear')
-
-		return ', '.join(result1), year
+		return ', '.join(result1), self.get_release_year(row)
 
 	# ##################################################################################################################
 
@@ -501,6 +496,18 @@ class DisneyPlusContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
+	def get_release_year(self, row):
+		releases = row.get('releases',[]) or []
+
+		if len(releases):
+			year = releases[0].get('releaseYear')
+		else:
+			year = None
+
+		return year
+
+	# ##################################################################################################################
+
 	def load_info_labels(self, family_id=None, series_id=None):
 		plot_prefix = ''
 
@@ -513,7 +520,7 @@ class DisneyPlusContentProvider(CommonContentProvider):
 
 			return {
 				'plot': plot_prefix + self._get_text(row, 'description', 'series'),
-				'year': row['releases'][0]['releaseYear'],
+				'year': self.get_release_year(row),
 				'genre': ', '.join(genres)
 			}
 
@@ -527,7 +534,7 @@ class DisneyPlusContentProvider(CommonContentProvider):
 			return {
 				'plot': plot_prefix + self._get_text(row, 'description', 'program'),
 				'duration': row['mediaMetadata']['runtimeMillis']/1000,
-				'year': row['releases'][0]['releaseYear'] if row['releases'][0]['releaseDate'] else None,
+				'year': self.get_release_year(row),
 				'genre': ', '.join(genres)
 			}
 
@@ -538,7 +545,7 @@ class DisneyPlusContentProvider(CommonContentProvider):
 	def _parse_series(self, row, menu=None):
 		info_labels = {
 			'plot': self._get_text(row, 'description', 'series'),
-			'year': row['releases'][0]['releaseYear'],
+			'year': self.get_release_year(row),
 		}
 
 		if not menu:
@@ -562,7 +569,7 @@ class DisneyPlusContentProvider(CommonContentProvider):
 
 		info_labels = {
 			'plot': self._get_text(row, 'description', 'season') or self._get_text(series, 'description', 'series'),
-			'year': row['releases'][0]['releaseYear'],
+			'year': self.get_release_year(row),
 			'season': row['seasonSequenceNumber'],
 		}
 		self.add_dir(title, img, info_labels=info_labels, cmd=self.season, season_id=row['seasonId'])
@@ -576,7 +583,7 @@ class DisneyPlusContentProvider(CommonContentProvider):
 		info_labels  = {
 			'plot': self._get_text(row, 'description', 'program'),
 			'duration': row['mediaMetadata']['runtimeMillis']/1000,
-			'year': row['releases'][0]['releaseYear'] if row['releases'][0]['releaseDate'] else None,
+			'year': self.get_release_year(row),
 		}
 
 		if row['programType'] == 'episode':

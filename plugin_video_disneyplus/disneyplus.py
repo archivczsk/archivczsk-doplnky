@@ -113,6 +113,7 @@ class DisneyPlus(object):
 				method = 'GET'
 
 		resp = self.req_session.request(method=method, url=url, params=extra_params, json=data, headers=xheaders)
+#		dump_json_request(resp)
 
 		try:
 			resp_json = resp.json()
