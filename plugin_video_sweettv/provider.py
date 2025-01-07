@@ -8,6 +8,7 @@ from tools_archivczsk.generator.lamedb import channel_name_normalise
 from .bouquet import SweetTVBouquetXmlEpgGenerator
 from .sweettv import SweetTV
 import base64
+from functools import partial
 
 # #################################################################################################
 
@@ -327,6 +328,21 @@ class SweetTVContentProvider(ModuleContentProvider):
 
 	# #################################################################################################
 
+	def get_info_labels(self, movie_id):
+		movies = self.sweettv.get_movie_info([movie_id])
+
+		if len(movies) == 1:
+			movie = movies[0]
+			return {
+				'plot': movie['plot'],
+				'duration': movie['duration'],
+				'year': movie['year'],
+				'rating': movie.get('rating'),
+				'title': movie['title']
+			}
+
+	# #################################################################################################
+
 	def process_movie_data(self, data):
 		show_paid = self.get_setting('show_paid_movies')
 
@@ -344,13 +360,16 @@ class SweetTVContentProvider(ModuleContentProvider):
 				movie_id = None
 				owner_id = None
 
-			info_labels = {
-				'plot': movie['plot'],
-				'duration': movie['duration'],
-				'year': movie['year'],
-				'rating': movie.get('rating'),
-				'title': movie['title']
-			}
+			if movie['plot']:
+				info_labels = {
+					'plot': movie['plot'],
+					'duration': movie['duration'],
+					'year': movie['year'],
+					'rating': movie.get('rating'),
+					'title': movie['title']
+				}
+			else:
+				info_labels = partial(self.get_info_labels, movie_id=movie['id'])
 
 			menu = {}
 			if movie['trailer'] and movie['available']:

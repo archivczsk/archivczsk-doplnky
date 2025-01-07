@@ -146,8 +146,6 @@ class SweetTV:
 	def call_api(self, url, data=None, enable_retry=True, auth_header=True ):
 		err_msg = None
 
-		log_file = url
-
 		if not url.startswith('http'):
 			url = 'https://api.sweet.tv/' + url
 
@@ -501,11 +499,11 @@ class SweetTV:
 				'id': str(movie['external_id_pairs'][0]['external_id']),
 				'owner_id': str(movie['external_id_pairs'][0]['owner_id']),
 				'title': movie['title'],
-				'plot': movie['description'],
+				'plot': movie.get('description'),
 				'poster': movie['poster_url'],
 				'rating': movie.get('rating_imdb'),
-				'duration': movie['duration'],
-				'year': int(movie['year']),
+				'duration': movie.get('duration'),
+				'year': int(movie['year']) if 'year' in movie else None,
 				'available': movie['available'],
 				'trailer': movie.get('trailer_url')
 			})
