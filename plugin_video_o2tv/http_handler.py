@@ -136,6 +136,7 @@ class O2HTTPRequestHandler(DashHTTPRequestHandler):
 				key = {
 					'key': self.cp.scache.put(streams[0]['playlist_url']),
 					'bandwidth': streams[0]['bandwidth'],
+					'fix_live': 'delay' if (self.cp.get_setting('fix_live') and self.cp.is_supporter()) else None,
 				}
 
 				url = stream_key_to_dash_url(self.cp.http_endpoint, key)

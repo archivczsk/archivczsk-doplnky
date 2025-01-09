@@ -549,9 +549,20 @@ class O2TVContentProvider(ModuleContentProvider):
 	def root(self):
 		PlayerFeatures.request_ffmpeg_mpd_support(self)
 
-		if (self.get_setting('show_md_subchannels') or self.get_setting('export_md_subchannels')) and not self.is_supporter():
+		if not self.is_supporter():
+			msgs  = [ self._("You have enabled these options in addon settings:"), '\n' ]
+			if self.get_setting('show_md_subchannels'):
+				msgs.append(self._("Show multidimension subchannels"))
+
+			if self.get_setting('export_md_subchannels'):
+				msgs.append(self._("Export multidimension subchannels"))
+
+			if self.get_setting('fix_live'):
+				msgs.append(self._("Fix high delay in live boroadcasting"))
+
 			try:
-				self.ensure_supporter(self._("You have enabled showing or exporting to userbouquet multidimension subchannels in addon settings."))
+				if len(msgs) > 2:
+					self.ensure_supporter('\n'.join(msgs) + '\n')
 			except:
 				pass
 
@@ -685,7 +696,7 @@ class O2TVContentProvider(ModuleContentProvider):
 			'url': url,
 			'bandwidth': stream_key['bandwidth'],
 			'fix_live': stream_key['fix_live'],
-			'live_offset': stream_key['live_offset'],
+			'live_offset': stream_key.get('live_offset', 0),
 		}
 
 	# ##################################################################################################################
