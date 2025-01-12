@@ -371,6 +371,7 @@ class JojContentProvider(ContentProvider):
 				item = self.video_item()
 				item['quality'] = quality + 'p'
 				item['url'] = 'https://live.cdn.joj.sk/live/' + sou + '/' + channel + '-' + quality + '.m3u8'
+				item['headers'] = {'Referer': 'https://media.joj.sk'}
 				result.append(item)
 		else:
 			on_joj_play = False

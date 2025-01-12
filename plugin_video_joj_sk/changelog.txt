@@ -1,3 +1,6 @@
+1.6.4
+- oprava prehrávania živého vysielania
+
 1.6.3
 - oprava prehrávania starších epizód
 
