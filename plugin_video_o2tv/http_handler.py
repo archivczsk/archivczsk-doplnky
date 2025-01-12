@@ -174,8 +174,10 @@ class O2HTTPRequestHandler(DashHTTPRequestHandler):
 			'fix_live': 'delay' if (self.cp.get_setting('fix_live') and self.cp.is_supporter()) else None,
 		}
 
+		export_md_subchannels = self.cp.get_setting('export_md_subchannels') and self.cp.is_supporter()
+
 		# if channels broatcasts MD, then show menu to select MD stream
-		if self.last_played_channel != channel_id and self.cp.get_setting('show_md_choice'):
+		if export_md_subchannels == False and self.last_played_channel != channel_id and self.cp.get_setting('show_md_choice'):
 			self.last_played_channel = channel_id
 			self.show_md_menu(channel_id)
 

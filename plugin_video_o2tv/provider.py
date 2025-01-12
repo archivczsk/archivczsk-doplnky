@@ -53,6 +53,7 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 
 		enable_adult = self.cp.get_setting('enable_adult')
 		enable_download = self.cp.get_setting('download_live')
+		show_md_subchannels = self.cp.get_setting('show_md_subchannels') and self.cp.is_supporter()
 
 		if channels == None:
 			channels = self.cp.channels
@@ -64,12 +65,12 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 			if not enable_adult and channel['adult']:
 				continue
 
-			if channel['md_subchannel']:
-				if self.cp.get_setting('show_md_subchannels') == False or not self.cp.is_supporter():
-					continue
+			if channel['md_subchannel'] and show_md_subchannels == False:
+				continue
 
 			epg = epg_data.get(channel['id'])
-			if epg and epg.get('mosaic_id'):
+
+			if show_md_subchannels == False and epg and epg.get('mosaic_id'):
 				epg = self.cp.o2tv.get_mosaic_info(epg['mosaic_id'], True)
 
 			if epg:
@@ -104,30 +105,36 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 		if startover:
 			self.cp.ensure_supporter()
 
+		show_md_subchannels = self.cp.get_setting('show_md_subchannels') and self.cp.is_supporter()
 		live_offset = 0
-		epg_data = self.cp.o2tv.get_current_epg([channel_id])
+
+		if startover == 'dynamic' or show_md_subchannels == False:
+			epg_data = self.cp.o2tv.get_current_epg([channel_id])
+		else:
+			epg_data = {}
 
 		mi_set = False
-		mosaic_id = epg_data.get(channel_id, {}).get('mosaic_id')
+		if show_md_subchannels == False:
+			mosaic_id = epg_data.get(channel_id, {}).get('mosaic_id')
 
-		if mosaic_id:
-			# this is mosaic event - extract mosaic streams and add it to playlist
-			playlist = self.cp.add_playlist(channel_title)
-			for mi in self.cp.o2tv.get_mosaic_info(mosaic_id, True).get('mosaic_info', []):
-				if startover == 'static':
-					url = self.cp.o2tv.get_startover_link(mi['id'])
-					fix_live='playlist_type'
-				else:
-					url = self.cp.o2tv.get_live_link(mi['id'])
-					fix_live='delay'
+			if mosaic_id:
+				# this is mosaic event - extract mosaic streams and add it to playlist
+				playlist = self.cp.add_playlist(channel_title)
+				for mi in self.cp.o2tv.get_mosaic_info(mosaic_id, True).get('mosaic_info', []):
+					if startover == 'static':
+						url = self.cp.o2tv.get_startover_link(mi['id'])
+						fix_live='playlist_type'
+					else:
+						url = self.cp.o2tv.get_live_link(mi['id'])
+						fix_live='delay'
 
-					if startover == 'dynamic':
-						start_time = int(mi.get("start", 0))
-						if start_time:
-							live_offset = int(time.time()) - start_time
+						if startover == 'dynamic':
+							start_time = int(mi.get("start", 0))
+							if start_time:
+								live_offset = int(time.time()) - start_time
 
-				self.cp.resolve_dash_streams(url, mi['title'], playlist=playlist, fix_live=fix_live, live_offset=live_offset)
-				mi_set = True
+					self.cp.resolve_dash_streams(url, mi['title'], playlist=playlist, fix_live=fix_live, live_offset=live_offset)
+					mi_set = True
 
 		if mi_set == False:
 			if startover == 'static':
@@ -186,12 +193,13 @@ class O2TVModuleArchive(CPModuleArchive):
 	# #################################################################################################
 
 	def get_archive_program(self, channel_id, archive_day):
+		show_md_subchannels = self.cp.get_setting('show_md_subchannels') and self.cp.is_supporter()
 		ts_from, ts_to = self.archive_day_to_datetime_range(archive_day, True)
 
 		adult = self.cp.channels_by_key.get(channel_id,{}).get('adult', False)
 
 		for epg in self.cp.o2tv.get_channel_epg(channel_id, ts_from, ts_to):
-			mosaic_id = epg['mosaic_id']
+			mosaic_id = epg['mosaic_id'] if show_md_subchannels == False else None
 
 			rec_id = epg['id']
 
@@ -209,7 +217,7 @@ class O2TVModuleArchive(CPModuleArchive):
 
 			menu = {}
 			self.cp.add_menu_item(menu, self._('Record the event'), cmd=self.cp.add_recording, epg_id=rec_id)
-			self.cp.add_video(title, epg.get('img'), info_labels, menu, cmd=self.get_archive_stream, epg_title=str(epg["title"]), epg_id=epg['id'], mosaic_info=epg.get('mosaic_info',[]))
+			self.cp.add_video(title, epg.get('img'), info_labels, menu, cmd=self.get_archive_stream, epg_title=str(epg["title"]), epg_id=epg['id'], mosaic_info=epg.get('mosaic_info',[]) if show_md_subchannels == False else [])
 
 	# #################################################################################################
 
@@ -276,6 +284,7 @@ class O2TVModuleArchive(CPModuleArchive):
 	# #################################################################################################
 
 	def get_archive_event(self, channel_id, event_start, event_end=None):
+		export_md_subchannels = self.cp.get_setting('export_md_subchannels') and self.cp.is_supporter()
 		adult = self.cp.channels_by_key.get(channel_id,{}).get('adult', False)
 
 		for epg in self.cp.o2tv.get_channel_epg(channel_id, event_start - 14400, (event_end or event_start) + 14400):
@@ -283,7 +292,7 @@ class O2TVModuleArchive(CPModuleArchive):
 #				self.cp.log_debug("Archive event %d - %d doesn't match: %s" % (epg["start"], epg["end"], epg.get("title") or '???'))
 				continue
 
-			mosaic_id = epg['mosaic_id']
+			mosaic_id = epg['mosaic_id'] if export_md_subchannels else None
 
 			if mosaic_id:
 				# if this is mosaic event, then replace current epg info with mosaic one
@@ -298,7 +307,7 @@ class O2TVModuleArchive(CPModuleArchive):
 				'adult': adult
 			}
 
-			self.cp.add_video(title, epg.get('img'), info_labels, cmd=self.get_archive_stream, epg_title=str(epg["title"]), epg_id=epg['id'], mosaic_info=epg.get('mosaic_info',[]))
+			self.cp.add_video(title, epg.get('img'), info_labels, cmd=self.get_archive_stream, epg_title=str(epg["title"]), epg_id=epg['id'], mosaic_info=epg.get('mosaic_info',[]) if export_md_subchannels else [])
 			break
 
 # #################################################################################################

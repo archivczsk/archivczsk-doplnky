@@ -51,8 +51,10 @@ class O2TVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 			}
 
 	def get_epg(self, channel, fromts, tots):
+		export_md_subchannels = self.cp.get_setting('export_md_subchannels') and self.cp.is_supporter()
+
 		for event in self.cp.o2tv.get_channel_epg(channel['key'], fromts, tots):
-			if event.get('mosaic_id'):
+			if export_md_subchannels == False and event.get('mosaic_id'):
 				event2 = self.cp.o2tv.get_mosaic_info(event['mosaic_id'])
 				if event2:
 					event = event2
