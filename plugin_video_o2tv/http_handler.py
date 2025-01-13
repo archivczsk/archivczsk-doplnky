@@ -171,7 +171,7 @@ class O2HTTPRequestHandler(DashHTTPRequestHandler):
 		stream_info = {
 			'url': self.get_stream_index_url(channel_id),
 			'bandwidth': max_bitrate,
-			'fix_live': 'delay' if (self.cp.get_setting('fix_live') and self.cp.is_supporter()) else None,
+			'fix': 'delay' if (self.cp.get_setting('fix_live') and self.cp.is_supporter()) else None,
 		}
 
 		export_md_subchannels = self.cp.get_setting('export_md_subchannels') and self.cp.is_supporter()
@@ -238,6 +238,77 @@ class O2HTTPRequestHandler(DashHTTPRequestHandler):
 
 	# #################################################################################################
 
+	def iso8601_to_timestamp(self, duration="P1W2DT6H21M32S"):
+		ISO_8601 = re.compile(
+			'P'
+			'(?:(?P<years>\d+)Y)?'
+			'(?:(?P<months>\d+)M)?'
+			'(?:(?P<weeks>\d+)W)?'
+			'(?:(?P<days>\d+)D)?'
+			'(?:T'
+			'(?:(?P<hours>\d+)H)?'
+			'(?:(?P<minutes>\d+)M)?'
+			'(?:(?P<seconds>\d+)S)?'
+			')?')
+
+		if duration:
+			m = ISO_8601.match( re.sub('\.\d+S$', 'S', duration) )
+		else:
+			m = None
+
+		if m == None:
+			return None
+
+		units = list(m.groups()[-3:])
+		units = list(reversed([int(x) if x != None else 0 for x in units]))
+
+		seconds=sum([x*60**units.index(x) for x in units])
+
+		return seconds
+
+	# #################################################################################################
+
+	def fix_duration(self, root, offset=0):
+		if offset == 0:
+			return
+
+		duration = self.iso8601_to_timestamp(root.get('mediaPresentationDuration'))
+		if duration != None:
+			duration += offset
+			duration = 'PT%dH%dM%dS' % ((duration // 3600), (duration //60) % 60, duration % 60)
+			root.set('mediaPresentationDuration', duration)
+
+		ns = root.tag[1:root.tag.index('}')]
+		ns = '{%s}' % ns
+
+		for e_period in root.findall('{}Period'.format(ns)):
+			e_period.set('duration', duration)
+			for e_adaptation_set in e_period.findall('{}AdaptationSet'.format(ns)):
+				for e in e_adaptation_set.findall('{}SegmentTemplate'.format(ns)):
+					timescale = int(e.get('timescale'))
+					for st in e.findall('{}SegmentTimeline'.format(ns)):
+						for s in st.findall('{}S'.format(ns)):
+							try:
+								t = int(s.get('t', 0))
+								d = int(s.get('d'))
+								r = int(s.get('r', 1))
+
+								if t and r > 1:
+									new_t = t + (d * r) + (timescale * offset)
+
+									if offset > 0:
+										while (t + (d * r)) < new_t:
+											r += 1
+									else:
+										while (t + (d * r)) > new_t and r > 1:
+											r -= 1
+
+									s.set('r', str(r))
+							except:
+								self.cp.log_exception()
+
+	# #################################################################################################
+
 	def fix_playlist_type(self, root):
 		root.set('type', 'static')
 		root.set('mediaPresentationDuration', root.get('timeShiftBufferDepth'))
@@ -250,11 +321,13 @@ class O2HTTPRequestHandler(DashHTTPRequestHandler):
 	def handle_mpd_manifest(self, base_url, root, bandwidth, dash_info={}, cache_key=None):
 		super(O2HTTPRequestHandler, self).handle_mpd_manifest(base_url, root, bandwidth, dash_info, cache_key)
 
-		fix_live = dash_info.get('fix_live')
+		fix = dash_info.get('fix')
 
-		if fix_live == 'delay':
-			self.fix_live_delay(root, dash_info.get('live_offset', 0))
-		elif fix_live == 'playlist_type':
+		if fix == 'delay':
+			self.fix_live_delay(root, dash_info.get('offset', 0))
+		elif fix == 'playlist_type':
 			self.fix_playlist_type(root)
+		elif fix == 'duration':
+			self.fix_duration(root, dash_info.get('offset', 0))
 
 	# #################################################################################################

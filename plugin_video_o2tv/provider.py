@@ -133,7 +133,7 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 							if start_time:
 								live_offset = int(time.time()) - start_time
 
-					self.cp.resolve_dash_streams(url, mi['title'], playlist=playlist, fix_live=fix_live, live_offset=live_offset)
+					self.cp.resolve_dash_streams(url, mi['title'], playlist=playlist, fix=fix_live, offset=live_offset)
 					mi_set = True
 
 		if mi_set == False:
@@ -149,7 +149,7 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 					if start_time:
 						live_offset = int(time.time()) - start_time
 
-			self.cp.resolve_dash_streams(url, channel_title, fix_live=fix_live, live_offset=live_offset)
+			self.cp.resolve_dash_streams(url, channel_title, fix=fix_live, offset=live_offset)
 
 	# #################################################################################################
 
@@ -182,9 +182,13 @@ class O2TVModuleArchive(CPModuleArchive):
 	def get_archive_channels(self):
 		self.cp.load_channel_list()
 		enable_adult = self.cp.get_setting('enable_adult')
+		show_md_subchannels = self.cp.get_setting('show_md_subchannels') and self.cp.is_supporter()
 
 		for channel in self.cp.channels:
 			if not enable_adult and channel['adult']:
+				continue
+
+			if channel['md_subchannel'] and show_md_subchannels == False:
 				continue
 
 			if channel['timeshift'] > 0:
@@ -258,7 +262,7 @@ class O2TVModuleArchive(CPModuleArchive):
 					self.cp.resolve_dash_streams(url, epg_title)
 			else:
 				url = self.cp.o2tv.get_archive_link(epg_id)
-				self.cp.resolve_dash_streams(url, epg_title)
+				self.cp.resolve_dash_streams(url, epg_title, fix='duration', offset=int(self.cp.get_setting('archive_end_offset')) * 60)
 
 	# #################################################################################################
 
@@ -569,6 +573,9 @@ class O2TVContentProvider(ModuleContentProvider):
 			if self.get_setting('fix_live'):
 				msgs.append(self._("Fix high delay in live boroadcasting"))
 
+			if int(self.get_setting('archive_end_offset')) > 0:
+				msgs.append(self._("How many minutes to play after event ends in archive"))
+
 			try:
 				if len(msgs) > 2:
 					self.ensure_supporter('\n'.join(msgs) + '\n')
@@ -704,13 +711,13 @@ class O2TVContentProvider(ModuleContentProvider):
 		return {
 			'url': url,
 			'bandwidth': stream_key['bandwidth'],
-			'fix_live': stream_key['fix_live'],
-			'live_offset': stream_key.get('live_offset', 0),
+			'fix': stream_key['fix'],
+			'offset': stream_key.get('offset', 0),
 		}
 
 	# ##################################################################################################################
 
-	def resolve_dash_streams(self, url, video_title, playlist=None, data_item=None, fix_live=None, live_offset=0):
+	def resolve_dash_streams(self, url, video_title, playlist=None, data_item=None, fix=None, offset=0):
 		if not url:
 			return
 
@@ -718,8 +725,8 @@ class O2TVContentProvider(ModuleContentProvider):
 		if not streams:
 			return
 
-		if fix_live == 'delay' and live_offset == 0 and self.get_setting('fix_live') == False:
-			fix_live = None
+		if fix == 'delay' and offset == 0 and self.get_setting('fix_live') == False:
+			fix = None
 
 		play_settings = {
 			'relative_seek_enabled': False,
@@ -730,8 +737,8 @@ class O2TVContentProvider(ModuleContentProvider):
 			key = {
 				'key': cache_key,
 				'bandwidth': one['bandwidth'],
-				'fix_live': fix_live if self.is_supporter() else None,
-				'live_offset': live_offset,
+				'fix': fix if self.is_supporter() else None,
+				'offset': offset,
 			}
 
 			info_labels = {

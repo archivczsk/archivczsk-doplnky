@@ -11,6 +11,7 @@
 	<setting label="Show multidimension stream choice" id="show_md_choice" type="bool" default="true" />
 	<setting label="Show multidimension subchannels" id="show_md_subchannels" type="bool" default="true" />
 	<setting label="Play archive using recordings" id="archive_using_rec" type="keyenum" values="ask;Ask|true;Yes|false;No" default="ask" />
+	<setting label="How many minutes to play after event ends in archive" type="number" id="archive_end_offset" default="5"/>
 	<category label="Userbouquet">
 		<setting label="Automatically export channel list as userbouquet" id="enable_userbouquet" type="bool" default="false" />
 		<setting label="Export multidimension subchannels" id="export_md_subchannels" type="bool" default="true" />
