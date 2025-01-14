@@ -53,7 +53,7 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 
 		enable_adult = self.cp.get_setting('enable_adult')
 		enable_download = self.cp.get_setting('download_live')
-		show_md_subchannels = self.cp.get_setting('show_md_subchannels') and self.cp.is_supporter()
+		show_md_subchannels = self.cp.get_ssetting('show_md_subchannels', False)
 
 		if channels == None:
 			channels = self.cp.channels
@@ -105,7 +105,7 @@ class O2TVModuleLiveTV(CPModuleLiveTV):
 		if startover:
 			self.cp.ensure_supporter()
 
-		show_md_subchannels = self.cp.get_setting('show_md_subchannels') and self.cp.is_supporter()
+		show_md_subchannels = self.cp.get_ssetting('show_md_subchannels', False)
 		live_offset = 0
 
 		if startover == 'dynamic' or show_md_subchannels == False:
@@ -182,7 +182,7 @@ class O2TVModuleArchive(CPModuleArchive):
 	def get_archive_channels(self):
 		self.cp.load_channel_list()
 		enable_adult = self.cp.get_setting('enable_adult')
-		show_md_subchannels = self.cp.get_setting('show_md_subchannels') and self.cp.is_supporter()
+		show_md_subchannels = self.cp.get_ssetting('show_md_subchannels', False)
 
 		for channel in self.cp.channels:
 			if not enable_adult and channel['adult']:
@@ -197,7 +197,7 @@ class O2TVModuleArchive(CPModuleArchive):
 	# #################################################################################################
 
 	def get_archive_program(self, channel_id, archive_day):
-		show_md_subchannels = self.cp.get_setting('show_md_subchannels') and self.cp.is_supporter()
+		show_md_subchannels = self.cp.get_ssetting('show_md_subchannels', False)
 		ts_from, ts_to = self.archive_day_to_datetime_range(archive_day, True)
 
 		adult = self.cp.channels_by_key.get(channel_id,{}).get('adult', False)
@@ -262,7 +262,7 @@ class O2TVModuleArchive(CPModuleArchive):
 					self.cp.resolve_dash_streams(url, epg_title)
 			else:
 				url = self.cp.o2tv.get_archive_link(epg_id)
-				self.cp.resolve_dash_streams(url, epg_title, fix='duration', offset=int(self.cp.get_setting('archive_end_offset')) * 60)
+				self.cp.resolve_dash_streams(url, epg_title, fix='duration', offset=int(self.cp.get_ssetting('archive_end_offset', 0)) * 60)
 
 	# #################################################################################################
 
@@ -288,7 +288,7 @@ class O2TVModuleArchive(CPModuleArchive):
 	# #################################################################################################
 
 	def get_archive_event(self, channel_id, event_start, event_end=None):
-		export_md_subchannels = self.cp.get_setting('export_md_subchannels') and self.cp.is_supporter()
+		export_md_subchannels = self.cp.get_ssetting('export_md_subchannels', False)
 		adult = self.cp.channels_by_key.get(channel_id,{}).get('adult', False)
 
 		for epg in self.cp.o2tv.get_channel_epg(channel_id, event_start - 14400, (event_end or event_start) + 14400):
@@ -692,6 +692,14 @@ class O2TVContentProvider(ModuleContentProvider):
 			menu = {}
 			self.add_menu_item(menu, self._('Record the event'), self.add_recording, epg_id=epg_id)
 			self.add_video(title, programs['img'], info_labels, menu, cmd=self.get_archive_stream, epg_title=programs["title"], epg_id=epg_id)
+
+	# #################################################################################################
+
+	def get_ssetting(self, name, default_value):
+		if self.is_supporter():
+			return self.get_setting(name)
+		else:
+			return default_value
 
 	# #################################################################################################
 
