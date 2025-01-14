@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_archivo2tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-13 20:37+0100\n"
+"POT-Creation-Date: 2025-01-14 17:16+0100\n"
 "PO-Revision-Date: 2025-01-13 20:38+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -72,172 +72,172 @@ msgstr "Přidáno do favoritních"
 msgid "Channel is already in favourites"
 msgstr "Kanál už je ve favoritních"
 
-#: plugin_video_o2tv/provider.py:223 plugin_video_o2tv/provider.py:429
-#: plugin_video_o2tv/provider.py:690
+#: plugin_video_o2tv/provider.py:223 plugin_video_o2tv/provider.py:407
+#: plugin_video_o2tv/provider.py:671
 msgid "Record the event"
 msgstr "Nahrát pořad"
 
-#: plugin_video_o2tv/provider.py:245
-msgid "Play archive using recording? The recording has a larger amount of time added before and after the end of the selected program."
-msgstr "Přehrát archiv pomocí nahrávky? Nahrávka má přidaný větší časový úsek před a po skončení vybraného pořadu."
-
-#: plugin_video_o2tv/provider.py:323
+#: plugin_video_o2tv/provider.py:301
 msgid "Recordings"
 msgstr "Nahrávky"
 
-#: plugin_video_o2tv/provider.py:323
+#: plugin_video_o2tv/provider.py:301
 msgid "Here you will find recordings of your programs"
 msgstr "Tu najdete nahrávky vašich programů"
 
-#: plugin_video_o2tv/provider.py:328
+#: plugin_video_o2tv/provider.py:306
 msgid "Plan recording"
 msgstr "Naplánovat nahrávání"
 
-#: plugin_video_o2tv/provider.py:329
+#: plugin_video_o2tv/provider.py:307
 msgid "Futures - planed"
 msgstr "Budoucí - plánováne"
 
-#: plugin_video_o2tv/provider.py:330
+#: plugin_video_o2tv/provider.py:308
 msgid "Existing"
 msgstr "Existujíci"
 
-#: plugin_video_o2tv/provider.py:356
+#: plugin_video_o2tv/provider.py:334
 msgid "Available until"
 msgstr "Dostupné do"
 
-#: plugin_video_o2tv/provider.py:366
+#: plugin_video_o2tv/provider.py:344
 msgid "Delete recording"
 msgstr "Smazat nahrávku"
 
-#: plugin_video_o2tv/provider.py:438
+#: plugin_video_o2tv/provider.py:416
 msgid "Special section"
 msgstr "Speciální sekce"
 
-#: plugin_video_o2tv/provider.py:449
+#: plugin_video_o2tv/provider.py:427
 msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
 msgstr "Tu si můžete zobrazit a případně vymazat/odregistrovat zbytečná zařízení, aby jste se mohli znova jinde přihlásit."
 
-#: plugin_video_o2tv/provider.py:450
+#: plugin_video_o2tv/provider.py:428
 msgid "Registered devices"
 msgstr "Zaregistrovaná zařízení"
 
-#: plugin_video_o2tv/provider.py:452
+#: plugin_video_o2tv/provider.py:430
 msgid "Here you can see the list of available services for this account and optionally change active one."
 msgstr "Tady můžete vidět seznam dostupných služeb pro tohle konto a případně změnit aktivní službu."
 
-#: plugin_video_o2tv/provider.py:453
+#: plugin_video_o2tv/provider.py:431
 msgid "Available services"
 msgstr "Dostupné služby"
 
-#: plugin_video_o2tv/provider.py:455
+#: plugin_video_o2tv/provider.py:433
 msgid "Run EPG export to enigma or XML files"
 msgstr "Spustit export EPG do enigmy nebo do XML souborů"
 
-#: plugin_video_o2tv/provider.py:457
+#: plugin_video_o2tv/provider.py:435
 msgid "This will force login reset. New device identificator will be created and used for login."
 msgstr "Tohle vynutí reset přihlášení. Bude vygenerován nový identifikátor zařízení, který bude použit pro přihlášení."
 
-#: plugin_video_o2tv/provider.py:458
+#: plugin_video_o2tv/provider.py:436
 msgid "Reset login"
 msgstr "Resetovat přihlášení"
 
-#: plugin_video_o2tv/provider.py:464
+#: plugin_video_o2tv/provider.py:442
 msgid "EPG export started"
 msgstr "EPG export byl spuštěn"
 
-#: plugin_video_o2tv/provider.py:476
+#: plugin_video_o2tv/provider.py:454
 msgid "In menu you can remove device using Remove device!"
 msgstr "V menu můžete zařízení vymazat pomocí Smazat zařízení!"
 
-#: plugin_video_o2tv/provider.py:479
+#: plugin_video_o2tv/provider.py:457
 msgid "Remove device!"
 msgstr "Smazat zařízení!"
 
-#: plugin_video_o2tv/provider.py:488
+#: plugin_video_o2tv/provider.py:466
 #, python-brace-format
 msgid "Device {device} was removed!"
 msgstr "Zařízení {device} bylo vymazáno!"
 
-#: plugin_video_o2tv/provider.py:490
+#: plugin_video_o2tv/provider.py:468
 #, python-brace-format
 msgid "Failed to remove device {device}!"
 msgstr "Nepodařilo se odstranit zařízení {device}!"
 
-#: plugin_video_o2tv/provider.py:505
+#: plugin_video_o2tv/provider.py:483
 msgid "In menu you can activate service using \"Make activate\""
 msgstr "V menu můžete aktivovat službu pomocí \"Aktivovat\""
 
-#: plugin_video_o2tv/provider.py:506
+#: plugin_video_o2tv/provider.py:484
 msgid "Make active"
 msgstr "Aktivovat"
 
-#: plugin_video_o2tv/provider.py:514
+#: plugin_video_o2tv/provider.py:492
 #, python-brace-format
 msgid "Service {service} was activated!"
 msgstr "Služba {service} byla aktivovaná!"
 
-#: plugin_video_o2tv/provider.py:525
+#: plugin_video_o2tv/provider.py:503
 #, python-brace-format
 msgid "New login session using device ID {device_id} was created!"
 msgstr "Bylo vytvořeno nové přihlašovací sezení pomocí identifikace {device_id}!"
 
-#: plugin_video_o2tv/provider.py:527
+#: plugin_video_o2tv/provider.py:505
 msgid "Failed to create new login session!"
 msgstr "Nepodařilo se vytvořit novou přihlašovací session!"
 
-#: plugin_video_o2tv/provider.py:546
+#: plugin_video_o2tv/provider.py:524
 msgid "Mo"
 msgstr "Po"
 
-#: plugin_video_o2tv/provider.py:546
+#: plugin_video_o2tv/provider.py:524
 msgid "Tu"
 msgstr "Út"
 
-#: plugin_video_o2tv/provider.py:546
+#: plugin_video_o2tv/provider.py:524
 msgid "We"
 msgstr "St"
 
-#: plugin_video_o2tv/provider.py:546
+#: plugin_video_o2tv/provider.py:524
 msgid "Th"
 msgstr "Čt"
 
-#: plugin_video_o2tv/provider.py:546
+#: plugin_video_o2tv/provider.py:524
 msgid "Fr"
 msgstr "Pá"
 
-#: plugin_video_o2tv/provider.py:546
+#: plugin_video_o2tv/provider.py:524
 msgid "Sa"
 msgstr "So"
 
-#: plugin_video_o2tv/provider.py:546
+#: plugin_video_o2tv/provider.py:524
 msgid "Su"
 msgstr "Ne"
 
-#: plugin_video_o2tv/provider.py:551
+#: plugin_video_o2tv/provider.py:529
 msgid "Search"
 msgstr "Vyhledat"
 
-#: plugin_video_o2tv/provider.py:566
+#: plugin_video_o2tv/provider.py:544
 msgid "You have enabled these options in addon settings:"
 msgstr "V nastaveních doplňku jste povolili tyto konfigurační volby:"
 
-#: plugin_video_o2tv/provider.py:568
+#: plugin_video_o2tv/provider.py:546
 msgid "Show multidimension subchannels"
 msgstr "Zobrazit subkanály z multidimenze"
 
-#: plugin_video_o2tv/provider.py:571
+#: plugin_video_o2tv/provider.py:549
 msgid "Export multidimension subchannels"
 msgstr "Exportovat subkanály z multidimenze"
 
-#: plugin_video_o2tv/provider.py:574
+#: plugin_video_o2tv/provider.py:552
 msgid "Fix high delay in live boroadcasting"
 msgstr "Oprava vysokého zpoždění u živého vysílání"
 
-#: plugin_video_o2tv/provider.py:666
+#: plugin_video_o2tv/provider.py:555
+msgid "How many minutes to play after event ends in archive"
+msgstr "Kolik minut přehrávat po skončení události v archivu"
+
+#: plugin_video_o2tv/provider.py:647
 msgid "Recording added"
 msgstr "Nahrávka přidána"
 
-#: plugin_video_o2tv/provider.py:666
+#: plugin_video_o2tv/provider.py:647
 msgid "There was an error by adding recording"
 msgstr "Při přidávaní nahrávky nastala chyba"
 
@@ -283,21 +283,6 @@ msgstr "Povolit stahování u živého vysílání"
 msgid "Show multidimension stream choice"
 msgstr "U multidimenze zobrazovat výběr streamu"
 
-msgid "Play archive using recordings"
-msgstr "Přehrávat archiv pomocí nahrávek"
-
-msgid "Ask"
-msgstr "Ptát se"
-
-msgid "Yes"
-msgstr "Ano"
-
-msgid "No"
-msgstr "Ne"
-
-msgid "How many minutes to play after event ends in archive"
-msgstr "Kolik minut přehrávat po skončení události v archivu"
-
 msgid "Userbouquet"
 msgstr "Userbouquet"
 
@@ -333,6 +318,21 @@ msgstr ""
 
 msgid "DVB (OE>=2.5)"
 msgstr ""
+
+#~ msgid "Play archive using recording? The recording has a larger amount of time added before and after the end of the selected program."
+#~ msgstr "Přehrát archiv pomocí nahrávky? Nahrávka má přidaný větší časový úsek před a po skončení vybraného pořadu."
+
+#~ msgid "Play archive using recordings"
+#~ msgstr "Přehrávat archiv pomocí nahrávek"
+
+#~ msgid "Ask"
+#~ msgstr "Ptát se"
+
+#~ msgid "Yes"
+#~ msgstr "Ano"
+
+#~ msgid "No"
+#~ msgstr "Ne"
 
 #~ msgid "You have enabled showing or exporting to userbouquet multidimension subchannels in addon settings."
 #~ msgstr "V nastavení doplňku jste povolili zobrazování subkanálů z multidimenze nebo jejich export do userbouquetu."

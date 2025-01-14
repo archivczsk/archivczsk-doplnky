@@ -1,6 +1,7 @@
-1.25 - 13.01.2025
+1.25 - 14.01.2025
     - oprava EPG a spustenia streamov ak je zapnuté zobrazenie subkanálov z multidimenzie
     - možnosť nastaviť koľko minút sa má udalosť z archívu prehrávať aj po jej skončení
+    - odstránená podpora prehrávania archívu pomocou nahrávok (už nie je potrebná)
 
 1.24 - 09.01.2025
     - oprava spustenia streamu multidimenzie z userbouquetu
