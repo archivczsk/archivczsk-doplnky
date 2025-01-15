@@ -1,0 +1,210 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_max\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-25 19:25+0100\n"
+"PO-Revision-Date: 2025-01-25 19:26+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.5\n"
+
+#: plugin_video_max/wbdmax.py:122
+msgid "No response received from server."
+msgstr "Ze serveru nepřišla žádná odpověď."
+
+#: plugin_video_max/wbdmax.py:126
+msgid "Login data expired. Do new pairing of this device with your account."
+msgstr "Platnost přihlašovacích údajů vypršela. Vykonejte nové spárovanání tohto zařízení s vašim účtem."
+
+#: plugin_video_max/wbdmax.py:138
+msgid "Unexpected return code from server"
+msgstr "Neočekávaný návratový kód ze serveru"
+
+#: plugin_video_max/provider.py:68
+msgid "Select profile"
+msgstr "Vyberte profil"
+
+#: plugin_video_max/provider.py:78 plugin_video_max/provider.py:442
+msgid "Enter PIN"
+msgstr "Zadejte PIN"
+
+#: plugin_video_max/provider.py:94
+msgid "Your already logged in. Please exit addon and run it again."
+msgstr "Již jste přihlášen. Ukončete prosím doplněk a spusťte jej znovu."
+
+#: plugin_video_max/provider.py:100
+#, python-brace-format
+msgid ""
+"Go to following URL and enter device code:\n"
+"\n"
+"URL: {url}\n"
+"Device code: {code}"
+msgstr ""
+"Přejdete na nasledující URL adresu a zadejte kód zařízení:\n"
+"\n"
+"URL: {url}\n"
+"Kód zařízení: {code}"
+
+#: plugin_video_max/provider.py:124
+msgid "Full functionality of this addon is only available for ArchivCZSK product supporters."
+msgstr "Plná funkčnost tohto doplňku je k dispozici jen pro podporovatele produktu ArchivCZSK."
+
+#: plugin_video_max/provider.py:129
+msgid "Login using code"
+msgstr "Přihlášení pomocí kódu"
+
+#: plugin_video_max/provider.py:130
+msgid "Login using provider"
+msgstr "Přihlášení pomocí providera"
+
+#: plugin_video_max/provider.py:136
+msgid "My items"
+msgstr "Moje položky"
+
+#: plugin_video_max/provider.py:138
+msgid "Informations and settings"
+msgstr "Informace a nastavení"
+
+#: plugin_video_max/provider.py:252
+msgid "Remove from viewed"
+msgstr "Odebrat z viděných"
+
+#: plugin_video_max/provider.py:279
+msgid "Trailer"
+msgstr "Trailer"
+
+#: plugin_video_max/provider.py:282
+msgid "Remove from watchlist"
+msgstr "Vymazat z watchlistu"
+
+#: plugin_video_max/provider.py:284
+msgid "Add to watchlist"
+msgstr "Přidat do watchlistu"
+
+#: plugin_video_max/provider.py:305
+msgid "Go to series"
+msgstr "Jít na seriál"
+
+#: plugin_video_max/provider.py:361
+msgid "Season"
+msgstr "Sezona"
+
+#: plugin_video_max/provider.py:366
+msgid "Profiles"
+msgstr "Profily"
+
+#: plugin_video_max/provider.py:367
+msgid "Devices"
+msgstr "Zařízení"
+
+#: plugin_video_max/provider.py:368
+msgid "Logout"
+msgstr "Odhlásit se"
+
+#: plugin_video_max/provider.py:386
+msgid "Unknown"
+msgstr "Neznámy"
+
+#: plugin_video_max/provider.py:389
+msgid "Created"
+msgstr "Vytvořeno"
+
+#: plugin_video_max/provider.py:390
+msgid "Make"
+msgstr "Značka"
+
+#: plugin_video_max/provider.py:391
+msgid "Model"
+msgstr "Model"
+
+#: plugin_video_max/provider.py:392
+msgid "OS"
+msgstr "OS"
+
+#: plugin_video_max/provider.py:406
+msgid "Do you realy want to delete this device?"
+msgstr "Opravdu chcete smazat toto zařízení?"
+
+#: plugin_video_max/provider.py:418
+msgid "Active profile"
+msgstr "Aktivní profil"
+
+#: plugin_video_max/provider.py:421
+msgid "Pin protected"
+msgstr "Chráněno PIN-em"
+
+#: plugin_video_max/provider.py:424
+msgid "Kids profile"
+msgstr "Dětský profil"
+
+#: plugin_video_max/provider.py:439
+msgid "Do you realy want to switch profile?"
+msgstr "Opravdu chcete přepnut profil?"
+
+msgid "Select profile on startup"
+msgstr "Volba profilu při startu"
+
+msgid "Prefered video codec"
+msgstr "Preferovaný video codec"
+
+msgid "h264"
+msgstr ""
+
+msgid "h265"
+msgstr ""
+
+msgid "Enable and prefer multichannel audio"
+msgstr "Povolit a preferovat vícekanálový zvuk"
+
+msgid "Sync playback"
+msgstr "Synchronizovat pozici přehrávanání"
+
+msgid "Language of dubbed entries"
+msgstr "Jazyk dabovaných položek"
+
+msgid "Auto"
+msgstr ""
+
+msgid "CZ"
+msgstr ""
+
+msgid "SK"
+msgstr ""
+
+msgid "CZ & SK"
+msgstr ""
+
+msgid "SK & CZ"
+msgstr ""
+
+msgid "EN"
+msgstr ""
+
+msgid "Start subtitles automatically"
+msgstr "Automaticky spustit titulky"
+
+msgid "Always"
+msgstr "Vždy"
+
+msgid "When undubbed"
+msgstr "U nedabovaných"
+
+msgid "Never"
+msgstr "Nikdy"
+
+msgid "Start forced subtitles automatically"
+msgstr "Automaticky spustit forced titulky"
+
+msgid "Language codes of enabled audio tracks"
+msgstr "Jazykové kódy povolených zvukových stop"
+
+msgid "Language codes of enabled subtitles"
+msgstr "Jazykové kódy povolených titulků"

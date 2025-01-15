@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+	<setting label="Select profile on startup" type="bool" id="select_profile" default="true" />
+	<setting label="Prefered video codec" type="keyenum" id="video_codec" values="avc1;h264|hvc1;h265" default="avc1" />
+	<setting label="Enable and prefer multichannel audio" type="bool" id="enable_ac3" default="true" />
+	<setting label="Sync playback" type="bool" id="sync_playback" default="true" />
+	<setting label="Language of dubbed entries" id="dubbed-lang" type="keyenum" values="auto;Auto|cs;CZ|sk;SK|cs+sk;CZ &amp; SK|sk+cs;SK &amp; CZ|en;EN" default="auto" />
+	<setting label="Start subtitles automatically" id="subs-autostart" type="keyenum" values="always;Always|undubbed;When undubbed|never;Never" default="undubbed" />
+	<setting label="Start forced subtitles automatically" id="forced-subs-autostart" type="bool" default="true" />
+	<setting label="Language codes of enabled audio tracks" id="enabled_audios" type="text" default="" />
+	<setting label="Language codes of enabled subtitles" id="enabled_subs" type="text" default="cs,sk,en" />
+</settings>

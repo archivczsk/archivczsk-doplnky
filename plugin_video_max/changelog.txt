@@ -1,0 +1,6 @@
+1.0 - 24.01.2025
+    - úvodná verzia na základe doplnku pre Kodi od slyguy
+    - doplnok je dostupný len pre podporovateľov ArchivCZSK
+    - streamy sú dostupné v 720p kvalite
+    - pre prehrávanie je nutný upravený exteplayer3 ver.175 alebo vyššia
+    - live prehrávanie a športový balíček nebol otestovaný a pravdepodobne nebude fungovať
