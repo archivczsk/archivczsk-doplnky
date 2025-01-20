@@ -747,8 +747,7 @@ class ArchivCZSKContentProvider(object):
 	# #################################################################################################
 
 	def exit_screen(self):
-		client.clear_items()
-		client.set_command('exit')
+		raise AddonSilentExitException()
 
 	# #################################################################################################
 

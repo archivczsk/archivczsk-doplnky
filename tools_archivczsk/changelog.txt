@@ -1,3 +1,6 @@
+2.8 - 24.1.2025
+    - updated API for addons
+
 2.7 - 6.1.2025
     - updated addons API
     - more expandable dash handler
