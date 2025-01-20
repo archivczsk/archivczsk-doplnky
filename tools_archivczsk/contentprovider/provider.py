@@ -526,22 +526,46 @@ class CommonContentProvider(object):
 	# #################################################################################################
 
 	def show_error(self, msg, noexit=False, timeout=0):
+		'''
+		Shows error message to user and aborts current running task (returns to previous screen).
+		noexit - if set to True, then don't abort running task and return to the caller
+		timeout - how long keep message showed (0 = forever - user needs to hit some key)
+		If noexit = False, then never returns. If noexit = True, then returns True if user pressed OK or timeout occured and False if user pressed EXIT
+		'''
 		if noexit:
 			self.log_error(msg)
 		else:
 			raise Exception('[ERROR] ' + msg)
 
+		return True
+
 	def show_warning(self, msg, noexit=False, timeout=0):
+		'''
+		Shows warning message to user and aborts current running task (returns to previous screen).
+		noexit - if set to True, then don't abort running task and return to the caller
+		timeout - how long keep message showed (0 = forever - user needs to hit some key)
+		If noexit = False, then never returns. If noexit = True, then returns True if user pressed OK or timeout occured and False if user pressed EXIT
+		'''
 		if noexit:
 			self.log_warning(msg)
 		else:
 			raise Exception('[WARNING] ' + msg)
 
+		return True
+
 	def show_info(self, msg, noexit=False, timeout=0):
+		'''
+		Shows info message to user and aborts current running task (returns to previous screen).
+		noexit - if set to True, then don't abort running task and return to the caller
+		timeout - how long keep message showed (0 = forever - user needs to hit some key)
+		If noexit = False, then never returns. If noexit = True, then returns True if user pressed OK or timeout occured and False if user pressed EXIT
+		'''
 		if noexit:
 			self.log_info(msg)
 		else:
 			raise Exception('[INFO] ' + msg)
+
+		return True
 
 	def log_debug(self, msg):
 		log.debug('[%s] %s' % (self.name, msg))

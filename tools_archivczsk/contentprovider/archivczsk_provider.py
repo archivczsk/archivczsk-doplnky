@@ -658,7 +658,7 @@ class ArchivCZSKContentProvider(object):
 
 	def show_error(self, msg, noexit=False, timeout=0):
 		if noexit:
-			client.show_message(self.session, msg, msg_type='error', timeout=timeout)
+			return client.show_message(self.session, msg, msg_type='error', timeout=timeout)
 		else:
 			client.showError(msg)
 
@@ -666,7 +666,7 @@ class ArchivCZSKContentProvider(object):
 
 	def show_warning(self, msg, noexit=False, timeout=0):
 		if noexit:
-			client.show_message(self.session, msg, msg_type='warning', timeout=timeout)
+			return client.show_message(self.session, msg, msg_type='warning', timeout=timeout)
 		else:
 			client.showWarning(msg)
 
@@ -674,7 +674,7 @@ class ArchivCZSKContentProvider(object):
 
 	def show_info(self, msg, noexit=False, timeout=0):
 		if noexit:
-			client.show_message(self.session, msg, msg_type='info', timeout=timeout)
+			return client.show_message(self.session, msg, msg_type='info', timeout=timeout)
 		else:
 			client.showInfo(msg)
 
