@@ -35,7 +35,7 @@
 <addon id="plugin.video.videacesky.cz" name="videacesky.cz" version="1.4.1" hash="ae83c44add5083d698582b9f6210e1b3" rhash="ae83c44add5083d698582b9f6210e1b3" />
 <addon id="plugin.video.voyo" name="VOYO" version="1.6" hash="cb829ab73b5aeb28732a9a54699637a5" rhash="bf10b49920cda42571c8f70547510a67" />
 <addon id="plugin.video.webshare" name="Webshare.cz" version="1.2" hash="b1c263eadaafdf2c8db5e9b3cd5b6149" rhash="ec562614179de55f34b6a8c962796e11" />
-<addon id="plugin.video.yt" name="YouTube" version="2.3" hash="9e55b6b045ee98f8980d957943f00446" rhash="ae7a0b571a8bdab2f00026b53d0dc55b" />
+<addon id="plugin.video.yt" name="YouTube" version="2.4" hash="6a54cb2ef5fffe73e9fd3a0ceb3a6c1a" rhash="8766dc2f342d66729ccb9eacc82ce5c6" />
 <addon id="tools.archivczsk" name="Addons base" version="2.7" hash="83639217988d1f30222d9a8cbb5f52e4" rhash="0f36c6ab1e5bcb9f0a836238a7cd2eb0" />
 <addon id="tools.cenc" name="Content encryption support" version="1.4" hash="0f3e872a0571229285e89bc1d74acc5f" rhash="0f3e872a0571229285e89bc1d74acc5f" />
 <addon id="tools.xbmc" name="xbmc addons helper" version="1.3" hash="c0e51983cae53f22ef62694a9fa0fff0" rhash="c0e51983cae53f22ef62694a9fa0fff0" />
