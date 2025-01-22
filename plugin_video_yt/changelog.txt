@@ -1,3 +1,6 @@
+2.4: 22.01.2025
+- aktualizácia po zmenách na strane youtube
+
 2.3: 17.10.2024
 - aktualizácia prístupových kľúčov
 
