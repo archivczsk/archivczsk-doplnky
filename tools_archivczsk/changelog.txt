@@ -1,5 +1,6 @@
 2.8 - 24.1.2025
     - updated API for addons
+    - updated available exteplayer3 version
 
 2.7 - 6.1.2025
     - updated addons API
