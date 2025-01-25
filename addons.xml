@@ -11,6 +11,7 @@
 <addon id="plugin.video.kvifftv" name="Kviff.tv" version="1.3" hash="0f31fd5e31abe7ba7b5e1c66adff14aa" rhash="893db8849b0f55c24845735baacd5cb0" />
 <addon id="plugin.video.magiogo" name="Magio TV" version="1.27" hash="002cc6a2c44e663d3018e9a5257cc70d" rhash="4ba17ba579b59174d8b69b6d06bc6126" />
 <addon id="plugin.video.markiza" name="Markíza" version="2.13" hash="b94d217229b12375f6800fcd1209aa40" rhash="6729cc316f110ce2fff9cf56940161f0" />
+<addon id="plugin.video.max" name="Max" version="1.0" hash="58570d408bc4ab7a75dd2c4e2729b664" rhash="37592a15057774928df71dc3257e5d93" />
 <addon id="plugin.video.mtr.sk" name="Mestská TV Ružomberok" version="1.3.1" hash="c79805cd13bde8b3e11c25926e4c0b2d" rhash="c79805cd13bde8b3e11c25926e4c0b2d" />
 <addon id="plugin.video.novaplus" name="TV Nova" version="3.12" hash="7dc29834e0d0d15485bd31ffabf863e7" rhash="4fc06b2e43c58bfc964ea6458e638179" />
 <addon id="plugin.video.o2tv" name="O2 TV 2.0" version="1.25" hash="b9b6e0944b61fc71e213b1ea6271b444" rhash="b6ab3b05fd28cb4f3e213d9af22a11a3" />
@@ -36,7 +37,7 @@
 <addon id="plugin.video.voyo" name="VOYO" version="1.6" hash="cb829ab73b5aeb28732a9a54699637a5" rhash="bf10b49920cda42571c8f70547510a67" />
 <addon id="plugin.video.webshare" name="Webshare.cz" version="1.2" hash="b1c263eadaafdf2c8db5e9b3cd5b6149" rhash="ec562614179de55f34b6a8c962796e11" />
 <addon id="plugin.video.yt" name="YouTube" version="2.4" hash="6a54cb2ef5fffe73e9fd3a0ceb3a6c1a" rhash="8766dc2f342d66729ccb9eacc82ce5c6" />
-<addon id="tools.archivczsk" name="Addons base" version="2.7" hash="83639217988d1f30222d9a8cbb5f52e4" rhash="0f36c6ab1e5bcb9f0a836238a7cd2eb0" />
+<addon id="tools.archivczsk" name="Addons base" version="2.8" hash="586272326b4c546883d0cfd13fcc7c8f" rhash="e856d0251e4bca1f3f3fc8fb3123d09b" />
 <addon id="tools.cenc" name="Content encryption support" version="1.4" hash="0f3e872a0571229285e89bc1d74acc5f" rhash="0f3e872a0571229285e89bc1d74acc5f" />
 <addon id="tools.xbmc" name="xbmc addons helper" version="1.3" hash="c0e51983cae53f22ef62694a9fa0fff0" rhash="c0e51983cae53f22ef62694a9fa0fff0" />
 </addons>
