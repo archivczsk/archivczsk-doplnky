@@ -279,6 +279,7 @@ class WBDMax(object):
 
 		self.call_api('/users/me/profiles/switchProfile', data=payload)
 		self.login_data['profile_id'] = profile_id
+		self.save_login_data()
 
 	# ##################################################################################################################
 
