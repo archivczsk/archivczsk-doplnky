@@ -9,6 +9,8 @@ class WBDMaxHTTPRequestHandler(DashHTTPRequestHandler):
 	def __init__(self, content_provider, addon ):
 		super(WBDMaxHTTPRequestHandler, self).__init__(content_provider, addon, proxy_segments=False)
 
+	# #################################################################################################
+
 	def handle_mpd_manifest(self, base_url, root, bandwidth, dash_info={}, cache_key=None):
 		prefer_ac3 = self.cp.get_setting('enable_ac3')
 		enabled_subs = self.cp.get_setting('enabled_subs')
@@ -25,6 +27,8 @@ class WBDMaxHTTPRequestHandler(DashHTTPRequestHandler):
 		# keep only first period with encryption - remove all others
 
 		periods = list(root.findall('{}Period'.format(ns)))
+		multiperiod_manifest = len(periods) > 1
+
 		remove_period = False
 
 		for e_period in periods:
@@ -40,13 +44,17 @@ class WBDMaxHTTPRequestHandler(DashHTTPRequestHandler):
 				root.remove(e_period)
 			else:
 				remove_period = True
-				# remove start and duration - they are wrong because all other periods are removed
-				if 'start' in e_period.attrib:
-					del e_period.attrib['start']
+				if multiperiod_manifest:
+					# remove start and duration - they are wrong because all other periods are removed
+					if 'start' in e_period.attrib:
+						del e_period.attrib['start']
 
-				if 'duration' in e_period.attrib:
-					del e_period.attrib['duration']
+					if 'duration' in e_period.attrib:
+						del e_period.attrib['duration']
 
+		if root.get('type') == 'dynamic':
+			if root.get('suggestedPresentationDelay') != None:
+				root.set('minBufferTime', root.get('suggestedPresentationDelay'))
 
 		# let's do processing by default manifest handler
 		super(WBDMaxHTTPRequestHandler, self).handle_mpd_manifest(base_url, root, bandwidth, dash_info, cache_key)
@@ -59,7 +67,7 @@ class WBDMaxHTTPRequestHandler(DashHTTPRequestHandler):
 				if e_adaptation_set.get('contentType','') == 'video' or e_adaptation_set.get('mimeType','').startswith('video/'):
 					e_adaptation_list.append(e_adaptation_set)
 
-			e_adaptation_list.sort(key=lambda x: (int(x.get('maxHeight')), x.find('{}Representation'.format(ns)).get('codecs').startswith(video_codec),), reverse=True)
+			e_adaptation_list.sort(key=lambda x: (int(x.get('maxHeight', x.find('{}Representation'.format(ns)).get('height'))), x.find('{}Representation'.format(ns)).get('codecs').startswith(video_codec),), reverse=True)
 			for child2 in e_adaptation_list[1:]:
 				e_period.remove(child2)
 
@@ -175,3 +183,5 @@ class WBDMaxHTTPRequestHandler(DashHTTPRequestHandler):
 			e_adaptation_set_subtitles.sort(key=sub_cmp)
 			for child in e_adaptation_set_subtitles:
 				e_period.append(child[0])
+
+	# #################################################################################################
