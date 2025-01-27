@@ -241,6 +241,9 @@ class WBDMaxContentProvider(CommonContentProvider):
 
 		label = data['name']
 
+		if data.get('secondaryTitle') and label and data.get('secondaryTitle') != label:
+			label += ' - ' + data.get('secondaryTitle')
+
 		for badge in data.get('badges', []):
 			if badge['id'] == 'release-state-coming-soon':
 				data['premiereDate'] = data['firstAvailableDate']
@@ -537,6 +540,9 @@ class WBDMaxContentProvider(CommonContentProvider):
 			resume_from = src_data[1]
 
 		data = self.wbdmax.play(edit_id)
+
+		if data_item:
+			data_item["playableStatus"] = data['manifest']['streamMode'].upper()
 
 		drm_info = {
 			'licence_url': data.get('drm',{}).get('schemes',{}).get('widevine',{}).get('licenseUrl')

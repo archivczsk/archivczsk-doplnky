@@ -86,7 +86,7 @@ class WBDMax(object):
 
 	# ##################################################################################################################
 
-	def call_api(self, endpoint, params=None, data=None, method=None, headers={}, ignore_error=False):
+	def call_api(self, endpoint, params=None, data=None, method=None, headers={}, ignore_error=False, ignore_204=True):
 		if not self.login_data.get('device_id'):
 			self.login_data['device_id'] = str(uuid.uuid1())
 
@@ -117,7 +117,10 @@ class WBDMax(object):
 			resp_json = resp.json()
 		except:
 			if resp.status_code == 204:
-				raise Status204()
+				if ignore_204:
+					resp_json = {}
+				else:
+					raise Status204()
 			else:
 				raise AddonErrorException(self.cp._("No response received from server."))
 
@@ -194,7 +197,7 @@ class WBDMax(object):
 
 	def device_login(self):
 		try:
-			data = self.call_api('/authentication/linkDevice/login', data={}, ignore_error=True)
+			data = self.call_api('/authentication/linkDevice/login', data={}, ignore_error=True, ignore_204=False)
 		except Status204:
 			return False
 
@@ -356,11 +359,10 @@ class WBDMax(object):
 			data_item.update({
 				"programId": src_data['id'],
 				"editId": src_data['edit']['id'],
-				"showId": src_data['show']['id'],
-				"mainContentDurationSec": int(src_data['edit']['duration'] // 1000),
-				"runtimeSec": int(src_data['edit']['duration'] // 1000),
+				"showId": src_data.get('show',{}).get('id',""),
+				"mainContentDurationSec": int(src_data['edit'].get('duration', 0) // 1000),
+				"runtimeSec": int(src_data['edit'].get('duration', 0) // 1000),
 				"videoType": src_data['videoType'].lower(),
-				"playableStatus":"VOD",
 			})
 
 		return src_data.get('viewingHistory', {}).get('position')
@@ -407,7 +409,7 @@ class WBDMax(object):
 		playback_session_id = str(uuid.uuid4())
 		app_session_id = str(uuid.uuid1())
 
-		if data_item != None:
+		if data_item:
 			data_item.update({
 				"playbackSessionId": playback_session_id,
 				"appSessionId": app_session_id
@@ -522,20 +524,18 @@ class WBDMax(object):
 	# ##################################################################################################################
 
 	def del_watchlist(self, item_id):
-		try:
-			self.call_api('/my-list/show/{}'.format(item_id), method='DELETE')
-		except Status204:
-			pass
+		self.call_api('/my-list/show/{}'.format(item_id), method='DELETE')
 
 	# ##################################################################################################################
 
 	def set_marker(self, data_item, position):
-		payload = {
-			'creationTimeEpochMs': int(time()) * 1000,
-			'positionSec': position,
-		}
-		payload.update(data_item)
-		self.call_api('/markers/any/markers/v1/markers', data=payload)
+		if data_item:
+			payload = {
+				'creationTimeEpochMs': int(time()) * 1000,
+				'positionSec': position,
+			}
+			payload.update(data_item)
+			self.call_api('/markers/any/markers/v1/markers', data=payload)
 
 	# ##################################################################################################################
 
@@ -566,9 +566,6 @@ class WBDMax(object):
 	# ##################################################################################################################
 
 	def delete_device(self, device_id ):
-		try:
-			self.call_api('/users/me/tokens/{}'.format(device_id), method='DELETE')
-		except Status204:
-			pass
+		self.call_api('/users/me/tokens/{}'.format(device_id), method='DELETE')
 
 	# ##################################################################################################################
