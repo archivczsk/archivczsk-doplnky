@@ -119,7 +119,7 @@ def is_kodi_leia():
 class RtvsContentProvider(ContentProvider):
 
 	def __init__(self, username=None, password=None, filter=None, tmp_dir='/tmp'):
-		ContentProvider.__init__(self, 'rtvs.sk', 'http://www.rtvs.sk/televizia/archiv', username, password, filter, tmp_dir)
+		ContentProvider.__init__(self, 'rtvs.sk', 'http://www.stvr.sk/televizia/archiv', username, password, filter, tmp_dir)
 		opener = build_opener(HTTPCookieProcessor(cookielib.LWPCookieJar()))
 		install_opener(opener)
 		if not os.path.exists(self.tmp_dir):
@@ -127,14 +127,14 @@ class RtvsContentProvider(ContentProvider):
 
 	def _fix_url(self, url):
 		if url.startswith('/json/') or url.startswith('/televizia/archiv/'):
-			return 'http://www.rtvs.sk' + url
+			return 'http://www.stvr.sk' + url
 		return self._url(url)
 
 	def capabilities(self):
 		return ['categories', 'resolve', 'search']
 
 	def search(self, keyword):
-		return self.list('https://www.rtvs.sk/json/search/lite?q='+quote(keyword))
+		return self.list('https://www.stvr.sk/json/search/lite?q='+quote(keyword))
 
 	def list(self, url):
 		if '/search/' in url:
@@ -266,13 +266,13 @@ class RtvsContentProvider(ContentProvider):
 					item = self.video_item()
 					item['title'] = hit.get('name') + ' [' + pj['blocks'][block]['title'] + ']'
 					if hit.get('air_start_p'): item['title'] = item['title'] + ' (' + hit.get('air_start_p') + ')'
-					item['url'] = 'https://www.rtvs.sk' + hit.get('uri')
+					item['url'] = 'https://www.stvr.sk' + hit.get('uri')
 					item['img'] = hit.get('thumbnail')
 					self._filter(result,item)
 				elif hit['uri'].startswith('/televizia/program/'):
 					item = self.dir_item()
 					item['title'] = hit.get('name') + ' [' + pj['blocks'][block]['title'] + ']'
-					item['url'] = 'https://www.rtvs.sk' + hit.get('uri').replace('/program/','/archiv/')
+					item['url'] = 'https://www.stvr.sk' + hit.get('uri').replace('/program/','/archiv/')
 					item['img'] = hit.get('thumbnail')
 					self._filter(result,item)
 		return result
@@ -362,7 +362,7 @@ class RtvsContentProvider(ContentProvider):
 		item = item.copy()
 		if item['url'].startswith('live.'):
 			channel_id = item['url'].split('.')[1]
-			data = util.request("http://www.rtvs.sk/json/live5f.json?c=%s&b=mozilla&p=linux&v=84&f=0&d=1"%(channel_id))
+			data = util.request("http://www.stvr.sk/json/live5f.json?c=%s&b=mozilla&p=linux&v=84&f=0&d=1"%(channel_id))
 			videodata = util.json.loads(data)['clip']
 			url = videodata['sources'][0]['src']
 			url = ''.join(url.split()) # remove whitespace \n from URL
@@ -386,7 +386,7 @@ class RtvsContentProvider(ContentProvider):
 		else:
 			video_id = item['url'].split('/')[-1]
 			self.info("<resolve> videoid: %s" % video_id)
-			videodata = util.json.loads(util.request("https://www.rtvs.sk/json/archive5f.json?id=" + video_id))
+			videodata = util.json.loads(util.request("https://www.stvr.sk/json/archive5f.json?id=" + video_id))
 			if videodata.get('clip',0) == 0: # no licence
 				showInfo("Je nám ľúto, ale toto video už nie je k dispozícii z licenčných dôvodov.")
 				return []

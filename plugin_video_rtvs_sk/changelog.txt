@@ -1,3 +1,6 @@
+1.14.0:
+- oprava po zmene domény na stvr.sk
+
 1.13.0:
 - úprava závislosti doplnku
 
