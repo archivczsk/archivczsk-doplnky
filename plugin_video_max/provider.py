@@ -220,13 +220,13 @@ class WBDMaxContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def _process_items(self, rows):
+	def _process_items(self, rows, add_show_title=False):
 		for row in rows:
-			self._process_item(row)
+			self._process_item(row, add_show_title)
 
 	# ##################################################################################################################
 
-	def _process_item(self, row):
+	def _process_item(self, row, add_show_title=False):
 		data = row.get('show') or row.get('video') or row.get('taxonomyNode') or row.get('link') or row.get('collection')
 		if not data:
 			self.log_error("Unsupported ROW:\n%s" % row)
@@ -305,10 +305,14 @@ class WBDMaxContentProvider(CommonContentProvider):
 				'duration': data['edit']['duration'] // 1000,
 			})
 
+			if add_show_title and info_labels.get('tvshowtitle'):
+				label = '{} - {}'.format(info_labels['tvshowtitle'], label)
+
 			menu.add_menu_item(self._("Go to series"), cmd=self.list_series, series_id=data['show']['id'])
 			self.add_video(label, img, info_labels, menu, cmd=self.play_item, edit_id=data['edit']['id'], video_title=label, src_data=self.create_src_data(data))
 
 		elif data.get('videoType') in ('STANDALONE_EVENT', 'CLIP', 'LIVE', 'MOVIE'):
+
 			self.add_video(label, img, info_labels, menu, cmd=self.play_item, edit_id=data['edit']['id'], video_title=label, src_data=self.create_src_data(data))
 
 		elif row.get('collection'):
@@ -317,7 +321,7 @@ class WBDMaxContentProvider(CommonContentProvider):
 				self.add_dir(label, img, info_labels, cmd=self.list_collection, collection_id=data['id'])
 			else:
 				if 'items' in data:
-					self._process_items(data['items'])
+					self._process_items(data['items'], add_show_title=True)
 					self.add_paging(data['meta'], self.list_collection, collection_id=data['id'])
 
 		elif data.get('kind') == 'genre':
