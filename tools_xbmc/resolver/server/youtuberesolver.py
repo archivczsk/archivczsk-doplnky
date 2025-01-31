@@ -19,8 +19,13 @@
 '''
 
 import sys
-import cgi
 import json
+
+try:
+	from urlparse import parse_qs
+	from urllib import unquote
+except:
+	from urllib.parse import parse_qs, unquote
 
 
 class YoutubePlayer(object):
@@ -102,7 +107,7 @@ class YoutubePlayer(object):
 			video["title"] = flashvars["title"]
 
 		for url_desc in flashvars[u"url_encoded_fmt_stream_map"].split(u","):
-			url_desc_map = cgi.parse_qs(url_desc)
+			url_desc_map = parse_qs(url_desc)
 			if not (u"url" in url_desc_map or u"stream" in url_desc_map):
 				continue
 
