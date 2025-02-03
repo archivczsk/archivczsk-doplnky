@@ -136,7 +136,7 @@ class O2HTTPRequestHandler(DashHTTPRequestHandler):
 				key = {
 					'key': self.cp.scache.put(streams[0]['playlist_url']),
 					'bandwidth': streams[0]['bandwidth'],
-					'fix_live': 'delay' if (self.cp.get_setting('fix_live') and self.cp.is_supporter()) else None,
+					'fix': 'delay' if self.cp.delay_fix_enabled() else None,
 				}
 
 				url = stream_key_to_dash_url(self.cp.http_endpoint, key)
@@ -171,7 +171,7 @@ class O2HTTPRequestHandler(DashHTTPRequestHandler):
 		stream_info = {
 			'url': self.get_stream_index_url(channel_id),
 			'bandwidth': max_bitrate,
-			'fix': 'delay' if (self.cp.get_setting('fix_live') and self.cp.is_supporter()) else None,
+			'fix': 'delay' if self.cp.delay_fix_enabled() else None,
 		}
 
 		export_md_subchannels = self.cp.get_setting('export_md_subchannels') and self.cp.is_supporter()

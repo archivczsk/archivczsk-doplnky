@@ -548,9 +548,6 @@ class O2TVContentProvider(ModuleContentProvider):
 			if self.get_setting('export_md_subchannels'):
 				msgs.append(self._("Export multidimension subchannels"))
 
-			if self.get_setting('fix_live'):
-				msgs.append(self._("Fix high delay in live boroadcasting"))
-
 			if int(self.get_setting('archive_end_offset')) > 0:
 				msgs.append(self._("How many minutes to play after event ends in archive"))
 
@@ -697,9 +694,14 @@ class O2TVContentProvider(ModuleContentProvider):
 		return {
 			'url': url,
 			'bandwidth': stream_key['bandwidth'],
-			'fix': stream_key['fix'],
+			'fix': stream_key.get('fix'),
 			'offset': stream_key.get('offset', 0),
 		}
+
+	# ##################################################################################################################
+
+	def delay_fix_enabled(self):
+		return self.get_setting('fix_live') and (PlayerFeatures.exteplayer3_version == None or PlayerFeatures.exteplayer3_version < 175)
 
 	# ##################################################################################################################
 
@@ -711,19 +713,21 @@ class O2TVContentProvider(ModuleContentProvider):
 		if not streams:
 			return
 
-		if fix == 'delay' and offset == 0 and self.get_setting('fix_live') == False:
+		if fix == 'delay' and offset == 0 and self.delay_fix_enabled() == False:
 			fix = None
 
 		play_settings = {
 			'relative_seek_enabled': False,
 			'playlist_on_start': playlist != None and self.get_setting('show_md_choice')
 		}
+
 		cache_key = self.scache.put(streams[0]['playlist_url'])
+
 		for one in streams:
 			key = {
 				'key': cache_key,
 				'bandwidth': one['bandwidth'],
-				'fix': fix if self.is_supporter() else None,
+				'fix': fix,
 				'offset': offset,
 			}
 
