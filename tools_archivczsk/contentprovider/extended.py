@@ -117,6 +117,7 @@ class CPModuleArchive(CPModuleTemplate):
 		self.days_of_week = (_('Monday'), _('Tuesday'), _('Wednesday'), _('Thursday'), 	_('Friday'), _('Saturday'), _('Sunday'))
 		self.day_str = (_('day'), _('days2-4'), _('days5+'))
 		self.hour_str = (_('hour'), _('hours2-4'), _('hours5+'))
+		self.archive_page_size = 365
 		content_provider.register_shortcut('archive', self.run_archive_shortcut)
 
 	# #################################################################################################
@@ -204,14 +205,16 @@ class CPModuleArchive(CPModuleTemplate):
 
 	# #################################################################################################
 
-	def get_archive_days_for_channels(self, channel_id, archive_hours):
+	def get_archive_days_for_channels(self, channel_id, archive_hours, page=0):
 		'''
 		Implement this function creates list days for channel_id (see params for self.add_archive_channel())
 		'''
 		if archive_hours < 24:
 			return self.get_archive_program(channel_id, archive_day=(archive_hours * 60))
 
-		for i in range(int(archive_hours // 24)):
+		stop_i = int(archive_hours // 24)
+
+		for i in range(page * self.archive_page_size, (page+1) * self.archive_page_size):
 			if i == 0:
 				day_name = _("Today")
 			elif i == 1:
@@ -222,6 +225,11 @@ class CPModuleArchive(CPModuleTemplate):
 
 			self.cp.add_dir(day_name, cmd=self.get_archive_program, channel_id=channel_id, archive_day=i)
 
+			if i >= stop_i:
+				break
+		else:
+			self.cp.add_next(cmd=self.get_archive_days_for_channels, channel_id=channel_id, archive_hours=archive_hours, page=page+1)
+
 	# #################################################################################################
 
 	def archive_day_to_datetime_range(self, archive_day, return_timestamp=False):
@@ -229,9 +237,9 @@ class CPModuleArchive(CPModuleTemplate):
 		Return datetime or timestamp range for archive day in form start, end
 		"""
 
-		if archive_day > 30:
+		if archive_day > 0 and archive_day < 1:
 			# archive day is in minutes
-			from_datetime = datetime.now() - timedelta(minutes=archive_day)
+			from_datetime = datetime.now() - timedelta(minutes=int(archive_day * 24 * 60))
 			to_datetime = datetime.now()
 		elif archive_day == 0:
 			from_datetime = datetime.combine(date.today(), datetime.min.time())

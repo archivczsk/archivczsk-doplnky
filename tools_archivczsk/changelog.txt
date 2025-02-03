@@ -1,3 +1,7 @@
+2.9 - 09.02.2025
+    - added date utilities
+    - addded paging to archive days listing in archive module
+
 2.8 - 24.1.2025
     - updated API for addons
     - updated available exteplayer3 version
