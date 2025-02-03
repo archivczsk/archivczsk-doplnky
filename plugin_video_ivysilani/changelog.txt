@@ -1,3 +1,10 @@
+2024-09-02 [3.0]
+* kompletný prepis doplnku pomocou nového rozhrania používaného aj na webovej stránke
+* nové rozhranie je výrazne rýchlejšie ako pôvodné
+* obsah doplnku kopíruje funkcionalitu dostupnú na web stránke
+* pre prehrávanie obsahu je nutný prehrávač s podporou MPEG-DASH
+* živé vysielanie chránené DRM ochranou nie je dostupné
+
 2024-12-18 [2.6]
 * oprava pádu ak server vracia v odpovedi chybné dáta
 
