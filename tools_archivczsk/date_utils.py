@@ -15,11 +15,11 @@ def iso8601_to_timestamp(iso_string, utc=False):
 	"""
 	# 1. Parse the ISO string (handle 'Z' and fractional seconds):
 	if '.' in iso_string: # Check for fractional seconds
-		iso_string = iso_string.replace('Z', '+00:00')
-		utc_datetime = datetime.datetime.strptime(iso_string, "%Y-%m-%dT%H:%M:%S.%f%z")
+		iso_string = iso_string.replace('Z', '')
+		utc_datetime = datetime.datetime.strptime(iso_string, "%Y-%m-%dT%H:%M:%S.%f")
 	else:
-		iso_string = iso_string.replace('Z', '+00:00')
-		utc_datetime = datetime.datetime.strptime(iso_string, "%Y-%m-%dT%H:%M:%S%z")
+		iso_string = iso_string.replace('Z', '')
+		utc_datetime = datetime.datetime.strptime(iso_string, "%Y-%m-%dT%H:%M:%S")
 
 	# 2. Convert to local time (Python 2.7 and 3.x compatible):
 	utc_timestamp = calendar.timegm(utc_datetime.utctimetuple())  # UTC timestamp
