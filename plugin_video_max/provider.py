@@ -121,13 +121,16 @@ class WBDMaxContentProvider(CommonContentProvider):
 		if self.is_supporter():
 			PlayerFeatures.request_exteplayer3_version(self, 175)
 		else:
-			self.show_info(self._("Full functionality of this addon is only available for ArchivCZSK product supporters."), noexit=True)
+			self.show_info(self._("Full functionality of this addon is only available for ArchivCZSK product supporters. You can login and list content, but you won't be able to start playback."), noexit=True)
 
 		self.build_lang_lists()
 
 		if isinstance(self.wbdmax, NoLoginHelper) or self.wbdmax.need_login():
-			self.add_video(self._("Login using code"), cmd=self.process_login)
-			self.add_video(self._("Login using provider"), cmd=self.process_login, provider=True)
+			self.add_video(self._("Start login process"), info_labels=self._("Use this if you want to pair this device with your MAX account."), cmd=self.process_login)
+
+			if self.get_setting('login_using_provider'):
+				self.add_video(self._("Start login process using provider"), info_labels=self._("Use this if you use login to MAX using provider, like google, amazon, ..."), cmd=self.process_login, provider=True)
+
 			return
 
 		self.select_profile_on_startup()

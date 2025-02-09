@@ -1,5 +1,7 @@
-1.2 - xx.02.2025
+1.2 - 09.02.2025
     - pridanie mena seriálu do názvu ak nie je jasné o aký seriál sa jedná
+    - úprava textov pre proces prihlásenia
+
 
 1.1 - 27.01.2025
     - oprava pádu pri výbere profilu

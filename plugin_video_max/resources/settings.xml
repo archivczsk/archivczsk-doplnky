@@ -9,4 +9,5 @@
 	<setting label="Start forced subtitles automatically" id="forced-subs-autostart" type="bool" default="true" />
 	<setting label="Language codes of enabled audio tracks" id="enabled_audios" type="text" default="" />
 	<setting label="Language codes of enabled subtitles" id="enabled_subs" type="text" default="cs,sk,en" />
+	<setting label="Enable login using provider" type="bool" id="login_using_provider" default="false" />
 </settings>
