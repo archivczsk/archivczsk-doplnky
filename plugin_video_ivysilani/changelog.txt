@@ -1,4 +1,7 @@
-2024-09-02 [3.0]
+2025-02-13 [3.1]
+* oprava nahlásených pádov
+
+2025-02-09 [3.0]
 * kompletný prepis doplnku pomocou nového rozhrania používaného aj na webovej stránke
 * nové rozhranie je výrazne rýchlejšie ako pôvodné
 * obsah doplnku kopíruje funkcionalitu dostupnú na web stránke

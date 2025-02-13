@@ -108,7 +108,7 @@ class iVysilaniModuleArchive(CPModuleArchive):
 
 			menu = self.cp.create_ctx_menu()
 
-			if epg.get('idec') is not None and epg.get('isPlayableNow') == True:
+			if epg.get('idec') is not None and epg.get('isPlayableNow') == True and epg.get('liveOnly', False) == False:
 				title = title + " - " + _I(epg["title"])
 				self.cp.add_fav_ctx_menu(menu, epg)
 			else:
@@ -456,6 +456,9 @@ class iVysilaniContentProvider(ModuleContentProvider):
 	# ##################################################################################################################
 
 	def resolve_streams(self, manifest_url, subs=None, title=''):
+		if not manifest_url:
+			return False
+
 		if 'streamType=hls' in manifest_url:
 			subs_enabled = self.get_setting('subtitles') != 'disabled'
 

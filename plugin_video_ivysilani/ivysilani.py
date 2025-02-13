@@ -57,7 +57,7 @@ class iVysilani(object):
 
 		try:
 			response.raise_for_status()
-		except:
+		except Exception as e:
 			try:
 				msg = response.json()
 				if 'playabilityMessage' in msg:
@@ -75,7 +75,7 @@ class iVysilani(object):
 			if err_msg:
 				raise AddonErrorException(self._(err_msg))
 			else:
-				raise
+				raise e
 
 		try:
 			ret = response.json()
