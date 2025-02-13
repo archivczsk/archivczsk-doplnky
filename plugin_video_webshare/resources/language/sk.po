@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_prehrajto\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-06 22:04+0100\n"
+"POT-Creation-Date: 2025-02-13 08:49+0100\n"
 "PO-Revision-Date: 2024-03-06 22:05+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,27 +16,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: plugin_video_webshare/webshare.py:145
+#: plugin_video_webshare/webshare.py:153
 msgid "Failed to get user informations"
 msgstr "Nepodarilo sa získať informácie o používateľovi"
 
-#: plugin_video_webshare/webshare.py:212
+#: plugin_video_webshare/webshare.py:220
 msgid "Wrong webshare login data provided"
 msgstr "Nesprávne prihlasovacie údaje pre Webshare"
 
-#: plugin_video_webshare/webshare.py:216
+#: plugin_video_webshare/webshare.py:224
 msgid "Webshare subscription expired. Only very low quality videos will play and seeking forward/backwad will not work at all."
 msgstr "Webshare predplatné vypršalo. Prehrávanie bude fungovať len u videí s veľmi nízkou kvalitou a pretáčanie vpred/vzad nebude fungovať vôbec."
 
-#: plugin_video_webshare/webshare.py:231
+#: plugin_video_webshare/webshare.py:239
 msgid "File is password protected"
 msgstr "Súbor je chránený heslom"
 
-#: plugin_video_webshare/webshare.py:239
+#: plugin_video_webshare/webshare.py:247
 msgid "Failed to resolve file"
 msgstr "Nepodarilo sa získať adresu súboru"
 
-#: plugin_video_webshare/provider.py:33
+#: plugin_video_webshare/provider.py:34
 #, python-brace-format
 msgid ""
 "Login to premium account failed: {reason}\n"
@@ -57,5 +57,5 @@ msgstr "Maximálny počet videných položiek"
 msgid "Search category"
 msgstr "Vyhľadávacia kategória"
 
-#~ msgid "Login to premium account failed. Continuing with free account."
-#~ msgstr "Prihlásenie k premium kontu zlyhalo. Pokračujem s free kontom."
+msgid "Cleanup watched items from webshare history"
+msgstr "Vymaž sledované položky z webshare histórie"
