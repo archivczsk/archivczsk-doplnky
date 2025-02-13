@@ -143,7 +143,12 @@ class Webshare():
 			return 0
 
 		# 2022-09-14 18:43:29
-		return int(mktime(datetime.strptime(subscripted_until, '%Y-%m-%d %H:%M:%S').timetuple()))
+		try:
+			return int(mktime(datetime.strptime(subscripted_until, '%Y-%m-%d %H:%M:%S').timetuple()))
+		except OverflowError:
+			# temporary workaround for year 2038 problem ...
+			subscripted_until = '2037' + subscripted_until[4:]
+			return int(mktime(datetime.strptime(subscripted_until, '%Y-%m-%d %H:%M:%S').timetuple()))
 
 	# #################################################################################################
 
