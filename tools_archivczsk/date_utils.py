@@ -1,6 +1,7 @@
 import datetime
 import time
 import calendar
+import re
 
 def iso8601_to_timestamp(iso_string, utc=False):
 	"""Converts an ISO 8601 formatted UTC date string to a local
@@ -34,3 +35,42 @@ def iso8601_to_datetime(iso_string, utc=False):
 	local_timestamp = iso8601_to_timestamp(iso_string, utc)
 	local_datetime = datetime.datetime.fromtimestamp(local_timestamp)
 	return local_datetime
+
+def iso8601_duration_to_timedelta(iso_duration="P2DT6H21M32S"):
+	if not iso_duration:
+		return None
+
+	m = re.match(r'^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:.\d+)?)S)?$', iso_duration)
+
+	if m is None:
+		return None
+
+	days = 0
+	hours = 0
+	minutes = 0
+	seconds = 0.0
+
+	# Years and months are not being utilized here, as there is not enough
+	# information provided to determine which year and which month.
+	# Python's time_delta class stores durations as days, seconds and
+	# microseconds internally, and therefore we'd have to
+	# convert parsed years and months to specific number of days.
+
+	if m[3]:
+		days = int(m[3])
+	if m[4]:
+		hours = int(m[4])
+	if m[5]:
+		minutes = int(m[5])
+	if m[6]:
+		seconds = float(m[6])
+
+	return datetime.timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
+
+def iso8601_duration_to_seconds(iso_duration="P2DT6H21M32S"):
+	t = iso8601_duration_to_timedelta(iso_duration)
+
+	if t is not None:
+		return int(t.total_seconds())
+	else:
+		return None
