@@ -1,3 +1,6 @@
+1.27 - 03.02.2025
+    - oprava nastavenia minút po skončení udalosti z archívu u niektorých programov
+
 1.26 - 03.02.2025
     - oprava prehrávania multidimenzie v userbouquete bez exportu subkanálov
     - vypnutie opravy vysokého oneskorenia u live vysielania pre exteplayer3 >= 175, ktorý to nepotrebuje
