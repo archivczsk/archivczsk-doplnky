@@ -1,3 +1,6 @@
+2025-02-15 3.16
+    - aktualizácia závislostí doplnku
+
 2025-01-07 3.15
     - oprava pádov pri chybe v komunikácii s Trakt.tv
 
