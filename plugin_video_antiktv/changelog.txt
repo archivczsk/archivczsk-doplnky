@@ -1,3 +1,6 @@
+2.21:
+- oprava prehrávania DVTV Extra
+
 2.20:
 - pridanie podpory pre prehrávanie archívu priamo z EPG
 
