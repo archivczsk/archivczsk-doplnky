@@ -117,3 +117,20 @@ class MagioGOHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler):
 	def default_handler(self, request, path_full ):
 		data = "Default handler pre Magio GO pre path: %s" % path_full
 		return self.reply_ok( request, data.encode('utf-8'), "text/plain; charset=UTF-8")
+
+	# #################################################################################################
+
+	def fix_startover(self, root):
+		root.set('startover', '1')
+
+	# #################################################################################################
+
+	def handle_mpd_manifest(self, base_url, root, bandwidth, dash_info={}, cache_key=None):
+		super(MagioGOHTTPRequestHandler, self).handle_mpd_manifest(base_url, root, bandwidth, dash_info, cache_key)
+
+		fix = dash_info.get('fix')
+
+		if fix == 'startover':
+			self.fix_startover(root)
+
+	# #################################################################################################

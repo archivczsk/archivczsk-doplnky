@@ -6,92 +6,96 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_magiogo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-24 14:58+0200\n"
-"PO-Revision-Date: 2024-04-24 15:01+0200\n"
+"POT-Creation-Date: 2025-02-17 13:49+0100\n"
+"PO-Revision-Date: 2025-02-17 13:51+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.5\n"
 
-#: plugin_video_magiogo/provider.py:21
+#: plugin_video_magiogo/magiogo.py:241
+msgid "Unexpected return code from server"
+msgstr "Neočekávaný návratový kód ze serveru"
+
+#: plugin_video_magiogo/magiogo.py:257
+msgid "Login data not set"
+msgstr "Nezadané přihlašovací údaje"
+
+#: plugin_video_magiogo/magiogo.py:275 plugin_video_magiogo/magiogo.py:290
+msgid "Unknown error"
+msgstr "Neznáma chyba"
+
+#: plugin_video_magiogo/provider.py:24
 msgid "VOD Channels"
 msgstr "VOD kanály"
 
-#: plugin_video_magiogo/provider.py:22
+#: plugin_video_magiogo/provider.py:25
 msgid "Here you will find list of channels broadcasting video on demand"
 msgstr "Tady najdete seznam kanálů, které vysílají způsobem video on demand"
 
-#: plugin_video_magiogo/provider.py:143
+#: plugin_video_magiogo/provider.py:71
+msgid "Play from beginning"
+msgstr "Přehrát od začátku"
+
+#: plugin_video_magiogo/provider.py:202
 msgid "Special section"
 msgstr "Speciální sekce"
 
-#: plugin_video_magiogo/provider.py:154
+#: plugin_video_magiogo/provider.py:213
 msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
 msgstr "Tu si můžete zobrazit a případně vymazat/odregistrovat zbytečná zařízení, aby jste se mohli znova jinde přihlásit."
 
-#: plugin_video_magiogo/provider.py:155
+#: plugin_video_magiogo/provider.py:214
 msgid "Registered devices"
 msgstr "Zaregistrovaná zařízení"
 
-#: plugin_video_magiogo/provider.py:156
+#: plugin_video_magiogo/provider.py:215
 msgid "With this button you can check if playback works OK or it gives some error from the server."
 msgstr "Tímto tlačítkem můžete zkontrolovat jestli přehrávání funguje v pořádku, nebo server vrací nějakou chybu."
 
-#: plugin_video_magiogo/provider.py:157
+#: plugin_video_magiogo/provider.py:216
 msgid "Check playback"
 msgstr "Kontrola přehrávanání"
 
-#: plugin_video_magiogo/provider.py:158
+#: plugin_video_magiogo/provider.py:217
 msgid "Run EPG export to enigma or XML files"
 msgstr "Spustit export EPG do enigmy nebo do XML souborů"
 
-#: plugin_video_magiogo/provider.py:164
+#: plugin_video_magiogo/provider.py:223
 msgid "EPG export started"
 msgstr "EPG export byl spuštěn"
 
-#: plugin_video_magiogo/provider.py:177
+#: plugin_video_magiogo/provider.py:236
 msgid "Remove device!"
 msgstr "Smazat zařízení!"
 
-#: plugin_video_magiogo/provider.py:178
+#: plugin_video_magiogo/provider.py:237
 msgid "In menu you can remove device using Remove device!"
 msgstr "V menu můžete zařízení vymazat pomocí Smazat zařízení!"
 
-#: plugin_video_magiogo/provider.py:188
+#: plugin_video_magiogo/provider.py:247
 #, python-brace-format
 msgid "Device {device} was removed!"
 msgstr "Zařízení {device} bylo vymazáno!"
 
-#: plugin_video_magiogo/provider.py:190
+#: plugin_video_magiogo/provider.py:249
 msgid "Error"
 msgstr "Chyba"
 
-#: plugin_video_magiogo/provider.py:201
+#: plugin_video_magiogo/provider.py:260
 msgid "Playback failed:"
 msgstr "Přehrávání selhalo:"
 
-#: plugin_video_magiogo/provider.py:203
+#: plugin_video_magiogo/provider.py:262
 msgid "No error occured during playback check. Playback should work."
 msgstr "Při kontrole přehrávání nenastala žádná chyba. Přehrávání by mělo fungovat."
 
-#: plugin_video_magiogo/provider.py:205
+#: plugin_video_magiogo/provider.py:264
 msgid "Can't check playback. There are no channels available."
 msgstr "Nemůžu zkontrolovat přehrávání. Není dostupný žádný kanál."
-
-#: plugin_video_magiogo/magiogo.py:238
-msgid "Unexpected return code from server"
-msgstr "Neočekávaný návratový kód ze serveru"
-
-#: plugin_video_magiogo/magiogo.py:254
-msgid "Login data not set"
-msgstr "Nezadané přihlašovací údaje"
-
-#: plugin_video_magiogo/magiogo.py:272 plugin_video_magiogo/magiogo.py:287
-msgid "Unknown error"
-msgstr "Neznáma chyba"
 
 msgid "Region"
 msgstr "Region"
@@ -137,6 +141,9 @@ msgstr "ID zařízení"
 
 msgid "Enable adult channels"
 msgstr "Povolit programy pro dospělé"
+
+msgid "Check exteplayer3 version on startup"
+msgstr "Při spuštení zkontrolovat verzi exteplayer3"
 
 msgid "Userbouquet"
 msgstr "Userbouquet"

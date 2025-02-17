@@ -10,6 +10,7 @@ from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.string_utils import _I, _C, _B
 from tools_archivczsk.generator.lamedb import channel_name_normalise
+from tools_archivczsk.player.features import PlayerFeatures
 from .magiogo import MagioGO
 from .bouquet import MagioGOBouquetXmlEpgGenerator
 
@@ -64,13 +65,36 @@ class MagioGOModuleLiveTV(CPModuleLiveTV):
 				event_start = channel.epg_start
 			else:
 				event_start = None
-			self.cp.add_video(channel.name + epg_str, img=channel.preview, info_labels=info_labels, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel.name, channel_id=channel.id, event_start=event_start)
+
+			menu = self.cp.create_ctx_menu()
+			if channel.archive > 0 and channel.epg_id:
+				menu.add_media_menu_item(self._("Play from beginning"), cmd=self.get_startover_stream, channel_title=channel.name, event_id=channel.epg_id)
+
+#			works only on some channels even if its is marked as supported
+#			if channel.timeshift > 0:
+#				menu.add_media_menu_item(self._("Play timeshift"), cmd=self.get_timeshift_stream, channel_title=channel.name, channel_id=channel.id)
+
+			self.cp.add_video(channel.name + epg_str, channel.preview, info_labels, menu, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel.name, channel_id=channel.id, event_start=event_start)
 
 	# #################################################################################################
 
-	def get_livetv_stream(self, channel_title, channel_id, event_start):
+	def get_livetv_stream(self, channel_title, channel_id, event_start=None):
 		index_url = self.cp.magiogo.get_stream_link(channel_id)
 		return self.cp.resolve_streams(index_url, channel_title, event_start)
+
+	# #################################################################################################
+
+	def get_timeshift_stream(self, channel_title, channel_id):
+		self.cp.ensure_supporter()
+		index_url = self.cp.magiogo.get_stream_link(channel_id, service='TIMESHIFT')
+		return self.cp.resolve_streams(index_url, channel_title, startover=True)
+
+	# #################################################################################################
+
+	def get_startover_stream(self, channel_title, event_id):
+		self.cp.ensure_supporter()
+		index_url = self.cp.magiogo.get_stream_link(event_id, 'ARCHIVE')
+		return self.cp.resolve_streams(index_url, channel_title, startover=True)
 
 # #################################################################################################
 
@@ -90,8 +114,8 @@ class MagioGOModuleArchive(CPModuleArchive):
 			if not enable_adult and channel.adult:
 				continue
 
-			if channel.timeshift > 0:
-				self.add_archive_channel(channel.name, channel.id, channel.timeshift, img=channel.picon, info_labels={'adult': channel.adult})
+			if channel.archive > 0:
+				self.add_archive_channel(channel.name, channel.id, channel.archive, img=channel.picon, info_labels={'adult': channel.adult})
 
 	# #################################################################################################
 
@@ -108,20 +132,24 @@ class MagioGOModuleArchive(CPModuleArchive):
 				'year': event['year']
 			}
 
-			self.cp.add_video(title, event['image'], info_labels, cmd=self.get_archive_stream, archive_title=str(event["title"]), event_id=event['id'])
+			self.cp.add_video(title, event['image'], info_labels, cmd=self.get_archive_stream, archive_title=str(event["title"]), event_id=event['id'], epg=event)
 
 	# #################################################################################################
 
-	def get_archive_stream(self, archive_title, event_id):
+	def get_archive_stream(self, archive_title, event_id, epg):
 		index_url = self.cp.magiogo.get_stream_link(event_id, 'ARCHIVE')
-		return self.cp.resolve_streams(index_url, archive_title)
+
+		cur_time = int(time.time())
+		startover = self.cp.is_supporter() and cur_time > epg["start"] and cur_time < epg["stop"]
+
+		return self.cp.resolve_streams(index_url, archive_title, startover=startover)
 
 	# #################################################################################################
 
 	def get_archive_hours(self, channel_id):
 		self.cp.load_channel_list()
 		channel = self.cp.channels_by_key.get(channel_id)
-		return channel.timeshift if channel else None
+		return channel.archive if channel else None
 
 	# #################################################################################################
 
@@ -132,7 +160,7 @@ class MagioGOModuleArchive(CPModuleArchive):
 				path = path[:-6]
 			channel_id = base64.b64decode(path.encode('utf-8')).decode("utf-8")
 			channel = self.cp.channels_by_key.get(int(channel_id))
-			return int(channel_id) if channel and channel.timeshift else None
+			return int(channel_id) if channel and channel.archive else None
 
 		return None
 
@@ -141,7 +169,7 @@ class MagioGOModuleArchive(CPModuleArchive):
 	def get_channel_id_from_sref(self, sref):
 		name = channel_name_normalise(sref.getServiceName())
 		ch = self.cp.channels_by_norm_name.get(name)
-		return ch.id if ch and ch.timeshift else None
+		return ch.id if ch and ch.archive else None
 
        # #################################################################################################
 
@@ -162,7 +190,7 @@ class MagioGOModuleArchive(CPModuleArchive):
 				'year': event['year']
 			}
 
-			self.cp.add_video(title, event['image'], info_labels, cmd=self.get_archive_stream, archive_title=str(event["title"]), event_id=event['id'])
+			self.cp.add_video(title, event['image'], info_labels, cmd=self.get_archive_stream, archive_title=str(event["title"]), event_id=event['id'], epg=event)
 			break
 
 # #################################################################################################
@@ -282,6 +310,14 @@ class MagioGOContentProvider(ModuleContentProvider):
 
 	# #################################################################################################
 
+	def root(self):
+		if self.get_setting('player-check'):
+			PlayerFeatures.request_exteplayer3_version(self, 176)
+
+		return super(MagioGOContentProvider, self).root()
+
+	# #################################################################################################
+
 	def get_channels_checksum(self):
 		ctx = md5()
 		for ch in self.channels:
@@ -342,6 +378,9 @@ class MagioGOContentProvider(ModuleContentProvider):
 		if stream_key.get('cookies'):
 			resp['headers']['Cookies'] = stream_key['cookies']
 
+		if stream_key.get('fix'):
+			resp['fix'] = stream_key['fix']
+
 		return resp
 
 	# ##################################################################################################################
@@ -367,7 +406,7 @@ class MagioGOContentProvider(ModuleContentProvider):
 
 	# ##################################################################################################################
 
-	def resolve_dash_streams(self, url, video_title, player_settings):
+	def resolve_dash_streams(self, url, video_title, player_settings, startover=False):
 		for one in (self.get_dash_streams(url, self.magiogo.req_session, max_bitrate=self.get_setting('max_bitrate')) or []):
 			key = {
 				'url': one['playlist_url'],
@@ -375,29 +414,32 @@ class MagioGOContentProvider(ModuleContentProvider):
 				'cookies': one['cookies']
 			}
 
+			if startover:
+				key['fix'] = 'startover'
+
 			info_labels = {
 				'bandwidth': one['bandwidth'],
 				'quality': one.get('height', '???') + 'p'
 			}
 
-			player_settings['relative_seek_enabled'] = False
 			self.add_play(video_title, stream_key_to_dash_url(self.http_endpoint, key), info_labels=info_labels, settings=player_settings)
 
 	# ##################################################################################################################
 
-	def resolve_streams(self, url, video_title, event_start = None):
+	def resolve_streams(self, url, video_title, event_start = None, startover=False):
 		if not url:
 			self.log_error("No stream url passed")
 			return
 
 		player_settings = {
 			"resume_time_sec": int(time.time()) - event_start if event_start != None else None,
-			"resume_popup": False
+			"resume_popup": False,
+			'check_seek_borders': startover
 		}
 
 		if self.magiogo.stream_type_by_device() == 'm3u8':
 			return self.resolve_hls_streams(url, video_title, player_settings)
 		else: # mpd
-			return self.resolve_dash_streams(url, video_title, player_settings)
+			return self.resolve_dash_streams(url, video_title, player_settings, startover)
 
 	# ##################################################################################################################

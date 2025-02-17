@@ -16,7 +16,8 @@ class MagioGOChannel(object):
 		self.id = str(channel_info['channelId'])
 		self.name = channel_info['name']
 		self.type = channel_info['type']
-		self.timeshift = channel_info.get('archive', 0) // (3600 * 1000) if channel_info.get('hasArchive', False) and channel_info.get('archiveSubscription', False) else 0
+		self.archive = channel_info.get('archive', 0) // (3600 * 1000) if channel_info.get('hasArchive', False) and channel_info.get('archiveSubscription', False) else 0
+		self.timeshift = channel_info.get('timeshift', 0) if channel_info.get('hasTimeshift', False) else 0
 		self.picon = channel_info['logoUrl'].replace('https', 'http')
 		self.adult = False
 		self.preview = None
@@ -26,6 +27,7 @@ class MagioGOChannel(object):
 		self.epg_stop = 0
 		self.epg_year = None
 		self.epg_duration = None
+		self.epg_id = None
 
 	# #################################################################################################
 
@@ -54,6 +56,7 @@ class MagioGOChannel(object):
 		self.epg_stop = (info.get('end') or 0) // 1000
 		self.epg_year = info.get('creationYear')
 		self.epg_duration = int(info['runtimeMinutes']) * 60 if info.get('runtimeMinutes') else None
+		self.epg_id = info.get('id')
 
 # #################################################################################################
 
@@ -404,6 +407,7 @@ class MagioGO(object):
 		}
 
 		response = self.call_magiogo_api("v2/television/stream-url", method = "GET", params = params)
+
 		if response["success"] == True:
 			url = response["url"]
 		else:

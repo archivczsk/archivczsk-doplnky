@@ -1,3 +1,7 @@
+1.28 - 17.02.2025
+    - pridaná podpora pre prehrávanie relácie od začiatku (cez kontextové menu)
+    - oprava prehrávania DVTV Extra
+
 1.27 - 19.12.2024
     - pridaná podpora pre prehrávanie archívu priamo z EPG
 
@@ -11,7 +15,7 @@
     - oprava pádu ak nie je dostupné EPG
 
 1.23 - 23.08.2024
-    - oprava pádu pri nastavenom nekompatiblinom profile streamu v sekcii "Pre pokročilých"
+    - oprava pádu pri nastavenom nekompatibilnom profile streamu v sekcii "Pre pokročilých"
     - pri nastavení nesprávneho profilu nebude fungovať prehrávanie
 
 1.22 - 21.08.2024
