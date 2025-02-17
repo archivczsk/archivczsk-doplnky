@@ -29,22 +29,22 @@ class WBDMaxHTTPRequestHandler(DashHTTPRequestHandler):
 		periods = list(root.findall('{}Period'.format(ns)))
 		multiperiod_manifest = len(periods) > 1
 
-		remove_period = False
+		if multiperiod_manifest:
+			remove_period = False
 
-		for e_period in periods:
-			cenc_found = False
-			for e_adaptation_set in e_period.findall('{}AdaptationSet'.format(ns)):
-				if cenc_found == False:
-					for e_content_protection in e_adaptation_set.findall('{}ContentProtection'.format(ns)):
-						if e_content_protection.get('schemeIdUri') == 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed':
-							cenc_found = True
-							break
+			for e_period in periods:
+				cenc_found = False
+				for e_adaptation_set in e_period.findall('{}AdaptationSet'.format(ns)):
+					if cenc_found == False:
+						for e_content_protection in e_adaptation_set.findall('{}ContentProtection'.format(ns)):
+							if e_content_protection.get('schemeIdUri') == 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed':
+								cenc_found = True
+								break
 
-			if remove_period or cenc_found == False:
-				root.remove(e_period)
-			else:
-				remove_period = True
-				if multiperiod_manifest:
+				if remove_period or cenc_found == False:
+					root.remove(e_period)
+				else:
+					remove_period = True
 					# remove start and duration - they are wrong because all other periods are removed
 					if 'start' in e_period.attrib:
 						del e_period.attrib['start']
