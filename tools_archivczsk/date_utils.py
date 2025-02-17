@@ -28,7 +28,12 @@ def iso8601_to_timestamp(iso_string, utc=False):
 	if utc:
 		return utc_timestamp
 
-	local_timestamp = time.mktime(time.localtime(utc_timestamp)) # Local Timestamp
+	try:
+		local_timestamp = time.mktime(time.localtime(utc_timestamp)) # Local Timestamp
+	except OverflowError:
+		# whops, what not?
+		local_timestamp = 2**31 - 1
+
 	return local_timestamp
 
 def iso8601_to_datetime(iso_string, utc=False):
