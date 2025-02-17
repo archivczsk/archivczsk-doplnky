@@ -136,7 +136,6 @@ class O2HTTPRequestHandler(DashHTTPRequestHandler):
 				key = {
 					'key': self.cp.scache.put(streams[0]['playlist_url']),
 					'bandwidth': streams[0]['bandwidth'],
-					'fix': 'delay' if self.cp.delay_fix_enabled() else None,
 				}
 
 				url = stream_key_to_dash_url(self.cp.http_endpoint, key)
@@ -171,7 +170,6 @@ class O2HTTPRequestHandler(DashHTTPRequestHandler):
 		stream_info = {
 			'url': self.get_stream_index_url(channel_id),
 			'bandwidth': max_bitrate,
-			'fix': 'delay' if self.cp.delay_fix_enabled() else None,
 		}
 
 		export_md_subchannels = self.cp.get_setting('export_md_subchannels') and self.cp.is_supporter()
@@ -188,53 +186,6 @@ class O2HTTPRequestHandler(DashHTTPRequestHandler):
 	def default_handler(self, request, path_full ):
 		data = "Default handler O2TV for path: %s" % path_full
 		return self.reply_ok( request, data.encode('utf-8'), "text/plain; charset=UTF-8")
-
-	# #################################################################################################
-
-	def fix_live_delay(self, root, offset=0):
-		ns = root.tag[1:root.tag.index('}')]
-		ns = '{%s}' % ns
-
-		FIXED_R = 2
-		min_r = -1
-
-		for e_period in root.findall('{}Period'.format(ns)):
-			for e_adaptation_set in e_period.findall('{}AdaptationSet'.format(ns)):
-				for e in e_adaptation_set.findall('{}SegmentTemplate'.format(ns)):
-					for st in e.findall('{}SegmentTimeline'.format(ns)):
-						for s in st.findall('{}S'.format(ns)):
-							r = int(s.get('r', 1))
-							if min_r == -1 or r < min_r:
-								min_r = r
-
-		for e_period in root.findall('{}Period'.format(ns)):
-			for e_adaptation_set in e_period.findall('{}AdaptationSet'.format(ns)):
-				for e in e_adaptation_set.findall('{}SegmentTemplate'.format(ns)):
-					timescale = int(e.get('timescale'))
-					for st in e.findall('{}SegmentTimeline'.format(ns)):
-						for s in st.findall('{}S'.format(ns)):
-							try:
-								t = int(s.get('t', 0))
-								d = int(s.get('d'))
-								r = int(s.get('r', 1))
-
-								if t and r > 1:
-									new_r = r - min_r + FIXED_R
-
-									t = t + (d * (r - new_r))
-									r = new_r
-
-									if offset > 0:
-										t = t + (d * FIXED_R)
-										new_t = t - (timescale * offset)
-
-										while (t-d) > new_t:
-											t -= d
-
-									s.set('t', str(t))
-									s.set('r', str(r))
-							except:
-								self.cp.log_exception()
 
 	# #################################################################################################
 
@@ -279,12 +230,8 @@ class O2HTTPRequestHandler(DashHTTPRequestHandler):
 
 	# #################################################################################################
 
-	def fix_playlist_type(self, root):
-		root.set('type', 'static')
-		root.set('mediaPresentationDuration', root.get('timeShiftBufferDepth'))
-		root.attrib.pop('timeShiftBufferDepth', None)
-		root.attrib.pop('minimumUpdatePeriod', None)
-		return
+	def fix_startover(self, root):
+		root.set('startover', '1')
 
 	# #################################################################################################
 
@@ -293,11 +240,9 @@ class O2HTTPRequestHandler(DashHTTPRequestHandler):
 
 		fix = dash_info.get('fix')
 
-		if fix == 'delay':
-			self.fix_live_delay(root, dash_info.get('offset', 0))
-		elif fix == 'playlist_type':
-			self.fix_playlist_type(root)
-		elif fix == 'duration':
+		if fix == 'duration':
 			self.fix_duration(root, dash_info.get('offset', 0))
+		elif fix == 'startover':
+			self.fix_startover(root)
 
 	# #################################################################################################

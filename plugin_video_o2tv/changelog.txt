@@ -1,4 +1,10 @@
-1.27 - 03.02.2025
+1.28 - 17.02.2025
+    - plná podpora pre prehrávanie aktuálnej udalosti od začiatku vrátane pretáčania a pauzy
+    - prehrávanie aktuálnej udalosti od začiatku v archíve a cez EPG
+    - odstránenie predchádzajúceho riešenia pre obmedzenie oneskorenia u živého vysielania
+    - pre korektné fungovanie je potrebný exteplayer3 ver. >= 176
+
+1.27 - 14.02.2025
     - oprava nastavenia minút po skončení udalosti z archívu u niektorých programov
 
 1.26 - 03.02.2025
