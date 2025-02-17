@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_max\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-09 18:30+0100\n"
+"POT-Creation-Date: 2025-02-17 17:44+0100\n"
 "PO-Revision-Date: 2025-02-09 18:36+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -28,19 +28,19 @@ msgstr "Platnosť prihlasovacích údajov vypršala. Vykonajte nové spárovanie
 msgid "Unexpected return code from server"
 msgstr "Neočakávaný návratový kód zo servera"
 
-#: plugin_video_max/provider.py:68
+#: plugin_video_max/provider.py:70
 msgid "Select profile"
 msgstr "Vyberte profil"
 
-#: plugin_video_max/provider.py:78 plugin_video_max/provider.py:452
+#: plugin_video_max/provider.py:80 plugin_video_max/provider.py:511
 msgid "Enter PIN"
 msgstr "Zadajte PIN"
 
-#: plugin_video_max/provider.py:94
+#: plugin_video_max/provider.py:96
 msgid "Your already logged in. Please exit addon and run it again."
 msgstr "Už ste prihlásený. Ukončite prosím doplnok a spustite ho znova."
 
-#: plugin_video_max/provider.py:100
+#: plugin_video_max/provider.py:102
 #, python-brace-format
 msgid ""
 "Go to following URL and enter device code:\n"
@@ -53,107 +53,111 @@ msgstr ""
 "URL: {url}\n"
 "Kód zariadenia: {code}"
 
-#: plugin_video_max/provider.py:124
+#: plugin_video_max/provider.py:126
 msgid "Full functionality of this addon is only available for ArchivCZSK product supporters. You can login and list content, but you won't be able to start playback."
 msgstr "Plná funkčnosť tohto doplnku je k dispozícii len pre podporovateľov produktu ArchivCZSK. Môžete sa prihlásiť a zobraziť obsah, ale nebudete môcť spustiť prehrávanie."
 
-#: plugin_video_max/provider.py:129
+#: plugin_video_max/provider.py:131
 msgid "Start login process"
 msgstr "Spustiť proces prihlásenia"
 
-#: plugin_video_max/provider.py:129
+#: plugin_video_max/provider.py:131
 msgid "Use this if you want to pair this device with your MAX account."
 msgstr "Použite túto možnosť, ak chcete spárovať toto zariadenie s vašim MAX účtom."
 
-#: plugin_video_max/provider.py:132
+#: plugin_video_max/provider.py:134
 msgid "Start login process using provider"
 msgstr "Spustenie procesu prihlásenia pomocou poskytovateľa"
 
-#: plugin_video_max/provider.py:132
+#: plugin_video_max/provider.py:134
 msgid "Use this if you use login to MAX using provider, like google, amazon, ..."
 msgstr "Použite túto možnosť ak sa prihlasujete do MAX pomocou poskytovateľa ako google, amazon, ..."
 
-#: plugin_video_max/provider.py:139
+#: plugin_video_max/provider.py:141
 msgid "My items"
 msgstr "Moje položky"
 
-#: plugin_video_max/provider.py:141
+#: plugin_video_max/provider.py:143
 msgid "Informations and settings"
 msgstr "Informácie a nastavenia"
 
-#: plugin_video_max/provider.py:258
+#: plugin_video_max/provider.py:264
 msgid "Remove from viewed"
 msgstr "Odstrániť z videných"
 
-#: plugin_video_max/provider.py:285
+#: plugin_video_max/provider.py:324
 msgid "Trailer"
 msgstr "Trailer"
 
-#: plugin_video_max/provider.py:288
+#: plugin_video_max/provider.py:327
+msgid "Short preview"
+msgstr "Krátka ukážka"
+
+#: plugin_video_max/provider.py:330
 msgid "Remove from watchlist"
 msgstr "Odstrániť z watchlistu"
 
-#: plugin_video_max/provider.py:290
+#: plugin_video_max/provider.py:332
 msgid "Add to watchlist"
 msgstr "Pridať do watchlistu"
 
-#: plugin_video_max/provider.py:314
+#: plugin_video_max/provider.py:361
 msgid "Go to series"
 msgstr "Ísť na seriál"
 
-#: plugin_video_max/provider.py:371
+#: plugin_video_max/provider.py:430
 msgid "Season"
 msgstr "Sezóna"
 
-#: plugin_video_max/provider.py:376
+#: plugin_video_max/provider.py:435
 msgid "Profiles"
 msgstr "Profily"
 
-#: plugin_video_max/provider.py:377
+#: plugin_video_max/provider.py:436
 msgid "Devices"
 msgstr "Zariadenia"
 
-#: plugin_video_max/provider.py:378
+#: plugin_video_max/provider.py:437
 msgid "Logout"
 msgstr "Odhlásiť sa"
 
-#: plugin_video_max/provider.py:396
+#: plugin_video_max/provider.py:455
 msgid "Unknown"
 msgstr "Neznámy"
 
-#: plugin_video_max/provider.py:399
+#: plugin_video_max/provider.py:458
 msgid "Created"
 msgstr "Vytvorené"
 
-#: plugin_video_max/provider.py:400
+#: plugin_video_max/provider.py:459
 msgid "Make"
 msgstr "Značka"
 
-#: plugin_video_max/provider.py:401
+#: plugin_video_max/provider.py:460
 msgid "Model"
 msgstr "Model"
 
-#: plugin_video_max/provider.py:402
+#: plugin_video_max/provider.py:461
 msgid "OS"
 msgstr "OS"
 
-#: plugin_video_max/provider.py:416
+#: plugin_video_max/provider.py:475
 msgid "Do you realy want to delete this device?"
 msgstr "Naozaj chcete odstrániť toto zariadenie?"
 
-#: plugin_video_max/provider.py:428
+#: plugin_video_max/provider.py:487
 msgid "Active profile"
 msgstr "Aktívny profil"
 
-#: plugin_video_max/provider.py:431
+#: plugin_video_max/provider.py:490
 msgid "Pin protected"
 msgstr "Chránené PIN-om"
 
-#: plugin_video_max/provider.py:434
+#: plugin_video_max/provider.py:493
 msgid "Kids profile"
 msgstr "Detský profil"
 
-#: plugin_video_max/provider.py:449
+#: plugin_video_max/provider.py:508
 msgid "Do you realy want to switch profile?"
 msgstr "Naozaj chcete prepnúť profil?"
 

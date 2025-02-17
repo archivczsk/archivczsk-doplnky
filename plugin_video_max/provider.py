@@ -5,6 +5,8 @@ from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman
 from tools_archivczsk.cache import SimpleAutokeyExpiringCache
 from tools_archivczsk.player.features import PlayerFeatures
+from tools_archivczsk.date_utils import iso8601_to_timestamp
+from time import time
 from .wbdmax import WBDMax
 import re
 
@@ -119,7 +121,7 @@ class WBDMaxContentProvider(CommonContentProvider):
 
 	def root(self):
 		if self.is_supporter():
-			PlayerFeatures.request_exteplayer3_version(self, 175)
+			PlayerFeatures.request_exteplayer3_version(self, 176)
 		else:
 			self.show_info(self._("Full functionality of this addon is only available for ArchivCZSK product supporters. You can login and list content, but you won't be able to start playback."), noexit=True)
 
@@ -159,7 +161,7 @@ class WBDMaxContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def list_page(self, route, page=1):
+	def list_page(self, route, page=1, ignored_id=None):
 		data = self.wbdmax.get_route(route, page)
 
 		for row in data.get('items') or []:
@@ -167,7 +169,7 @@ class WBDMaxContentProvider(CommonContentProvider):
 				continue
 
 			if 'component' in row['collection'] and row['collection']['component'].get('id') in ('hero','tab-group'):
-				self._process_items(row['collection'].get('items', []))
+				self._process_items(row['collection'].get('items', []), ignored_id=ignored_id)
 				continue
 
 			label = row['collection'].get('title')
@@ -223,16 +225,20 @@ class WBDMaxContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def _process_items(self, rows, add_show_title=False):
+	def _process_items(self, rows, add_show_title=False, ignored_id=None):
 		for row in rows:
-			self._process_item(row, add_show_title)
+			self._process_item(row, add_show_title, ignored_id)
 
 	# ##################################################################################################################
 
-	def _process_item(self, row, add_show_title=False):
-		data = row.get('show') or row.get('video') or row.get('taxonomyNode') or row.get('link') or row.get('collection')
+	def _process_item(self, row, add_show_title=False, ignored_id=None):
+		data = row.get('show') or row.get('video') or row.get('taxonomyNode') or row.get('link') or row.get('collection') or row.get('airing')
 		if not data:
 			self.log_error("Unsupported ROW:\n%s" % row)
+			return
+
+		if ignored_id and data.get('id') == ignored_id:
+			# needed to break endless recursion in some categories
 			return
 
 		data['name'] = data.get('title', data['name'])
@@ -262,14 +268,47 @@ class WBDMaxContentProvider(CommonContentProvider):
 			else:
 				label = label + ' *'
 
+		edit = data.get('edit',{})
+
+		# check if event is playable now
+		playable_start = edit.get('playableStart')
+		playable_end = edit.get('playableEnd')
+		playable_start = iso8601_to_timestamp(playable_start) if playable_start else 0
+		playable_end = iso8601_to_timestamp(playable_end) if playable_end else 0
+		cur_time = int(time())
+
+		if playable_end == 0 or (playable_start <= cur_time and playable_end > cur_time):
+			playable_now = True
+		else:
+			playable_now = False
+			label = _C('gray', label)
+
+		year = data.get('premiereDate','')[:4]
+
 		info_labels = {
 			'sorttitle': data['name'],
 			'originaltitle': data.get('originalName'),
-			'plot': data.get('longDescription'),
-			'plotoutline': data.get('description'),
+			'plot': data.get('longDescription') or data.get('description') or '',
 			'aired': data.get('premiereDate'),
 			'genre': [x['name'] for x in data.get('txGenres', [])],
+			'duration': edit.get('duration',0) // 1000,
+			'year': int(year) if year else None,
+			'title': data.get('originalName') or data.get('name')
 		}
+
+		if year:
+			info_labels['title'] = '{} ({})'.format(info_labels['title'], year)
+
+		if 'txCorporate-genre' in data:
+			info_labels['plot'] = '[{}]\n{}'.format(data['txCorporate-genre'][0]['name'], info_labels['plot'])
+
+		schedule_start = data.get('scheduleStart')
+		schedule_end = data.get('scheduleEnd')
+
+		if schedule_start and schedule_end:
+			schedule_start = self.timestamp_to_str(iso8601_to_timestamp(schedule_start), '%d.%m.%Y %H:%M')
+			schedule_end = self.timestamp_to_str(iso8601_to_timestamp(schedule_end))
+			info_labels['plot'] = '[{} - {}]\n{}'.format(schedule_start, schedule_end, info_labels['plot'])
 
 		img = self._art(data.get('images',{}))
 
@@ -284,16 +323,25 @@ class WBDMaxContentProvider(CommonContentProvider):
 		if 'trailerVideo' in data:
 			menu.add_media_menu_item(self._("Trailer"), cmd=self.play_item, edit_id=data['trailerVideo']['edit']['id'], video_title=self._("Trailer") + ': ' + label)
 
+		if 'shortPreviewVideo' in data:
+			menu.add_media_menu_item(self._("Short preview"), cmd=self.play_item, edit_id=data['shortPreviewVideo']['edit']['id'], video_title=self._("Short preview") + ': ' + label)
+
 		if data.get('isFavorite', False):
 			menu.add_menu_item(self._("Remove from watchlist"), cmd=self.del_watchlist, item_id=data.get('show', data)['id'])
 		else:
 			menu.add_menu_item(self._("Add to watchlist"), cmd=self.add_watchlist, item_id=data.get('show', data)['id'])
 
 		if data.get('showType') in ('SERIES', 'TOPICAL', 'MINISERIES'):
+			if data.get('showType') in ('SERIES', 'MINISERIES') and year:
+				label = '{} ({})'.format(label, year)
+
 			self.add_dir(label, img, info_labels, menu, cmd=self.list_series, series_id=data['id'])
 
 		elif data.get('showType') in ('MOVIE', 'STANDALONE'):
-			self.add_video(label, img, info_labels, menu, cmd=self.play_item, item_id=data['id'], video_title=label)
+			if data.get('showType') == 'MOVIE' and year:
+				label = '{} ({})'.format(label, year)
+
+			self.add_video(label, img, info_labels, menu, cmd=self.play_item, item_id=data['id'] if playable_now else None, video_title=label)
 
 		elif data.get('videoType') == 'EPISODE':
 			img = self._art(data['show']['images'])
@@ -305,7 +353,6 @@ class WBDMaxContentProvider(CommonContentProvider):
 				'episode': data.get('episodeNumber'),
 				'season': data.get('seasonNumber'),
 				'tvshowtitle': data['show']['name'],
-				'duration': data['edit']['duration'] // 1000,
 			})
 
 			if add_show_title and info_labels.get('tvshowtitle'):
@@ -315,8 +362,10 @@ class WBDMaxContentProvider(CommonContentProvider):
 			self.add_video(label, img, info_labels, menu, cmd=self.play_item, edit_id=data['edit']['id'], video_title=label, src_data=self.create_src_data(data))
 
 		elif data.get('videoType') in ('STANDALONE_EVENT', 'CLIP', 'LIVE', 'MOVIE'):
+			if data.get('videoType') == 'MOVIE' and year:
+				label = '{} ({})'.format(label, year)
 
-			self.add_video(label, img, info_labels, menu, cmd=self.play_item, edit_id=data['edit']['id'], video_title=label, src_data=self.create_src_data(data))
+			self.add_video(label, img, info_labels, menu, cmd=self.play_item, edit_id=data['edit']['id'] if playable_now else None, video_title=label, src_data=self.create_src_data(data))
 
 		elif row.get('collection'):
 			# ignore collections without title
@@ -327,12 +376,22 @@ class WBDMaxContentProvider(CommonContentProvider):
 					self._process_items(data['items'], add_show_title=True)
 					self.add_paging(data['meta'], self.list_collection, collection_id=data['id'])
 
-		elif data.get('kind') == 'genre':
-			self.add_dir(label, img, info_labels, cmd=self.list_page, route=data['routes'][0]['url'][1:])
+		elif data.get('kind') in ('genre', 'sporting-event'):
+			self.add_dir(label, img, info_labels, cmd=self.list_page, route=data['routes'][0]['url'][1:], ignored_id=data.get('id'))
 
 		elif data.get('kind') == 'Internal Link':
 			self.add_dir(label, img, info_labels, cmd=self.list_page, route=data['linkedContentRoutes'][0]['url'][1:])
 
+		elif row.get('airing') and data.get('distributionChannel'):
+			event_start = data.get('scheduleStart')
+			event_end = data.get('scheduleEnd')
+			event_start = iso8601_to_timestamp(event_start) if event_start else 0
+			event_end = iso8601_to_timestamp(event_end) if event_start else 0
+
+			if event_start <= cur_time and event_end > cur_time:
+				channel = data.get('distributionChannel')
+				label = '{} ({})'.format(channel['name'], _I(label))
+				self.add_video(label, img, info_labels, menu, cmd=self.play_item, edit_id=channel['edit']['id'], video_title=channel['name'])
 		else:
 			self.log_error("Unexpected data: {}".format(data))
 
@@ -534,6 +593,9 @@ class WBDMaxContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def play_item(self, video_title=None, item_id=None, edit_id=None, src_data=None):
+		if item_id == None and edit_id == None:
+			return
+
 		self.ensure_supporter()
 		self.build_lang_lists()
 		data_item = None
