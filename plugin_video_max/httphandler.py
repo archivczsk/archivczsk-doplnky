@@ -59,7 +59,9 @@ class WBDMaxHTTPRequestHandler(DashHTTPRequestHandler):
 		# let's do processing by default manifest handler
 		super(WBDMaxHTTPRequestHandler, self).handle_mpd_manifest(base_url, root, bandwidth, dash_info, cache_key)
 
-		video_codec = self.cp.get_setting('video_codec')
+		# prefer h264, because exteplayer3 has problem with seeking in encrypted h265 and sometimes returns corrupted data
+		video_codec = 'avc1' #self.cp.get_setting('video_codec')
+
 		# keep only one adaption set for video - player doesn't support smooth streaming
 		for e_period in root.findall('{}Period'.format(ns)):
 			e_adaptation_list = []

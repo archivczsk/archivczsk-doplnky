@@ -2,6 +2,7 @@
     - pridanie podpory pre Eurosport kanály v športovej sekcii
     - pridanie podpory pre športové udalosti v športovej sekcii
     - viacero opráv a vylepšení v užívateľskom rozhraní
+    - vypnutie podpory pre h265 (nefunguje správne)
     - na prehrávanie živého vysielania je nutný exteplayer3 ver. >= 176
 
 1.2 - 09.02.2025
