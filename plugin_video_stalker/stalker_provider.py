@@ -21,7 +21,6 @@ import json
 from .stalker import StalkerCache, get_cache_key
 from .bouquet import StalkerBouquetGenerator
 from Plugins.Extensions.archivCZSK.engine.httpserver import archivCZSKHttpServer
-from binascii import crc32
 
 ######### contentprovider ##########
 

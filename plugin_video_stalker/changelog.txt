@@ -1,9 +1,12 @@
+1.8 - 17.02.2025
+    - oprava pádu pri generovaní userbouquetu
+
 1.7 - 13.09.2024
     - oprava pádu pri vypnutom EPG
     - úprava závislosti doplnku
 
 1.6 - 27.01.2024
-    - priadnie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
+    - pridanie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
 
 1.5 - 18.04.2023
 	- aktualizácia po zmenách api na strane ArchivCZSK
@@ -15,7 +18,7 @@
     - pridanie web rozhrania a možnosť vygenerovania playlisty pre vlc
     - nastavovanie správneho user agenta pre prehrávač
     - zvýšenie počtu záznamov na jednej stránke pre VOD
-    - konverzia na modul pre archivCZKS >= 2.0.0
+    - konverzia na modul pre archivCZSK >= 2.0.0
 
 1.2 - 15.12.2022
     - drobné opravy
