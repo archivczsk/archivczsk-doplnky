@@ -247,6 +247,11 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			base_url = urljoin(base_url, e_base_url.text.strip())
 			root.remove(e_base_url)
 
+		e_base_url = root.find('{}Location'.format(ns))
+		if e_base_url != None:
+			base_url = e_base_url.text.strip()
+			root.remove(e_base_url)
+
 		def search_drm_data(element):
 			kid = None
 			e = element.find('./{}ContentProtection[@schemeIdUri="urn:mpeg:dash:mp4protection:2011"]'.format(ns))
@@ -269,14 +274,21 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			if self.dash_proxy_segments:
 				ck = self.calc_cache_key(element.get('id'))
 				i = 0
+				e_base_url = element.find('{}BaseURL'.format(ns))
+				if e_base_url != None:
+					element.remove(e_base_url)
+					e_base_url = e_base_url.text.strip()
+				else:
+					e_base_url = ''
+
 				for e_segment_template in element.findall('{}SegmentTemplate'.format(ns)):
 					v = e_segment_template.get('initialization')
 					if v:
-						e_segment_template.set('initialization', 'i%s%d/%s' % (ck, i, v.replace('../', 'dot-dot-slash')))
+						e_segment_template.set('initialization', 'i%s%d/%s' % (ck, i, urljoin(e_base_url, v.replace('../', 'dot-dot-slash'))))
 
 					v = e_segment_template.get('media')
 					if v:
-						e_segment_template.set('media', 'm%s%d/%s' % (ck, i, v.replace('../', 'dot-dot-slash')))
+						e_segment_template.set('media', 'm%s%d/%s' % (ck, i, urljoin(e_base_url, v.replace('../', 'dot-dot-slash'))))
 					i += 1
 
 		def remove_content_protection(element):
