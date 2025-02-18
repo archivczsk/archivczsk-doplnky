@@ -235,8 +235,21 @@ class O2HTTPRequestHandler(DashHTTPRequestHandler):
 
 	# #################################################################################################
 
+	def fix_buffer_time(self, root, extra_cache_time):
+		if root.get('type') == 'dynamic':
+			buffer_time = iso8601_duration_to_seconds(root.get('minBufferTime'))
+
+			if buffer_time and buffer_time < 40:
+				root.set('minBufferTime', 'PT{}S'.format(buffer_time + extra_cache_time))
+
+	# #################################################################################################
+
 	def handle_mpd_manifest(self, base_url, root, bandwidth, dash_info={}, cache_key=None):
 		super(O2HTTPRequestHandler, self).handle_mpd_manifest(base_url, root, bandwidth, dash_info, cache_key)
+
+		extra_cache_time = int(self.cp.get_setting('extra_cache_time'))
+		if extra_cache_time > 0:
+			self.fix_buffer_time(root, extra_cache_time)
 
 		fix = dash_info.get('fix')
 

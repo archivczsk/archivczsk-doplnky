@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_archivo2tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-18 15:18+0100\n"
+"POT-Creation-Date: 2025-02-18 16:51+0100\n"
 "PO-Revision-Date: 2025-02-18 15:19+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -266,18 +266,6 @@ msgstr "Povoliť programy pre dospelých"
 msgid "Number of search history items"
 msgstr "Počet položiek histórie vyhľadávania"
 
-msgid "Enable special section in main menu"
-msgstr "Povoliť špeciálnu sekciu v hlavnom menu"
-
-msgid "Allow downloading of live broadcasting"
-msgstr "Povoliť sťahovanie u živého vysielania"
-
-msgid "Show multidimension stream choice"
-msgstr "U multidimenzie zobrazovať výber streamu"
-
-msgid "Check exteplayer3 version on startup"
-msgstr "Kontrola verzie exteplayer3 pri spustení"
-
 msgid "Userbouquet"
 msgstr "Userbouquet"
 
@@ -314,68 +302,20 @@ msgstr ""
 msgid "DVB (OE>=2.5)"
 msgstr ""
 
-#~ msgid "Login to O2 TV 2.0 failed. Have you been already migrated?"
-#~ msgstr "Prihlásenie do O2 2.0 zlyhalo. Bolo už vaše konto premigrované?"
+msgid "Advanced"
+msgstr "Pokročilé"
 
-#~ msgid "Play from beginnig (static)"
-#~ msgstr "Prehrať od začiatku (statické)"
+msgid "Enable special section in main menu"
+msgstr "Povoliť špeciálnu sekciu v hlavnom menu"
 
-#~ msgid "Play from beginnig (dynamic)"
-#~ msgstr "Prehrať od začiatku (dynamické)"
+msgid "Allow downloading of live broadcasting"
+msgstr "Povoliť sťahovanie u živého vysielania"
 
-#~ msgid "Fix high delay in live boroadcasting"
-#~ msgstr "Oprava veľkého oneskorenia živého vysielania"
+msgid "Show multidimension stream choice"
+msgstr "U multidimenzie zobrazovať výber streamu"
 
-#~ msgid "Play archive using recording? The recording has a larger amount of time added before and after the end of the selected program."
-#~ msgstr "Prehrať archív pomocou nahrávky? Nahrávka má pridaný väčší časový úsek pred a po skončení vybraného programu."
+msgid "Extra stream cache (in seconds)"
+msgstr "Dodatočná vyrovnávacia pamäť streamu (v sekundách)"
 
-#~ msgid "Play archive using recordings"
-#~ msgstr "Prehrávať archív pomocou nahrávok"
-
-#~ msgid "Ask"
-#~ msgstr "Spýtať sa"
-
-#~ msgid "Yes"
-#~ msgstr "Áno"
-
-#~ msgid "No"
-#~ msgstr "Nie"
-
-#~ msgid "You have enabled showing or exporting to userbouquet multidimension subchannels in addon settings."
-#~ msgstr "V nastaveniach doplnku ste povolili zobrazovanie subkanálov z multidimenzie alebo ich export do userbouquetu."
-
-#~ msgid "Use preprocessing for MPEG-DASH streams"
-#~ msgstr "Použiť predspracovanie MPEG-DASH streamov"
-
-#~ msgid "Please enter parental control pin"
-#~ msgstr "Prosím zadajte rodičovský pin"
-
-#~ msgid "Entered pin code is incorrect"
-#~ msgstr "Zadaný pin kód je nesprávny"
-
-#~ msgid "Device ID"
-#~ msgstr "ID zariadenia"
-
-#~ msgid "Play from beginning"
-#~ msgstr "Prehrať od začiatku"
-
-#~ msgid "Failed to load configuration from server"
-#~ msgstr "Získavanie konfigurácie zlyhalo"
-
-#~ msgid "My channles lists"
-#~ msgstr "Moje zoznamy kanálov"
-
-#~ msgid "Device name"
-#~ msgstr "Meno zariadenia"
-
-#~ msgid "Show EPG (slows down loading of Live TV)"
-#~ msgstr "Ukázať EPG (spomalí načítanie Live TV)"
-
-#~ msgid "How many hours cache EPG data"
-#~ msgstr "Koľko hodín EPG ukladať do cache"
-
-#~ msgid "How many minutes to play after event ends"
-#~ msgstr "Koľko minút prehrávať po konci programu"
-
-#~ msgid "W"
-#~ msgstr "St"
+msgid "Check exteplayer3 version on startup"
+msgstr "Kontrola verzie exteplayer3 pri spustení"
