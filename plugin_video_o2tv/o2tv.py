@@ -189,6 +189,7 @@ class O2TV(object):
 
 		# request Kaltura session ID
 		if 'err' in response or response.get('result',{}).get('objectType') != 'KalturaLoginSession':
+			self.cp.log_error("Unexpected anonymousLogin response: %s" % str(response) )
 			raise LoginException(response.get('err', self._('Failed to get login session')))
 
 		self.session_data['ks'] = response['result']['ks'] # store Kaltura session ID
@@ -204,7 +205,8 @@ class O2TV(object):
 
 		response = self.call_o2_api('https://login-a-moje.o2.cz/cas-external/v1/login', params={}, data=post, recover_ks=False)
 		if 'err' in response or not 'jwt' in response or not 'refresh_token' in response:
-			raise LoginException(self._("Login to O2 TV 2.0 failed. Have you been already migrated?"))
+			self.cp.log_error("Unexpected login response: %s" % str(response) )
+			raise LoginException(self._("Login to O2 TV 2.0 failed. Probably wrong username/password combination."))
 
 		self.session_data['jwt'] = response['jwt']
 		self.save_login_data()
@@ -241,6 +243,7 @@ class O2TV(object):
 		response = self.call_o2_api('ottuser/action/login', data=post, recover_ks=False)
 
 		if 'err' in response or response.get('result', {}).get('objectType') != 'KalturaLoginResponse' or not 'loginSession' in response.get('result', {}):
+			self.cp.log_error("Unexpected ottlogin response: %s" % str(response))
 			raise LoginException("Failed to login to {service_name} service".format(service_name=service['name']))
 
 		login_session = response['result']['loginSession']
@@ -259,6 +262,7 @@ class O2TV(object):
 		response = self.call_o2_api('apptoken/action/add', data=post, recover_ks=False)
 
 		if 'err' in response or response.get('result', {}).get('objectType') != 'KalturaAppToken':
+			self.cp.log_error("Unexpected apptoken response: %s" % str(response))
 			raise LoginException("Failed to register access token for {service_name} service".format(service_name=service['name']))
 
 		service['token'] = response['result']['token']
@@ -320,6 +324,7 @@ class O2TV(object):
 					response = self.call_o2_api('/api/p/%d/service/CZ/action/Invoke' % PARTNER_ID, data=post, recover_ks=False)
 
 					if 'err' in response or not 'service_list' in response.get('result', {}).get('adapterData', {}):
+						self.cp.log_error("Unexpected invoke response: %s" % str(response))
 						raise LoginException("Failed to get service list")
 
 				except:

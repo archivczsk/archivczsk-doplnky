@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_archivo2tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-17 14:00+0100\n"
-"PO-Revision-Date: 2025-02-17 14:01+0100\n"
+"POT-Creation-Date: 2025-02-18 15:18+0100\n"
+"PO-Revision-Date: 2025-02-18 15:19+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -20,19 +20,19 @@ msgstr ""
 msgid "Unexpected return code from server"
 msgstr "Neočekávaný návratový kód ze serveru"
 
-#: plugin_video_o2tv/o2tv.py:192
+#: plugin_video_o2tv/o2tv.py:193
 msgid "Failed to get login session"
 msgstr "Nepodařilo se vytvořit přihlašovací sezení"
 
-#: plugin_video_o2tv/o2tv.py:207
-msgid "Login to O2 TV 2.0 failed. Have you been already migrated?"
-msgstr "Přihlášení do O2 TV 2.0 selhalo. Bylo už vaše konto přemigrováno?"
+#: plugin_video_o2tv/o2tv.py:209
+msgid "Login to O2 TV 2.0 failed. Probably wrong username/password combination."
+msgstr "Přihlášení k O2 TV 2.0 se nezdařilo. Pravděpodobně špatná kombinace uživatelského jména a hesla."
 
-#: plugin_video_o2tv/o2tv.py:728
+#: plugin_video_o2tv/o2tv.py:733
 msgid "No playable stream was returned from server."
 msgstr "Server nevrátil žádný přehrátelný stream."
 
-#: plugin_video_o2tv/o2tv.py:741
+#: plugin_video_o2tv/o2tv.py:746
 msgid "Unsupported stream type"
 msgstr "Nepodporovaný typ streamu"
 
@@ -313,6 +313,9 @@ msgstr ""
 
 msgid "DVB (OE>=2.5)"
 msgstr ""
+
+#~ msgid "Login to O2 TV 2.0 failed. Have you been already migrated?"
+#~ msgstr "Přihlášení do O2 TV 2.0 selhalo. Bylo už vaše konto přemigrováno?"
 
 #~ msgid "Play from beginnig (static)"
 #~ msgstr "Přehrát od začátku (statické)"
