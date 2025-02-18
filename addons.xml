@@ -9,12 +9,12 @@
 <addon id="plugin.video.ivysilani" name="iVysílání - Česká televize" version="3.1" hash="109065c693679274dafa86632bb90027" rhash="e04b14509731b3cbf02d3726003f670b" />
 <addon id="plugin.video.joj.sk" name="joj.sk" version="1.6.4" hash="112505c278ce47dc37a82c90dabbc40a" rhash="112505c278ce47dc37a82c90dabbc40a" />
 <addon id="plugin.video.kvifftv" name="Kviff.tv" version="1.3" hash="0f31fd5e31abe7ba7b5e1c66adff14aa" rhash="893db8849b0f55c24845735baacd5cb0" />
-<addon id="plugin.video.magiogo" name="Magio TV" version="1.28" hash="eb7d4b0a3508b3f73313942dd3705afd" rhash="6f3de13d648dd1d4dfe173f24c6bf92d" />
+<addon id="plugin.video.magiogo" name="Magio TV" version="1.29" hash="973c2c72fb938aa1665dc5ac382a8708" rhash="2ccbbc0b519f822dcf4becd5fdd92e25" />
 <addon id="plugin.video.markiza" name="Markíza" version="2.13" hash="b94d217229b12375f6800fcd1209aa40" rhash="6729cc316f110ce2fff9cf56940161f0" />
 <addon id="plugin.video.max" name="Max" version="1.3" hash="9e941afd0bc1698594b40e50ceece50c" rhash="a48e91be4394b8fed861133fbf0d54d9" />
 <addon id="plugin.video.mtr.sk" name="Mestská TV Ružomberok" version="1.3.1" hash="c79805cd13bde8b3e11c25926e4c0b2d" rhash="c79805cd13bde8b3e11c25926e4c0b2d" />
 <addon id="plugin.video.novaplus" name="TV Nova" version="3.12" hash="7dc29834e0d0d15485bd31ffabf863e7" rhash="4fc06b2e43c58bfc964ea6458e638179" />
-<addon id="plugin.video.o2tv" name="O2 TV 2.0" version="1.28" hash="a3d7d6c23340991adbeee5d85c2b226f" rhash="eb5c2e2e4b4868ba953965dbc5df0f93" />
+<addon id="plugin.video.o2tv" name="O2 TV 2.0" version="1.29" hash="6793011ab0a065f43eed66605d2a14aa" rhash="3416bb19a2aeb7471e5e1c9827c9400b" />
 <addon id="plugin.video.orangetv" name="OrangeTV" version="2.23" hash="5ef36354efacb58b81c3e9fc964b803d" rhash="78db3f3aba313be5623e746e440f1fa5" />
 <addon id="plugin.video.pohadkar.cz" name="Pohádkář.cz" version="1.5.0" hash="2f30d87101b495adc0afb4cb95736753" rhash="2f30d87101b495adc0afb4cb95736753" />
 <addon id="plugin.video.prehrajto" name="Prehraj.to" version="1.3" hash="5edc00f41b7d0a30946869edfc634541" rhash="b865e7a4bd03e4cc177a2bb598a3f98c" />
