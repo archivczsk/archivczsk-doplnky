@@ -532,7 +532,10 @@ class O2TVContentProvider(ModuleContentProvider):
 
 	def root(self):
 		if self.get_setting('player-check'):
-			PlayerFeatures.request_exteplayer3_version(self, 176)
+			try:
+				PlayerFeatures.request_exteplayer3_version(self, 176)
+			except:
+				self.log_exception()
 
 		if not self.is_supporter():
 			msgs  = [ self._("You have enabled these options in addon settings:"), '\n' ]
