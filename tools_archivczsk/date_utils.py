@@ -61,14 +61,14 @@ def iso8601_duration_to_timedelta(iso_duration="P2DT6H21M32S"):
 	# microseconds internally, and therefore we'd have to
 	# convert parsed years and months to specific number of days.
 
-	if m[3]:
-		days = int(m[3])
-	if m[4]:
-		hours = int(m[4])
-	if m[5]:
-		minutes = int(m[5])
-	if m[6]:
-		seconds = float(m[6])
+	if m.group(3):
+		days = int(m.group(3))
+	if m.group(4):
+		hours = int(m.group(4))
+	if m.group(5):
+		minutes = int(m.group(5))
+	if m.group(6):
+		seconds = float(m.group(6))
 
 	return datetime.timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
 
