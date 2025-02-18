@@ -1,15 +1,9 @@
 # -*- coding: utf-8 -*-
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
 from tools_archivczsk.debug.http import dump_json_request
-import re
+from tools_archivczsk.date_utils import iso8601_to_timestamp
 import time
 from datetime import datetime, timedelta
-
-try:
-	from urllib.parse import parse_qs, urlparse
-except ImportError:
-	from urlparse import parse_qs, urlparse
-
 
 COMMON_HEADERS = {
 	'Origin': 'https://www.iprima.cz/',
@@ -86,7 +80,6 @@ class PrimaPlus(object):
 			'params': {
 				'_accessToken' : self.login_data['access_token'],
 				'deviceType' : self.DEVICE_TYPE,
-				'deviceId' : self.login_data['device_id'],
 			}
 		}
 		data['params'].update(params)
@@ -159,57 +152,28 @@ class PrimaPlus(object):
 	# ##################################################################################################################
 
 	def login(self):
-		response = self.req_session.get('https://auth.iprima.cz/oauth2/login')
-
-		try:
-			# try to get crfs token using regexp, because not all images have BeautifulSoup 4
-			csrf_token = re.search('name="_csrf_token".*value="(.*)"', response.text).group(1)
-		except:
-			# failed - try with BeautifulSoup 4
-			self.cp.log_exception()
-			try:
-				from bs4 import BeautifulSoup
-				soup = BeautifulSoup(response.content, 'html.parser')
-				csrf_token = soup.find('input', {'name' : '_csrf_token'}).get('value')
-			except:
-				self.cp.log_exception()
-				raise LoginException(self.cp._('Failed to get csrf token needed for login'))
+		# fetch cookies
+		response = self.req_session.get('https://ucet.iprima.cz/ucet/prihlaseni')
 
 		data = {
-			'_email' : self.cp.get_setting('username'),
-			'_password' : self.cp.get_setting('password'),
-			'_csrf_token' : csrf_token
+			'email' : self.cp.get_setting('username'),
+			'password' : self.cp.get_setting('password'),
+			'deviceName': self.DEVICE_NAME
 		}
-		response = self.req_session.post('https://auth.iprima.cz/oauth2/login', json=data)
+		response = self.req_session.post('https://ucet.iprima.cz/api/session/create', json=data)
 		if not response.ok:
-			raise LoginException(self.cp._("Unexpected return code from server") + ": %d" % response.status_code)
+			raise LoginException(self.cp._('Wrong login response. Probably wrong login name/password combination.'))
 
-		auth_url = parse_qs(urlparse(response.url).query)
-		if 'code' not in auth_url:
-			raise LoginException(self.cp._('Failed to get auth code. Probably wrong login name/password combination.'))
+		token_data = response.json().get('accessToken')
 
-		data = {
-			'scope' : 'openid+email+profile+phone+address+offline_access',
-			'client_id' : 'prima_sso',
-			'grant_type' : 'authorization_code',
-			'code' : auth_url['code'][0],
-			'redirect_uri' : 'https://auth.iprima.cz/sso/auth-check'
-		}
-
-		response = self.req_session.post('https://auth.iprima.cz/oauth2/token', json=data)
-
-		if not response.ok:
-			raise LoginException(self.cp._("Unexpected return code from server") + ": %d" % response.status_code)
-
-		token_data = response.json()
-
-		if 'access_token' in token_data:
-			self.login_data['access_token'] = token_data['access_token']
-			self.login_data['valid_to'] = int(time.time()) + int(token_data['expires_in'])
+		if token_data:
+			self.login_data['access_token'] = token_data['value']
+			self.login_data['valid_to'] = iso8601_to_timestamp(token_data['expiresAt'].split('+')[0])
 			self.login_data['checksum'] = self.get_login_checksum()
 
-			if self.login_data.get('device') == None:
-				self.register_device()
+			# not needed to call anymore
+#			if self.login_data.get('device') == None:
+#				self.register_device()
 
 			profiles = self.get_profiles()
 
@@ -497,7 +461,7 @@ class PrimaPlus(object):
 			if item['deleted'] or item['deletedByAdmin']:
 				continue
 
-			if item['slotId'] == self.login_data['device']:
+			if item['slotId'] == self.login_data.get('device'):
 				item['this'] = True
 			else:
 				item['this'] = False

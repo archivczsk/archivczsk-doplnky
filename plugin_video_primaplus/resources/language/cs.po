@@ -6,15 +6,39 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_primaplus\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-27 14:34+0100\n"
-"PO-Revision-Date: 2024-02-27 14:37+0100\n"
+"POT-Creation-Date: 2025-02-18 15:18+0100\n"
+"PO-Revision-Date: 2025-02-18 15:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.5\n"
+
+#: plugin_video_primaplus/primaplus.py:90
+msgid "Unexpected return code from Prima RPC server"
+msgstr "Neočekávaný návratový kód z Prima RPC serveru"
+
+#: plugin_video_primaplus/primaplus.py:95
+msgid "Error by calling Prima RPC API"
+msgstr "Chyba při volání Prima RPC API"
+
+#: plugin_video_primaplus/primaplus.py:134
+msgid "Unexpected return code from server"
+msgstr "Neočekávaný návratový kód ze serveru"
+
+#: plugin_video_primaplus/primaplus.py:165
+msgid "Wrong login response. Probably wrong login name/password combination."
+msgstr "Špatná odpověď na přihlášení. Pravděpodobně špatná kombinace přihlašovacího jména a hesla."
+
+#: plugin_video_primaplus/primaplus.py:193
+msgid "Access token not found in response data from server"
+msgstr "V odpovědi ze serveru nebyl nalezen přístupový token"
+
+#: plugin_video_primaplus/primaplus.py:375
+msgid "No stream informations returned from server"
+msgstr "Nepodařilo se získat informace o streamech ze serveru"
 
 #: plugin_video_primaplus/provider.py:26
 msgid "To display the content, you must enter a login name and password in the addon settings"
@@ -112,115 +136,85 @@ msgstr "Adresa"
 msgid "E-Mail"
 msgstr "E-Mail"
 
-#: plugin_video_primaplus/provider.py:70 plugin_video_primaplus/provider.py:114
+#: plugin_video_primaplus/provider.py:72 plugin_video_primaplus/provider.py:117
 msgid "Year of birth"
 msgstr "Rok narození"
 
-#: plugin_video_primaplus/provider.py:71
+#: plugin_video_primaplus/provider.py:74
 msgid "Customer key"
 msgstr "Zákaznický klíč"
 
-#: plugin_video_primaplus/provider.py:73
+#: plugin_video_primaplus/provider.py:76
 msgid "Active subscription"
 msgstr "Aktivní předplatné"
 
-#: plugin_video_primaplus/provider.py:74
+#: plugin_video_primaplus/provider.py:77
 msgid "Paid"
 msgstr "Placené"
 
-#: plugin_video_primaplus/provider.py:74
+#: plugin_video_primaplus/provider.py:77
 msgid "Yes"
 msgstr "Ano"
 
-#: plugin_video_primaplus/provider.py:74
+#: plugin_video_primaplus/provider.py:77
 msgid "No"
 msgstr "Ne"
 
-#: plugin_video_primaplus/provider.py:76
+#: plugin_video_primaplus/provider.py:79
 msgid "Valid from"
 msgstr "Platné od"
 
-#: plugin_video_primaplus/provider.py:78
+#: plugin_video_primaplus/provider.py:81
 msgid "Valid until"
 msgstr "Platné do"
 
-#: plugin_video_primaplus/provider.py:88
+#: plugin_video_primaplus/provider.py:91
 msgid "Registered at"
 msgstr "Registrováno"
 
-#: plugin_video_primaplus/provider.py:91
+#: plugin_video_primaplus/provider.py:94
 msgid "Last change"
 msgstr "Poslední změna"
 
-#: plugin_video_primaplus/provider.py:104
+#: plugin_video_primaplus/provider.py:107
 msgid "Do you realy want to delete this device?"
 msgstr "Opravdu chcete smazat toto zařízení?"
 
-#: plugin_video_primaplus/provider.py:113
+#: plugin_video_primaplus/provider.py:116
 msgid "Created at"
 msgstr "Vytvořeno"
 
-#: plugin_video_primaplus/provider.py:116
+#: plugin_video_primaplus/provider.py:119
 msgid "Main profile"
 msgstr "Hlavní profil"
 
-#: plugin_video_primaplus/provider.py:118
+#: plugin_video_primaplus/provider.py:121
 msgid "Kids profile"
 msgstr "Dětský profil"
 
-#: plugin_video_primaplus/provider.py:133
+#: plugin_video_primaplus/provider.py:136
 msgid "Do you realy want to switch profile?"
 msgstr "Opravdu chcete přepnut profil?"
 
-#: plugin_video_primaplus/provider.py:181
+#: plugin_video_primaplus/provider.py:184
 msgid "Remove from my list"
 msgstr "Odstranit z mého seznamu"
 
-#: plugin_video_primaplus/provider.py:183
+#: plugin_video_primaplus/provider.py:186
 msgid "Add to my list"
 msgstr "Přidat na můj seznam"
 
-#: plugin_video_primaplus/provider.py:221
+#: plugin_video_primaplus/provider.py:224
 msgid "Order by alphabet"
 msgstr "Seřadit podle abecedy"
 
-#: plugin_video_primaplus/provider.py:277
+#: plugin_video_primaplus/provider.py:284
 msgid "Today"
 msgstr "Dnes"
 
-#: plugin_video_primaplus/provider.py:279
+#: plugin_video_primaplus/provider.py:286
 msgid "Yesterday"
 msgstr "Včera"
-
-#: plugin_video_primaplus/primaplus.py:97
-msgid "Unexpected return code from Prima RPC server"
-msgstr "Neočekávaný návratový kód z Prima RPC serveru"
-
-#: plugin_video_primaplus/primaplus.py:102
-msgid "Error by calling Prima RPC API"
-msgstr "Chyba při volání Prima RPC API"
-
-#: plugin_video_primaplus/primaplus.py:141
-#: plugin_video_primaplus/primaplus.py:185
-#: plugin_video_primaplus/primaplus.py:202
-msgid "Unexpected return code from server"
-msgstr "Neočekávaný návratový kód ze serveru"
-
-#: plugin_video_primaplus/primaplus.py:176
-msgid "Failed to get csrf token needed for login"
-msgstr "Nepodařilo se získat csrf token potřebný pro přihlášení"
-
-#: plugin_video_primaplus/primaplus.py:189
-msgid "Failed to get auth code. Probably wrong login name/password combination."
-msgstr "Nepodařilo se získat autorizační kód. Pravdepodobně špatná kombinace přihlašovasího jména/hesla."
-
-#: plugin_video_primaplus/primaplus.py:229
-msgid "Access token not found in response data from server"
-msgstr "V odpovědi ze serveru nebyl nalezen přístupový token"
-
-#: plugin_video_primaplus/primaplus.py:411
-msgid "No stream informations returned from server"
-msgstr "Nepodařilo se získat informace o streamech ze serveru"
 
 msgid "Login name"
 msgstr "Přihlašovací jméno"
@@ -257,6 +251,12 @@ msgstr ""
 
 msgid "MPEG-DASH"
 msgstr ""
+
+#~ msgid "Failed to get csrf token needed for login"
+#~ msgstr "Nepodařilo se získat csrf token potřebný pro přihlášení"
+
+#~ msgid "Failed to get auth code. Probably wrong login name/password combination."
+#~ msgstr "Nepodařilo se získat autorizační kód. Pravdepodobně špatná kombinace přihlašovasího jména/hesla."
 
 #~ msgid "No playable stream found for this item"
 #~ msgstr "Pro tuto položku nebyl nalezen žádný přehratelný stream"

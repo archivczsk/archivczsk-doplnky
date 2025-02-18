@@ -1,12 +1,15 @@
+1.5 - 18.02.2025
+- oprava prihlásenia po zmenách na strane Prima+
+
 1.4 - 28.09.2024
 - oprava pádu ak relácia nemá zadaný názov
 
 1.3 - 13.09.2024
 - oprava pádu ak program obsahuje nekompletné EPG
-- oprava pádu pri zobrazení infromácií o predplatnom
+- oprava pádu pri zobrazení informácií o predplatnom
 
 1.2 - 27.02.2024
-- pridanie možnosti pre voľbu audio stopy stlačením tlačida HORE/DOLE počas prehrávania
+- pridanie možnosti pre voľbu audio stopy stlačením tlačidla HORE/DOLE počas prehrávania
 - pridanie podpory pre MPEG-DASH streamy
 - experimentálna podpora pre streamy chránené DRM ochranou
 
