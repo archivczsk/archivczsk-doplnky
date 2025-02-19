@@ -1,3 +1,6 @@
+2.12 - 18.02.2025
+    - fixed 2038 timestamp overflow problem in date utils
+
 2.11 - 17.02.2025
     - fixed dash handler in segment proxy mode
     - updated available exteplayer3 version
