@@ -1,3 +1,6 @@
+2025-02-19 [3.2]
+* oprava nahlásených pádov
+
 2025-02-13 [3.1]
 * oprava nahlásených pádov
 

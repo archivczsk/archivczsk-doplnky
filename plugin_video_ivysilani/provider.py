@@ -348,7 +348,7 @@ class iVysilaniContentProvider(ModuleContentProvider):
 
 		plot = item.get('description') or item.get('shortDescription')
 
-		if item.get('lastBroadcast',{}).get('datetime'):
+		if (item.get('lastBroadcast') or {}).get('datetime'):
 			bd = iso8601_to_datetime(item['lastBroadcast']['datetime'])
 			plot = "[{}: {:02}.{:02}.{:04} {:02}:{:02}]\n{}".format(item['lastBroadcast']['channel'], bd.day, bd.month, bd.year, bd.hour, bd.minute, plot)
 
