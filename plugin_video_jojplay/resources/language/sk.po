@@ -1,0 +1,146 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_jojplay\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-03-15 19:30+0100\n"
+"PO-Revision-Date: 2025-03-15 19:46+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: sk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.5\n"
+
+#: plugin_video_jojplay/provider.py:36
+msgid "Search"
+msgstr "Vyhľadávanie"
+
+#: plugin_video_jojplay/provider.py:37
+msgid "Live TV"
+msgstr "Live TV"
+
+#: plugin_video_jojplay/provider.py:45
+msgid "Favourites"
+msgstr "Obľúbené"
+
+#: plugin_video_jojplay/provider.py:48
+msgid "Continue watching"
+msgstr "Pokračovať v sledovaní"
+
+#: plugin_video_jojplay/provider.py:71
+msgid "Select profile"
+msgstr "Výber profilu"
+
+#: plugin_video_jojplay/provider.py:85
+msgid "Search movies"
+msgstr "Hľadať filmy"
+
+#: plugin_video_jojplay/provider.py:86
+msgid "Search series"
+msgstr "Hľadať seriály"
+
+#: plugin_video_jojplay/provider.py:117
+msgid "Movies"
+msgstr "Filmy"
+
+#: plugin_video_jojplay/provider.py:118
+msgid "Series"
+msgstr "Seriály"
+
+#: plugin_video_jojplay/provider.py:148
+msgid "Remove from favourites"
+msgstr "Odstrániť z obľúbených"
+
+#: plugin_video_jojplay/provider.py:150
+msgid "Add to favourites"
+msgstr "Pridať do obľúbených"
+
+#: plugin_video_jojplay/provider.py:153
+msgid "Play trailer"
+msgstr "Prehrať trailer"
+
+#: plugin_video_jojplay/provider.py:154
+msgid "Show related"
+msgstr "Zobraziť súvisiace"
+
+#: plugin_video_jojplay/provider.py:155
+msgid "Reset watch position"
+msgstr "Resetovať pozíciu prehrávania"
+
+#: plugin_video_jojplay/provider.py:168 plugin_video_jojplay/provider.py:224
+msgid "Subscription needed"
+msgstr "Potrebné predplatné"
+
+#: plugin_video_jojplay/provider.py:170 plugin_video_jojplay/provider.py:226
+msgid "Only for ArchivCZSK supporters"
+msgstr "Len pre podporovateľov ArchivCZSK"
+
+#: plugin_video_jojplay/provider.py:301
+msgid "Season"
+msgstr "Sezóna"
+
+#: plugin_video_jojplay/provider.py:423
+msgid "This video is not available for your subscription. Play trailer instead?"
+msgstr "Toto video nie je k dispozícii pre vaše predplatné. Prehrať si namiesto toho trailer?"
+
+#: plugin_video_jojplay/jojplay.py:127
+msgid "No username or password provided"
+msgstr "Nie je zadané používateľské meno alebo heslo"
+
+#: plugin_video_jojplay/jojplay.py:153
+msgid "Login failed. Probably wrong username/password combination."
+msgstr "Prihlásenie zlyhalo. Pravdepodobne nesprávna kombinácia používateľského mena a hesla."
+
+#: plugin_video_jojplay/jojplay.py:191
+msgid "Login refresh failed. Refresh token is not valid anymore."
+msgstr "Obnovenie prihlásenia zlyhalo. Refresh token už nie je platný."
+
+#: plugin_video_jojplay/jojplay.py:224
+msgid "Failed to get user informations"
+msgstr "Nepodarilo sa získať informácie o používateľovi"
+
+#: plugin_video_jojplay/jojplay.py:327
+msgid "With your subscription you don't have access to this content."
+msgstr "S predplatným nemáte prístup k tomuto obsahu."
+
+msgid "Login name"
+msgstr "Prihlasovacie meno"
+
+msgid "Login password"
+msgstr "Prihlasovacie heslo"
+
+msgid "Select profile on startup"
+msgstr "Výber profilu pri spustení"
+
+msgid "Sync playback"
+msgstr "Synchronizovať prehrávanie"
+
+msgid "Allow multiple audio tracks for HLS"
+msgstr "Povoliť viacero audio stôp pre HLS"
+
+msgid "Maximum bandwidth of the offered stream"
+msgstr "Maximálny dátový tok ponúkaného streamu"
+
+msgid "Unlimited"
+msgstr "Bez obmedzenia"
+
+msgid "8 Mbit/s"
+msgstr ""
+
+msgid "6 Mbit/s"
+msgstr ""
+
+msgid "4 Mbit/s"
+msgstr ""
+
+msgid "3 Mbit/s"
+msgstr ""
+
+msgid "2 Mbit/s"
+msgstr ""

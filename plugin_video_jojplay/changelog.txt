@@ -1,0 +1,7 @@
+1.0: 15.03.2025
+- úvodná verzia - funkčne približne kopíruje možnosti oficiálnej aplikácie
+- pre používanie je nutné v nastaveniach zadať prihlasovacie údaje k službe
+- prístup k celej funkcionalite majú len podporovatelia ArchivCZSK
+- položky zobrazené sivou farbou nie sú dostupné pre vaše predplatné
+- položky, ktoré vyžadujú dodatočný poplatok nie sú podporované
+- ostatní majú možnosť prehrávať len položky dostupné s bezplatným kontom a kvalita je obmedzená na 720p

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+  <setting label="Login name" id="username" type="text" default=""/>
+  <setting label="Login password" id="password" type="password" default=""/>
+  <setting label="Select profile on startup" type="bool" id="select_profile" default="true" />
+  <setting label="Sync playback" type="bool" id="sync_playback" default="true" />
+  <setting label="Allow multiple audio tracks for HLS" id="hls_multiaudio" type="bool" default="false" />
+  <setting label="Maximum bandwidth of the offered stream" id="max_bitrate" type="keyenum" values="0;Unlimited|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
+</settings>
