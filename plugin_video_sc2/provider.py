@@ -857,6 +857,10 @@ class SccContentProvider(CommonContentProvider):
 			else:
 				self.log_error("Unhandled media type: %s" % media_type)
 
+		if title_hint != None:
+			# AZ folder returns unsorted items, so sort them here
+			self.sort_content_items(ignore_case=True)
+
 	# ##################################################################################################################
 
 	def get_data_by_parent(self, media_id, services=None, category=None):

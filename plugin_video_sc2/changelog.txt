@@ -1,3 +1,6 @@
+2025-02-20 [3.25]
+* oprava zoradenia filmov/seriálov v sekcii "Podľa abecedy"
+
 2025-02-13 [3.24]
 * obídenie problému s rokom 2038 pri prihlásení
 * oprava pádu ak nie je k dispozícii žiaden trailer
