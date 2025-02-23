@@ -64,10 +64,13 @@ def dump_json_request(response):
 			'params': params,
 			'headers': OrderedDict(request.headers),
 			'data': json_data,
+			'data_raw': str(request.body)
 		},
 		'response': {
 			'status_code': response.status_code,
-			'body': json_response
+			'headers': OrderedDict(response.headers),
+			'body': json_response,
+			'data_raw': str(response.text)
 		}
 	}
 
