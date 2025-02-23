@@ -16,7 +16,7 @@ class YoutubeContentProvider(CommonContentProvider):
 		CommonContentProvider.__init__(self, 'Youtube', settings=settings, data_dir=data_dir)
 		self.watched = self.load_cached_data('watched')
 		self.req_session = self.get_requests_session()
-		self.max_results = 100
+		self.max_results = 50
 		self.api_keys = json.loads(b64decode(b'WyJBSXphU3lDVFdDNzVpNzBtb0pMenlOaDN0dDRqekNsalpjUmtVOFkiLCAiQUl6YVN5Q0lNNEV6TnFpMWluMjJmNFozUnUzaVl2TGFZOHRjM2JvIiwgIkFJemFTeUQySjJscW5qRTVWMGZIdmlFSUNITXRjMlBTS3FZN0lTayIsICJBSXphU3lCVV9vV0VJVUxpMy1uOTZ2V0tFVFlDTXNsZFlEQWx6Mk0iLCAiQUl6YVN5QzRDM2d6U1NFcnptYzJGZVVUbGVRcVpHenc4LXotZDZ3IiwgIkFJemFTeUNyRldpUGZHY2I1SXN5Uy13cEFNazZlYU5kTWFDOHBYcyIsICJBSXphU3lEbFpSMlVod1FYZUd3MkloQ1JucG9aQjhMSFprYWd3STQiLCAiQUl6YVN5Q1hxanMyWlBiMFBRUmVJV2lFTk1BQWtTeDBfdHZkNG5rIiwgIkFJemFTeUNzRTkxUFRELVhqVFUzT19JWnBZMFB2Vm9tMnR3NERyOCIsICJBSXphU3lBcnJoa2g0OWIyR05sQzhVZExvZHEzdVNwS3pjZ2R6ZWciLCAiQUl6YVN5Q1BjQUtDNzRTemdRQjhNU1hLY1BPNnpJb1ZmcXdsT2lnIiwgIkFJemFTeURCa29IZEQxSXc2SG9vTWhNb09iYkhGQ1hIRlN3S3pJVSIsICJBSXphU3lDNEMzZ3pTU0Vyem1jMkZlVVRsZVFxWkd6dzgtei1kNnciLCAiQUl6YVN5QUdQUDRqQTNoTDhmZXNqeGFWR2U4YmRWVW9RcUtMRExRIiwgIkFJemFTeUFfNW13aVZSWko5WkphaXR1cXYxbmdJQ2RMLTVGMTdQayIsICJBSXphU3lBLXV3T0taQnBieXBXcDFUV3B1WWY1SzAtNHd1UHp3RzgiLCAiQUl6YVN5RGpuZXdqNUpKRnVxWmFva3FkYkoybWE3bmhQa3V3VHBNIiwgIkFJemFTeUJ2Z1lVX1lEQkpWU3RDNkxEWDRHZ2tpWDkxMnZtSHJDZyIsICJBSXphU3lCODBoaFIySEc4aUxxV1AtTXdmWjhDdnlYV3NQX0tyQUEiLCAiQUl6YVN5QkRGcWJidDViMEo5Y3VvaGw1cWtnQUYyWUo5UVVfa0l3IiwgIkFJemFTeUJ0blR6YU00MHRWZXVEV1hrQ3FuWGFVVjhiMkotMk5iWSIsICJBSXphU3lEZF9zZnZRNE5BU2ItazBvS1lBcl9nOUZaY1FJTHR5S2MiLCAiQUl6YVN5QnRuVHphTTQwdFZldURXWGtDcW5YYVVWOGIySi0yTmJZIiwgIkFJemFTeUJqODBualdzMEtjZ0Q2QTQ0eTZjRGRHMnFpbmZ2Ylo0VSIsICJBSXphU3lENDktWFoySlY3UndzM0tETTJUN25BNTZKYmktTzdkalkiLCAiQUl6YVN5Qmo4MG5qV3MwS2NnRDZBNDR5NmNEZEcycWluZnZiWjRVIiwgIkFJemFTeUR5cTNucjJLamJGTUU5RWVOcEh5OTdBWDg3dms3NUhfWSIsICJBSXphU3lBbHd6X1ZqNm1XSUJncWdLRDByUXdJODJGYTRTM2Nza2siLCAiQUl6YVN5RC1vWjhBcXNWTUo3U3pYZDB5ZnBSVEF6SmFwbGVnYUIwIiwgIkFJemFTeUFTUExBV21qQ1BEUm9pTXR0MUFIR1EwVEd5Ung5d1RSVSIsICJBSXphU3lCaWhuWEtVbXg5aDZESEFsVE5rclotNnpuenJ6M01FMU0iLCAiQUl6YVN5QThIVlFFc3lST0xtZVo0UDNHaEtSQ1UyQmFqVG5KVU5jIiwgIkFJemFTeUFnRThKT1kwNmtKU1V4QllZWENHS2hRbmh4MXFEOGpkQSIsICJBSXphU3lDR3pfOGJFMzJxNE5Ba2pkQVhqcEFpaWdCUzZ6OVpBU1UiLCAiQUl6YVN5QnhUdjBSUEl6X0Rqdms5U1JmTUNUTzNpdV83WXNNanJRIiwgIkFJemFTeURGNDZJeVpZd1BsYjZaQnhBRDYtSXVMeFZOWXNiVEl3USIsICJBSXphU3lCa2lMQXRhYXYyZWNJN1Z2Z3MtaUJlZU1zX3YzWG5kRDgiLCAiQUl6YVN5Qkc5OENzQlVTTFhfd2FWTFNiMzRiQ2VTRjFxc0pxR2pFIiwgIkFJemFTeUM3VkdROU9qdmpPYUlUT01tNFR2TFRlRy1feVFaUmkwUSIsICJBSXphU3lCaWE1Szd3MFNEOGJBS0dhc2RhQzl0SDQwXzBnRTdsRHciLCAiQUl6YVN5Q3JZVHpxVUx2V045YjlOSW5EZFFNcGY1dDVoeTl6UlNvIiwgIkFJemFTeUF0R3Vyd042R2Zzc0N3VlNIWHpQUmJBNG9meFlNNUZSbyIsICJBSXphU3lDT1RaVEV6VHlkY1h1ZXRjb25reFpVakVYS2lQTURwRzAiLCAiQUl6YVN5Q0F5WDYzQlI5XzVYUzhqRmhYeFY0ZG9JR2h2YWpjWjdjIiwgIkFJemFTeUNrZ2xYcHNvWG83UWpzTERCQUw4bXpDZlg0WVp6cGR0ZyIsICJBSXphU3lBN19FTTZ5NVI4UzlFdExXcC1KUEZBNDN1dGF1aTMtdm8iLCAiQUl6YVN5QW1obFQ3c1YtT0JadlJCRzh4alVHc2tUM2VzajBtYzNrIiwgIkFJemFTeUJfYjhCcjd1MW1JM2Yzb193N1VJT0F4VUdHSklHeDktYyIsICJBSXphU3lBbWhsVDdzVi1PQlp2UkJHOHhqVUdza1QzZXNqMG1jM2siLCAiQUl6YVN5RGlSTURVY25tbV93U1ZoWUxvMHZoQWVrSHlHaEl6a2N3IiwgIkFJemFTeUNqVG1xVHhSRmZhb2FkcUp5U1EwQzNIS2l6Vm5kWnJJVSIsICJBSXphU3lDdGQ5N1plczdraFpZbTJHQ0hjWUFmRFQ1RWd2bVdxWmsiLCAiQUl6YVN5Q0ZqcnU4ZE9aYkd0WlVpX0FRdTFDejFNTG9BTmFZMjJrIiwgIkFJemFTeURYU1hiUVNHRUN3aWpIN1RhQUs5UnRmSkFPSngwNjJHMCIsICJBSXphU3lCVHByaTZJamVmZWQ2bThONDhjN3hHUlJlZXBmd3JXYzAiLCAiQUl6YVN5QmViQkcxTFp5Yk96NURORGRaTXEzNW53c1ZxUm5LZVVrIiwgIkFJemFTeUNaQ1NFbUtoZm5QT1FORzBTanU0aGx3MllEVXhnaTZwZyIsICJBSXphU3lCT185bHdGQ0lQTmYxT3lvQWZ3VnVOS3RFTXB0Z3U0NG8iLCAiQUl6YVN5QjFaenJUbUZwZFNOYzJnSG1GOW45UzExQTR2Z0hyS2JjIiwgIkFJemFTeUNUeVRBRnhCN1BTeTB2S0I0RGo1OHc2djNiUFFobVBUVSIsICJBSXphU3lDVjRmbWZkZ3NWYWxHTlIzc2MtMFczY2JwRVo4dU9kNjAiLCAiQUl6YVN5REZyUU12WFRaOVBBUkZYdkxwY09UU2VDOGJCT3U2UHcwIiwgIkFJemFTeURSWWhFY29VWGlqX2kzMGlkdnFha0JWRUVQU2xrWEtyayIsICJBSXphU3lCd1RxaDdHLXhWNFdXWmdfLVFGQjA0SzR2Q1BqTFh6QVkiLCAiQUl6YVN5REFlQmZVdmpaWnNjNFd4NTJDa3ZOakZMT19wczNXZ204IiwgIkFJemFTeUE2RmJVYkRxVDJ3amFsdWlvM0N2Umh2V1N5d1lKRWNQZyIsICJBSXphU3lDemxiU181dlN0cm9EbWNkYThSaGs5T2swV1JDS2k4blEiLCAiQUl6YVN5QUczR3lEUk1TZ2NfXzlZS00zN0RORHppMG9nX0tvejFRIiwgIkFJemFTeURKTGY3cGxkanZmNlFldlZGX0JhejBTcmNYMEludmVNSSJd').decode('utf-8'))
 		self.api_key_blacklist = {}
 
@@ -137,63 +137,72 @@ class YoutubeContentProvider(CommonContentProvider):
 				if video_id:
 					ids.append(video_id)
 
-		detail_params = {
-			'id': ','.join(ids),
-			'part': 'snippet,statistics,contentDetails'
-		}
+		# API has limit to look for max 50 ids at once
+		ids_chunks = [ids[i:i + self.max_results] for i in range(0, len(ids), self.max_results)]
 
-		detail = {i.get('id'): i for i in (self.call_api('videos', detail_params).get('items') or [])}
-
-		for video_id in ids:
-			video_detail = detail.get(video_id,{})
-			video_detail_snippet = video_detail.get('snippet', {})
-
-			title = decode_html(video_detail_snippet.get("title", ""))
-
-			is_live = video_detail_snippet.get("liveBroadcastContent")
-			if is_live == "upcoming":
-				title = _C('red', title)
-			elif is_live == "live":
-				title = _C('green', title)
-
-			img = video_detail_snippet.get("thumbnails", {}).get("standard", {}).get("url")
-			duration = video_detail.get("contentDetails", {}).get("duration")
-
-			pt = video_detail_snippet.get("publishedAt", "") #2020-12-19T19:58:27Z
-			pts = re.search("([\d]{4})-([\d]{2})-([\d]{2})T([\d]{2}):([\d]{2})",pt)
-			publish = pts.group(3)+"."+pts.group(2)+"."+pts.group(1)+" "+pts.group(4)+":"+pts.group(5) if pts else ""
-
-			channel_title = video_detail_snippet.get("channelTitle") or ''
-			channel_id = video_detail_snippet.get("channelId", "")
-			views = video_detail.get("statistics", {}).get("viewCount", "")
-
-			plot = '{} [{}] {} ({}x)\n{}'.format(
-				publish,
-				channel_title,
-				self.yt_time(duration),
-				views,
-				decode_html(video_detail_snippet.get("description") or '')
-			)
-
-			info_labels = {
-				'plot': plot,
-				'duration': self.yt_time(duration, True)
+		for ids_chunk in ids_chunks:
+			detail_params = {
+				'id': ','.join(ids_chunk),
+				'part': 'snippet,statistics,contentDetails'
 			}
 
-			menu = self.create_ctx_menu()
+			detail = {i.get('id'): i for i in (self.call_api('videos', detail_params).get('items') or [])}
 
-			if watched:
-				menu.add_menu_item(self._('Remove from watched'), cmd=self.remove_watched_item, video_id=video_id)
+			for video_id in ids_chunk:
+				video_detail = detail.get(video_id,{})
+				video_detail_snippet = video_detail.get('snippet', {})
 
-			channel_params = {
-				'channelId': channel_id,
-				'maxResults': self.max_results,
-				'part': 'id',
-				'order': 'date',
-			}
-			menu.add_menu_item(self._('View channel videos'), cmd=self.list_videos, endpoint='search', params=channel_params)
-			menu.add_menu_item(self._('Save channel'), cmd=self.save_channel, channel_name=channel_title, channel_id=channel_id)
-			self.add_video(title, img, info_labels, menu=menu, cmd=self.resolve_video, video_title=title, video_id=video_id)
+				title = decode_html(video_detail_snippet.get("title", ""))
+
+				if not title:
+					# no title - video is not available anymore
+					self.log_debug("Video %s is not available anymore" % video_id)
+					continue
+
+				is_live = video_detail_snippet.get("liveBroadcastContent")
+				if is_live == "upcoming":
+					title = _C('red', title)
+				elif is_live == "live":
+					title = _C('green', title)
+
+				img = video_detail_snippet.get("thumbnails", {}).get("standard", {}).get("url")
+				duration = video_detail.get("contentDetails", {}).get("duration")
+
+				pt = video_detail_snippet.get("publishedAt", "") #2020-12-19T19:58:27Z
+				pts = re.search("([\d]{4})-([\d]{2})-([\d]{2})T([\d]{2}):([\d]{2})",pt)
+				publish = pts.group(3)+"."+pts.group(2)+"."+pts.group(1)+" "+pts.group(4)+":"+pts.group(5) if pts else ""
+
+				channel_title = video_detail_snippet.get("channelTitle") or ''
+				channel_id = video_detail_snippet.get("channelId", "")
+				views = video_detail.get("statistics", {}).get("viewCount", "")
+
+				plot = '{} [{}] {} ({}x)\n{}'.format(
+					publish,
+					channel_title,
+					self.yt_time(duration),
+					views,
+					decode_html(video_detail_snippet.get("description") or '')
+				)
+
+				info_labels = {
+					'plot': plot,
+					'duration': self.yt_time(duration, True)
+				}
+
+				menu = self.create_ctx_menu()
+
+				if watched:
+					menu.add_menu_item(self._('Remove from watched'), cmd=self.remove_watched_item, video_id=video_id)
+
+				channel_params = {
+					'channelId': channel_id,
+					'maxResults': self.max_results,
+					'part': 'id',
+					'order': 'date',
+				}
+				menu.add_menu_item(self._('View channel videos'), cmd=self.list_videos, endpoint='search', params=channel_params)
+				menu.add_menu_item(self._('Save channel'), cmd=self.save_channel, channel_name=channel_title, channel_id=channel_id)
+				self.add_video(title, img, info_labels, menu=menu, cmd=self.resolve_video, video_title=title, video_id=video_id)
 
 		if "nextPageToken" in data:
 			params = params.copy()

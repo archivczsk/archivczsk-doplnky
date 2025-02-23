@@ -1,3 +1,6 @@
+2.5: 23.02.2025
+- oprava limitov vyhľadávania po zmenách na strane youtube
+
 2.4: 22.01.2025
 - aktualizácia po zmenách na strane youtube
 
@@ -14,7 +17,7 @@
 
 2.0: 20.08.2024
 - z dôvodu zmien na strane youtube bol doplnok prepísaný na nové API
-- doplnok po novom služi pre prehrávanie videí aj pre ostatné doplnky, ktoré potrebujú prehrať youtube videa (napr. pre SC a SCC trailery u filmov)
+- doplnok po novom slúži pre prehrávanie videí aj pre ostatné doplnky, ktoré potrebujú prehrať youtube videa (napr. pre SC a SCC trailery u filmov)
 
 - !!! DÔLEŽITÉ - čítajte prosím pozorne !!!
 - u väčšiny videí youtube obmedzuje dostupné rozlíšenie pre neadaptívny streaming na 320p
@@ -26,7 +29,7 @@
 - oprava pádu pri neznámej dĺžke videa
 
 1.9: 27.01.2024
-- priadnie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
+- pridanie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
 
 1.8: 02.05.2023
 - oprava identifikácie klienta
