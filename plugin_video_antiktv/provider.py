@@ -3,6 +3,7 @@
 from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPModuleLiveTV, CPModuleArchive, CPModuleTemplate
 from tools_archivczsk.string_utils import _I, _C, _B
 from tools_archivczsk.generator.lamedb import channel_name_normalise
+from tools_archivczsk.player.features import PlayerFeatures
 
 from .atk_loader import ATKClient
 from .bouquet import AntikTVBouquetXmlEpgGenerator
@@ -47,6 +48,7 @@ class AntikTVModuleLiveTV(CPModuleLiveTV):
 			if channel["adult"] and not enable_adult:
 				continue
 
+			menu = self.cp.create_ctx_menu()
 			try:
 				epg = epg_list[ channel["id_content"] ]["epg"][0]
 
@@ -58,6 +60,10 @@ class AntikTVModuleLiveTV(CPModuleLiveTV):
 					title = str(epg["title"])
 
 				time_prefix = self.cp.convert_time(epg["start"], epg["stop" ]) + "\n"
+
+				if channel.get('archive'):
+					menu.add_media_menu_item(self.cp._("Play from beginning"), cmd=self.resolve_startover_url, id_content=channel['id_content'])
+
 			except:
 				epg = { "title": str(channel.get('desc_short', '')), "desc": str(channel.get('desc_long', '')) }
 				epg_str = "  " + _I(channel.get('desc_short', ''))
@@ -75,13 +81,24 @@ class AntikTVModuleLiveTV(CPModuleLiveTV):
 			else:
 				img = channel.get("snapshot") or channel.get("logo").replace('.png', '_608x608.png').replace('&w=50', '&w=608')
 
-			self.cp.add_video(channel["name"] + epg_str, img, info_labels=info_labels, download=False, cmd=self.resolve_play_url, channel_title=channel['name'], channel_id=channel['id'], epg_title=title)
+			self.cp.add_video(channel["name"] + epg_str, img, info_labels=info_labels, menu=menu, download=False, cmd=self.resolve_play_url, channel_title=channel['name'], channel_id=channel['id'], epg_title=title)
 
 	# #################################################################################################
 
 	def resolve_play_url(self, channel_title, channel_id, epg_title):
 		url = self.channel_id_to_url(channel_id)
 		self.cp.add_play(epg_title, url, info_labels={'title': channel_title})
+
+	# #################################################################################################
+
+	def resolve_startover_url(self, id_content):
+		self.cp.ensure_supporter()
+		epg = self.cp.atk.get_actual_epg([id_content]).get(id_content, {}).get('epg',[{}])[0]
+
+		epg_start = datetime.strptime(epg["start"][:19], "%Y-%m-%dT%H:%M:%S")
+		epg_stop = datetime.strptime(epg["stop"][:19], "%Y-%m-%dT%H:%M:%S")
+
+		self.cp.get_module(AntikTVModuleArchive).get_archive_url( str(epg["title"]), id_content, epg_start, epg_stop)
 
 	# #################################################################################################
 
@@ -254,7 +271,14 @@ class AntikTVModuleArchive(CPModuleArchive):
 	def get_archive_url(self, epg_title, channel_id, epg_start, epg_stop):
 		key = '%s$%s$%s$%s' % (self.channel_type, channel_id, epg_start, epg_stop)
 		url = self.cp.http_endpoint + '/playarchive/' + base64.b64encode(key.encode('utf-8')).decode('utf-8')+ '.m3u8'
-		self.cp.add_play(epg_title, url)
+
+		cur_time = datetime.now()
+
+		play_settings = {
+			'check_seek_borders': self.cp.is_supporter() and cur_time > epg_start and cur_time < epg_stop,
+			'seek_border_up': 60
+		}
+		self.cp.add_play(epg_title, url, settings=play_settings)
 
 	# #################################################################################################
 
@@ -462,6 +486,14 @@ class AntikTVContentProvider(ModuleContentProvider):
 	def post_init(self):
 		self.bxeg = AntikTVBouquetXmlEpgGenerator(self, self.http_endpoint)
 		self.bgservice.run_in_loop("loop(ping)", (int(time.time()) % 900) + 1800, self.do_ping)
+
+	# #################################################################################################
+
+	def root(self):
+		if self.get_setting('player-check'):
+			PlayerFeatures.check_latest_exteplayer3(self)
+
+		ModuleContentProvider.root(self)
 
 	# #################################################################################################
 	# Provider init and configurations

@@ -1,3 +1,7 @@
+2.22:
+- podpora pre prehrávanie aktuálnej udalosti od začiatku vrátane pretáčania a pauzy
+- pre plnú podporu je nutný exteplayer3 ver. 177
+
 2.21:
 - oprava prehrávania DVTV Extra
 

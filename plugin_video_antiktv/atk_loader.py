@@ -6,11 +6,9 @@ from binascii import unhexlify as a2b_base64
 from Plugins.Extensions.archivCZSK.version import email
 from Plugins.Extensions.archivCZSK.engine.client import log
 from Plugins.Extensions.archivCZSK.engine.tools import util
-from Plugins.Extensions.archivCZSK.engine.tools.util import download_to_file
 from Components.config import config
 
-ATKClient_API_VER = 4
-
+ATKClient_API_VER = 5
 
 def have_client_module(name):
 	for ext in ('.py', '.so'):
