@@ -1,3 +1,6 @@
+1.5 - 04.03.2025
+    - úpravy po zmenách API v závislostiach doplnku
+
 1.4 - 07.01.2025
     - oprava pádu ak položka nemá vyplnené všetky potrebné metadáta
 

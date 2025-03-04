@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from tools_archivczsk.http_handler.hls import HlsHTTPRequestHandler
-from tools_archivczsk.parser.hls import HlsMaster
+from tools_archivczsk.parser.hls import HlsPlaylist
 
 # #################################################################################################
 
-class DisneyHlsMaster(HlsMaster):
+class DisneyHlsMaster(HlsPlaylist):
 	def __init__(self, content_provider, url):
 		super(DisneyHlsMaster, self).__init__(url)
 		self.cp = content_provider
@@ -76,7 +76,7 @@ class DisneyPlusHTTPRequestHandler(HlsHTTPRequestHandler):
 
 			pls = hls_info['master_playlist']
 
-			mp_data = self.process_master_playlist(pls.mp_url, pls.to_string(audio_idx=stream_key['aid']), hls_info.get('bandwidth'), hls_info.get('drm',{}))
+			mp_data = self.process_master_playlist(pls.mp_url, pls.to_string(audio_idx=stream_key['aid']), hls_info)
 			return self.reply_ok(request, mp_data, "application/vnd.apple.mpegurl")
 		except:
 			self.cp.log_exception()
