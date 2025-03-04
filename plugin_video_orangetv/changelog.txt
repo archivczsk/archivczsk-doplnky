@@ -1,3 +1,6 @@
+2024-03-04 - 2.24
+* pridanie podpory pre prehrávanie aktuálne bežiacej relácie od začiatku
+
 2024-12-22 - 2.23
 * pridanie podpory pre prehrávanie archívu priamo z EPG
 

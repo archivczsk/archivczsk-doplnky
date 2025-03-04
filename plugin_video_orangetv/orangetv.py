@@ -324,8 +324,9 @@ class OrangeTV:
 
 		for one in epg:
 			ch_epg.append({
-				"start": one["startTimestamp"] / 1000,
-				"end": one["endTimestamp"] / 1000,
+				"start": int(one["startTimestamp"] // 1000),
+				"end": int(one["endTimestamp"] // 1000),
+				'epg_id': one["epgId"],
 				"title": str(one["name"]),
 				"desc": '%s - %s\n%s' % (self.timestamp_to_str(one["startTimestamp"]), self.timestamp_to_str(one["endTimestamp"]), one["shortDescription"]),
 				'img': one.get('picture')
@@ -342,10 +343,11 @@ class OrangeTV:
 	def getChannelCurrentEpg(self,ch,cache_hours=0):
 		fromts = int(time())
 		tots = (int(time()) + (cache_hours * 3600) + 60)
-		title = ""
-		desc = ""
-		img = None
+#		title = ""
+#		desc = ""
+#		img = None
 		del_count = 0
+		channel_epg = {}
 
 		if ch in self.epg_cache:
 			for epg in self.epg_cache[ch]:
@@ -354,9 +356,10 @@ class OrangeTV:
 					del_count += 1
 
 				if epg["start"] < fromts and epg["end"] > fromts:
-					title = epg["title"]
-					desc = epg["desc"]
-					img = epg.get("img")
+					channel_epg = epg
+#					title = epg["title"]
+#					desc = epg["desc"]
+#					img = epg.get("img")
 					break
 
 		if del_count:
@@ -365,7 +368,7 @@ class OrangeTV:
 			self.log_function("Deleted %d old events from EPG cache for channell %s" % (del_count, ch))
 
 		# if we haven't found event in cache and epg refresh is enabled (cache_hours > 0)
-		if title == "" and cache_hours > 0:
+		if not channel_epg and cache_hours > 0:
 			# event not found in cache, so request fresh info from server (can be slow)
 			self.log_function("Requesting EPG for channel %s from %d to %d" % (ch, fromts, tots))
 
@@ -374,14 +377,16 @@ class OrangeTV:
 
 			if self.epg_cache.get(ch):
 				# cache already filled with fresh entries, so the first one is current event
-				title = self.epg_cache[ch][0]['title']
-				desc = self.epg_cache[ch][0]['desc']
-				img = self.epg_cache[ch][0].get('img')
+				channel_epg = self.epg_cache[ch][0]
+#				title = self.epg_cache[ch][0]['title']
+#				desc = self.epg_cache[ch][0]['desc']
+#				img = self.epg_cache[ch][0].get('img')
 
-		if title == "":
-			return None
+#		if title == "":
+#			return None
 
-		return {"title": title, "desc": desc, 'img': img}
+#		return {"title": title, "desc": desc, 'img': img}
+		return channel_epg
 
 	# #################################################################################################
 

@@ -8,6 +8,7 @@ from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPM
 from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.string_utils import _I, _C, _B
 from tools_archivczsk.generator.lamedb import channel_name_normalise
+from tools_archivczsk.player.features import PlayerFeatures
 from .orangetv import OrangeTV
 from .bouquet import OrangeTVBouquetXmlEpgGenerator
 import base64
@@ -39,10 +40,12 @@ class OrangeTVModuleLiveTV(CPModuleLiveTV):
 				# is managed by bgservice, so disable epg refresh here
 				cache_hours = 0
 
+		cur_time = int(time.time())
 		for channel in self.cp.channels:
 			if not enable_adult and channel['adult']:
 				continue
 
+			menu = self.cp.create_ctx_menu()
 			if show_epg:
 				epg = self.cp.orangetv.getChannelCurrentEpg(channel['key'], cache_hours)
 			else:
@@ -56,13 +59,16 @@ class OrangeTVModuleLiveTV(CPModuleLiveTV):
 					'img': epg['img'],
 					'adult': channel['adult']
 				}
+
+				if channel['timeshift'] > 0:
+					menu.add_media_menu_item(self._("Play from beginning"), cmd=self.get_startover_stream, channel_key=channel['key'], epg=epg)
 			else:
 				epg_str = ''
 				info_labels = {
 					'adult': channel['adult']
 				}
 
-			self.cp.add_video(channel['name'] + epg_str, img=channel['snapshot'], info_labels=info_labels, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_key=channel['key'])
+			self.cp.add_video(channel['name'] + epg_str, img=channel['snapshot'], info_labels=info_labels, menu=menu, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_key=channel['key'])
 
 		self.cp.orangetv.saveEpgCache()
 
@@ -72,6 +78,13 @@ class OrangeTVModuleLiveTV(CPModuleLiveTV):
 		enable_download = self.cp.get_setting('download_live')
 		playlist = self.cp.orangetv.get_live_link(channel_key)
 		self.cp.resolve_hls_streams(channel_title, playlist, download=self.cp.get_setting('download_live'))
+
+	# #################################################################################################
+
+	def get_startover_stream(self, channel_key, epg):
+		if epg.get('epg_id'):
+			self.cp.ensure_supporter()
+			self.cp.get_module(OrangeTVModuleArchive).get_archive_stream(epg['title'], channel_key, epg['epg_id'], int(epg['start']), int(epg['end']))
 
 # #################################################################################################
 
@@ -111,7 +124,11 @@ class OrangeTVModuleArchive(CPModuleArchive):
 
 	def get_archive_stream(self, archive_title, channel_key, epg_id, ts_from, ts_to):
 		playlist = self.cp.orangetv.get_archive_link(channel_key, epg_id, ts_from, ts_to)
-		self.cp.resolve_hls_streams(archive_title, playlist)
+
+		cur_time = int(time.time())
+		startover = cur_time > ts_from and cur_time < ts_to
+
+		self.cp.resolve_hls_streams(archive_title, playlist, startover=startover)
 
 	# #################################################################################################
 
@@ -233,6 +250,14 @@ class OrangeTVContentProvider(ModuleContentProvider):
 
 	# #################################################################################################
 
+	def root(self):
+		if self.get_setting('player-check'):
+			PlayerFeatures.check_latest_exteplayer3(self)
+
+		ModuleContentProvider.root(self)
+
+	# #################################################################################################
+
 	def login(self, silent):
 		self.orangetv = self.get_nologin_helper()
 		self.channels = []
@@ -280,6 +305,7 @@ class OrangeTVContentProvider(ModuleContentProvider):
 		resp = {
 			'url': stream_key['url'],
 			'bandwidth': stream_key['bandwidth'],
+			'startover': stream_key.get('startover')
 		}
 
 		return resp
@@ -303,7 +329,12 @@ class OrangeTVContentProvider(ModuleContentProvider):
 
 	# #################################################################################################
 
-	def resolve_hls_streams(self, title, playlist_urls, **kwargs):
+	def resolve_hls_streams(self, title, playlist_urls, download=True, startover=False):
+		play_settings = {
+			'check_seek_borders': self.is_supporter() and startover,
+			'seek_border_up': 30
+		}
+
 		for playlist_url in playlist_urls:
 			try:
 				streams = self.get_hls_streams(playlist_url, self.orangetv.req_session, max_bitrate=self.get_setting('max_bitrate'))
@@ -323,12 +354,12 @@ class OrangeTVContentProvider(ModuleContentProvider):
 						'bandwidth': bandwidth
 					}
 
-					if self.get_setting('hls_multiaudio'):
-						url = stream_key_to_hls_url(self.http_endpoint, {'url': p['playlist_url'], 'bandwidth': p['bandwidth']})
+					if self.get_setting('hls_multiaudio') or startover:
+						url = stream_key_to_hls_url(self.http_endpoint, {'url': p['playlist_url'], 'bandwidth': p['bandwidth'], 'startover': startover})
 					else:
 						url = p['url']
 
-					self.add_play(title, url, info_labels, **kwargs)
+					self.add_play(title, url, info_labels, download=download, settings=play_settings)
 
 				if streams:
 					break
