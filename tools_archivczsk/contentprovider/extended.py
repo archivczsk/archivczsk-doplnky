@@ -383,3 +383,17 @@ class ModuleContentProvider(CommonContentProvider):
 				break
 		else:
 			self.log_error("Class name %s is not child of any registered modules - giving up" % class_name)
+
+	# #################################################################################################
+
+	def get_module(self, module_type):
+		module = [m for m in self.modules if isinstance(m, module_type)]
+
+		if len(module) == 1:
+			return module[0]
+		elif len(module) == 0:
+			return None
+		else:
+			return module
+
+	# #################################################################################################
