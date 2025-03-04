@@ -6,29 +6,23 @@ from ..parser.hls import HlsMaster
 import re
 import binascii
 
-try:
-	from urllib import quote, unquote
-	from urlparse import urljoin
-except:
-	from urllib.parse import urljoin, quote, unquote
-
+from ..compat import quote, unquote, urljoin
 from tools_cenc.mp4decrypt import mp4decrypt
 
 # #################################################################################################
 
 class HlsMasterProcessor(HlsMaster):
-	def __init__(self, request_handler, url, max_bandwidth=None, drm=None):
+	def __init__(self, request_handler, url, hls_info=None):
 		super(HlsMasterProcessor, self).__init__(url)
 		self.request_handler = request_handler
-		self.drm = drm
-		self.max_bandwidth = max_bandwidth
+		self.hls_info = hls_info or {}
 
 	# #################################################################################################
 
 	def filter_master_playlist(self):
-		super(HlsMasterProcessor, self).filter_master_playlist(max_bandwidth=self.max_bandwidth)
+		super(HlsMasterProcessor, self).filter_master_playlist(max_bandwidth=self.hls_info.get('bandwidth'))
 
-		if self.drm:
+		if self.hls_info.get('drm'):
 			# session key is not supported by the player - it will be handled in variant playlist
 			self.header = list(filter(lambda p: not p.startswith("#EXT-X-SESSION-KEY:"), self.header))
 
@@ -41,7 +35,7 @@ class HlsMasterProcessor(HlsMaster):
 			for playlist_group in (self.audio_playlists, self.subtitles_playlists, self.video_playlists):
 				for p in playlist_group:
 					if p.playlist_url:
-						p.playlist_url = self.request_handler.hls_proxify_variant_url(p.playlist_url, self.drm)
+						p.playlist_url = self.request_handler.hls_proxify_variant_url(p.playlist_url, self.hls_info)
 
 
 # #################################################################################################
@@ -104,7 +98,7 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				hls_info = { 'url': hls_info }
 
 			# resolve HLS playlist and get only best stream
-			self.get_hls_playlist_data_async(hls_info['url'], hls_info.get('bandwidth'), hls_info.get('headers'), hls_info.get('drm',{}), cbk=hls_continue)
+			self.get_hls_playlist_data_async(hls_info, cbk=hls_continue)
 			return self.NOT_DONE_YET
 
 		except:
@@ -135,11 +129,11 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 	# #################################################################################################
 
-	def hls_proxify_variant_url(self, variant_url, drm=None):
+	def hls_proxify_variant_url(self, variant_url, hls_info={}):
 		cache_key = self.calc_cache_key(variant_url)
 		cache_data = {
 			'url': variant_url,
-			'drm': drm
+			'hls_info': hls_info
 		}
 		self.scache.put_with_key(cache_data, cache_key)
 		return self.hls_proxify_playlist_url(cache_key)
@@ -278,7 +272,8 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 	# #################################################################################################
 
-	def process_variant_playlist(self, playlist_url, playlist_data, drm_info=None):
+	def process_variant_playlist(self, playlist_url, playlist_data, hls_info={}):
+		drm_info = hls_info.get('drm', {})
 		segment_cache_data = {
 			'drm': drm_info,
 			'pssh': []
@@ -339,7 +334,7 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				request.finish()
 				return
 
-			resp_data = self.process_variant_playlist(response['url'], response['content'].decode('utf-8'), stream_data['drm'])
+			resp_data = self.process_variant_playlist(response['url'], response['content'].decode('utf-8'), stream_data['hls_info'])
 
 			request.setResponseCode(200)
 			request.setHeader('content-type', "application/vnd.apple.mpegurl")
@@ -352,26 +347,27 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 	# #################################################################################################
 
-	def process_master_playlist(self, playlist_url, playlist_data, bandwidth=None, drm=None):
-		return self.hls_master_processor(self, playlist_url, bandwidth, drm).process(playlist_data)
+	def process_master_playlist(self, playlist_url, playlist_data, hls_info):
+		return self.hls_master_processor(self, playlist_url, hls_info).process(playlist_data)
 
 	# #################################################################################################
 
-	def get_hls_playlist_data_async(self, url, bandwidth=None, headers=None, drm=None, cbk=None):
+	def get_hls_playlist_data_async(self, hls_info, cbk=None):
 		'''
 		Processes HLS master playlist from given url and returns new one with only one variant playlist specified by bandwidth (or with best bandwidth if no bandwidth is given)
 		'''
-		def p_continue(response, bandwidth):
+
+		def p_continue(response):
 #			self.cp.log_error("HLS response received: %s" % response)
 
 			if response['status_code'] != 200:
 				self.cp.log_error("Status code response for HLS master playlist: %d" % response['status_code'])
 				return cbk(None)
 
-			resp_data = self.process_master_playlist(response['url'], response['content'].decode('utf-8'), bandwidth, drm)
+			resp_data = self.process_master_playlist(response['url'], response['content'].decode('utf-8'), hls_info)
 			cbk(resp_data)
 			return
 
-		self.request_http_data_async_simple(url, cbk=p_continue, headers=headers, bandwidth=bandwidth)
+		self.request_http_data_async_simple(hls_info['url'], cbk=p_continue, headers=hls_info.get('headers'))
 
 	# #################################################################################################
