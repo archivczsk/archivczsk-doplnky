@@ -12,8 +12,10 @@ __addon__ = ArchivCZSK.get_addon('tools.archivczsk')
 def _(id):
 	return __addon__.get_localized_string(id)
 
-EXTEPLAYER3_NAME='exteplayer3_176'
-FFMPEG_NAME='ffmpeg_176'
+AVAILABLE_EXTEPLAYER3_VERSION=177
+
+EXTEPLAYER3_NAME='exteplayer3_%d' % AVAILABLE_EXTEPLAYER3_VERSION
+FFMPEG_NAME='ffmpeg_%d' % AVAILABLE_EXTEPLAYER3_VERSION
 
 class PlayerFeatures(object):
 	DATA_LOADED = False
@@ -139,6 +141,19 @@ class PlayerFeatures(object):
 			msg = _("Installed version of exteplayer3 doesn't support all features needed by this addon.")
 
 		if content_provider.get_yes_no_input(msg + ' ' + _("It is recommended to install latest modified version of exteplayer3 and ffmpeg with build in all features needed.\nShould I download and install recommanded version for you?")) == True:
+			cls.download_and_install(EXTEPLAYER3_NAME)
+			cls.download_and_install(FFMPEG_NAME)
+			PlayerFeatures(True)
+
+	@classmethod
+	def check_latest_exteplayer3(cls, content_provider):
+		if not videoPlayerInfo.serviceappAvailable:
+			return
+
+		if cls.exteplayer3_version is None or cls.exteplayer3_version >= AVAILABLE_EXTEPLAYER3_VERSION:
+			return
+
+		if content_provider.get_yes_no_input(_("A new version of modified exteplayer3 is available. Player is important system component and many ArchivCZSK feautures are fully functional only on this version.\nShould I download and install new version for you?")) == True:
 			cls.download_and_install(EXTEPLAYER3_NAME)
 			cls.download_and_install(FFMPEG_NAME)
 			PlayerFeatures(True)
