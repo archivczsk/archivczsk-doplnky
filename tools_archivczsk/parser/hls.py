@@ -4,10 +4,7 @@ import re
 from collections import OrderedDict
 import requests
 
-try:
-	from urlparse import urljoin
-except:
-	from urllib.parse import urljoin
+from ..compat import urljoin
 
 # ##################################################################################################################
 
@@ -68,13 +65,31 @@ class PlaylistHeader(object):
 
 # ##################################################################################################################
 
-class HlsMaster(object):
+class SegmentHeader(object):
+	def __init__(self, segment_url, attrs='', key={}):
+		self.segment_url = segment_url
+		self.duration = attrs.split(',', 1)[0]
+		self.key = key
+
+	def __str__(self):
+		if self.key:
+			key='#EXT-X-KEY:{}\n'.format(','.join('%s=%s' % (k, v.export()) for k, v in self.key.items()))
+		else:
+			key = ''
+
+		return '{}#EXTINF:{},\n{}'.format(key, self.duration, self.segment_url)
+
+# ##################################################################################################################
+
+class HlsPlaylist(object):
 	def __init__(self, url):
 		self.mp_url = url
 		self.header = []
 		self.video_playlists = []
 		self.audio_playlists = []
 		self.subtitles_playlists = []
+		self.segments = []
+		self.finished = False
 
 	# ##################################################################################################################
 
@@ -105,7 +120,7 @@ class HlsMaster(object):
 
 	# ##################################################################################################################
 
-	def add_media_playlist(self, attrs):
+	def add_media_playlist(self, attrs, key={}):
 		playlist_type = attrs.get('TYPE')
 
 		if playlist_type == 'AUDIO':
@@ -117,23 +132,46 @@ class HlsMaster(object):
 
 	# ##################################################################################################################
 
+	def add_segment(self, attrs, segment_url, key={}):
+		s = SegmentHeader(segment_url, attrs, key)
+		self.segments.append(s)
+
+	# ##################################################################################################################
+
 	def parse(self, playlist_data):
 		attrs = {}
+		key = {}
 		in_header = True
+		video_playlist = False
+
 		for line in iter(playlist_data.splitlines()):
 			line = line.strip()
 			if not line:
 				continue
 
 			if not line.startswith('#'):
-				self.add_video_playlist(attrs, line)
+				if video_playlist:
+					self.add_video_playlist(attrs, line)
+				else:
+					self.add_segment(attrs, line, key)
+					key = {}
 				attrs = {}
+
 			elif line.startswith('#EXT-X-STREAM-INF:'):
 				in_header = False
+				video_playlist = True
 				attrs = self.parse_attributes(line[18:])
+			elif line.startswith('#EXTINF:'):
+				in_header = False
+				video_playlist = False
+				attrs = line[8:]
 			elif line.startswith('#EXT-X-MEDIA:'):
 				in_header = False
 				self.add_media_playlist(self.parse_attributes(line[13:]))
+			elif line.startswith('#EXT-X-KEY:'):
+				key = self.parse_attributes(line[11:])
+			elif line == '#EXT-X-ENDLIST':
+				self.finished = True
 			elif in_header:
 				self.header.append(line)
 
@@ -208,6 +246,9 @@ class HlsMaster(object):
 		for p in self.video_playlists:
 			p.playlist_url = urljoin(self.mp_url, p.playlist_url)
 
+		for s in self.segments:
+			s.segment_url = urljoin(self.mp_url, p.segment_url)
+
 	# ##################################################################################################################
 
 	def to_string(self, video_idx=None, audio_idx=None, subtitle_idx=None):
@@ -223,17 +264,24 @@ class HlsMaster(object):
 		data = []
 		data.extend(self.header)
 
-		for i, p in enumerate(self.audio_playlists):
-			if audio_idx is None or i in audio_idx:
-				data.append(str(p))
+		if self.segments:
+			for s in self.segments:
+				data.append(str(s))
 
-		for i, p in enumerate(self.subtitles_playlists):
-			if subtitle_idx is None or i in subtitle_idx:
-				data.append(str(p))
+			if self.finished:
+				data.append('#EXT-X-ENDLIST')
+		else:
+			for i, p in enumerate(self.audio_playlists):
+				if audio_idx is None or i in audio_idx:
+					data.append(str(p))
 
-		for i, p in enumerate(self.video_playlists):
-			if video_idx is None or i in video_idx:
-				data.append(str(p))
+			for i, p in enumerate(self.subtitles_playlists):
+				if subtitle_idx is None or i in subtitle_idx:
+					data.append(str(p))
+
+			for i, p in enumerate(self.video_playlists):
+				if video_idx is None or i in video_idx:
+					data.append(str(p))
 
 		return '\n'.join(data) + '\n'
 

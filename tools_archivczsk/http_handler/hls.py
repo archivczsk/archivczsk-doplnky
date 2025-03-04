@@ -2,7 +2,7 @@
 
 import base64
 from .template import HTTPRequestHandlerTemplate
-from ..parser.hls import HlsMaster
+from ..parser.hls import HlsPlaylist
 import re
 import binascii
 
@@ -11,7 +11,7 @@ from tools_cenc.mp4decrypt import mp4decrypt
 
 # #################################################################################################
 
-class HlsMasterProcessor(HlsMaster):
+class HlsMasterProcessor(HlsPlaylist):
 	def __init__(self, request_handler, url, hls_info=None):
 		super(HlsMasterProcessor, self).__init__(url)
 		self.request_handler = request_handler
