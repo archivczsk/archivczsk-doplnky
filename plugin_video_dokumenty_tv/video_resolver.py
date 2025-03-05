@@ -1,5 +1,6 @@
 from tools_archivczsk.parser.js import get_js_data
 from tools_archivczsk.compat import urlparse
+import json
 
 # ##################################################################################################################
 
@@ -20,6 +21,7 @@ class GenericResolver(object):
 		self.video_url = None
 		self.video_url_type = None
 		self.video_title = None
+		self.video_headers = {}
 		self.video_img = None
 		self.video_duration = None
 		self.data_readed = False
@@ -36,7 +38,8 @@ class GenericResolver(object):
 		self.read_data_if_needed()
 		return {
 			'url': self.video_url,
-			'type': self.video_url_type
+			'type': self.video_url_type,
+			'headers': self.video_headers
 		}
 
 	def get_video_duration(self):
@@ -58,16 +61,28 @@ class OkResolver(GenericResolver):
 		self.name = 'ok.ru'
 
 	def read_data(self):
-#		self.cp.log_debug("Reading data from url: %s" % self.url)
+		self.cp.log_debug("Reading data from url: %s" % self.url)
 		soup = self.cp.call_api(self.url)
 
 		player_data = soup.find('div', {'data-module': "OKVideo"})
 		js = get_js_data(player_data.get('data-options'))
 		js = get_js_data(js['flashvars']['metadata'])
+#		self.cp.log_debug('JS DATA\n%s' % str(js))
 
 		self.video_url = js.get('hlsManifestUrl') or js.get('ondemandHls')
-		self.video_url = self.video_url.replace('\u0026','&')
-		self.video_url_type = 'hls'
+
+		if self.video_url:
+			self.video_url = self.video_url.replace('\u0026','&')
+			self.video_url_type = 'hls'
+		elif js.get('videos'):
+			self.video_url = js['videos'][-1].get('url')
+			self.video_url_type = 'mp4'
+			self.video_headers['Origin'] = 'https://ok.ru'
+			self.video_headers['Referer'] = self.url
+
+		if not self.video_url:
+			# throw some exception here and let the addon crash - we want bug reports from users in order know, that something on site changed
+			raise Exception("Failed to resolve video. Not supported json data:\n%s" % str(js))
 
 		video_div = soup.find('div', {'class': 'vid-card_cnt_w'})
 

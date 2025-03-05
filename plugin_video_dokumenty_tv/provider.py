@@ -210,21 +210,33 @@ class DokumentyTvContentProvider(CommonContentProvider):
 
 			return self.call_another_addon('plugin.video.yt', youtube_params, 'resolve')
 
-		resolved_url = resolver.get_video_url()['url']
-		self.log_debug("Resolved stream URL: %s" % resolved_url)
+		resolved_video = resolver.get_video_url()
+		self.log_debug("Resolved stream: Type: %s, URL: %s" % (resolved_video['type'], resolved_video['url']))
 
-		if resolved_url:
-			stream_links = self.resolve_streams(resolved_url, self.get_setting('max_bitrate'))
+		if not resolved_video['url']:
+			return
+
+		if resolved_video['type'] == 'hls':
+			stream_links = self.resolve_streams(resolved_video['url'], self.get_setting('max_bitrate'))
+		elif resolved_video['type'] == 'mp4':
+			stream_links = [{
+				'url': resolved_video['url'],
+				'bandwidth': 1
+			}]
 		else:
 			stream_links = []
 
 		video_title = resolver.get_title() or 'Video'
+		video_settings = {}
+
+		if resolved_video.get('headers'):
+			video_settings['extra-headers'] = resolved_video.get('headers')
 
 		for one in stream_links:
 			info_labels = {
 				'bandwidth': one['bandwidth'],
 				'quality': one.get('resolution', 'x???').split('x')[1] + 'p'
 			}
-			self.add_play(self.fix_title(video_title), one['url'], info_labels=info_labels)
+			self.add_play(self.fix_title(video_title), one['url'], info_labels=info_labels, settings=video_settings)
 
 	# ##################################################################################################################

@@ -1,3 +1,6 @@
+v2.3
+- rozšírenie podporovaných video formátov z ok.ru
+
 v2.2
 - pridanie podpory pre on-demand video formát na ok.ru
 
