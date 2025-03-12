@@ -96,8 +96,8 @@ class O2HTTPRequestHandler(DashHTTPRequestHandler):
 			self.cp.log_error("Channel %s not found in channel list!" % channel_id)
 			return
 
-		if channel['name'].strip() not in ('O2 TV Sport HD', 'O2 TV Fotbal HD'):
-			# only O2 Sport and Fotbal broadcasts MD at the moment ...
+		if not channel['name'].strip().startswith('Oneplay'):
+			# only Oneplay ... broadcasts MD at the moment ...
 #			self.cp.log_debug("Channel %s doesn't broadcasts multidimension" % channel['name'])
 			return
 

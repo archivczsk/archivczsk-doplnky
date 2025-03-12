@@ -1,3 +1,6 @@
+1.31 - 12.03.2025
+    - oprava dialógu pre výber multidimenzie v userbouquete po zmene na Oneplay
+
 1.30 - 04.03.2025
     - aktualizácia závislostí
 
