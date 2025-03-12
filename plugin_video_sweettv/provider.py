@@ -49,6 +49,8 @@ class SweetTVModuleLiveTV(CPModuleLiveTV):
 				}
 				img = None
 
+			img = img or channel.get('picon')
+
 			self.cp.add_video(channel['name'] + epg_str, img=img, info_labels=info_labels, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_id=channel['id'])
 
 	# #################################################################################################
@@ -263,8 +265,6 @@ class SweetTVContentProvider(ModuleContentProvider):
 		ModuleContentProvider.__init__(self, name='SweetTV', settings=settings, data_dir=data_dir, bgservice=bgservice)
 
 		# list of settings used for login - used to auto call login when they change
-		self.login_settings_names = ('username', 'password', 'device_id')
-
 		self.sweettv = self.get_nologin_helper()
 		self.channels = []
 		self.channels_next_load_time = 0
@@ -273,9 +273,6 @@ class SweetTVContentProvider(ModuleContentProvider):
 		self.checksum = None
 		self.http_endpoint = http_endpoint
 		self.last_stream_id = None
-
-		if not self.get_setting('device_id'):
-			self.set_setting('device_id', SweetTV.create_device_id())
 
 		self.bxeg = SweetTVBouquetXmlEpgGenerator(self, http_endpoint, SweetTV.get_user_agent())
 
@@ -293,8 +290,26 @@ class SweetTVContentProvider(ModuleContentProvider):
 		self.sweettv = self.get_nologin_helper()
 		self.channels = []
 		sweettv = SweetTV(self)
-		self.sweettv = sweettv
 
+		if sweettv.check_login() == False:
+			if silent:
+				return False
+			else:
+				# ask user to enter pairing code
+				if self.get_yes_no_input(self._("You need valid subscription and pair this device in order to use the addon. Start pairing process now?")) == False:
+					return False
+
+				code = sweettv.get_signin_code()
+
+				while True:
+					if self.get_yes_no_input(self._('Go to sweet.tv website using computer or mobile phone and login to your account.\nThen navigate to your profile, section "My devices". You will see an input box to pair new device.\nEnter code "{code}" and press "Activate". When you finish confirm this dialog by pressing OK on remote control.').format(code=code)) == False:
+						return False
+
+					if sweettv.check_signin_status(code) == True:
+						self.log_info("Successfully logged in")
+						break
+
+		self.sweettv = sweettv
 		return True
 
 	# #################################################################################################

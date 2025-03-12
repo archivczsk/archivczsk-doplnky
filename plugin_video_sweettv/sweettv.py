@@ -5,7 +5,7 @@ from datetime import datetime
 import traceback
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
 from tools_archivczsk.debug.http import dump_json_request
-from hashlib import md5
+import uuid
 
 ############### init ################
 
@@ -13,16 +13,20 @@ class SweetTV:
 
 	def __init__(self, content_provider):
 		self.cp = content_provider
-		self.username = self.cp.get_setting('username')
-		self.password = self.cp.get_setting('password')
-		self.device_id = self.cp.get_setting('device_id')
+		self.device_id = None
 		self.access_token = None
 		self.refresh_token = None
+		self.access_token_life = 0
 		self.login_ver = 0
 		self.data_dir = self.cp.data_dir
 		self.log_function = self.cp.log_info
 		self._ = self.cp._
 		self.api_session = self.cp.get_requests_session()
+
+		self.load_login_data()
+
+		if self.device_id == None:
+			self.device_id = self.create_device_id()
 
 		self.common_headers = {
 			"User-Agent": SweetTV.get_user_agent(),
@@ -31,7 +35,7 @@ class SweetTV:
 			"Accept-encoding": "gzip",
 			'Accept-language': 'sk',
 			"Content-type": "application/json",
-			"x-device": "1;22;0;2;3.2.80"
+			"x-device": "1;22;0;2;3.7.1" # check also version string in device_info
 		}
 
 		self.common_headers_stream = {
@@ -43,14 +47,15 @@ class SweetTV:
 		}
 
 		self.device_info = {
-			"type": "DT_SmartTV",
+			"type": "DT_AndroidTV",
+			"mac": ':'.join(self.device_id.replace('-','')[i*2:(i*2)+2] for i in range(6)),
 			"application": {
 				"type": "AT_SWEET_TV_Player"
 			},
-			"model": SweetTV.get_user_agent(),
+			"sub_type": 0,
 			"firmware": {
-				"versionCode": 1,
-				"versionString": "3.2.80"
+				"versionCode": 1301,
+				"versionString": "3.7.1"
 			},
 			"uuid": self.device_id,
 			"supported_drm": {
@@ -60,10 +65,9 @@ class SweetTV:
 				"aspectRatio": 6,
 				"width": 1920,
 				"height": 1080
-			}
+			},
+			"advertisingId": str(uuid.uuid4())
 		}
-
-		self.load_login_data()
 
 		self.channels = {}
 		self.channels_next_load = 0
@@ -73,22 +77,13 @@ class SweetTV:
 	# #################################################################################################
 	@staticmethod
 	def create_device_id():
-		import uuid
 		return str(uuid.uuid4())
 
 	# #################################################################################################
 
-	def get_chsum(self):
-		if not self.username or not self.password or len(self.username) == 0 or len( self.password) == 0:
-			return None
-
-		data = "{}|{}|{}".format(self.password, self.username, self.device_id)
-		return md5( data.encode('utf-8') ).hexdigest()
-
-	# #################################################################################################
 	@staticmethod
 	def get_user_agent():
-		return 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0'
+		return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
 
 	# #################################################################################################
 
@@ -98,11 +93,13 @@ class SweetTV:
 				# load access token
 				with open(self.data_dir + '/login.json', "r") as f:
 					login_data = json.load(f)
+					self.login_ver = login_data.get('login_ver', 0)
 
-					if self.get_chsum() == login_data.get('checksum'):
+					if self.login_ver == 2:
 						self.access_token = login_data['access_token']
 						self.refresh_token = login_data['refresh_token']
-						self.login_ver = login_data.get('login_ver', 0)
+						self.device_id = login_data.get('device_id')
+						self.access_token_life = login_data.get('access_token_life', 0)
 						self.log_function("Login data loaded from cache")
 					else:
 						self.access_token = None
@@ -122,8 +119,9 @@ class SweetTV:
 						data = {
 							'access_token': self.access_token,
 							'refresh_token': self.refresh_token,
-							'login_ver': 1,
-							'checksum': self.get_chsum()
+							'access_token_life': self.access_token_life,
+							'login_ver': 2,
+							'device_id': self.device_id
 						}
 						json.dump( data, f )
 				else:
@@ -198,44 +196,50 @@ class SweetTV:
 
 	def check_login(self):
 		if self.access_token:
-			if self.login_ver == 0:
+			if self.login_ver != 2:
 				# force refresh of login data saved in old version
 				self.logout()
 				data = {}
 			else:
+				if self.access_token_life < int(time.time()):
+					self.refresh_login()
+
 				data = self.call_api('TvService/GetUserInfo.json', data={})
 
 		if self.access_token and data.get('status') == 'OK':
 			return True
-		else:
-			if self.login():
-				return True
 
 		return False
 
 	# #################################################################################################
 
-	def login(self):
+	def get_signin_code(self):
 		data = {
 			"device": self.device_info,
-			"email": self.username,
-			"password": self.password
 		}
+		data = self.call_api('SigninService/Start.json', data=data, enable_retry=False, auth_header=False)
+		if data.get('result') != 'OK' or not 'auth_code' in data:
+			self.cp.log_error("Failed to start signing process:\n%s" % str(data))
+			raise LoginException(self._("Failed to start signing process"))
 
-		data = self.call_api('SigninService/Email.json', data=data, enable_retry=False, auth_header=False)
+		return data['auth_code']
 
-		if data.get('result') != 'OK':
-			self.access_token = None
-			self.refresh_token_token = None
-			self.save_login_data()
-			self.showLoginError(self._("Error by login") + ": %s" % data.get('message', ''))
+	# #################################################################################################
+
+	def check_signin_status(self, auth_code):
+		data = {
+			"auth_code": auth_code
+		}
+		data = self.call_api('SigninService/GetStatus.json', data=data, enable_retry=False, auth_header=False)
+		if data.get('result') != 'COMPLETED':
+			self.cp.log_error("Signing process not yet completed:\n%s" % str(data))
 			return False
 
 		self.access_token = data.get('access_token')
 		self.refresh_token = data.get('refresh_token')
-		self.login_ver = 1
+		self.access_token_life = data.get('expires_in', 0) + int(time.time())
+		self.login_ver = 2
 		self.save_login_data()
-
 		return True
 
 	# #################################################################################################
@@ -245,6 +249,7 @@ class SweetTV:
 			self.access_token = None
 			return False
 
+		self.cp.log_debug("Refreshing access token using refresh token")
 		data = {
 			"device": self.device_info,
 			"refresh_token": self.refresh_token,
@@ -254,12 +259,16 @@ class SweetTV:
 
 		if data.get('result') != 'OK':
 			self.access_token = None
-			self.refresh_token_token = None
+			self.refresh_token = None
+			self.access_token_life = 0
 			self.save_login_data()
+			self.cp.log_error("Failed to refresh access token:\n%s" % str(data))
 			self.showLoginError(self._("Error by refresing login token") + ": %s" % data.get('message', ''))
 			return False
 
+		self.cp.log_debug("Access token refreshed")
 		self.access_token = data.get('access_token')
+		self.access_token_life = data.get('expires_in', 0) + int(time.time())
 		self.save_login_data()
 
 		return True
@@ -278,7 +287,7 @@ class SweetTV:
 
 		self.call_api('SigninService/Logout.json', data=data, enable_retry=False)
 		self.access_token = None
-		self.refresh_token_token = None
+		self.refresh_token = None
 		self.save_login_data()
 		self.channels = {}
 		self.channels_next_load = 0

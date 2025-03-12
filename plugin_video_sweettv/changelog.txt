@@ -1,3 +1,6 @@
+1.21 - 12.03.2025
+    - zmena spôsobu prihlásenia po zmenách na strane Sweet.tv
+
 1.20 - 07.01.2025
     - oprava pádu pri prezeraní filmov
 
