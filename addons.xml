@@ -8,6 +8,7 @@
 <addon id="plugin.video.idnestv" name="iDNES.tv" version="1.5" hash="4789639591bf94d6a94744d94bae00c0" rhash="4789639591bf94d6a94744d94bae00c0" />
 <addon id="plugin.video.ivysilani" name="iVysílání - Česká televize" version="3.2" hash="86cac5ba1af1673ed9849dfe7ef7d411" rhash="50d414baf914c8cc32d4d988ed4221e8" />
 <addon id="plugin.video.joj.sk" name="joj.sk" version="1.6.4" hash="112505c278ce47dc37a82c90dabbc40a" rhash="112505c278ce47dc37a82c90dabbc40a" />
+<addon id="plugin.video.jojplay" name="JOJ Play" version="1.0" hash="335a802dedf25cf01a106454d9351596" rhash="224c72f9e9e95db12227f563c2531c0f" />
 <addon id="plugin.video.kvifftv" name="Kviff.tv" version="1.3" hash="0f31fd5e31abe7ba7b5e1c66adff14aa" rhash="893db8849b0f55c24845735baacd5cb0" />
 <addon id="plugin.video.magiogo" name="Magio TV" version="1.29" hash="973c2c72fb938aa1665dc5ac382a8708" rhash="2ccbbc0b519f822dcf4becd5fdd92e25" />
 <addon id="plugin.video.markiza" name="Markíza" version="2.13" hash="b94d217229b12375f6800fcd1209aa40" rhash="6729cc316f110ce2fff9cf56940161f0" />
