@@ -22,6 +22,8 @@
 # */
 import os, re, sys, traceback
 
+from Plugins.Extensions.archivCZSK.colors import DeleteColors
+
 try:
 	from htmlentitydefs import name2codepoint as n2cp
 except:
