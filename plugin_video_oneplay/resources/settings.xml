@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+	<setting label="Login name" type="text" id="username" default=""/>
+	<setting label="Login password" type="password" id="password" default=""/>
+	<setting label="Parental pin" type="password" id="pin" default=""/>
+	<setting label="Maximum bandwidth of the offered stream" id="max_bitrate" type="keyenum" values="0;Unlimited|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
+	<setting label="Enable adult channels" id="enable_adult" type="bool" default="true" />
+	<setting label="Number of search history items" type="number" id="keep-searches" default="20"/>
+	<category label="Userbouquet">
+		<setting label="Automatically export channel list as userbouquet" id="enable_userbouquet" type="bool" default="false" />
+		<setting label="Generate XML EPG for epgimport plugin (if installed)" id="enable_xmlepg" type="bool" default="false" />
+		<setting label="Directory for XML EPG data (need at least 20MB of free space)" id="xmlepg_dir" type="text" default="/media/hdd" />
+		<setting label="For how many days to generate XML EPG" id="xmlepg_days" type="enum" lvalues="1|2|3|4|5|6|7" default="4"/>
+		<setting label="Automatically download picons when exporting userbouquet" id="enable_picons" type="bool" default="false" />
+		<setting label="Player used for userbouquet" id="player_name" type="enum" lvalues="Default|gstplayer|exteplayer3|DMM|DVB (OE>=2.5)" default="0"/>
+	</category>
+	<category label="Advanced">
+		<setting label="Prefered stream type for live broadcasting" id="stream_type" type="keyenum" values="HLS;HLS|DASH;MPEG-DASH" default="DASH" />
+		<setting label="Enable special section in main menu" id="enable_extra" type="bool" default="false" />
+		<setting label="Allow downloading of live broadcasting" id="download_live" type="bool" default="false" />
+		<setting label="Show multidimension stream choice" id="show_md_choice" type="bool" default="true" />
+		<setting label="How many minutes to play after event ends in archive" type="number" id="archive_end_offset" default="5"/>
+		<setting label="Extra stream cache (in seconds)" id="extra_cache_time" type="enum" lvalues="0|2|4|6|8|10" default="1"/>
+		<setting label="Check exteplayer3 version on startup" id="player-check" type="bool" default="true" />
+	</category>
+</settings>

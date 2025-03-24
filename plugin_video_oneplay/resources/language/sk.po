@@ -1,0 +1,380 @@
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_oneplay\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-03-28 09:58+0100\n"
+"PO-Revision-Date: 2025-03-28 10:13+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: sk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.5\n"
+
+#: plugin_video_oneplay/http_handler.py:133
+#: plugin_video_oneplay/provider.py:760
+msgid "Multidimension - select stream"
+msgstr "Multidimenzia - vyberte stream"
+
+#: plugin_video_oneplay/oneplay.py:172
+msgid "Received wrong response from server"
+msgstr "Zo serveru bola prijatá chybná odpoveď"
+
+#: plugin_video_oneplay/oneplay.py:185
+msgid "This content is not available"
+msgstr "Tento obsah nie je k dispozícii"
+
+#: plugin_video_oneplay/oneplay.py:190
+msgid "Server returned error response"
+msgstr "Server vrátil chybovú odpoveď"
+
+#: plugin_video_oneplay/oneplay.py:196
+msgid "Received wrong websocket response from server"
+msgstr "Zo serveru bola prijatá nesprávna websocket odpoveď"
+
+#: plugin_video_oneplay/oneplay.py:297
+msgid "Login failed - no access token in response data received"
+msgstr "Prihlásenie zlyhalo - odpoveď zo serveru neobsahuje prístupový token"
+
+#: plugin_video_oneplay/oneplay.py:1229
+msgid "Available from"
+msgstr "Dostupné od"
+
+#: plugin_video_oneplay/provider.py:62
+msgid "Play from beginnig"
+msgstr "Prehrať od začiatku"
+
+#: plugin_video_oneplay/provider.py:65
+msgid "Remove from favourites"
+msgstr "Odstrániť z favoritných"
+
+#: plugin_video_oneplay/provider.py:67
+msgid "Add to favourites"
+msgstr "Pridať do favoritných"
+
+#: plugin_video_oneplay/provider.py:139 plugin_video_oneplay/provider.py:258
+#: plugin_video_oneplay/provider.py:330
+msgid "Add to my list"
+msgstr "Pridať do môjho zoznamu"
+
+#: plugin_video_oneplay/provider.py:213
+msgid "Plan recording"
+msgstr "Naplánovať nahrávanie"
+
+#: plugin_video_oneplay/provider.py:213
+msgid "Here you can plan recordings for future programs"
+msgstr "Tu môžete plánovať nahrávky pre budúce programy"
+
+#: plugin_video_oneplay/provider.py:265
+msgid "VOD"
+msgstr ""
+
+#: plugin_video_oneplay/provider.py:328
+msgid "Remove from my list"
+msgstr "Odstrániť z môjho zoznamu"
+
+#: plugin_video_oneplay/provider.py:332
+msgid "List related"
+msgstr "Zobraziť podobné"
+
+#: plugin_video_oneplay/provider.py:364
+msgid "Special section"
+msgstr "Špeciálna sekcia"
+
+#: plugin_video_oneplay/provider.py:375
+msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
+msgstr "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočné zariadenia, aby ste se mohli opäť prihlásiť inde."
+
+#: plugin_video_oneplay/provider.py:376
+msgid "Registered devices"
+msgstr "Zaregistrované zariadenia"
+
+#: plugin_video_oneplay/provider.py:378
+msgid "Here you can see the list of created profiles for this account and optionally change active one."
+msgstr "Tu si môžete pozrieť zoznam vytvorených profilov pre toto konto a prípadne zmeniť aktívny profil."
+
+#: plugin_video_oneplay/provider.py:379
+msgid "Profiles"
+msgstr "Profily"
+
+#: plugin_video_oneplay/provider.py:381
+msgid "Run EPG export to enigma or XML files"
+msgstr "Spustiť EPG export do enigmy alebo do XML súborov"
+
+#: plugin_video_oneplay/provider.py:383
+msgid "This will force login reset. New device identificator will be created and used for login."
+msgstr "Toto vynúti reset prihlásenia. Bude vygenerovaný nový identifikátor, ktorý bude použitý pre prihlásenie."
+
+#: plugin_video_oneplay/provider.py:384
+msgid "Reset login"
+msgstr "Resetovať prihásenie"
+
+#: plugin_video_oneplay/provider.py:390
+msgid "EPG export started"
+msgstr "EPG export bol spustený"
+
+#: plugin_video_oneplay/provider.py:404
+msgid "Last used"
+msgstr "Naposledy použité"
+
+#: plugin_video_oneplay/provider.py:404
+msgid "Is streaming now"
+msgstr "Aktuálne streamuje"
+
+#: plugin_video_oneplay/provider.py:409
+msgid "Remove device!"
+msgstr "Vymazať zariadenie!"
+
+#: plugin_video_oneplay/provider.py:432
+msgid "In menu you can activate service using \"Make activate\""
+msgstr "V menu môžete aktivovať službu pomocou \"Aktivovať\""
+
+#: plugin_video_oneplay/provider.py:433
+msgid "Make active"
+msgstr "Aktivovať"
+
+#: plugin_video_oneplay/provider.py:452
+#, python-brace-format
+msgid "New login session using device ID {device_id} was created!"
+msgstr "Bolo vytvorené nové prihlasovacie sedenie pomocou identifikátoru {device_id}"
+
+#: plugin_video_oneplay/provider.py:454
+msgid "Failed to create new login session!"
+msgstr "Nepodarilo sa vytvoriť novú prihlasovaciu session!"
+
+#: plugin_video_oneplay/provider.py:473
+msgid "Mo"
+msgstr "Po"
+
+#: plugin_video_oneplay/provider.py:473
+msgid "Tu"
+msgstr "Ut"
+
+#: plugin_video_oneplay/provider.py:473
+msgid "We"
+msgstr "St"
+
+#: plugin_video_oneplay/provider.py:473
+msgid "Th"
+msgstr "Št"
+
+#: plugin_video_oneplay/provider.py:473
+msgid "Fr"
+msgstr "Pi"
+
+#: plugin_video_oneplay/provider.py:473
+msgid "Sa"
+msgstr "So"
+
+#: plugin_video_oneplay/provider.py:473
+msgid "Su"
+msgstr "Ne"
+
+#: plugin_video_oneplay/provider.py:494
+msgid "Select account"
+msgstr "Zvoľte konto"
+
+#: plugin_video_oneplay/provider.py:561 plugin_video_oneplay/provider.py:576
+msgid "Item was added to my list"
+msgstr "Položka bola pridaná do môjho zoznamu"
+
+#: plugin_video_oneplay/provider.py:567 plugin_video_oneplay/provider.py:579
+msgid "Item was removed from my list"
+msgstr "Položka bola odstránená z môjho zoznamu"
+
+msgid "Login name"
+msgstr "Prihlasovacie meno"
+
+msgid "Login password"
+msgstr "Prihlasovacie heslo"
+
+msgid "Parental pin"
+msgstr "Rodičovský pin"
+
+msgid "Maximum bandwidth of the offered stream"
+msgstr "Maximálny dátový tok ponúkaného streamu"
+
+msgid "Unlimited"
+msgstr "Bez obmedzenia"
+
+msgid "8 Mbit/s"
+msgstr ""
+
+msgid "6 Mbit/s"
+msgstr ""
+
+msgid "4 Mbit/s"
+msgstr ""
+
+msgid "3 Mbit/s"
+msgstr ""
+
+msgid "2 Mbit/s"
+msgstr ""
+
+msgid "Enable adult channels"
+msgstr "Povoliť programy pre dospelých"
+
+msgid "Number of search history items"
+msgstr "Počet položiek histórie vyhľadávania"
+
+msgid "Userbouquet"
+msgstr "Userbouquet"
+
+msgid "Automatically export channel list as userbouquet"
+msgstr "Automaticky exportovať zoznam staníc ako userbouquet"
+
+msgid "Generate XML EPG for epgimport plugin (if installed)"
+msgstr "Generovať XML EPG pre epgimport plugin (ak je nainštalovaný)"
+
+msgid "Directory for XML EPG data (need at least 20MB of free space)"
+msgstr "Adresár pre XML EPG dáta (aspoň 20MB voľného miesta)"
+
+msgid "For how many days to generate XML EPG"
+msgstr "Pre koľko dní dopredu generovať XML EPG"
+
+msgid "Automatically download picons when exporting userbouquet"
+msgstr "Pri exportovaní userbouquetu automaticky stiahnuť picony"
+
+msgid "Player used for userbouquet"
+msgstr "Prehrávač použitý pre userbouquet"
+
+msgid "Default"
+msgstr "Predvolený"
+
+msgid "gstplayer"
+msgstr ""
+
+msgid "exteplayer3"
+msgstr ""
+
+msgid "DMM"
+msgstr ""
+
+msgid "DVB (OE>=2.5)"
+msgstr ""
+
+msgid "Advanced"
+msgstr "Pokročilé"
+
+msgid "Prefered stream type for live broadcasting"
+msgstr "Preferovaný typ streamu na živé vysielanie"
+
+msgid "HLS"
+msgstr ""
+
+msgid "MPEG-DASH"
+msgstr ""
+
+msgid "Enable special section in main menu"
+msgstr "Povoliť špeciálnu sekciu v hlavnom menu"
+
+msgid "Allow downloading of live broadcasting"
+msgstr "Povoliť sťahovanie u živého vysielania"
+
+msgid "Show multidimension stream choice"
+msgstr "U multidimenzie zobrazovať výber streamu"
+
+msgid "How many minutes to play after event ends in archive"
+msgstr "Koľko minút prehrávať po skončení udalosti v archíve"
+
+msgid "Extra stream cache (in seconds)"
+msgstr "Dodatočná vyrovnávacia pamäť streamu (v sekundách)"
+
+msgid "Check exteplayer3 version on startup"
+msgstr "Kontrola verzie exteplayer3 pri spustení"
+
+#~ msgid "Unexpected return code from server"
+#~ msgstr "Neočakávaný návratový kód zo servera"
+
+#~ msgid "Failed to get login session"
+#~ msgstr "Nepodarilo sa vytvoriť prihlasovacie sedenie"
+
+#~ msgid "Login to O2 TV 2.0 failed. Probably wrong username/password combination."
+#~ msgstr "Prihlásenie do O2 TV 2.0 zlyhalo. Pravdepodobne nesprávna kombinácia používateľského mena a hesla."
+
+#~ msgid "No playable stream was returned from server."
+#~ msgstr "Server nevrátil žiaden prehrateľný stream."
+
+#~ msgid "Unsupported stream type"
+#~ msgstr "Nepodporovaný typ streamu"
+
+#~ msgid "Multidimension"
+#~ msgstr "Multidimenzia"
+
+#~ msgid "All channels"
+#~ msgstr "Všetky kanály"
+
+#~ msgid "Favourites"
+#~ msgstr "Favoritné"
+
+#~ msgid "Added to favourites"
+#~ msgstr "Pridané do favoriných"
+
+#~ msgid "Channel is already in favourites"
+#~ msgstr "Kanál už je vo favoritných"
+
+#~ msgid "Record the event"
+#~ msgstr "Nahrať program"
+
+#~ msgid "Recordings"
+#~ msgstr "Nahrávky"
+
+#~ msgid "Here you will find recordings of your programs"
+#~ msgstr "Tu nájdete nahrávky vašich programov"
+
+#~ msgid "Futures - planed"
+#~ msgstr "Budúce - plánovane"
+
+#~ msgid "Existing"
+#~ msgstr "Existujúce"
+
+#~ msgid "Available until"
+#~ msgstr "Dostupné do"
+
+#~ msgid "Delete recording"
+#~ msgstr "Zmazať nahrávku"
+
+#~ msgid "Here you can see the list of available services for this account and optionally change active one."
+#~ msgstr "Tu môžete vidieť zoznam dostupných služieb pre toto používateľské konto a prípadne zmeniť aktívnu službu."
+
+#~ msgid "Available services"
+#~ msgstr "Dostupné služby"
+
+#~ msgid "In menu you can remove device using Remove device!"
+#~ msgstr "V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!"
+
+#, python-brace-format
+#~ msgid "Device {device} was removed!"
+#~ msgstr "Zariadenie {device} bolo vymazané!"
+
+#, python-brace-format
+#~ msgid "Failed to remove device {device}!"
+#~ msgstr "Nepodarilo sa odstrániť zariadenie {device}!"
+
+#, python-brace-format
+#~ msgid "Service {service} was activated!"
+#~ msgstr "Služba {service} bola aktivovaná!"
+
+#~ msgid "Search"
+#~ msgstr "Vyhľadať"
+
+#~ msgid "You have enabled these options in addon settings:"
+#~ msgstr "V nastaveniach doplnku ste povolili tieto konfiguračné voľby:"
+
+#~ msgid "Show multidimension subchannels"
+#~ msgstr "Zobraziť subkanály z multidimenzie"
+
+#~ msgid "Export multidimension subchannels"
+#~ msgstr "Exportovať subkanály z multidimenzie"
+
+#~ msgid "Recording added"
+#~ msgstr "Nahrávka pridána"
+
+#~ msgid "There was an error by adding recording"
+#~ msgstr "Pri pridávaní nahrávky nastala chyba"

@@ -1,0 +1,8 @@
+1.0 - 28.03.2025
+- prvá verzia inšpirovaná kodi doplnkom od waladir - ďakujem
+- k dispozícii živé vysielanie, archív, vyhľadávanie, správa nahrávok a VOD
+- živé vysielanie je možné exportovať do userbouquetu spolu s podporou pre EPG
+- podporovaná je multidimenzia (zatiaľ však len minimálne otestovaná)
+- pre vysielanie chránené DRM ochranou je nutný exteplayer3 ver. >= 177
+- kto má stav "podporovateľ ArchivCZSK", má k dispozícii kompletnú funkcionalitu
+- ostatní majú k dispozícii živé vysielanie a archív v rozlíšení max. 720p
