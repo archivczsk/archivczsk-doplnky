@@ -12,7 +12,7 @@ except:
 __debug_nr = 0
 
 
-def dump_json_request(response):
+def dump_json_request(response, extra=None):
 	global __debug_nr
 	__debug_nr += 1
 
@@ -73,6 +73,9 @@ def dump_json_request(response):
 			'data_raw': str(response.text)
 		}
 	}
+
+	if extra:
+		data['extra'] = extra
 
 	try:
 		with open( os.path.join('/tmp/', '%03d_%s.json' % (__debug_nr, file_name)), 'w') as f:
