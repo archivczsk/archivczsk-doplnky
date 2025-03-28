@@ -1,3 +1,7 @@
+1.7.0
+- doplnok viac nie je podporovaný a bude odstránený z repozitára
+- prejdite na doplnok JOJ Play
+
 1.6.4
 - oprava prehrávania živého vysielania
 

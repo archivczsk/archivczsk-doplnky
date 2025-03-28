@@ -22,6 +22,7 @@
 
 import re
 import random
+import traceback
 import requests
 from xml.etree.ElementTree import fromstring
 from Plugins.Extensions.archivCZSK.engine import client
@@ -285,18 +286,23 @@ class JojContentProvider(ContentProvider):
 		return result
 
 	def list(self, url):
-		self.info("list %s" % url)
-		# print ('list url', url)
-		url_parsed = urlparse(url)
-		if not url_parsed.path:
-			if url not in BASE_URL.values():
-				print("not joj.sk url!")
-				return []
-			return self.subcategories(url)
-		if url_parsed.fragment == "s":
-			result = self.list_show(url, list_episodes=True, list_series=True)
-			return result
-		return self.list_show(url, list_episodes=True)
+		try:
+			self.info("list %s" % url)
+			# print ('list url', url)
+			url_parsed = urlparse(url)
+			if not url_parsed.path:
+				if url not in BASE_URL.values():
+					print("not joj.sk url!")
+					return []
+				return self.subcategories(url)
+			if url_parsed.fragment == "s":
+				result = self.list_show(url, list_episodes=True, list_series=True)
+				return result
+			return self.list_show(url, list_episodes=True)
+		except:
+			self.error(traceback.format_exc())
+			client.showError('Nastala neošetrená chyba. Keďže tento doplnok viac nie je podporovaný, nájdené chyby už nebudú opravované. Prejdite na doplnok JOJ Play.')
+
 
 	def categories(self):
 		result = []
@@ -383,44 +389,50 @@ class JojContentProvider(ContentProvider):
 				pass
 
 			if on_joj_play:
-				client.showError('Video je dostupné len v službe JOJ Play ktorú tento doplnok nepodporuje.')
+				client.showError('Video je dostupné len v službe JOJ Play ktorú tento doplnok nepodporuje. Prejdite na doplnok JOJ Play.')
 				return None
 
-			data = util.request(url)
-			vdata = util.substr(data, '<section class="s-section py-0 s-video-detail">', '</section>')
-			# maybe this is video on joj.sk (not on videoportal.joj.sk)?
-			if not vdata:
-				vdata = util.substr(data, '<div class="b-article-video">', '</div>')
-			# .. still joj.sk but different format
-			if not vdata:
-				vdata = util.substr(data, '<div class="intro">', '</div>')
-			if not vdata:
-				vdata = util.substr(data, '<div style="position:relative !important;', '</div>')
-			iframe_url = re.search('<iframe src="([^"]+)"', vdata).group(1)
-			#print('iframe_url = ', iframe_url)
-			d_player_str = requests.get(iframe_url, headers={'Referer': 'https://videoportal.joj.sk'}).text
-			#print(d_player_str)
+			try:
+				data = util.request(url)
+				vdata = util.substr(data, '<section class="s-section py-0 s-video-detail">', '</section>')
+				# maybe this is video on joj.sk (not on videoportal.joj.sk)?
+				if not vdata:
+					vdata = util.substr(data, '<div class="b-article-video">', '</div>')
+				# .. still joj.sk but different format
+				if not vdata:
+					vdata = util.substr(data, '<div class="intro">', '</div>')
+				if not vdata:
+					vdata = util.substr(data, '<div style="position:relative !important;', '</div>')
+				iframe_url = re.search('<iframe src="([^"]+)"', vdata).group(1)
+				#print('iframe_url = ', iframe_url)
+				d_player_str = requests.get(iframe_url, headers={'Referer': 'https://videoportal.joj.sk'}).text
+				#print(d_player_str)
 
-			labels_str = re.search(r'var labels = {(.+?)};', d_player_str, re.DOTALL).group(1)
-			#print('labels:', labels_str)
-			renditions = re.search(r'renditions: \[(.+?)\]', labels_str).group(1).replace("'", "").replace('"', '').split(',')
-			#print('renditions: ', renditions)
+				labels_str = re.search(r'var labels = {(.+?)};', d_player_str, re.DOTALL).group(1)
+				#print('labels:', labels_str)
+				renditions = re.search(r'renditions: \[(.+?)\]', labels_str).group(1).replace("'", "").replace('"', '').split(',')
+				#print('renditions: ', renditions)
 
-			settings_str = re.search(r'var settings = {(.+?)};', d_player_str, re.DOTALL).group(1)
-			#print('settings:', settings_str)
-			poster_url = re.search(r'poster: \[\"(.+?)\"[^\]]*\]', settings_str).group(1)
-			#print('poster_url:', poster_url)
+				settings_str = re.search(r'var settings = {(.+?)};', d_player_str, re.DOTALL).group(1)
+				#print('settings:', settings_str)
+				poster_url = re.search(r'poster: \[\"(.+?)\"[^\]]*\]', settings_str).group(1)
+				#print('poster_url:', poster_url)
 
-			bitrates_str = re.search(r'var src = {(.+?)};', d_player_str, re.DOTALL).group(1)
-			#print('bitrates:', bitrates_str)
-			bitrates_url = re.search(r'"mp4": \[(.+?)\]', bitrates_str, re.DOTALL).group(1)
-			bitrates_url = bitrates_url.replace("'", "").replace('"', "").replace('\n', '').replace(' ', '').split(',')
-			for idx, url in enumerate(bitrates_url):
-				item = self.video_item()
-				item['img'] = poster_url
-				item['quality'] = renditions[idx]
-				item['url'] = url
-				result.append(item)
+				bitrates_str = re.search(r'var src = {(.+?)};', d_player_str, re.DOTALL).group(1)
+				#print('bitrates:', bitrates_str)
+				bitrates_url = re.search(r'"mp4": \[(.+?)\]', bitrates_str, re.DOTALL).group(1)
+				bitrates_url = bitrates_url.replace("'", "").replace('"', "").replace('\n', '').replace(' ', '').split(',')
+				for idx, url in enumerate(bitrates_url):
+					item = self.video_item()
+					item['img'] = poster_url
+					item['quality'] = renditions[idx]
+					item['url'] = url
+					result.append(item)
+
+			except:
+				self.error(traceback.format_exc())
+				client.showError('Nastala neošetrená chyba. Keďže tento doplnok viac nie je podporovaný, nájdené chyby už nebudú opravované. Prejdite na doplnok JOJ Play.')
+
 		result.reverse()
 		if select_cb:
 			return select_cb(result)
