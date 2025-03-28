@@ -311,12 +311,12 @@ class stalkerContentProvider(ContentProvider):
 				result.append(item)
 				i += 1
 
-			if i > self.max_items_per_page or vod_data['max_page_items'] * page >= vod_data['total_items']:
+			if i > self.max_items_per_page or int(vod_data['max_page_items']) * page >= int(vod_data['total_items']):
 				break
 
 			page += 1
 
-		if vod_data['max_page_items'] * page < vod_data['total_items']:
+		if int(vod_data['max_page_items']) * page < int(vod_data['total_items']):
 			item = self.dir_item('Ďalšie', '#portal_vod_cat#' + json.dumps( [ck, cat_id, page + 1, sortby] ) )
 			item['type'] = 'next'
 			result.append(item)

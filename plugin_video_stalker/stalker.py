@@ -382,7 +382,11 @@ class Stalker:
 			'action': 'get_all_channels',
 		}
 
-		return self.call_stalker_api( params ).get('data')
+		response = self.call_stalker_api( params )
+		if isinstance(response, dict):
+			return response.get('data') or []
+		else:
+			return []
 
 	# #################################################################################################
 
@@ -500,7 +504,10 @@ class Stalker:
 
 		ret = self.call_stalker_api( params )
 
-		return ret.get('data',{})
+		if isinstance(ret, dict):
+			return ret.get('data') or {}
+		else:
+			return {}
 
 	# #################################################################################################
 
