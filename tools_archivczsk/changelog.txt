@@ -1,3 +1,8 @@
+2.14 - 28.03.2025
+    - added websocket client
+    - added six helper module
+    - updated languages
+
 2.13 - 04.03.2025
     - updated HLS handler to be more expandable
     - expand HlsMaster to support also variant playlists

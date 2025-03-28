@@ -65,9 +65,9 @@ class CPModuleLiveTV(CPModuleTemplate):
 
 	def __init__(self, content_provider, name=None, categories=False, plot=None, img=None):
 		if not plot:
-			plot = _('Here you will find list of Live TV channels')
+			plot = _('Here you can find a list of channels offering live broadcasts')
 
-		CPModuleTemplate.__init__(self, content_provider, name if name else _('Live TV'), plot, img)
+		CPModuleTemplate.__init__(self, content_provider, name if name else _('Live broadcasting'), plot, img)
 		self.categories = categories
 
 	# #################################################################################################

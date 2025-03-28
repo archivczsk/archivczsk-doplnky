@@ -6,15 +6,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tools_archivczsk\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-04 15:29+0100\n"
-"PO-Revision-Date: 2024-08-05 19:19+0200\n"
+"POT-Creation-Date: 2025-03-28 10:14+0100\n"
+"PO-Revision-Date: 2025-03-28 10:14+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.5\n"
 
 #: tools_archivczsk/contentprovider/provider.py:516
 msgid "You are not logged in! Check login credentials in addon settings."
@@ -58,12 +58,12 @@ msgid "Next"
 msgstr "Ďalšie"
 
 #: tools_archivczsk/contentprovider/extended.py:68
-msgid "Here you will find list of Live TV channels"
-msgstr "Tu nájdete zoznam kanálov s ponukou živého vysielania"
+msgid "Here you can find a list of channels offering live broadcasts"
+msgstr "Tu nájdete zoznam kanálov, ktoré ponúkajú živé vysielanie"
 
 #: tools_archivczsk/contentprovider/extended.py:70
-msgid "Live TV"
-msgstr "Live TV"
+msgid "Live broadcasting"
+msgstr "Živé vysielanie"
 
 #: tools_archivczsk/contentprovider/extended.py:114
 msgid "Here you will find your channels archive"
@@ -184,6 +184,12 @@ msgid ""
 msgstr ""
 "Je k dispozícii nová verzia upraveného prehrávača exteplayer3. Prehrávač je dôležitou súčasťou systému a mnohé funkcie ArchivCZSK sú plne funkčné len v tejto verzii.\n"
 "Mám stiahnuť a nainštalovať novú verziu?"
+
+#~ msgid "Here you will find list of Live TV channels"
+#~ msgstr "Tu nájdete zoznam kanálov s ponukou živého vysielania"
+
+#~ msgid "Live TV"
+#~ msgstr "Live TV"
 
 #~ msgid "It was not possible to determine, if you have installed exteplayer3 and if it can play DRM protected streams needed by this addon."
 #~ msgstr "Nebolo možné zistiť, či máte nainštalovaný prehrávač exteplayer3 a či podporuje prehrávanie streamov s DRM ochranou, ktorá je potrebná pre tento doplnok."
