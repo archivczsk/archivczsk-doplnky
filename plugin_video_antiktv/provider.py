@@ -261,7 +261,10 @@ class AntikTVModuleArchive(CPModuleArchive):
 					except:
 						pass
 
-				self.cp.add_video(title, img, info_labels, cmd=self.get_archive_url, epg_title=title, channel_id=archive["channel_id_content"], epg_start=archive["start"], epg_stop=archive["stop"])
+				epg_start = datetime.strptime(archive["start"][:19], "%Y-%m-%dT%H:%M:%S")
+				epg_stop = datetime.strptime(archive["stop"][:19], "%Y-%m-%dT%H:%M:%S")
+
+				self.cp.add_video(title, img, info_labels, cmd=self.get_archive_url, epg_title=title, channel_id=archive["channel_id_content"], epg_start=epg_start, epg_stop=epg_stop)
 
 		if count > offset + len(archives):
 			self.cp.add_next(next_tag, offset=offset + len(archives), **next_tag_args)
