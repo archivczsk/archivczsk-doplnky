@@ -6,36 +6,71 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_hbomax\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-19 13:17+0200\n"
-"PO-Revision-Date: 2024-04-07 18:53+0200\n"
+"POT-Creation-Date: 2025-04-04 20:13+0200\n"
+"PO-Revision-Date: 2025-04-04 16:28+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.5\n"
 
-#: plugin_video_disneyplus/provider.py:39
+#: plugin_video_disneyplus/disneyplus.py:43
+msgid "You are not entitled to access this content. Check if your subscription is valid."
+msgstr "Nemáte oprávněni k přístupu k tomuto obsahu. Zkontrolujte, jestli je vaše předplatné nadále validní."
+
+#: plugin_video_disneyplus/disneyplus.py:44
+msgid "Your login details are incorrect."
+msgstr "Vaše přihlašovací údaje nejsou platné."
+
+#: plugin_video_disneyplus/disneyplus.py:45
+msgid "Incorrect PIN"
+msgstr "Nesprávný PIN"
+
+#: plugin_video_disneyplus/disneyplus.py:134
+msgid "Unexpected return code from server"
+msgstr "Neočekávaný návratový kód ze serveru"
+
+#: plugin_video_disneyplus/disneyplus.py:239
+#: plugin_video_disneyplus/disneyplus.py:243
+#: plugin_video_disneyplus/disneyplus.py:246
+#, python-brace-format
+msgid "API request failed. Server Error: {msg}"
+msgstr "Požadavek na API selhal. Chyba serveru: {msg}"
+
+#: plugin_video_disneyplus/disneyplus.py:287
+msgid "Login e-mail not found"
+msgstr "Přihlašovací  e-mail nebyl nalezen"
+
+#: plugin_video_disneyplus/disneyplus.py:290
+msgid "Login using OTP is not supported"
+msgstr "Přihlášení jednorázovým heslem není podporováno"
+
+#: plugin_video_disneyplus/provider.py:37
 msgid "To display the content, you must enter a login name and password in the addon settings"
 msgstr "Pro zobrazení obsahu je nutné zadat přihlašovací jméno a heslo v nastaveních doplňku"
 
-#: plugin_video_disneyplus/provider.py:88
+#: plugin_video_disneyplus/provider.py:86
 #: plugin_video_disneyplus/provider.py:157
 msgid "PIN protected"
 msgstr "Chráněné PIN kódem"
 
-#: plugin_video_disneyplus/provider.py:98
+#: plugin_video_disneyplus/provider.py:96
 msgid "Select profile"
 msgstr "Vyberte profil"
 
-#: plugin_video_disneyplus/provider.py:116
+#: plugin_video_disneyplus/provider.py:115
 msgid "Home"
 msgstr "Domov"
 
+#: plugin_video_disneyplus/provider.py:116
+msgid "Brands"
+msgstr "Značky"
+
 #: plugin_video_disneyplus/provider.py:117
-msgid "Hubs"
-msgstr "Sbírky"
+msgid "Discover"
+msgstr "Prozkoumat"
 
 #: plugin_video_disneyplus/provider.py:118
 msgid "Movies"
@@ -73,63 +108,38 @@ msgstr "Opravdu chcete přepnut profil?"
 msgid "Enter PIN"
 msgstr "Zadejte PIN"
 
-#: plugin_video_disneyplus/provider.py:468
-msgid "Delete from watchlist"
-msgstr "Vymazat z Watchlist"
+#: plugin_video_disneyplus/provider.py:418
+msgid "Go to series"
+msgstr "Jít na seriál"
 
-#: plugin_video_disneyplus/provider.py:470
-msgid "Add to watchlist"
-msgstr "Přidat do watchlistu"
-
-#: plugin_video_disneyplus/provider.py:547
-#: plugin_video_disneyplus/provider.py:592
+#: plugin_video_disneyplus/provider.py:489
+#: plugin_video_disneyplus/provider.py:515
 msgid "Play trailer"
 msgstr "Přehrát trailer"
 
-#: plugin_video_disneyplus/provider.py:557
-msgid "Season"
-msgstr "Sezona"
-
-#: plugin_video_disneyplus/provider.py:593
-#: plugin_video_disneyplus/provider.py:609
+#: plugin_video_disneyplus/provider.py:490
+#: plugin_video_disneyplus/provider.py:516
+#: plugin_video_disneyplus/provider.py:570
 msgid "Extras"
 msgstr "Doplňky"
 
-#: plugin_video_disneyplus/provider.py:594
-#: plugin_video_disneyplus/provider.py:612
+#: plugin_video_disneyplus/provider.py:491
+#: plugin_video_disneyplus/provider.py:517
+#: plugin_video_disneyplus/provider.py:567
 msgid "Suggested"
 msgstr "Navrhované"
 
-#: plugin_video_disneyplus/disneyplus.py:42
-msgid "You are not entitled to access this content. Check if your subscription is valid."
-msgstr "Nemáte oprávněni k přístupu k tomuto obsahu. Zkontrolujte, jestli je vaše předplatné nadále validní."
+#: plugin_video_disneyplus/provider.py:564
+msgid "Trailer"
+msgstr ""
 
-#: plugin_video_disneyplus/disneyplus.py:43
-msgid "Your login details are incorrect."
-msgstr "Vaše přihlašovací údaje nejsou platné."
+#: plugin_video_disneyplus/provider.py:603
+msgid "Remove from watchlist"
+msgstr "Vymazat z watchlistu"
 
-#: plugin_video_disneyplus/disneyplus.py:44
-msgid "Incorrect PIN"
-msgstr "Nesprávný PIN"
-
-#: plugin_video_disneyplus/disneyplus.py:132
-msgid "Unexpected return code from server"
-msgstr "Neočekávaný návratový kód ze serveru"
-
-#: plugin_video_disneyplus/disneyplus.py:237
-#: plugin_video_disneyplus/disneyplus.py:241
-#: plugin_video_disneyplus/disneyplus.py:244
-#, python-brace-format
-msgid "API request failed. Server Error: {msg}"
-msgstr "Požadavek na API selhal. Chyba serveru: {msg}"
-
-#: plugin_video_disneyplus/disneyplus.py:286
-msgid "Login e-mail not found"
-msgstr "Přihlašovací  e-mail nebyl nalezen"
-
-#: plugin_video_disneyplus/disneyplus.py:289
-msgid "Login using OTP is not supported"
-msgstr "Přihlášení jednorázovým heslem není podporováno"
+#: plugin_video_disneyplus/provider.py:605
+msgid "Add to watchlist"
+msgstr "Přidat do watchlistu"
 
 msgid "Login name"
 msgstr "Přihlašovací jméno"
@@ -159,7 +169,7 @@ msgid "Sync playback"
 msgstr "Synchronizovat pozici přehrávanání"
 
 msgid "Enable relative seeking in movies"
-msgstr "Povolit relativní přetáčení ve filmech "
+msgstr "Povolit relativní přetáčení ve filmech"
 
 msgid "Language of dubbed entries and menu"
 msgstr "Jazyk dabovaných položek a menu"
@@ -197,6 +207,15 @@ msgstr "Nikdy"
 msgid "Start forced subtitles automatically"
 msgstr "Automaticky spustit forced titulky"
 
+#~ msgid "Hubs"
+#~ msgstr "Sbírky"
+
+#~ msgid "Delete from watchlist"
+#~ msgstr "Vymazat z Watchlist"
+
+#~ msgid "Season"
+#~ msgstr "Sezona"
+
 #~ msgid "Last used"
 #~ msgstr "Naposled použito"
 
@@ -229,12 +248,6 @@ msgstr "Automaticky spustit forced titulky"
 
 #~ msgid "Kids profile"
 #~ msgstr "Dětský profil"
-
-#~ msgid "Remove from watchlist"
-#~ msgstr "Vymazat z watchlistu"
-
-#~ msgid "Go to series"
-#~ msgstr "Jít na seriál"
 
 #~ msgid "No response received from server. Maybe is your IP blocked by HBO."
 #~ msgstr "Server neodeslal odpověď. Možná je vaše IP u HBO zablokováná."

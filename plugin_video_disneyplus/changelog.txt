@@ -1,3 +1,6 @@
+2.0 - 04.04.2025
+    - úplný prepis doplnku na nové explore API poskytované serverom
+
 1.5 - 04.03.2025
     - úpravy po zmenách API v závislostiach doplnku
 

@@ -5,6 +5,7 @@ from tools_archivczsk.cache import lru_cache
 from uuid import uuid4
 
 from time import time
+from datetime import datetime
 
 PAGE_SIZE_CONTENT = 60
 PAGE_SIZE_SETS = 60
@@ -13,8 +14,8 @@ DUMP_API_REQUESTS = False
 
 class DisneyPlus(object):
 	CLIENT_ID = 'disney-svod-3d9324fc'
-	CLIENT_VERSION = '9.7.0'
-	EXPLORE_VERSION = 'v1.1'
+	CLIENT_VERSION = '9.10.0'
+	EXPLORE_VERSION = 'v1.8'
 
 	API_KEY = 'ZGlzbmV5JmFuZHJvaWQmMS4wLjA.bkeb0m230uUhv8qrAXuNu39tbE_mD5EEhM_NAcohjyA'
 	CONFIG_URL = 'https://bam-sdk-configs.bamgrid.com/bam-sdk/v5.0/{}/android/v{}/google/tv/prod.json'.format(CLIENT_ID, CLIENT_VERSION)
@@ -265,7 +266,6 @@ class DisneyPlus(object):
 	# ##################################################################################################################
 
 	def _set_auth(self, sdk):
-		self.login_data['feature_flags'] = sdk['featureFlags']
 		self.login_data['access_token'] = sdk['token']['accessToken']
 		self.login_data['refresh_token'] = sdk['token']['refreshToken']
 		self.login_data['expires']  = int(time() + sdk['token']['expiresIn'] - 15)
@@ -365,10 +365,6 @@ class DisneyPlus(object):
 		if pin:
 			payload['variables']['input']['entryPin'] = str(pin)
 
-#		endpoint = self.get_config()['services']['orchestration']['client']['endpoints']['query']['href']
-#		data = self._session.post(endpoint, json=payload).json()
-#		self._check_errors(data)
-
 		data = self.call_api(('orchestration', 'query'), data=payload)
 		self._set_auth(data['extensions']['sdk'])
 
@@ -382,12 +378,8 @@ class DisneyPlus(object):
 		kids_mode = profile['attributes']['kidsModeEnabled'] if profile else False
 		app_language = self.cp.dubbed_lang_list[0] or (profile['attributes']['languagePreferences']['appLanguage'] if profile else 'en-US')
 
-		api_version = '6.1'
-		if '/search/' in href:
-			api_version = '5.1'
-
 		_args = {
-			'apiVersion': api_version,
+			'apiVersion': '5.1',
 			'region': region,
 			'impliedMaturityRating': maturity,
 			'kidsModeEnabled': 'true' if kids_mode else 'false',
@@ -400,16 +392,6 @@ class DisneyPlus(object):
 
 	# ##################################################################################################################
 
-	def search(self, query):
-		params = {
-			'query': query,
-			'queryType': 'ge',
-			'pageSize': PAGE_SIZE_CONTENT
-		}
-		return self.call_api(('content', 'getSearchResults'), params=params )['data']['search']
-
-	# ##################################################################################################################
-
 	def avatar_by_id(self, ids):
 		params = {
 			'avatarIds': ','.join(ids)
@@ -418,163 +400,76 @@ class DisneyPlus(object):
 
 	# ##################################################################################################################
 
-	def video_bundle(self, family_id):
+	def userstates(self, pids):
 		params = {
-			'encodedFamilyId': family_id
+			'version': self.EXPLORE_VERSION
 		}
-		return self.call_api(('content', 'getDmcVideoBundle'), params=params )['data']['DmcVideoBundle']
+		data = {
+			'pids': pids,
+		}
+		return self.call_api(('explore', 'getUserState'), params=params, data=data )['data']['entityStates']
 
 	# ##################################################################################################################
 
-	def up_next(self, content_id):
+	def deeplink(self, ref_id, ref_type='deeplinkId', action='browse'):
 		params = {
-			'contentId': content_id
+			'version': self.EXPLORE_VERSION,
 		}
-		return self.call_api(('content', 'getUpNext'), params=params )['data']['UpNext']
 
-	# ##################################################################################################################
-
-	def continue_watching(self):
-		return self.call_api(('content', 'getCWSet'))['data']['ContinueWatchingSet']
-
-	# ##################################################################################################################
-
-	def add_watchlist(self, ref_type, ref_id):
-		params = {
-			'refIdType': ref_type,
-			'refId': ref_id
+		extra_params = {
+            'refId': ref_id,
+            'refIdType': ref_type,
+            'action': action,
 		}
-		return self.call_api(('content', 'putItemInWatchlist'), method='PUT', params=params )
+		return self.call_api(('explore', 'getDeeplink'), params=params, extra_params=extra_params )['data']['deeplink']
 
 	# ##################################################################################################################
 
-	def delete_watchlist(self, ref_type, ref_id):
-		params = {
-			'refIdType': ref_type,
-			'refId': ref_id
-		}
-		return self.call_api(('content', 'deleteItemFromWatchlist'), method='DELETE', params=params )
-
-	# ##################################################################################################################
-
-	def collection_by_slug(self, slug, content_class, sub_type='StandardCollection'):
-		params = {
-			'collectionSubType': sub_type,
-			'contentClass': content_class,
-			'slug': slug
-		}
-		return self.call_api(('content', 'getCollection'), params=params )['data']['Collection']
-
-	# ##################################################################################################################
-
-	def set_by_id(self, set_id, set_type, page=1, page_size=PAGE_SIZE_SETS):
-		if set_type == 'ContinueWatchingSet':
-			endpoint = 'getCWSet'
-		elif set_type == 'CuratedSet':
-			endpoint = 'getCuratedSet'
-		else:
-			endpoint = 'getSet'
-
-		params = {
-			'setType': set_type,
-			'setId': set_id,
-			'pageSize': page_size,
-			'page': page
-		}
-		return self.call_api(('content', endpoint), params=params )['data'][set_type]
-
-	# ##################################################################################################################
-
-	def video(self, content_id):
-		params = {
-			'contentId': content_id
-		}
-		return self.call_api(('content', 'getDmcVideo'), params=params )['data']['DmcVideo']
-
-	# ##################################################################################################################
-
-	def series_bundle(self, series_id):
-		params = {
-			'encodedSeriesId': series_id
-		}
-		return self.call_api(('content', 'getDmcSeriesBundle'), params=params )['data']['DmcSeriesBundle']
-
-	# ##################################################################################################################
-
-	def episodes(self, season_id, page=1):
-		params = {
-			'seasonId': season_id,
-			'page': page,
-			'pageSize': PAGE_SIZE_CONTENT
-		}
-		return self.call_api(('content', 'getDmcEpisodes'), params=params )['data']['DmcEpisodes']
-
-	# ##################################################################################################################
-
-	def update_resume(self, media_id, fguid, playback_time):
-		payload = [{
-			'server': {
-				'fguid': fguid,
-				'mediaId': media_id,
-				# 'origin': '',
-				# 'host': '',
-				# 'cdn': '',
-				# 'cdnPolicyId': '',
-			},
-			'client': {
-				'event': 'urn:bamtech:api:stream-sample',
-				'timestamp': str(int(time()*1000)),
-				'play_head': playback_time,
-				# 'playback_session_id': str(uuid.uuid4()),
-				# 'interaction_id': str(uuid.uuid4()),
-				# 'bitrate': 4206,
-			},
-		}]
-
-		return self.call_api(('telemetry', 'postEvent'), data=payload)
-
-	# ##################################################################################################################
-
-	def explore_page(self, page_id):
+	def explore_page(self, page_id, limit=999, enhanced_limit=0):
 		params = {
 			'version': self.EXPLORE_VERSION,
 			'pageId': page_id
 		}
 		extra_params = {
 			'disableSmartFocus': 'true',
-			'limit': 999,
-			'enhancedContainersLimit': 0,
+			'limit': limit,
+			'enhancedContainersLimit': enhanced_limit,
 		}
 
 		return self.call_api(('explore', 'getPage'), params=params, extra_params=extra_params)['data']['page']
 
 	# ##################################################################################################################
 
-	def explore_set(self, set_id, page=1):
+	def explore_set(self, set_id, page=0):
 		params = {
 			'version': self.EXPLORE_VERSION,
 			'setId': set_id
 		}
 		extra_params = {
 			'limit': PAGE_SIZE_CONTENT,
-			'offset': PAGE_SIZE_CONTENT * (page-1),
+			'offset': PAGE_SIZE_CONTENT * page,
 		}
 
 		return self.call_api(('explore', 'getSet'), params=params, extra_params=extra_params)['data']['set']
 
 	# ##################################################################################################################
 
-	def explore_season(self, season_id):
+	def explore_season(self, season_id, page=0):
 		params = {
 			'version': self.EXPLORE_VERSION,
 			'seasonId': season_id
 		}
 
-		return self.call_api(('explore', 'getSeason'), params=params)['data']['season']
+		extra_params = {
+			'limit': PAGE_SIZE_CONTENT,
+			'offset': PAGE_SIZE_CONTENT * (page-1),
+		}
+
+		return self.call_api(('explore', 'getSeason'), params=params, extra_params=extra_params)['data']['season']
 
 	# ##################################################################################################################
 
-	def explore_search(self, query):
+	def search(self, query):
 		params = {
 			'version': self.EXPLORE_VERSION,
 		}
@@ -587,50 +482,40 @@ class DisneyPlus(object):
 
 	# ##################################################################################################################
 
-	def playback_data(self, playback_url, wv_secure=False):
-		headers = {
-			'accept': 'application/vnd.media-service+json; version={}'.format(6 if self.basic_tier else 5),
-			'x-dss-feature-filtering': 'true'
+	def player_experience(self, available_id):
+		params = {
+			'version': self.EXPLORE_VERSION,
+			'availId': available_id,
 		}
-
-		payload = {
-			"playback": {
-				"attributes": {
-					"codecs": {
-						'supportsMultiCodecMaster': False, #if true outputs all codecs and resoultion in single playlist
-					},
-					"protocol": "HTTP",
-					#"ads": "",
-					"frameRates": [60],
-					"assetInsertionStrategy": "SGAI",
-					"playbackInitializationContext": "ONLINE"
-				},
-			}
-		}
-
-		video_ranges = []
-		audio_types = []
-
-		if self.cp.get_setting('video_codec') == 'hvc1':
-#			payload['playback']['attributes']['codecs'].update({'video': ['h264', 'h265']})
-			payload['playback']['attributes']['codecs'].update({'video': ['h265']})
-
-		if audio_types:
-			payload['playback']['attributes']['audioTypes'] = audio_types
-
-		if video_ranges:
-			payload['playback']['attributes']['videoRanges'] = video_ranges
-
-		if not wv_secure:
-			payload['playback']['attributes']['resolution'] = {'max': ['1280x720']}
-
-		scenario = 'ctr-high' if wv_secure else 'ctr-regular'
-		endpoint = playback_url.format(scenario=scenario)
-		return self.call_api(endpoint, headers=headers, data=payload)
+		return self.call_api(('explore', 'getPlayerExperience'), params=params)['data']['PlayerExperience']
 
 	# ##################################################################################################################
 
-	def explore_playback(self, resource_id, wv_secure=False):
+	def edit_watchlist(self, event_type, page_info, action_info):
+		profile, session = self.get_active_profile()
+		event_time = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.000Z')
+
+		payload = [{
+			'data': {
+				'action_info_block': action_info,
+				'page_info_block': page_info,
+				'event_type': event_type,
+				'event_occurred_timestamp': event_time,
+			},
+			'datacontenttype': 'application/json;charset=utf-8',
+			'subject': 'sessionId={},profileId={}'.format(session['sessionId'], profile['id']),
+			'source': 'urn:dss:source:sdk:android:google:tv',
+			'type': 'urn:dss:event:cs:user-content-actions:preference:v1:watchlist',
+			'schemaurl': 'https://github.bamtech.co/schema-registry/schema-registry-client-signals/blob/series/0.X.X/smithy/dss/cs/event/user-content-actions/preference/v1/watchlist.smithy',
+			'id': str(uuid4()),
+			'time': event_time,
+		}]
+
+		return self.call_api(('telemetry', 'envelopeEvent'), data=payload)
+
+	# ##################################################################################################################
+
+	def playback(self, resource_id, wv_secure=False):
 		headers = {
 			'accept': 'application/vnd.media-service+json',
 			'x-dss-feature-filtering': 'true'
@@ -675,7 +560,26 @@ class DisneyPlus(object):
 
 	# ##################################################################################################################
 
-	def feature_flags(self):
-		return self.login_data['feature_flags']
+	def update_resume(self, media_id, fguid, playback_time):
+		payload = [{
+			'server': {
+				'fguid': fguid,
+				'mediaId': media_id,
+				# 'origin': '',
+				# 'host': '',
+				# 'cdn': '',
+				# 'cdnPolicyId': '',
+			},
+			'client': {
+				'event': 'urn:bamtech:api:stream-sample',
+				'timestamp': str(int(time()*1000)),
+				'play_head': playback_time,
+				# 'playback_session_id': str(uuid.uuid4()),
+				# 'interaction_id': str(uuid.uuid4()),
+				# 'bitrate': 4206,
+			},
+		}]
+
+		return self.call_api(('telemetry', 'postEvent'), data=payload)
 
 	# ##################################################################################################################
