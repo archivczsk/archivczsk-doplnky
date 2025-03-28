@@ -257,7 +257,7 @@ class SweetTV:
 
 		data = self.call_api('AuthenticationService/Token.json', data=data, enable_retry=False)
 
-		if data.get('result') != 'OK':
+		if 'access_token' not in data:
 			self.access_token = None
 			self.refresh_token = None
 			self.access_token_life = 0
