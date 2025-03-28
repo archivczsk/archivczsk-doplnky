@@ -1,3 +1,6 @@
+1.1 - 28.03.2025
+- oprava vyhľadávania
+
 1.0 - 28.03.2025
 - prvá verzia inšpirovaná kodi doplnkom od waladir - ďakujem
 - k dispozícii živé vysielanie, archív, vyhľadávanie, správa nahrávok a VOD

@@ -604,7 +604,7 @@ class OneplayTVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def search(self, keyword, search_id=''):
-		self.cp.ensure_supporter()
+		self.ensure_supporter()
 		add_item_uni = self.get_module(OneplayTVModuleVOD).add_item_uni
 		for item in self.oneplay.search(keyword):
 			add_item_uni(item)
