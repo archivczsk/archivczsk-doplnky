@@ -1,3 +1,6 @@
+1.6 - 28.03.2025
+- oprava pádu pri výpise informácií o účte
+
 1.5 - 18.02.2025
 - oprava prihlásenia po zmenách na strane Prima+
 
