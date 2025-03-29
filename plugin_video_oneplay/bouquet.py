@@ -17,6 +17,17 @@ class OneplayTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=('username', 'password'), user_agent=user_agent)
 		self.bouquet_generator = OneplayTVBouquetGenerator
 
+	def refresh_bouquet(self):
+		# this is temprorary code - remove it when all users update to this version
+		if self.cp.load_cached_data('picons').get('version') != 1:
+			# remove old picons, because they are wrong
+			self.cp.log_info("Removing old picons")
+			import os
+			os.system('rm /usr/share/enigma2/picon/*_0_1_*_6DAE_1_7070000_0_0_0.png')
+			self.cp.save_cached_data('picons', {'version': 1})
+
+		return super(OneplayTVBouquetXmlEpgGenerator, self).refresh_bouquet()
+
 	def logged_in(self):
 		return self.cp.oneplay != None
 
@@ -32,7 +43,7 @@ class OneplayTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 				'name': channel['name'],
 				'adult': channel['adult'],
 				'picon': channel['picon'],
-				'id': channel['number'],
+				'id': int(channel['id']),
 				'key': str(channel['key']),
 			}
 
@@ -40,12 +51,13 @@ class OneplayTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 		for channel in self.cp.channels:
 			yield {
 				'name': channel['name'],
-				'id': channel['number'],
+				'id': int(channel['id']),
 				'key': channel['key'],
+				'order': channel['number']
 			}
 
 	def get_epg(self, channel, fromts, tots):
-		for event in self.cp.oneplay.get_channel_epg(channel['key'], channel['id'], fromts, tots):
+		for event in self.cp.oneplay.get_channel_epg(channel['key'], channel['order'], fromts, tots):
 			yield event
 
 # #################################################################################################

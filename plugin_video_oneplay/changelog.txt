@@ -1,3 +1,8 @@
+1.3 - 29.03.2025
+- oprava multidimenzie v userbouquete
+- oprava nesprávneho generovania userbouquetu
+    * ak bude po pregenerovaní userbouquetu nesprávne EPG, je nutné v enigme zmazať EPG cache
+
 1.2 - 29.03.2025
 - oprava prehrávania archívu
 - oprava pádu pri prázdnom zozname obľúbených staníc
