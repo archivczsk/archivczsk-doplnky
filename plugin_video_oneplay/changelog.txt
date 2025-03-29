@@ -1,5 +1,6 @@
 1.2 - 29.03.2025
 - oprava prehrávania archívu
+- oprava pádu pri prázdnom zozname obľúbených staníc
 - zapnutie interného dešifrovania DRM obsahu
     * dešifrovanie pomocou exteplayer3 sa použije len ak je k dispozícii exteplayer3 s podporou DRM
     * umožní to prehrávať obsah s DRM aj na DreamOS

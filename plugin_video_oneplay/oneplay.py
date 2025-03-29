@@ -594,6 +594,9 @@ class Oneplay(object):
 	def add_fav_channel(self, channel_id):
 		payload = self.get_active_profile_data()
 
+		if not payload['setting']['favoriteChannels'].get('channels'):
+			payload['setting']['favoriteChannels']['channels'] = []
+
 		if channel_id not in payload['setting']['favoriteChannels']['channels']:
 			payload['setting']['favoriteChannels']['channels'].append(channel_id)
 			self.call_api('user.profile.modify', payload)
@@ -602,6 +605,9 @@ class Oneplay(object):
 
 	def remove_fav_channel(self, channel_id):
 		payload = self.get_active_profile_data()
+
+		if not payload['setting']['favoriteChannels'].get('channels'):
+			payload['setting']['favoriteChannels']['channels'] = []
 
 		if channel_id in payload['setting']['favoriteChannels']['channels']:
 			payload['setting']['favoriteChannels']['channels'].remove(channel_id)
