@@ -1,3 +1,6 @@
+2024-03-29 - 2.25
+* oprava funkčnosti po zmenách na strane Orange
+
 2024-03-04 - 2.24
 * pridanie podpory pre prehrávanie aktuálne bežiacej relácie od začiatku
 
@@ -28,7 +31,7 @@
 * prechod na unifikovaný bouquet generátor (opravuje nesprávne EPG v niektorých prípadoch)
 
 2024-01-27 - 2.15
-* priadnie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
+* pridanie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
 
 2024-01-08 - 2.14
 * úpravy kvôli zmene spôsobu fungovania rodičovskej kontroly

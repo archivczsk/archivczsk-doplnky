@@ -109,6 +109,7 @@ class OrangeTV:
 				"access_token": self.access_token,
 				"deviceId": self.device_id
 			}
+			req_headers['X-NanguTv-Device-Id'] = self.device_id
 		else:
 			cookies = None
 
