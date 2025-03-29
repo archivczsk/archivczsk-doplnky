@@ -820,15 +820,19 @@ class Oneplay(object):
 	# #################################################################################################
 
 	def get_archive_link(self, epg_id):
-		payload = {
-			"contentId":epg_id
-		}
-		response = self.call_api('page.content.display', payload)
+		if not epg_id.startswith('epgitem.'):
+			try:
+				payload = {
+					"contentId":epg_id
+				}
+				response = self.call_api('page.content.display', payload)
 
-		for block in response['layout']['blocks']:
-			if block['schema'] == 'ContentHeaderBlock':
-				epg_id = block.get('mainAction',{}).get('action',{}).get('params',{}).get('payload',{}).get('criteria',{}).get('contentId') or epg_id
-				break
+				for block in response['layout']['blocks']:
+					if block['schema'] == 'ContentHeaderBlock':
+						epg_id = block.get('mainAction',{}).get('action',{}).get('params',{}).get('payload',{}).get('criteria',{}).get('contentId') or epg_id
+						break
+			except Exception as e:
+				self.cp.log_error("Failed to get content ID from %s using page.content.display: %s" % (epg_id, str(e)))
 
 		return self.get_stream_url(epg_id)
 
