@@ -17,7 +17,7 @@
 <addon id="plugin.video.novaplus" name="TV Nova" version="3.12" hash="7dc29834e0d0d15485bd31ffabf863e7" rhash="4fc06b2e43c58bfc964ea6458e638179" />
 <addon id="plugin.video.o2tv" name="O2 TV 2.0" version="1.31" hash="14c4cca962f349da418d075bcc4f2790" rhash="ecac9f0f021de35cbc85514632c60406" />
 <addon id="plugin.video.oneplay" name="Oneplay" version="1.3" hash="3b99275cc22592a891e4ea934087b6c0" rhash="5800ccafaff0e7d0f275f1c66019bb18" />
-<addon id="plugin.video.orangetv" name="OrangeTV" version="2.24" hash="2a8426d3f050358577280381674d2e65" rhash="47a086cf732feac8f83352f3fb2f5838" />
+<addon id="plugin.video.orangetv" name="OrangeTV" version="2.25" hash="72530a59b47974c6755a156c6be1bfe1" rhash="2229aee3b1a8e98f0ab96035f8455157" />
 <addon id="plugin.video.pohadkar.cz" name="Pohádkář.cz" version="1.5.0" hash="2f30d87101b495adc0afb4cb95736753" rhash="2f30d87101b495adc0afb4cb95736753" />
 <addon id="plugin.video.prehrajto" name="Prehraj.to" version="1.3" hash="5edc00f41b7d0a30946869edfc634541" rhash="b865e7a4bd03e4cc177a2bb598a3f98c" />
 <addon id="plugin.video.primaplus" name="Prima+" version="1.6" hash="d008016552550a8f7a5b6dd5e736bcbe" rhash="93910a0ec38d0e9ab1517756a94696e6" />
