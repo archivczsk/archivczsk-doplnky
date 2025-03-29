@@ -18,7 +18,7 @@ from tools_archivczsk.websocket import create_connection
 ############### init ################
 
 class Oneplay(object):
-	APP_VERSION = '1.0.10'
+	APP_VERSION = '1.0.25'
 
 	def __init__(self, cp):
 		self.cp = cp

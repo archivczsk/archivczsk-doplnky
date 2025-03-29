@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_oneplay\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-28 09:58+0100\n"
+"POT-Creation-Date: 2025-03-29 13:50+0100\n"
 "PO-Revision-Date: 2025-03-28 10:13+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.5\n"
 
-#: plugin_video_oneplay/http_handler.py:133
+#: plugin_video_oneplay/http_handler.py:137
 #: plugin_video_oneplay/provider.py:760
 msgid "Multidimension - select stream"
 msgstr "Multidimenzia - vyberte stream"
@@ -41,7 +41,7 @@ msgstr "Zo serveru bola prijatá nesprávna websocket odpoveď"
 msgid "Login failed - no access token in response data received"
 msgstr "Prihlásenie zlyhalo - odpoveď zo serveru neobsahuje prístupový token"
 
-#: plugin_video_oneplay/oneplay.py:1229
+#: plugin_video_oneplay/oneplay.py:1234
 msgid "Available from"
 msgstr "Dostupné od"
 
@@ -270,6 +270,9 @@ msgstr ""
 
 msgid "MPEG-DASH"
 msgstr ""
+
+msgid "Allow DRM decrypt using exteplayer3 (enigma restart needed)"
+msgstr "Povoliť dešifrovanie DRM pomocou exteplayer3 (nutný reštart enigmy)"
 
 msgid "Enable special section in main menu"
 msgstr "Povoliť špeciálnu sekciu v hlavnom menu"
