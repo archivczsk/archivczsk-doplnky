@@ -175,8 +175,9 @@ class OneplayHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler):
 
 		# if channels broatcasts MD, then show menu to select MD stream
 		if 'md' in stream_index_info and self.last_played_channel != channel_id and self.cp.get_setting('show_md_choice'):
-			self.last_played_channel = channel_id
 			self.show_md_menu(stream_index_info)
+
+		self.last_played_channel = channel_id
 
 		if stream_index_info['type'] == 'dash':
 			return self.P_dash(request, self.encode_p_dash_key(stream_info))
