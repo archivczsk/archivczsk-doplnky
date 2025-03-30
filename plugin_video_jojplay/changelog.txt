@@ -1,3 +1,6 @@
+1.1: 30.03.2025
+- oprava prehrávania na zastaralom image (VTi) s neaktuálnymi SSL certifikátmi
+
 1.0: 15.03.2025
 - úvodná verzia - funkčne približne kopíruje možnosti oficiálnej aplikácie
 - pre používanie je nutné v nastaveniach zadať prihlasovacie údaje k službe

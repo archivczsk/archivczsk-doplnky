@@ -352,7 +352,7 @@ class JojPlayContentProvider(CommonContentProvider):
 
 		supporter = self.is_supporter()
 		if manifest_url.endswith('.m3u8'):
-			streams = self.get_hls_streams(manifest_url, max_bitrate=self.get_setting('max_bitrate'))
+			streams = self.get_hls_streams(manifest_url, self.jojplay.client.req_session, max_bitrate=self.get_setting('max_bitrate'))
 			if not streams:
 				return False
 
@@ -381,7 +381,7 @@ class JojPlayContentProvider(CommonContentProvider):
 
 				self.add_play(title, url, info_labels=info_labels, data_item=data_item, settings=player_settings)
 		else:
-			streams = self.get_dash_streams(manifest_url, max_bitrate=self.get_setting('max_bitrate'))
+			streams = self.get_dash_streams(manifest_url, self.jojplay.client.req_session, max_bitrate=self.get_setting('max_bitrate'))
 			if not streams:
 				return False
 
