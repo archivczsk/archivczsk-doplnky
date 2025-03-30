@@ -1,3 +1,6 @@
+2.15 - 30.03.2025
+    - added support for timezone in iso8601 utils
+
 2.14 - 28.03.2025
     - added websocket client
     - added six helper module

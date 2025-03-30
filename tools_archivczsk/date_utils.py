@@ -14,13 +14,32 @@ def iso8601_to_timestamp(iso_string, utc=False):
 	Returns:
 		A datetime object in the local timezone, or None if parsing fails.
 	"""
+	if iso_string[-6] in ('+', '-'):
+		# 2022-12-23T04:59:00+02:00
+		tz_hour, tz_min = iso_string[-5:].split(':')
+		iso_string = iso_string[:-6]
+		if iso_string[-6] == '+':
+			tz_offset = datetime.timedelta(hours=int(tz_hour), minutes=int(tz_min))
+		else:
+			tz_offset = datetime.timedelta(hours=-int(tz_hour), minutes=-int(tz_min))
+	elif iso_string[-5] in ('+', '-'):
+		# 2022-12-23T04:59:00+3600
+		tz_min = iso_string[-4:]
+		iso_string = iso_string[:-5]
+		if iso_string[-5] == '+':
+			tz_offset = datetime.timedelta(minutes=int(tz_min))
+		else:
+			tz_offset = datetime.timedelta(minutes=-int(tz_min))
+	else:
+		tz_offset = datetime.timedelta(hours=0)
+
 	# 1. Parse the ISO string (handle 'Z' and fractional seconds):
 	if '.' in iso_string: # Check for fractional seconds
 		iso_string = iso_string.replace('Z', '')
-		utc_datetime = datetime.datetime.strptime(iso_string, "%Y-%m-%dT%H:%M:%S.%f")
+		utc_datetime = datetime.datetime.strptime(iso_string, "%Y-%m-%dT%H:%M:%S.%f") + tz_offset
 	else:
 		iso_string = iso_string.replace('Z', '')
-		utc_datetime = datetime.datetime.strptime(iso_string, "%Y-%m-%dT%H:%M:%S")
+		utc_datetime = datetime.datetime.strptime(iso_string, "%Y-%m-%dT%H:%M:%S") + tz_offset
 
 	# 2. Convert to local time (Python 2.7 and 3.x compatible):
 	utc_timestamp = calendar.timegm(utc_datetime.utctimetuple())  # UTC timestamp
