@@ -866,8 +866,8 @@ class Oneplay(object):
 			return None
 
 		return {
-			"start": iso8601_to_timestamp(epg_entry["startAt"][:19]) + time.timezone,
-			"end": iso8601_to_timestamp(epg_entry["endAt"][:19]) + time.timezone,
+			"start": iso8601_to_timestamp(epg_entry["startAt"]),
+			"end": iso8601_to_timestamp(epg_entry["endAt"]),
 			"title": str(epg_entry.get("title", '')),
 			"desc": epg_entry.get("description",''),
 			'img': self._get_img(epg_entry),
