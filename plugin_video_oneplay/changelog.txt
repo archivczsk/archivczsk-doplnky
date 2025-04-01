@@ -1,3 +1,7 @@
+1.5: 01.04.2025
+- rešpektovanie nastavení verifikácie SSL certifikátov aj pre websocket spojenia
+- lepšie ošetrenie chýb pri vytváraní spojenia na server
+
 1.4 - 30.03.2025
 - korektné rozoznávanie zimného/letného času a časovej zóny u EPG
 

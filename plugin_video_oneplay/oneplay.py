@@ -5,6 +5,10 @@
 
 import os, time, json
 import traceback
+try:
+	import ssl
+except:
+	ssl = None
 
 import uuid
 from datetime import datetime, timedelta
@@ -125,7 +129,21 @@ class Oneplay(object):
 		client_id = str(uuid.uuid4())
 
 		timeout = int(self.cp.get_setting('loading_timeout'))
-		ws = create_connection('wss://ws.cms.jyxo.cz/websocket/' + client_id, timeout=None if timeout == 0 else timeout)
+
+		sslopt = {}
+		if not self.cp.get_setting('verify_ssl'):
+			try:
+				sslopt={"cert_reqs": ssl.CERT_NONE}
+			except:
+				self.cp.log_error("SSL module is not available - failed to disable certificate verification for websocket connection")
+
+
+		try:
+			ws = create_connection('wss://ws.cms.jyxo.cz/websocket/' + client_id, timeout=None if timeout == 0 else timeout, sslopt=sslopt)
+		except Exception as e:
+			self.cp.log_exception()
+			raise AddonErrorException('{}:\n{}'.format(self._("Failed to create new connection to server"), str(e)))
+
 		ws_data = json.loads(ws.recv())
 
 		data = {
