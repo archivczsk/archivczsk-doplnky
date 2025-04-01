@@ -207,7 +207,11 @@ class Oneplay(object):
 			if not msg:
 				msg = '{}: {}'.format(self._("Server returned error response"), result.get('customError',{}).get('schema',result.get('code', '?')))
 
-			self.showError(msg.strip())
+			if result.get('code') == '4001':
+				self.reset_login_data()
+				self.showLoginError(msg.strip())
+			else:
+				self.showError(msg.strip())
 
 		if result.get('status') != 'Ok' or json_response.get('response',{}).get('context',{}).get('requestId') != request_id:
 			self.cp.log_error("Wrong websocket response received:\n%s\n%s" % (resp.text, str(json_response)))
