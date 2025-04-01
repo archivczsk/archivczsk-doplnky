@@ -207,11 +207,16 @@ class autosalontvContentProvider(ContentProvider):
 		result = []
 
 		req = requests.get(url_link).text
-		id = re.findall('https://www.youtube.com/embed/(.*?)"',str(req), re.DOTALL)[0]
+		try:
+			id = re.findall('https://www.youtube.com/embed/(.*?)"',str(req), re.DOTALL)[0]
+		except:
+			self.error("Embedded youtube video not found - check site contents")
+			id = None
 
-		resolved_url, forced_player = self.youtube_resolve(self.session, id)
-		if resolved_url:
-			result.append( { 'url': resolved_url, 'forced_player': forced_player } )
+		if id:
+			resolved_url, forced_player = self.youtube_resolve(self.session, id)
+			if resolved_url:
+				result.append( { 'url': resolved_url, 'forced_player': forced_player } )
 
 		return result
 
