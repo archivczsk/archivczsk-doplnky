@@ -1333,7 +1333,7 @@ class JojPlay(object):
 	# ##################################################################################################################
 
 	def get_current_profile(self):
-		cur_profile_id = self.client.login_data['profile_id']
+		cur_profile_id = self.client.login_data.get('profile_id')
 
 		for p in self.get_profiles():
 			if p['id'] == cur_profile_id:

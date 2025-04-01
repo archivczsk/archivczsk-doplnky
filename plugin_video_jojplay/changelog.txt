@@ -1,3 +1,6 @@
+1.2: 01.04.2025
+- oprava nahlásených pádov
+
 1.1: 30.03.2025
 - oprava prehrávania na zastaralom image (VTi) s neaktuálnymi SSL certifikátmi
 
