@@ -1,3 +1,6 @@
+1.6: 02.04.2025
+- oprava nastavovania extra stream cache
+
 1.5: 01.04.2025
 - rešpektovanie nastavení verifikácie SSL certifikátov aj pre websocket spojenia
 - lepšie ošetrenie chýb pri vytváraní spojenia na server

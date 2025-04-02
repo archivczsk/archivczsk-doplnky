@@ -252,7 +252,7 @@ class OneplayHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler):
 
 		extra_cache_time = int(self.cp.get_setting('extra_cache_time'))
 		if extra_cache_time > 0:
-			self.fix_buffer_time(root, extra_cache_time)
+			self.fix_buffer_time(root, extra_cache_time * 2)
 
 		fix = dash_info.get('fix')
 
