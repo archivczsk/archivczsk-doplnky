@@ -1,3 +1,6 @@
+1.32 - 02.04.2025
+    - oprava nastavovania extra stream cache
+
 1.31 - 12.03.2025
     - oprava dialógu pre výber multidimenzie v userbouquete po zmene na Oneplay
 
