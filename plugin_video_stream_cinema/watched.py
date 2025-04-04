@@ -183,7 +183,7 @@ class SCWatched(object):
 		if reload_movies_index or len(self.trakt_movies) == 0:
 			self.trakt_movies = { 'trakt': {}, 'tvdb': {}, 'tmdb': {}, 'imdb': {} }
 			# create search index for movies
-			for item in self.items['trakt']['m']:
+			for item in self.items.get('trakt',{}).get('m',[]):
 				for id_name in [ 'trakt', 'tvdb', 'tmdb', 'imdb' ]:
 					if id_name in item:
 						self.trakt_movies[id_name][ str(item[id_name]) ] = item
@@ -191,7 +191,7 @@ class SCWatched(object):
 		if reload_shows_index or len(self.trakt_shows) == 0:
 			self.trakt_shows = { 'trakt': {}, 'tvdb': {}, 'tmdb': {}, 'imdb': {} }
 			# create search index for shows
-			for item in self.items['trakt']['s']:
+			for item in self.items.get('trakt',{}).get('s',[]):
 				for id_name in [ 'trakt', 'tvdb', 'tmdb', 'imdb' ]:
 					if id_name in item:
 						self.trakt_shows[id_name][ str(item[id_name]) ] = item
