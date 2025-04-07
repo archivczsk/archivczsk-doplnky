@@ -1168,10 +1168,11 @@ class Oneplay(object):
 			response = self.call_api('carousel.display', payload)
 
 			for item in response['carousel']['tiles']:
-				if 'params' in item['action'] and 'contentId' in item['action']['params']['payload']['criteria']:
+				content_id = item.get('action',{}).get('params',{}).get('payload', {}).get('criteria',{}).get('contentId')
+				if content_id:
 					ret.append({
 						'type': 'video',
-						'id': item['action']['params']['payload']['criteria']['contentId'],
+						'id': content_id,
 						'title':  item['title'],
 						'subtitle': item.get('subTitle'),
 						'img': self._get_img(item)

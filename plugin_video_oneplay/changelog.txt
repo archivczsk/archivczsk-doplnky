@@ -1,3 +1,6 @@
+1.7: 07.04.2025
+- oprava nahlásených chýb
+
 1.6: 02.04.2025
 - oprava nastavovania extra stream cache
 
