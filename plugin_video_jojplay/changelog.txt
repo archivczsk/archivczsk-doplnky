@@ -1,3 +1,7 @@
+1.3: 07.04.2025
+- integrácia videoportálu priamo do doplnku a jeho prepojenie s obsahom JOJ Play
+- po funkčnej stránke plne nahradzuje doplnok joj.sk
+
 1.2: 01.04.2025
 - oprava nahlásených pádov
 

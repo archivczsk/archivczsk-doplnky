@@ -467,6 +467,7 @@ class JojPlayClient(object):
 
 			ret.extend(self.call_firestore_api(query, org_root=True))
 
+		self.dump_json('tags-by-id-' + str(tag_ids), ret)
 		return ret
 
 	# ##################################################################################################################
@@ -611,14 +612,16 @@ class JojPlayClient(object):
 	# ##################################################################################################################
 
 	def load_document_content(self, document_id):
-
-		target = {"documents":{"documents": [ self.DOCUMENTS_ROOT + "/contents/" + document_id]}}
-		return self.call_firestore_api(None, target=target)
+		ret = self.call_firestore_api(path="/contents/" + document_id)
+		self.dump_json('document-content', ret)
+		return ret
 
 	# ##################################################################################################################
 
 	def load_document(self, document_path, org_root=False):
-		return self.call_firestore_api(path=document_path, org_root=org_root)
+		ret = self.call_firestore_api(path=document_path, org_root=org_root)
+		self.dump_json('document', ret)
+		return ret
 
 	# ##################################################################################################################
 
@@ -834,7 +837,7 @@ class JojPlayClient(object):
 		else:
 			return [h for h in resp["hits"] if h.get('tagTypePath') == 'globalTagTypes/1X9nXUOc9XbtobIcFdyA']
 
-# ##################################################################################################################
+	# ##################################################################################################################
 
 	def get_related_videos(self, item_id):
 		data = {
@@ -862,23 +865,36 @@ class JojPlayClient(object):
 		else:
 			return []
 
+	# ##################################################################################################################
+
+	def get_videos_by_url(self, url_part):
+		query = {
+			"from":[{"collectionId":"videos"}],
+			"where":
+			{
+				"fieldFilter":
+				{
+					"field": {"fieldPath":"urlName.sk"},
+					"op": "ARRAY_CONTAINS",
+					"value": { "stringValue": url_part}
+				}
+			},
+			"orderBy":
+			[
+				{"field":{"fieldPath":"__name__"}, "direction":"ASCENDING"}
+			],
+			"limit":2
+		}
+
+		ret = self.call_firestore_api(query)
+		self.dump_json('videos-by-url-' + url_part, ret)
+		return ret
 
 # ##################################################################################################################
 
 # high level JojPlay client - uses JojPlayClient to request data from backend and processes it for frontend
 
 class JojPlay(object):
-	SCREEN_ID_MAPPING = {
-		'home': 'screen-Lxye9UzYirbdU8gT6zIZ',
-		'series': 'screen-6u1OuNZpEZJ5mvFAr_kwA',
-		'movies': 'screen-sDYvdxFDr6YuXBrJNq4Pf',
-		'sport': 'screen-jNBx-DFZSx6PazsFvlPol',
-		'kino': 'screen-Hu1-54YQnc69N4CTNRMcm',
-		'podcast': 'screen-Z9EMIUtQqNUU-C-f8lRVz',
-		'kids': 'screen-vmptBEawEZaKP5VzokZeE', #'screen-szqfXNmL-NXZev2HwvTAz',
-		'docu': 'screen-d_xouIReAph2uSRkR70eb'
-	}
-
 	APPLICATION_ID = 'micEeZCQvGG8OTDK4cJm'
 
 	ROW_ID_MAPPING = {
@@ -1087,8 +1103,6 @@ class JojPlay(object):
 		if ref:
 			# we have screen reference - to get rows, we need to get screen ID instead
 			screen_id = self.get_document('/screens/' + screen_id, True)['screenId']
-		else:
-			screen_id = self.SCREEN_ID_MAPPING.get(screen_id)
 
 		screen_data = self.client.get_screen_rows(screen_id, page * self.page_limit, self.page_limit)
 

@@ -11,7 +11,7 @@ from Plugins.Extensions.archivCZSK.colors import DeleteColors
 
 from time import time
 from .jojplay import JojPlay
-
+from .videoportal import JojVideoportal
 
 class JojPlayContentProvider(CommonContentProvider):
 	def __init__(self, settings=None, data_dir=None, http_endpoint=None):
@@ -19,6 +19,7 @@ class JojPlayContentProvider(CommonContentProvider):
 		self.http_endpoint = http_endpoint
 		self.login_settings_names = ('username', 'password')
 		self.jojplay = JojPlay(self)
+		self.videoportal = JojVideoportal(self)
 		self.tmp_dir = '/tmp/'
 		self.epg = {}
 
@@ -42,11 +43,12 @@ class JojPlayContentProvider(CommonContentProvider):
 		# Listing genres is possible, but I have not found a way to list items by genre ... :-(
 #		self.add_dir(self._("By genres"), cmd=self.list_genres)
 
+		self.add_dir(self._("Videoportal"), img='http://videoportal.joj.sk/html/assets/logo.png', cmd=self.videoportal.root)
+
 		self.add_dir(self._("Favourites"), cmd=self.list_favourites)
 
 		if self.get_setting("sync_playback"):
 			self.add_dir(self._("Continue watching"), cmd=self.list_watchlist)
-
 
 	# ##################################################################################################################
 

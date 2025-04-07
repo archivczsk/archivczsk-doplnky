@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_jojplay\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-15 19:30+0100\n"
-"PO-Revision-Date: 2025-03-15 19:46+0100\n"
+"POT-Creation-Date: 2025-04-07 18:30+0200\n"
+"PO-Revision-Date: 2025-04-07 18:30+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -17,77 +17,114 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.5\n"
 
-#: plugin_video_jojplay/provider.py:36
+#: plugin_video_jojplay/provider.py:37
 msgid "Search"
 msgstr "Vyhľadávanie"
 
-#: plugin_video_jojplay/provider.py:37
+#: plugin_video_jojplay/provider.py:38
 msgid "Live TV"
-msgstr "Live TV"
+msgstr "Živé televízne vysielanie"
 
-#: plugin_video_jojplay/provider.py:45
+#: plugin_video_jojplay/provider.py:46
+msgid "Videoportal"
+msgstr "Videoportál"
+
+#: plugin_video_jojplay/provider.py:48
 msgid "Favourites"
 msgstr "Obľúbené"
 
-#: plugin_video_jojplay/provider.py:48
+#: plugin_video_jojplay/provider.py:51
 msgid "Continue watching"
 msgstr "Pokračovať v sledovaní"
 
-#: plugin_video_jojplay/provider.py:71
+#: plugin_video_jojplay/provider.py:73
 msgid "Select profile"
 msgstr "Výber profilu"
 
-#: plugin_video_jojplay/provider.py:85
+#: plugin_video_jojplay/provider.py:87
 msgid "Search movies"
 msgstr "Hľadať filmy"
 
-#: plugin_video_jojplay/provider.py:86
+#: plugin_video_jojplay/provider.py:88
 msgid "Search series"
 msgstr "Hľadať seriály"
 
-#: plugin_video_jojplay/provider.py:117
+#: plugin_video_jojplay/provider.py:119
 msgid "Movies"
 msgstr "Filmy"
 
-#: plugin_video_jojplay/provider.py:118
+#: plugin_video_jojplay/provider.py:120
 msgid "Series"
 msgstr "Seriály"
 
-#: plugin_video_jojplay/provider.py:148
+#: plugin_video_jojplay/provider.py:150
 msgid "Remove from favourites"
 msgstr "Odstrániť z obľúbených"
 
-#: plugin_video_jojplay/provider.py:150
+#: plugin_video_jojplay/provider.py:152
 msgid "Add to favourites"
 msgstr "Pridať do obľúbených"
 
-#: plugin_video_jojplay/provider.py:153
+#: plugin_video_jojplay/provider.py:155
 msgid "Play trailer"
 msgstr "Prehrať trailer"
 
-#: plugin_video_jojplay/provider.py:154
+#: plugin_video_jojplay/provider.py:156
 msgid "Show related"
 msgstr "Zobraziť súvisiace"
 
-#: plugin_video_jojplay/provider.py:155
+#: plugin_video_jojplay/provider.py:157
 msgid "Reset watch position"
 msgstr "Resetovať pozíciu prehrávania"
 
-#: plugin_video_jojplay/provider.py:168 plugin_video_jojplay/provider.py:224
+#: plugin_video_jojplay/provider.py:170 plugin_video_jojplay/provider.py:226
 msgid "Subscription needed"
 msgstr "Potrebné predplatné"
 
-#: plugin_video_jojplay/provider.py:170 plugin_video_jojplay/provider.py:226
+#: plugin_video_jojplay/provider.py:172 plugin_video_jojplay/provider.py:228
 msgid "Only for ArchivCZSK supporters"
 msgstr "Len pre podporovateľov ArchivCZSK"
 
-#: plugin_video_jojplay/provider.py:301
+#: plugin_video_jojplay/provider.py:303
 msgid "Season"
 msgstr "Sezóna"
 
-#: plugin_video_jojplay/provider.py:423
+#: plugin_video_jojplay/provider.py:425
 msgid "This video is not available for your subscription. Play trailer instead?"
 msgstr "Toto video nie je k dispozícii pre vaše predplatné. Prehrať si namiesto toho trailer?"
+
+#: plugin_video_jojplay/videoportal.py:48
+msgid "Request to remote server failed. Try to repeat operation."
+msgstr "Požiadavka na vzdialený server zlyhala. Skúste operáciu zopakovať."
+
+#: plugin_video_jojplay/videoportal.py:64
+msgid "HTTP response code"
+msgstr "Kód HTTP odpovede"
+
+#: plugin_video_jojplay/videoportal.py:70
+#, python-brace-format
+msgid ""
+"In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\n"
+"python{0}-beautifulsoup4 or python{0}-bs4)"
+msgstr ""
+"Aby doplnok fungoval, musíte si nainštalovať BeautifulSoup4 pomocou správcu balíkov. Vyhľadajte balík s názvom:\n"
+"(python{0}-beautifulsoup4 alebo python{0}-bs4)"
+
+#: plugin_video_jojplay/videoportal.py:73
+msgid "TOP shows"
+msgstr "TOP relácie"
+
+#: plugin_video_jojplay/videoportal.py:74
+msgid "By alphabet"
+msgstr "Podľa abecedy"
+
+#: plugin_video_jojplay/videoportal.py:75
+msgid "All"
+msgstr "Všetky"
+
+#: plugin_video_jojplay/videoportal.py:272
+msgid "Unsupported JOJ Play redirect type"
+msgstr "Nepodporovaný typ presmerovania JOJ Play"
 
 #: plugin_video_jojplay/jojplay.py:127
 msgid "No username or password provided"
