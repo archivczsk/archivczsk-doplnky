@@ -36,14 +36,14 @@ class PrimaPlusContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def root(self):
-		subscription = self.primaplus.get_subscription()
+#		subscription = self.primaplus.get_subscription()
 
 		self.add_search_dir()
-		self.add_dir(self._("Movies"), cmd=self.list_layout, layout='categoryMovie__' + subscription)
-		self.add_dir(self._("Series"), cmd=self.list_layout, layout='categorySeries__' + subscription)
-		self.add_dir(self._("Kids"), cmd=self.list_layout, layout='kids__' + subscription)
-		self.add_dir(self._("New releases"), cmd=self.list_layout, layout='categoryNewReleases__' + subscription)
-		self.add_dir(self._("My"), cmd=self.list_layout, layout='mySection__' + subscription)
+		self.add_dir(self._("Movies"), cmd=self.list_layout, layout='categoryMovie')
+		self.add_dir(self._("Series"), cmd=self.list_layout, layout='categorySeries')
+		self.add_dir(self._("Kids"), cmd=self.list_layout, layout='kids')
+		self.add_dir(self._("New releases"), cmd=self.list_layout, layout='categoryNewReleases')
+		self.add_dir(self._("My"), cmd=self.list_layout, layout='mySection')
 		self.add_dir(self._("Genres"), cmd=self.list_genres)
 		self.add_dir(self._("Live"), cmd=self.list_chnnels)
 		self.add_dir(self._("Archive"), cmd=self.list_archive)
@@ -148,12 +148,12 @@ class PrimaPlusContentProvider(CommonContentProvider):
 
 	def search(self, keyword, search_id):
 		for item in self.primaplus.search(keyword):
-			self.add_list_item(item)
+			self.add_media_item(item)
 
 	# ##################################################################################################################
 
-	def add_list_item(self, item, menu=None):
-		if item['type'] not in ('movie', 'episode', 'series') or item['distribution']['showLock'] == True:
+	def add_media_item(self, item, menu=None):
+		if item['type'] not in ('movie', 'episode', 'series'):
 			return
 
 		additionals = item.get('additionals',{}) or {}
@@ -169,6 +169,11 @@ class PrimaPlusContentProvider(CommonContentProvider):
 			title = item['title'] + ' (' + str(additionals.get('episodeNumber', 0)) + ')' + date
 		else:
 			title = item['title']
+
+		locked = False
+		if item['distribution']['showLock']:
+			title = _C('gray', title )
+			locked = True
 
 		info_labels = {
 			'title': item['title'],
@@ -197,8 +202,30 @@ class PrimaPlusContentProvider(CommonContentProvider):
 		if item['type'] == 'series':
 			self.add_dir(item['title'], img=img, info_labels=info_labels, menu=menu, cmd=self.list_series, slug=item['slug'])
 		else:
-			self.add_video(title, img=img, info_labels=info_labels, menu=menu, cmd=self.play_stream, play_id=item['playId'], play_title=title)
+			self.add_video(title, img=img, info_labels=info_labels, menu=menu, cmd=self.play_stream, play_id=None if locked else item['playId'], play_title=title)
 
+
+	# ##################################################################################################################
+
+	def add_item_uni(self, item, menu=None, data_filter=None):
+		if item['type'] in ('movie', 'episode', 'series'):
+			return self.add_media_item(item, menu=menu)
+		elif item['type'] == 'api' and item['method'] == 'vdm.frontend.genre.list':
+			self.add_dir(item['title'], cmd=self.list_genres)
+		elif item['type'] == 'recombee':
+			self.add_dir(item['title'], cmd=self.list_recombee, scenario=item['scenario'], data_filter=data_filter)
+		elif item['type'] == 'technical' and item['subtype'] == 'watchList':
+			self.add_dir(item['title'], cmd=self.list_watchlist, scenario=item['scenario'])
+		else:
+			self.log_error("Item with type %s is not supported\n%s" % (item['type'], str(item)))
+
+	# ##################################################################################################################
+
+	def list_watchlist(self, scenario):
+		self.primaplus.watchlist_reload()
+
+		data_filter = "'xVdmId' in {%s}" % ','.join('"{}"'.format(x) for x in self.primaplus.watchlist.keys())
+		return self.list_recombee(scenario, data_filter=data_filter)
 
 	# ##################################################################################################################
 
@@ -215,33 +242,29 @@ class PrimaPlusContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def list_layout(self, layout):
+	def list_layout(self, layout, data_filter=None):
 		for item in self.primaplus.get_layout(layout):
-			self.add_dir(item['title'], cmd=self.list_strip, strip_id=item['strip_id'])
+			self.add_item_uni(item, data_filter=data_filter)
 
 	# ##################################################################################################################
 
-	def list_strip(self, strip_id, strip_filter=None, order_abc=False):
-		items = self.primaplus.get_strip(strip_id, strip_filter=strip_filter)
+	def list_recombee(self, scenario, order_abc=False, data_filter=None):
+		items = self.primaplus.get_recombee_data(scenario, data_filter=data_filter)
 
 		if order_abc:
 			items = sorted(items, key=lambda d: d['title'])
 
 		menu = self.create_ctx_menu()
-		menu.add_menu_item(self._("Order by alphabet"), cmd=self.list_strip, strip_id=strip_id, strip_filter=strip_filter, order_abc=True)
+		menu.add_menu_item(self._("Order by alphabet"), cmd=self.list_recombee, scenario=scenario, order_abc=True, data_filter=data_filter)
 
 		for item in items:
-			if item['type'] == 'static' and item['slug'] != 'https://iprima.cz/subskripce':
-				if item.get('title'):
-					self.add_dir(item['title'], menu=menu, cmd=self.list_strip, strip_id=strip_id, strip_filter=[{'type' : 'genre', 'value' : item['title']}])
-			elif item['type'] in ('movie', 'series', 'episode'):
-				self.add_list_item(item, menu=menu)
+			self.add_item_uni(item, menu=menu)
 
 	# ##################################################################################################################
 
 	def list_genres(self):
 		for item in self.primaplus.get_genres():
-			self.add_dir(item['title'], cmd=self.list_strip, strip_id=item['strip_id'], strip_filter=item.get('strip_filter'))
+			self.add_dir(item['title'], cmd=self.list_layout, layout='genres', data_filter=item.get('data_filter'))
 
 	# ##################################################################################################################
 
@@ -259,8 +282,10 @@ class PrimaPlusContentProvider(CommonContentProvider):
 
 			try:
 				title = ch['title'] + '  ' + _I(epg['title'])
-				epg_start = datetime.strptime(epg["programStartTime"][:19], "%Y-%m-%dT%H:%M:%S") + utc_offset
-				epg_stop = datetime.strptime(epg["programEndTime"][:19], "%Y-%m-%dT%H:%M:%S") + utc_offset
+				start = epg["programStartTime"] or epg['realStartDateTime']
+				end = epg["programEndTime"] or epg['realEndDateTime']
+				epg_start = datetime.strptime(start[:19], "%Y-%m-%dT%H:%M:%S") + utc_offset
+				epg_stop = datetime.strptime(end[:19], "%Y-%m-%dT%H:%M:%S") + utc_offset
 
 				info_labels = {
 					'plot':  "[{:02}:{:02} - {:02d}:{:02d}]\n{}".format(epg_start.hour, epg_start.minute, epg_stop.hour, epg_stop.minute, epg.get('description') or ''),
@@ -347,7 +372,7 @@ class PrimaPlusContentProvider(CommonContentProvider):
 		episodes = list(season['episodes'])
 		episodes.reverse()
 		for item in episodes:
-			self.add_list_item(item)
+			self.add_media_item(item)
 
 	# ##################################################################################################################
 
@@ -421,6 +446,9 @@ class PrimaPlusContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def play_stream(self, play_id, play_title):
+		if not play_id:
+			return
+
 		prefered_stream_type  = self.get_setting('stream_type')
 		all_streams = sorted(self.primaplus.get_streams(play_id), key=lambda x: x['lang'] == 'cs', reverse=True)
 

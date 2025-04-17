@@ -4,6 +4,9 @@ from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.date_utils import iso8601_to_timestamp
 import time
 from datetime import datetime, timedelta
+import hashlib
+import hmac
+import json
 
 COMMON_HEADERS = {
 	'Origin': 'https://www.iprima.cz/',
@@ -17,6 +20,7 @@ DUMP_API_REQUESTS=False
 class PrimaPlus(object):
 	DEVICE_TYPE='WEB'
 	DEVICE_NAME='Linux E2'
+	RECOMBEE_TOKEN=b'syGAjIijTmzHy7kPeckrr8GBc8HYHvEyQpuJsfjV7Dnxq02wUf3k5IAzgVTfCtx6'
 
 	def __init__(self, content_provider):
 		self.cp = content_provider
@@ -137,6 +141,46 @@ class PrimaPlus(object):
 
 	# ##################################################################################################################
 
+	def call_recombee_api(self, scenario, count=100, data_filter=None, next_id=None):
+		post = {
+			"cascadeCreate":True,
+			"returnProperties":True,
+			"includedProperties": ["xFrontendMetadata"],
+			"expertSettings":
+			{
+				"returnedInteractionTypes": ["viewPortion", "purchase"]
+			},
+			"scenario": scenario,
+			"count": count,
+			"filter": "'type' in {\"movie\", \"series\", \"episode\"}"
+		}
+
+		if data_filter:
+			post['filter'] += ' AND {}'.format(data_filter)
+
+		if next_id:
+			uri = '/ftv-prima-cross-domain/recomms/next/items/' + next_id
+		else:
+			uri = '/ftv-prima-cross-domain/recomms/users/' + self.login_data.get('profile_id') + '/items/'
+
+		uri += '?frontend_timestamp=' + str(int(time.time()) + 10)
+		uri += '&frontend_sign=' + hmac.new(self.RECOMBEE_TOKEN, uri.encode('utf-8'), hashlib.sha1).hexdigest()
+
+		response = self.req_session.post( 'https://client-rapi-prima.recombee.com' + uri, json=post)
+
+		response.raise_for_status()
+
+		data = response.json()
+		items = []
+		for item in data.get('recomms', []):
+			meta = item.get('values',{}).get('xFrontendMetadata')
+			if meta:
+				items.append(json.loads(meta))
+
+		return {'items': items, 'next': data.get('recommId') if len(data.get('recomms', [])) == count else None  }
+
+	# ##################################################################################################################
+
 	def check_access_token(self):
 		if not self.login_data.get('access_token') or self.login_data.get('valid_to', 0) < int(time.time()):
 			return False
@@ -240,53 +284,47 @@ class PrimaPlus(object):
 	def get_layout(self, layout):
 		ret = []
 		params = {
-			'layout' : layout
+			'deviceType': self.DEVICE_TYPE,
+			'pageSlug' : layout,
+			'userLevel': self.get_subscription()
 		}
 
-		for strip in self.call_rpc_api('strip.layout.serve.vdm', params):
-			if strip['type'] == 'strip' and strip['stripData']['layoutType'] in ('portraitStrip', 'landscapeStrip'):
+		for strip in self.call_rpc_api('layout.layout.serve', params).get('layoutBlocks', []):
+			strip = strip.get('stripData',{})
+			if strip.get('recombeeDataSource'):
 				ret.append({
-					'title': strip['stripData']['title'],
-					'strip_id':  strip['stripData']['id']
+					'type': 'recombee',
+					'title': strip['title'],
+					'method': strip['recombeeDataSource']['method'],
+					'scenario': strip['recombeeDataSource']['scenario']
 				})
+			elif strip.get('apiDataSource'):
+				ret.append({
+					'type': 'api',
+					'method': strip['apiDataSource']['method'],
+					'title': strip['title'],
+				})
+			elif strip.get('technicalDataSource'):
+				ret.append({
+					'type': 'technical',
+					'title': strip['title'],
+					'subtype': strip['technicalDataSource']['type'],
+					'scenario': strip['technicalDataSource']['scenario']
+				})
+			else:
+				self.cp.log_error("Unsupported strip:\n%s" % str(strip))
 
 		return ret
 
 	# ##################################################################################################################
 
-	def get_strip(self, strip_id, strip_filter = None):
-		limit = 100
-		page = 1
-		last = False
-		items = []
+	def get_recombee_data(self, scenario, data_filter=None):
+		data = self.call_recombee_api(scenario, data_filter=data_filter)
+		items = data['items']
 
-		method = 'strip.strip.items.vdm'
-		params = {
-			'stripId' : strip_id,
-			'limit' : limit,
-			'profileId' : self.login_data['profile_id']
-		}
-
-		while last == False:
-			if page > 1:
-				method = 'strip.strip.nextItems.vdm'
-				params.update({
-					'offset' : int(page) * limit,
-					'recommId' : recommId,
-				})
-
-			if strip_filter != None:
-				params['filter'] = strip_filter
-
-			data = self.call_rpc_api(method, params)
-			if data.get('items') == None:
-				last = True
-			else:
-				items += data['items']
-				page += 1
-				recommId = data['recommId']
-				if data['isNextItems'] == False:
-					last = True
+		while data['next']:
+			data = self.call_recombee_api(scenario, data_filter=data_filter, next_id=data['next'])
+			items.extend(data['items'])
 
 		return items
 
@@ -298,8 +336,7 @@ class PrimaPlus(object):
 		for genre in self.call_rpc_api('vdm.frontend.genre.list'):
 			ret.append({
 				'title': genre['title'],
-				'strip_id': '8138baa8-c933-4015-b7ea-17ac7a679da4',
-				'strip_filter': [{'type' : 'genre', 'value' : genre['title']}]
+				'data_filter': '"{}" in \'xGenres\''.format(genre['title'])
 			})
 
 		return ret

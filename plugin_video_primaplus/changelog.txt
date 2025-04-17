@@ -1,3 +1,6 @@
+1.7 - 17.04.2025
+- prepis veľkej časti doplnku po zmenách na strane Prima+
+
 1.6 - 28.03.2025
 - oprava pádu pri výpise informácií o účte
 
