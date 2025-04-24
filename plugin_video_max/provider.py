@@ -412,7 +412,7 @@ class WBDMaxContentProvider(CommonContentProvider):
 			return
 
 		data = self.wbdmax.get_series(series_id)
-		img = self._art(data['images'])
+		img = self._art(data.get('images',{}))
 
 		for row in data.get('seasons', []):
 			# ignore empty seasons

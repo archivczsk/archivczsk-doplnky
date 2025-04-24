@@ -313,6 +313,24 @@ class WBDMax(object):
 
 	# ##################################################################################################################
 
+	def find_content(self, data, target_key):
+		if isinstance(data, dict):
+			if target_key in data:
+				return data[target_key]
+
+			for value in data.values():
+				result = self.find_content(value, target_key)
+				if result is not None:
+					return result
+		elif isinstance(data, list):
+			for item in data:
+				result = self.find_content(item, target_key)
+				if result is not None:
+					return result
+		return None
+
+	# ##################################################################################################################
+
 	def get_series(self, series_id):
 		params = {
 			'include': 'default',
@@ -320,7 +338,7 @@ class WBDMax(object):
 			'page[items.size]': self.PAGE_SIZE,
 		}
 		data = self.call_api('/cms/routes/show/{}'.format(series_id), params=params)
-		data = self._process_data(data)[0]['target']['primaryContent']
+		data = self.find_content(self._process_data(data), 'show') or {}
 		dump_json(data, '/cms/routes/show/{}'.format(series_id))
 		return data
 
@@ -333,6 +351,7 @@ class WBDMax(object):
 			'pf[show.id]': series_id,
 			'pf[seasonNumber]': season_num,
 			'page[items.number]': page,
+			'page[items.size]': self.PAGE_SIZE
 		}
 		data = self.call_api('/cms/collections/generic-show-page-rail-episodes-tabbed-content', params=params)
 		data = self._process_data(data)[0]

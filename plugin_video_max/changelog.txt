@@ -1,3 +1,6 @@
+1.4 - 24.04.2025
+    - oprava pádu pri prezeraní niektorých seriálov
+
 1.3 - 17.02.2025
     - pridanie podpory pre Eurosport kanály v športovej sekcii
     - pridanie podpory pre športové udalosti v športovej sekcii
