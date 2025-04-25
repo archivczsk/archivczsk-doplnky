@@ -6,33 +6,33 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_prehrajto\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-13 08:49+0100\n"
-"PO-Revision-Date: 2024-03-06 22:05+0100\n"
+"POT-Creation-Date: 2025-04-25 16:25+0200\n"
+"PO-Revision-Date: 2025-04-25 16:25+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.5\n"
 
-#: plugin_video_webshare/webshare.py:153
+#: plugin_video_webshare/webshare.py:150
 msgid "Failed to get user informations"
 msgstr "Nepodarilo sa získať informácie o používateľovi"
 
-#: plugin_video_webshare/webshare.py:220
+#: plugin_video_webshare/webshare.py:215
 msgid "Wrong webshare login data provided"
 msgstr "Nesprávne prihlasovacie údaje pre Webshare"
 
-#: plugin_video_webshare/webshare.py:224
+#: plugin_video_webshare/webshare.py:219
 msgid "Webshare subscription expired. Only very low quality videos will play and seeking forward/backwad will not work at all."
 msgstr "Webshare predplatné vypršalo. Prehrávanie bude fungovať len u videí s veľmi nízkou kvalitou a pretáčanie vpred/vzad nebude fungovať vôbec."
 
-#: plugin_video_webshare/webshare.py:239
+#: plugin_video_webshare/webshare.py:234
 msgid "File is password protected"
 msgstr "Súbor je chránený heslom"
 
-#: plugin_video_webshare/webshare.py:247
+#: plugin_video_webshare/webshare.py:240
 msgid "Failed to resolve file"
 msgstr "Nepodarilo sa získať adresu súboru"
 
@@ -44,6 +44,14 @@ msgid ""
 msgstr ""
 "Prihlásenie do premium konta zlyhalo: {reason}\n"
 "Pokračujem s free kontom."
+
+#: plugin_video_webshare/provider.py:50
+msgid "Remove from watched"
+msgstr "Odstrániť zo sledovaných"
+
+#: plugin_video_webshare/provider.py:104
+msgid "Item were removed. Change will be efective after next addon start."
+msgstr "Položka bola odstránená. Zmena bude účinná po ďalšom spustení doplnku."
 
 msgid "Login name"
 msgstr "Prihlasovacie meno"

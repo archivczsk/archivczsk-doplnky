@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from tools_archivczsk.contentprovider.provider import CommonContentProvider
-from tools_archivczsk.contentprovider.exception import AddonErrorException
+from tools_archivczsk.contentprovider.exception import AddonErrorException, AddonInfoException
 from tools_archivczsk.string_utils import _I, _C, _B, decode_html
 from .webshare import Webshare, WebshareLoginFail, ResolveException
 from time import time
@@ -46,7 +46,9 @@ class WebshareContentProvider(CommonContentProvider):
 				'ident': item_id
 			}
 			item.update(item_data)
-			self.add_video(item['title'] + _I(' [' + item['size'] + ']'), item['img'], cmd=self.resolve, video_title=item['title'], video_id=item['ident'], item=item)
+			menu = self.create_ctx_menu()
+			menu.add_menu_item(self._("Remove from watched"), cmd=self.remove_watched_item, item_id=item_id)
+			self.add_video(item['title'] + _I(' [' + item['size'] + ']'), item['img'], menu=menu, cmd=self.resolve, video_title=item['title'], video_id=item['ident'], item=item)
 
 	# ##################################################################################################################
 
@@ -90,5 +92,15 @@ class WebshareContentProvider(CommonContentProvider):
 				del self.watched[k]
 
 		self.save_cached_data('watched', self.watched)
+
+	# ##################################################################################################################
+
+	def remove_watched_item(self, item_id):
+		if item_id in self.watched:
+			self.log_debug("Removing item %s from watched" % item_id)
+			del self.watched[item_id]
+
+		self.save_cached_data('watched', self.watched)
+		self.show_info(self._("Item were removed. Change will be efective after next addon start."))
 
 	# ##################################################################################################################
