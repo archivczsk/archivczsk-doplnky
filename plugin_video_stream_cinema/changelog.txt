@@ -1,3 +1,6 @@
+2025-04-25 3.19
+    - oprava spustenia pri nezadaných alebo nesprávnych prihlasovacích údajoch
+
 2025-04-25 3.18
     - pridaná autorizácia k SCC serverom
     - pridaná kontrola na existenciu prehrávaných video súborov

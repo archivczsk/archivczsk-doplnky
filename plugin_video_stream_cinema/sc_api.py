@@ -133,11 +133,11 @@ class SC_API(object):
 		from .kraska import Kraska
 
 		kr = Kraska(self.cp)
-		found = kr.list_files(filter='sc.json')
+		try:
+			found = kr.list_files(filter='sc.json')
 
-		if len(found.get('data', [])) == 1:
-			for f in found.get('data', []):
-				try:
+			if len(found.get('data', [])) == 1:
+				for f in found.get('data', []):
 					url = kr.resolve(f.get('ident'))
 					data = self.req_session.get(url)
 					if len(data.text) == 32:
@@ -145,12 +145,16 @@ class SC_API(object):
 						self.cp.save_cached_data('sc', {'token': token})
 						self.token = token
 						return
-				except:
-					self.cp.log_exception()
-		else:
-			self.cp.log_info("Backup file with auth token not found")
+			else:
+				self.cp.log_info("Backup file with auth token not found")
+		except:
+			self.cp.log_exception()
 
-		ret = self.call_api('/auth/token', data='')
+		try:
+			ret = self.call_api('/auth/token', data='')
+		except:
+			ret = {}
+			self.cp.log_exception()
 
 		if 'error' in ret:
 			self.cp.log_error("Error in getting auth token: %s" % str(ret))
