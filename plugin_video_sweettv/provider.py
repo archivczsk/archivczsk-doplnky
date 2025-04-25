@@ -177,12 +177,10 @@ class SweetTVModuleVOD(CPModuleTemplate):
 		data = self.cp.sweettv.get_movie_configuration()
 
 		if cat == 'collections':
-			data = data['collections'] + self.cp.sweettv.get_movie_collections()
-			prefix = '#movie_collection#'
+			data = data.get('collections', []) + self.cp.sweettv.get_movie_collections()
 			cmd = self.get_movies_collection
 		elif cat == 'genres':
 			data = data['genres']
-			prefix = '#movie_genre#'
 			cmd = self.get_movies_genre
 		else:
 			data = []
