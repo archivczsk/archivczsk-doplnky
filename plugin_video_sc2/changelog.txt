@@ -1,3 +1,6 @@
+2025-04-25 [3.26]
+* označenie doplnku ako nefunkčný
+
 2025-02-20 [3.25]
 * oprava zoradenia filmov/seriálov v sekcii "Podľa abecedy"
 
