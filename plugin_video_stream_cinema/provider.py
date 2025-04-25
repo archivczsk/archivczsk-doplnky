@@ -62,6 +62,8 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		CommonContentProvider.__init__(self, 'stream-cinema', settings=settings, data_dir=data_dir)
 		self.login_optional_settings_names = ('kruser', 'krpass')
 		self.tapi = trakttv
+		self.dubbed_lang_list = ['en']
+		self.lang_list = ['en']
 
 		if not self.get_setting('deviceid'):
 			self.set_setting('deviceid', SC_API.create_device_id())

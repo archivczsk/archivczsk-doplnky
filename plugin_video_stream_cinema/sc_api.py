@@ -20,6 +20,8 @@ class SC_API(object):
 
 		self.req_session = self.cp.get_requests_session()
 		self.cache = ExpiringLRUCache(30, 1800)
+		self.token = None
+		self.set_auth_token()
 
 	# ##################################################################################################################
 
@@ -89,7 +91,10 @@ class SC_API(object):
 			'X-Uuid': self.device_id,
 		}
 
-		if data:
+		if self.token:
+			headers['X-AUTH-TOKEN'] = self.token
+
+		if data != None:
 			rurl = url + '?' + urlencode(sorted(default_params.items(), key=lambda val: val[0]), True)
 			resp = self.req_session.post(rurl, data=data, headers=headers)
 		else:
@@ -116,5 +121,52 @@ class SC_API(object):
 			return resp
 		else:
 			raise AddonErrorException(self.cp._("Unexpected return code from server") + ": %d" % resp.status_code)
+
+	# ##################################################################################################################
+
+	def set_auth_token(self):
+		login_data = self.cp.load_cached_data('sc')
+		if login_data.get('token'):
+			self.token = login_data['token']
+			return
+
+		from .kraska import Kraska
+
+		kr = Kraska(self.cp)
+		found = kr.list_files(filter='sc.json')
+
+		if len(found.get('data', [])) == 1:
+			for f in found.get('data', []):
+				try:
+					url = kr.resolve(f.get('ident'))
+					data = self.req_session.get(url)
+					if len(data.text) == 32:
+						token = data.text
+						self.cp.save_cached_data('sc', {'token': token})
+						self.token = token
+						return
+				except:
+					self.cp.log_exception()
+		else:
+			self.cp.log_info("Backup file with auth token not found")
+
+		ret = self.call_api('/auth/token', data='')
+
+		if 'error' in ret:
+			self.cp.log_error("Error in getting auth token: %s" % str(ret))
+			return
+
+		if 'token' not in ret:
+			self.cp.log_error("Response doesn't contain auth token: %s" % str(ret))
+			return
+
+		token = ret['token']
+		self.cp.save_cached_data('sc', {'token': token})
+		self.token = token
+
+		try:
+			kr.upload(token, 'sc.json')
+		except:
+			self.cp.log_exception()
 
 	# ##################################################################################################################

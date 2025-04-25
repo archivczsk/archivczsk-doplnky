@@ -3,6 +3,7 @@
 import os
 import json
 import traceback
+import base64
 from datetime import datetime
 from time import time, mktime
 
@@ -182,5 +183,82 @@ class Kraska:
 			self.login_data = {}
 			self.cp.log_error('Kraska resolve error:\n%s' % traceback.format_exc())
 			raise KraskaResolveException(self.cp._("Failed to resolve file address"))
+
+	# #################################################################################################
+
+	def list_files(self, parent=None, filter=None):
+		self.refresh_login_data()
+
+		data = self.call_kraska_api('/api/file/list', {'data': {'parent': parent, 'filter': filter}})
+		return data
+
+	# #################################################################################################
+
+	def upload(self, data, filename):
+		self.refresh_login_data()
+
+		token = self.login_data.get('token')
+
+		if not token:
+			raise KraskaLoginFail(self.cp._("Wrong kra.sk login data"))
+
+		item = self.call_kraska_api('/api/file/create', {'data': {'name': filename}, 'shared': False})
+
+		if item and item.get('error', None) == 1205:
+			found = self.list_files(filter=filename).get('data', [])
+			if len(found) == 1:
+				for f in found:
+					if f.get('name', None) == filename:
+						self.delete(f.get('ident', None))
+						return self.upload(data, filename)
+
+		if not item or 'data' not in item:
+			self.cp.log_error('File upload error 1: {} / {}'.format(item, item.get('error', None)))
+			raise KraskaApiError(self.cp._("Failed to upload file"))
+
+		ident = item.get('data').get('ident', None)
+		link = item.get('data').get('link', None)
+		if ident is None or link is None:
+			self.cp.log_error('File upload error 2: {}'.format(item))
+			raise KraskaApiError(self.cp._("Failed to upload file"))
+
+		bident = base64.b64encode(ident.encode('utf-8')).decode("utf-8")
+
+		headers = {
+			'Tus-Resumable': '1.0.0',
+			'Upload-Metadata': 'ident {}'.format(bident),
+			'Upload-Length': str(len(data)),
+		}
+		upload = self.req_session.post(link, headers=headers, allow_redirects=False)
+
+		self.cp.log_debug('response headers: {}/{}'.format(upload.status_code, json.dumps(dict(upload.headers))))
+		upload_url = upload.headers.get('location', None)
+
+		if upload_url is None or upload.status_code != 201:
+			self.cp.log_error('File upload error 3: {}'.format(item))
+			self.delete(ident)
+			raise KraskaApiError(self.cp._("Failed to upload file"))
+
+		self.cp.log_debug('upload url: %s' % upload_url)
+
+		headers = {
+			'Tus-Resumable': '1.0.0',
+			'Upload-Offset': '0',
+			'Content-Type': 'application/offset+octet-stream',
+		}
+		ufile = self.req_session.patch('https://upload.kra.sk' + upload_url, data=data, headers=headers)
+
+		if ufile.status_code != 204:
+			self.cp.log_error('File upload error 4: {}'.format(ufile.status_code))
+			self.delete(ident)
+
+		ufile.json()
+		self.cp.log_debug('upload ok: {}'.format(ufile))
+
+	# #################################################################################################
+
+	def delete(self, ident):
+		self.refresh_login_data()
+		return self.call_kraska_api('/api/file/delete', {'data': {'ident': ident}})
 
 	# #################################################################################################

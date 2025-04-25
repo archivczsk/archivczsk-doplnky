@@ -1,3 +1,6 @@
+2025-04-25 3.18
+    - pridaná autorizácia k SCC serverom
+
 2025-04-04 3.17
     - oprava pádov pri chybe v komunikácii s Trakt.tv
 
