@@ -1,5 +1,6 @@
 2025-04-25 3.18
     - pridaná autorizácia k SCC serverom
+    - pridaná kontrola na existenciu prehrávaných video súborov
 
 2025-04-04 3.17
     - oprava pádov pri chybe v komunikácii s Trakt.tv
@@ -27,7 +28,7 @@
     - nahradenie interného klienta prehraj.to za priame volanie nového prehraj.to doplnku
 
 2024-01-27 3.10
-    - priadnie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
+    - pridanie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
 
 2024-01-08 3.9
     - úpravy kvôli zmene spôsobu fungovania rodičovskej kontroly

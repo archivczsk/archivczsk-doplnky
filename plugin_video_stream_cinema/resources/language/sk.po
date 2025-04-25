@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_stream_cinema\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-25 10:00+0200\n"
-"PO-Revision-Date: 2025-04-25 10:00+0200\n"
+"POT-Creation-Date: 2025-04-25 10:08+0200\n"
+"PO-Revision-Date: 2025-04-25 10:08+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -265,6 +265,11 @@ msgstr "Zoradiť zostupne"
 #: plugin_video_stream_cinema/provider.py:1171
 msgid "Please select a stream"
 msgstr "Prosím zvoľte stream"
+
+#: plugin_video_stream_cinema/provider.py:1221
+#: plugin_video_stream_cinema/provider.py:1278
+msgid "Video file not found. It was probably deleted or there is an error in data."
+msgstr "Video súbor nebol nájdený. Pravdepodobne bol vymazaný alebo je chyba v údajoch."
 
 #: plugin_video_stream_cinema/sc_api.py:123
 msgid "Unexpected return code from server"

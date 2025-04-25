@@ -1216,7 +1216,11 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 		playlist = self.add_playlist(media_title, variant=True)
 		try:
-			playlist.add_play(titles[idx], self.kraska.resolve(ident), subs=subs_url, **play_params)
+			video_url = self.kraska.resolve(ident)
+			if not video_url:
+				self.show_error(self._('Video file not found. It was probably deleted or there is an error in data.'))
+
+			playlist.add_play(titles[idx], video_url, subs=subs_url, **play_params)
 		except (KraskaLoginFail, KraskaResolveException) as e:
 			self.show_error(str(e))
 
@@ -1268,7 +1272,12 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			ident = self.api.call_api(url).get('ident')
 			play_params['settings'] = play_params['settings'].copy()
 			play_params['settings']['skip_times'] = skip_times
-			self.add_play(media_title, self.kraska.resolve(ident), subs=subs_url, **play_params)
+
+			video_url = self.kraska.resolve(ident)
+			if not video_url:
+				self.show_error(self._('Video file not found. It was probably deleted or there is an error in data.'))
+
+			self.add_play(media_title, video_url, subs=subs_url, **play_params)
 		except (KraskaLoginFail, KraskaResolveException) as e:
 			self.show_error(str(e))
 
