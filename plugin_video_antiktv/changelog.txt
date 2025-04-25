@@ -1,3 +1,6 @@
+2.24:
+- aktualizácia prístupových údajov
+
 2.23:
 - oprava prehrávania archívu
 
