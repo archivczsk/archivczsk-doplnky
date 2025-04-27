@@ -2,6 +2,7 @@
 
 from tools_archivczsk.http_handler.hls import HlsHTTPRequestHandler
 from tools_archivczsk.parser.hls import HlsPlaylist
+from tools_archivczsk.player.features import PlayerFeatures
 
 # #################################################################################################
 
@@ -59,7 +60,8 @@ class DisneyHlsMaster(HlsPlaylist):
 
 class DisneyPlusHTTPRequestHandler(HlsHTTPRequestHandler):
 	def __init__(self, content_provider, addon ):
-		super(DisneyPlusHTTPRequestHandler, self).__init__(content_provider, addon, proxy_segments=False, proxy_variants=True, internal_decrypt=False)
+		ext_drm_decrypt = PlayerFeatures.exteplayer3_cenc_supported and content_provider.get_setting('ext_drm_decrypt') and content_provider.get_setting('auto_used_player') == '2'
+		super(DisneyPlusHTTPRequestHandler, self).__init__(content_provider, addon, proxy_segments=not ext_drm_decrypt, proxy_variants=True, internal_decrypt=not ext_drm_decrypt)
 
 	# #################################################################################################
 

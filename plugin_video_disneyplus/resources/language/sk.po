@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_hbomax\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-27 17:11+0200\n"
-"PO-Revision-Date: 2025-04-27 17:12+0200\n"
+"POT-Creation-Date: 2025-04-27 18:44+0200\n"
+"PO-Revision-Date: 2025-04-27 18:45+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -108,40 +108,40 @@ msgstr "Naozaj chcete prepnúť profil?"
 msgid "Enter PIN"
 msgstr "Zadajte PIN"
 
-#: plugin_video_disneyplus/provider.py:444
+#: plugin_video_disneyplus/provider.py:446
 msgid "Go to series"
 msgstr "Prejsť na sériál"
 
-#: plugin_video_disneyplus/provider.py:521
-#: plugin_video_disneyplus/provider.py:548
+#: plugin_video_disneyplus/provider.py:523
+#: plugin_video_disneyplus/provider.py:550
 msgid "Play trailer"
 msgstr "Prehrať trailer"
 
-#: plugin_video_disneyplus/provider.py:522
-#: plugin_video_disneyplus/provider.py:549
-#: plugin_video_disneyplus/provider.py:603
+#: plugin_video_disneyplus/provider.py:524
+#: plugin_video_disneyplus/provider.py:551
+#: plugin_video_disneyplus/provider.py:605
 msgid "Extras"
 msgstr "Doplnky"
 
-#: plugin_video_disneyplus/provider.py:523
-#: plugin_video_disneyplus/provider.py:550
-#: plugin_video_disneyplus/provider.py:600
+#: plugin_video_disneyplus/provider.py:525
+#: plugin_video_disneyplus/provider.py:552
+#: plugin_video_disneyplus/provider.py:602
 msgid "Suggested"
 msgstr "Odporúčané"
 
-#: plugin_video_disneyplus/provider.py:597
+#: plugin_video_disneyplus/provider.py:599
 msgid "Trailer"
 msgstr ""
 
-#: plugin_video_disneyplus/provider.py:636
+#: plugin_video_disneyplus/provider.py:638
 msgid "Remove from watchlist"
 msgstr "Odstrániť z watchlistu"
 
-#: plugin_video_disneyplus/provider.py:638
+#: plugin_video_disneyplus/provider.py:640
 msgid "Add to watchlist"
 msgstr "Pridať do watchlistu"
 
-#: plugin_video_disneyplus/provider.py:642
+#: plugin_video_disneyplus/provider.py:644
 msgid "Remove from watched"
 msgstr "Odstrániť zo sledovaných"
 
@@ -210,6 +210,9 @@ msgstr "Nikdy"
 
 msgid "Start forced subtitles automatically"
 msgstr "Automaticky spustiť forced titulky"
+
+msgid "Allow DRM decrypt using exteplayer3 (enigma restart needed)"
+msgstr "Povolenie dešifrovania DRM pomocou exteplayer3 (potrebný reštart enigmy)"
 
 #~ msgid "Hubs"
 #~ msgstr "Zbrierky"

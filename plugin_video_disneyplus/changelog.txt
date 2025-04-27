@@ -1,3 +1,7 @@
+2.1 - 27.04.2025
+    - pridanie možnosti pre odstránenie položky z "Pokračovať v sledovaní"
+    - interné dešifrovanie DRM obsahu
+
 2.0 - 04.04.2025
     - úplný prepis doplnku na nové explore API poskytované serverom
 
