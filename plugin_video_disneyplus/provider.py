@@ -866,9 +866,13 @@ class DisneyPlusContentProvider(CommonContentProvider):
 
 		self.log_debug("Explore media stream URL: %s" % media_stream)
 
+		info_labels = {
+			'title': item_info['title']
+		}
+
 		pls = self.add_playlist(item_info['title'], True)
 		for audio_name, url in self.prepare_playback_urls(media_stream, lic_key):
-			pls.add_play(audio_name, url, settings=player_settings, data_item=playback_data['tracking']['telemetry'])
+			pls.add_play(audio_name, url, info_labels=info_labels, settings=player_settings, data_item=playback_data['tracking']['telemetry'])
 
 	# ##################################################################################################################
 
