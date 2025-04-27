@@ -479,8 +479,14 @@ class DisneyPlusContentProvider(CommonContentProvider):
 			resource_data = json.loads(base64.b64decode(actions['playback']['resourceId']).decode("utf-8"))
 			info['channel_id'] = resource_data['channelId']
 
-			# TODO: some preview/image will be great ...
-			self.add_video(title_prefix + data['visuals']['networkAttribution']['ttsText'], None, info_labels, cmd=self.play_item, item_info=info)
+			if not info.get('art'):
+				try:
+					info['art'] = 'https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/{}/scale?width=800&aspectRatio=1.78'.format(
+						data['visuals']['networkAttribution']['artwork']['brand']['logo']['2.00']['imageId'])
+				except:
+					pass
+
+			self.add_video(title_prefix + data['visuals']['networkAttribution']['ttsText'], info.get('art'), info_labels, cmd=self.play_item, item_info=info)
 		else:
 			info_labels.update({
 				'plot': plot_prefix + info['plot']
