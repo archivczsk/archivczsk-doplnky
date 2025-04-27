@@ -201,6 +201,15 @@ class DisneyPlusContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
+	def remove_continue_watching(self, deeplink_id):
+		data = self.disneyplus.explore_page('entity-{}'.format(deeplink_id.replace('entity-', '')))
+		info = self._get_info(data)
+		self.disneyplus.remove_continue_watching(action_info=info['actions']['contextMenu']['removeFromContinueWatching']['infoBlock'])
+
+		self.refresh_screen()
+
+	# ##################################################################################################################
+
 	def search(self, keyword, search_id=''):
 		if search_id:
 			self.ensure_supporter()
@@ -214,7 +223,13 @@ class DisneyPlusContentProvider(CommonContentProvider):
 	def _get_actions(self, data):
 		actions = {}
 		for row in data.get('actions', []):
-			actions[row['type']] = row
+			if row['type'] == 'contextMenu':
+				actions[row['type']] = {}
+
+				for sub_row in row.get('actions', []):
+					actions[row['type']][sub_row['type']] = sub_row
+			else:
+				actions[row['type']] = row
 
 		actions['playback'] = actions.get('playback') or actions.get('browse') or {}
 		return actions
@@ -308,7 +323,7 @@ class DisneyPlusContentProvider(CommonContentProvider):
 			set_id = [x for x in data['containers'] if 'continue_watching' in x['style']['name'].lower()][0]['id']
 
 		data = self.disneyplus.explore_set(set_id, page=page)
-		self._process_rows(data)
+		self._process_rows(data, continue_watching=True)
 
 		if data['pagination']['hasMore']:
 			self.add_next(cmd=self.brands, page=page+1, set_id=set_id)
@@ -336,16 +351,16 @@ class DisneyPlusContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def list_set(self, set_id, watchlist=False, page=0):
+	def list_set(self, set_id, watchlist=False, continue_watching=False, page=0):
 		data = self.disneyplus.explore_set(set_id, page=page)
-		self._process_rows(data, watchlist)
+		self._process_rows(data, watchlist, continue_watching=continue_watching)
 
 		if data['pagination']['hasMore']:
-			self.add_next(cmd=self.list_set, page=page+1, set_id=set_id, watchlist=watchlist)
+			self.add_next(cmd=self.list_set, page=page+1, set_id=set_id, watchlist=watchlist, continue_watching=continue_watching)
 
 	# ##################################################################################################################
 
-	def _process_rows(self, data, watchlist=False, flatten=False, short_episode_name=False):
+	def _process_rows(self, data, watchlist=False, flatten=False, short_episode_name=False, continue_watching=False):
 		if not data or not data.get('visuals'):
 			return
 
@@ -371,14 +386,14 @@ class DisneyPlusContentProvider(CommonContentProvider):
 					continue
 
 				if rows_len == 1 and flatten:
-					return self.list_set(row['id'], watchlist)
+					return self.list_set(row['id'], watchlist, continue_watching)
 				else:
-					self.add_dir(row['visuals']['name'], self._get_art(row), cmd=self.list_set, set_id=row['id'], watchlist=watchlist)
+					self.add_dir(row['visuals']['name'], self._get_art(row), cmd=self.list_set, set_id=row['id'], watchlist=watchlist, continue_watching=continue_watching)
 
 			elif row.get('actions', []):
 				# MOVIE / TV SHOW / EPISODE / REPLAY / LIVE
 				progress = self.get_progress(user_states.get(row['personalization']['pid']))
-				self._parse_row(row, watchlist, progress, short_episode_name)
+				self._parse_row(row, watchlist, continue_watching, progress, short_episode_name)
 
 	# ##################################################################################################################
 
@@ -400,7 +415,7 @@ class DisneyPlusContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def _parse_episode(self, data, progress={}, short_episode_name=False):
+	def _parse_episode(self, data, continue_watching=False, progress={}, short_episode_name=False):
 		info = self._get_info(data)
 		info_labels = self.get_common_info_labels(data)
 
@@ -422,7 +437,9 @@ class DisneyPlusContentProvider(CommonContentProvider):
 		if not short_episode_name:
 			title = '{} {} - {}'.format(info['title'], int_to_roman(int(info_labels['season'])), title)
 
-		menu = self.create_ctx_menu()
+		# TODO: remove from watched doesn't work for episodes, because explore_page() will fail - needs more investigation
+#		menu = self.get_common_menu(info, False, continue_watching)
+		menu = self.get_common_menu(info, False, False)
 
 		show_id = info.get('actions', {}).get('browse', {}).get('pageId')
 		if show_id:
@@ -496,12 +513,12 @@ class DisneyPlusContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def _parse_movie(self, data, watchlist=False, progress={}):
+	def _parse_movie(self, data, watchlist=False, continue_watching=False, progress={}):
 		info = self._get_info(data)
 		info['progress'] = progress
 
 		info_labels = self.get_common_info_labels(data)
-		menu = self.get_common_menu(info, watchlist)
+		menu = self.get_common_menu(info, watchlist, continue_watching)
 
 		menu.add_media_menu_item(self._('Play trailer'), cmd=self.play_trailer, deeplink_id=info.get('deeplink_id'))
 		menu.add_menu_item(self._('Extras'), cmd=self.extras, deeplink_id=info.get('deeplink_id'))
@@ -524,11 +541,11 @@ class DisneyPlusContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def _parse_show(self, data, watchlist=False, progress={}):
+	def _parse_show(self, data, watchlist=False, continue_watching=False, progress={}):
 		info = self._get_info(data)
 
 		info_labels = self.get_common_info_labels(data)
-		menu = self.get_common_menu(info, watchlist)
+		menu = self.get_common_menu(info, watchlist, continue_watching)
 
 		menu.add_media_menu_item(self._('Play trailer'), cmd=self.play_trailer, deeplink_id=info.get('deeplink_id'))
 		menu.add_menu_item(self._('Extras'), cmd=self.extras, deeplink_id=info.get('deeplink_id'))
@@ -547,20 +564,20 @@ class DisneyPlusContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################v
 
-	def _parse_row(self, data, watchlist=False, progress={}, short_episode_name=False):
+	def _parse_row(self, data, watchlist=False, continue_watching=False, progress={}, short_episode_name=False):
 		meta = data['visuals'].get('metastringParts', {})
 
 		if 'airingEventState' in data['visuals'].get('badging', {}):
 			self._parse_event(data, watchlist, progress)
 
 		elif 'episodeTitle' in data['visuals']:
-			self._parse_episode(data, progress, short_episode_name)
+			self._parse_episode(data, continue_watching, progress, short_episode_name)
 
 		elif 'runtime' in meta:
-			self._parse_movie(data, watchlist, progress)
+			self._parse_movie(data, watchlist, continue_watching, progress)
 
 		elif meta:
-			self._parse_show(data, watchlist, progress)
+			self._parse_show(data, watchlist, continue_watching, progress)
 
 		else:
 			self._parse_page(data)
@@ -612,7 +629,7 @@ class DisneyPlusContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def get_common_menu(self, item_info, watchlist ):
+	def get_common_menu(self, item_info, watchlist, continue_watching=False ):
 		menu = self.create_ctx_menu()
 		deeplink_id = item_info.get('deeplink_id')
 
@@ -621,6 +638,10 @@ class DisneyPlusContentProvider(CommonContentProvider):
 				menu.add_menu_item(self._("Remove from watchlist"), cmd=self.delete_watchlist, deeplink_id=deeplink_id)
 			else:
 				menu.add_menu_item(self._("Add to watchlist"), cmd=self.add_watchlist, deeplink_id=deeplink_id)
+
+		if deeplink_id and self.get_setting('sync_playback'):
+			if continue_watching:
+				menu.add_menu_item(self._("Remove from watched"), cmd=self.remove_continue_watching, deeplink_id=deeplink_id)
 
 		return menu
 

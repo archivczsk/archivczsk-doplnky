@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_hbomax\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-04 20:13+0200\n"
-"PO-Revision-Date: 2025-04-04 16:28+0200\n"
+"POT-Creation-Date: 2025-04-27 17:11+0200\n"
+"PO-Revision-Date: 2025-04-27 17:12+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -16,34 +16,34 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.5\n"
 
-#: plugin_video_disneyplus/disneyplus.py:43
+#: plugin_video_disneyplus/disneyplus.py:46
 msgid "You are not entitled to access this content. Check if your subscription is valid."
 msgstr "Nemáte oprávněni k přístupu k tomuto obsahu. Zkontrolujte, jestli je vaše předplatné nadále validní."
 
-#: plugin_video_disneyplus/disneyplus.py:44
+#: plugin_video_disneyplus/disneyplus.py:47
 msgid "Your login details are incorrect."
 msgstr "Vaše přihlašovací údaje nejsou platné."
 
-#: plugin_video_disneyplus/disneyplus.py:45
+#: plugin_video_disneyplus/disneyplus.py:48
 msgid "Incorrect PIN"
 msgstr "Nesprávný PIN"
 
-#: plugin_video_disneyplus/disneyplus.py:134
+#: plugin_video_disneyplus/disneyplus.py:137
 msgid "Unexpected return code from server"
 msgstr "Neočekávaný návratový kód ze serveru"
 
-#: plugin_video_disneyplus/disneyplus.py:239
-#: plugin_video_disneyplus/disneyplus.py:243
+#: plugin_video_disneyplus/disneyplus.py:242
 #: plugin_video_disneyplus/disneyplus.py:246
+#: plugin_video_disneyplus/disneyplus.py:249
 #, python-brace-format
 msgid "API request failed. Server Error: {msg}"
 msgstr "Požadavek na API selhal. Chyba serveru: {msg}"
 
-#: plugin_video_disneyplus/disneyplus.py:287
+#: plugin_video_disneyplus/disneyplus.py:290
 msgid "Login e-mail not found"
 msgstr "Přihlašovací  e-mail nebyl nalezen"
 
-#: plugin_video_disneyplus/disneyplus.py:290
+#: plugin_video_disneyplus/disneyplus.py:293
 msgid "Login using OTP is not supported"
 msgstr "Přihlášení jednorázovým heslem není podporováno"
 
@@ -108,38 +108,42 @@ msgstr "Opravdu chcete přepnut profil?"
 msgid "Enter PIN"
 msgstr "Zadejte PIN"
 
-#: plugin_video_disneyplus/provider.py:418
+#: plugin_video_disneyplus/provider.py:444
 msgid "Go to series"
 msgstr "Jít na seriál"
 
-#: plugin_video_disneyplus/provider.py:489
-#: plugin_video_disneyplus/provider.py:515
+#: plugin_video_disneyplus/provider.py:521
+#: plugin_video_disneyplus/provider.py:548
 msgid "Play trailer"
 msgstr "Přehrát trailer"
 
-#: plugin_video_disneyplus/provider.py:490
-#: plugin_video_disneyplus/provider.py:516
-#: plugin_video_disneyplus/provider.py:570
+#: plugin_video_disneyplus/provider.py:522
+#: plugin_video_disneyplus/provider.py:549
+#: plugin_video_disneyplus/provider.py:603
 msgid "Extras"
 msgstr "Doplňky"
 
-#: plugin_video_disneyplus/provider.py:491
-#: plugin_video_disneyplus/provider.py:517
-#: plugin_video_disneyplus/provider.py:567
+#: plugin_video_disneyplus/provider.py:523
+#: plugin_video_disneyplus/provider.py:550
+#: plugin_video_disneyplus/provider.py:600
 msgid "Suggested"
 msgstr "Navrhované"
 
-#: plugin_video_disneyplus/provider.py:564
+#: plugin_video_disneyplus/provider.py:597
 msgid "Trailer"
 msgstr ""
 
-#: plugin_video_disneyplus/provider.py:603
+#: plugin_video_disneyplus/provider.py:636
 msgid "Remove from watchlist"
 msgstr "Vymazat z watchlistu"
 
-#: plugin_video_disneyplus/provider.py:605
+#: plugin_video_disneyplus/provider.py:638
 msgid "Add to watchlist"
 msgstr "Přidat do watchlistu"
+
+#: plugin_video_disneyplus/provider.py:642
+msgid "Remove from watched"
+msgstr "Odebrat ze sledovaných"
 
 msgid "Login name"
 msgstr "Přihlašovací jméno"

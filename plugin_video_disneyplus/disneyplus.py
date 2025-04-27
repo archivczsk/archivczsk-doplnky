@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+
+# based on slyguy.disney.plus v0.20.16
+
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
 from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.cache import lru_cache
@@ -15,7 +18,7 @@ DUMP_API_REQUESTS = False
 class DisneyPlus(object):
 	CLIENT_ID = 'disney-svod-3d9324fc'
 	CLIENT_VERSION = '9.10.0'
-	EXPLORE_VERSION = 'v1.8'
+	EXPLORE_VERSION = 'v1.9'
 
 	API_KEY = 'ZGlzbmV5JmFuZHJvaWQmMS4wLjA.bkeb0m230uUhv8qrAXuNu39tbE_mD5EEhM_NAcohjyA'
 	CONFIG_URL = 'https://bam-sdk-configs.bamgrid.com/bam-sdk/v5.0/{}/android/v{}/google/tv/prod.json'.format(CLIENT_ID, CLIENT_VERSION)
@@ -507,6 +510,27 @@ class DisneyPlus(object):
 			'source': 'urn:dss:source:sdk:android:google:tv',
 			'type': 'urn:dss:event:cs:user-content-actions:preference:v1:watchlist',
 			'schemaurl': 'https://github.bamtech.co/schema-registry/schema-registry-client-signals/blob/series/0.X.X/smithy/dss/cs/event/user-content-actions/preference/v1/watchlist.smithy',
+			'id': str(uuid4()),
+			'time': event_time,
+		}]
+
+		return self.call_api(('telemetry', 'envelopeEvent'), data=payload)
+
+	# ##################################################################################################################
+
+	def remove_continue_watching(self, action_info):
+		profile, session = self.get_active_profile()
+		event_time = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.000Z')
+
+		payload = [{
+			'data': {
+				'action_info_block': action_info,
+			},
+			'datacontenttype': 'application/json;charset=utf-8',
+			'subject': 'sessionId={},profileId={}'.format(session['sessionId'], profile['id']),
+			'source': 'urn:dss:source:sdk:android:google:tv',
+			'type': 'urn:dss:event:cs:user-content-actions:preference:v1:watch-history-preference',
+			'schemaurl': 'https://github.bamtech.co/schema-registry/schema-registry-client-signals/blob/series/1.X.X/smithy/dss/cs/event/user-content-actions/preference/v1/watch-history-preference.smithy',
 			'id': str(uuid4()),
 			'time': event_time,
 		}]
