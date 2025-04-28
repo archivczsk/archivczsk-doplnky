@@ -252,7 +252,6 @@ class Kraska:
 			self.cp.log_error('File upload error 4: {}'.format(ufile.status_code))
 			self.delete(ident)
 
-		ufile.json()
 		self.cp.log_debug('upload ok: {}'.format(ufile))
 
 	# #################################################################################################

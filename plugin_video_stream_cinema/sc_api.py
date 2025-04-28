@@ -32,7 +32,9 @@ class SC_API(object):
 
 	# ##################################################################################################################
 
-	def call_api(self, url, data=None, params=None):
+	def call_api(self, url, data=None, params=None, auto_refresh_token=True):
+		request_url = url
+
 		if not url.startswith("https://"):
 			url = "https://stream-cinema.online/kodi" + url
 
@@ -119,39 +121,50 @@ class SC_API(object):
 				self.cache.put(rurl, resp, ttl)
 
 			return resp
+		elif resp.status_code == 404 and auto_refresh_token:
+			self.cp.log_debug("Server returned HTTP 404 - maybe wrong auth token ...")
+			self.set_auth_token(True)
+			return self.call_api(request_url, data, params, False)
 		else:
 			raise AddonErrorException(self.cp._("Unexpected return code from server") + ": %d" % resp.status_code)
 
 	# ##################################################################################################################
 
-	def set_auth_token(self):
-		login_data = self.cp.load_cached_data('sc')
-		if login_data.get('token'):
-			self.token = login_data['token']
-			return
+	def set_auth_token(self, force_renew=False):
+		self.token = None
+
+		if not force_renew:
+			login_data = self.cp.load_cached_data('sc')
+			if login_data.get('token'):
+				self.cp.log_info("Auth token loaded from local cache")
+				self.token = login_data['token']
+				return
 
 		from .kraska import Kraska
 
 		kr = Kraska(self.cp)
-		try:
-			found = kr.list_files(filter='sc.json')
 
-			if len(found.get('data', [])) == 1:
-				for f in found.get('data', []):
-					url = kr.resolve(f.get('ident'))
-					data = self.req_session.get(url)
-					if len(data.text) == 32:
-						token = data.text
-						self.cp.save_cached_data('sc', {'token': token})
-						self.token = token
-						return
-			else:
-				self.cp.log_info("Backup file with auth token not found")
-		except:
-			self.cp.log_exception()
+		if not force_renew:
+			try:
+				found = kr.list_files(filter='sc.json')
 
+				if len(found.get('data', [])) == 1:
+					for f in found.get('data', []):
+						url = kr.resolve(f.get('ident'))
+						data = self.req_session.get(url)
+						if len(data.text) == 32:
+							self.token = data.text
+							self.cp.save_cached_data('sc', {'token': self.token})
+							self.cp.log_info("Auth token loaded from kraska")
+							return
+				else:
+					self.cp.log_info("Backup file with auth token not found")
+			except:
+				self.cp.log_exception()
+
+		self.cp.log_info("Requesting auth token from server")
 		try:
-			ret = self.call_api('/auth/token', data='')
+			ret = self.call_api('/auth/token', data='', auto_refresh_token=False)
 		except:
 			ret = {}
 			self.cp.log_exception()
@@ -164,12 +177,12 @@ class SC_API(object):
 			self.cp.log_error("Response doesn't contain auth token: %s" % str(ret))
 			return
 
-		token = ret['token']
-		self.cp.save_cached_data('sc', {'token': token})
-		self.token = token
+		self.token = ret['token']
+		self.cp.save_cached_data('sc', {'token': self.token})
 
 		try:
-			kr.upload(token, 'sc.json')
+			self.cp.log_info("Saving auth token to kraska")
+			kr.upload(self.token, 'sc.json')
 		except:
 			self.cp.log_exception()
 
