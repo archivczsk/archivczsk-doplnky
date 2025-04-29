@@ -3,7 +3,7 @@
 <addon id="plugin.video.aktualne" name="Aktuálně (DVTV)" version="1.6" hash="f330f7f674be4974ed51ab9ce9052a13" rhash="f330f7f674be4974ed51ab9ce9052a13" />
 <addon id="plugin.video.antiktv" name="Antik TV" version="2.24" hash="8ded0d93349ea98df4396c942f2b3510" rhash="aef35ea027732e32d4da7a22097630f9" />
 <addon id="plugin.video.autosalontv" name="Autosalon" version="1.9" hash="e1836431641d28c728f02e2b0a0037e4" rhash="e1836431641d28c728f02e2b0a0037e4" />
-<addon id="plugin.video.disneyplus" name="Disney+" version="2.0" hash="bc8f6bf087fbc5a0b30895218b682f4f" rhash="70c2f11134baa19b4b6c0ef1e5e604ac" />
+<addon id="plugin.video.disneyplus" name="Disney+" version="2.1" hash="abe3d7ba5a7d11144113c182c3ca95ee" rhash="924a9c145e69125a2797c2afb72a89aa" />
 <addon id="plugin.video.dokumenty.tv" name="Dokumenty.tv" version="2.3" hash="5acf9bad0ca9e7d4c2f7b5817e7f8a96" rhash="e0f0a2d2bc0fbdac1aa12bc12d03d15c" />
 <addon id="plugin.video.idnestv" name="iDNES.tv" version="1.5" hash="4789639591bf94d6a94744d94bae00c0" rhash="4789639591bf94d6a94744d94bae00c0" />
 <addon id="plugin.video.ivysilani" name="iVysílání - Česká televize" version="3.2" hash="86cac5ba1af1673ed9849dfe7ef7d411" rhash="50d414baf914c8cc32d4d988ed4221e8" />
@@ -27,7 +27,7 @@
 <addon id="plugin.video.sledovanitv" name="Sledovani.tv" version="2.17" hash="4459d691a4db5cce2d273d610860399d" rhash="b6ec19bc8ec05c9f039e7393cf5dfa91" />
 <addon id="plugin.video.sosac.ph" name="Sosáč" version="2.9" hash="281a9055d3383bd6b1dba3d7c61f27cc" rhash="c5ff0d839820a78536cc49a36d018154" />
 <addon id="plugin.video.stalker" name="Stalker" version="1.9" hash="2bf2ab3f3c07dccc2e4bc83b61179cee" rhash="2bf2ab3f3c07dccc2e4bc83b61179cee" />
-<addon id="plugin.video.stream-cinema" name="Stream Cinema" version="3.20" hash="faf79e3145b086d7662176cdbeed7ed9" rhash="c6f980fa038e2ceb426a0aac6c5a3de0" />
+<addon id="plugin.video.stream-cinema" name="Stream Cinema" version="3.21" hash="31545707da212f02e1e7dee841d01c25" rhash="e17fd6bba2141cdbd72814a9afb5b15f" />
 <addon id="plugin.video.sweettv" name="Sweet.tv" version="1.23" hash="77f319f32e477069d20aad017b720e69" rhash="d2bf75a8f4a06b62e4fee5d11260933e" />
 <addon id="plugin.video.ta3.com" name="TA3.com" version="2.2" hash="dd9572f4d1af2af23e3ff9bcac047939" rhash="24f491895f61a85474491ad7a51193cc" />
 <addon id="plugin.video.telly" name="Telly" version="1.7.0" hash="9a3a61c3135000b0300e9240de8d5ef2" rhash="f36b51f9f68fa2517d44a6225be349b2" />
