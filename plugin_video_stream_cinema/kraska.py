@@ -102,7 +102,6 @@ class Kraska:
 				self.cp.log_error("Kraska login failed: %s" % str(e))
 				self.save_login_data()
 
-
 		return self.login_data.get('days_left', -1)
 
 	# #################################################################################################

@@ -13,7 +13,7 @@ from tools_archivczsk.cache import lru_cache
 from tools_archivczsk.simple_config import SimpleConfigSelection, SimpleConfigInteger, SimpleConfigYesNo, SimpleConfigMultiSelection
 
 from .kraska import Kraska, KraskaLoginFail, KraskaResolveException
-from .sc_api import SC_API
+from .sc_api import SC_API, SCAuthException
 from .watched import SCWatched
 
 ######################
@@ -118,10 +118,14 @@ class StreamCinemaContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def root(self):
+		self.api.refresh_auth_token()
 		self.build_lang_lists()
 		self.kraska_update_vipdays()
 
-		return self.render_menu('/')
+		try:
+			return self.render_menu('/')
+		except SCAuthException as e:
+			self.show_error(str(e), noexit=True)
 
 	# #################################################################################################
 

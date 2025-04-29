@@ -10,6 +10,9 @@ try:
 except:
 	from urllib.parse import urlparse, urlunparse, urlencode, parse_qs
 
+class SCAuthException(AddonErrorException):
+	pass
+
 # ##################################################################################################################
 
 class SC_API(object):
@@ -21,14 +24,39 @@ class SC_API(object):
 		self.req_session = self.cp.get_requests_session()
 		self.cache = ExpiringLRUCache(30, 1800)
 		self.token = None
-		self.set_auth_token()
+		self.need_token_save = False
+		self.load_token()
+
+	# ##################################################################################################################
+
+	def load_token(self):
+		login_data = self.cp.load_cached_data('sc')
+
+		if login_data.get('token'):
+			self.cp.log_info("Auth token loaded from local cache")
+			self.token = login_data['token']
+		else:
+			self.cp.log_info("No cached auth token found")
+
+		if not self.token:
+			self.load_backup_token()
+			if self.token:
+				self.need_token_save = True
+
+	# ##################################################################################################################
+
+	def save_token(self):
+		if self.token:
+			self.cp.save_cached_data('sc', {'token': self.token})
+			self.save_backup_token()
 
 	# ##################################################################################################################
 
 	@staticmethod
 	def create_device_id():
-		import random, string
-		return 'e2-' + ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(32))
+		import uuid
+		return str(uuid.uuid4())
+
 
 	# ##################################################################################################################
 
@@ -120,50 +148,81 @@ class SC_API(object):
 
 				self.cache.put(rurl, resp, ttl)
 
+				# if GET request with refreshed token succeed, then save it
+				if self.need_token_save:
+					self.save_token()
+
 			return resp
-		elif resp.status_code == 404 and auto_refresh_token:
-			self.cp.log_debug("Server returned HTTP 404 - maybe wrong auth token ...")
-			self.set_auth_token(True)
-			return self.call_api(request_url, data, params, False)
+		elif resp.status_code == 404:
+			if auto_refresh_token:
+				self.cp.log_debug("Server returned HTTP 404 - maybe wrong auth token ...")
+				self.refresh_auth_token(True)
+				return self.call_api(request_url, data, params, False)
+			else:
+				raise SCAuthException(self.cp._("Failed to authenticate against stream cinema server. Try again later ..."))
 		else:
 			raise AddonErrorException(self.cp._("Unexpected return code from server") + ": %d" % resp.status_code)
 
 	# ##################################################################################################################
 
-	def set_auth_token(self, force_renew=False):
-		self.token = None
+	def save_backup_token(self):
+		if not self.token:
+			return
 
-		if not force_renew:
-			login_data = self.cp.load_cached_data('sc')
-			if login_data.get('token'):
-				self.cp.log_info("Auth token loaded from local cache")
-				self.token = login_data['token']
-				return
+		from .kraska import Kraska
+		kr = Kraska(self.cp)
 
+		try:
+			if kr.refresh_login_data() > 0:
+				self.cp.log_info("Saving auth token to kraska")
+				kr.upload(self.token, 'sc_token.txt')
+		except:
+			self.cp.log_exception()
+
+	# ##################################################################################################################
+
+	def load_backup_token(self):
 		from .kraska import Kraska
 
 		kr = Kraska(self.cp)
 
-		if not force_renew:
-			try:
-				found = kr.list_files(filter='sc.json')
+		try:
+			if kr.refresh_login_data() > 0:
+				for name in ('sc_token.txt', 'sc.json'):
+					found = kr.list_files(filter=name)
 
-				if len(found.get('data', [])) == 1:
-					for f in found.get('data', []):
-						url = kr.resolve(f.get('ident'))
-						data = self.req_session.get(url)
-						if len(data.text) == 32:
-							self.token = data.text
-							self.cp.save_cached_data('sc', {'token': self.token})
-							self.cp.log_info("Auth token loaded from kraska")
-							return
-				else:
-					self.cp.log_info("Backup file with auth token not found")
-			except:
-				self.cp.log_exception()
+					if len(found.get('data', [])) == 1:
+						for f in found.get('data', []):
+							url = kr.resolve(f.get('ident'))
+							data = self.req_session.get(url)
+							if len(data.text) == 32:
+								self.token = data.text
+								self.cp.log_info("Auth token loaded from kraska")
+								return
+					else:
+						self.cp.log_info("Backup file %s with auth token not found" % name)
+		except:
+			self.cp.log_exception()
+
+
+	# ##################################################################################################################
+
+	def refresh_auth_token(self, force=False, try_nr=0):
+		if self.token and not force:
+			return
+
+		token = self.token
+
+		# try to get auth token from backup
+		self.load_backup_token()
+		if self.token != token:
+			self.need_token_save = True
+			return
 
 		self.cp.log_info("Requesting auth token from server")
 		try:
+			self.token = None
+			self.need_token_save = False
 			ret = self.call_api('/auth/token', data='', auto_refresh_token=False)
 		except:
 			ret = {}
@@ -177,13 +236,17 @@ class SC_API(object):
 			self.cp.log_error("Response doesn't contain auth token: %s" % str(ret))
 			return
 
-		self.token = ret['token']
-		self.cp.save_cached_data('sc', {'token': self.token})
+		if ret['token'] != token:
+			self.token = ret['token']
+			self.need_token_save = True
+		else:
+			self.cp.log_info("New auth token is the same as the current one")
 
-		try:
-			self.cp.log_info("Saving auth token to kraska")
-			kr.upload(self.token, 'sc.json')
-		except:
-			self.cp.log_exception()
+			if force and try_nr == 0:
+				# rebuild device ID and try again ...
+				self.device_id = self.create_device_id()
+				self.cp.set_setting('deviceid', self.device_id)
+				self.cp.log_info("Created new device ID: %s" % self.device_id)
+				return self.refresh_auth_token(True, try_nr+1)
 
 	# ##################################################################################################################
