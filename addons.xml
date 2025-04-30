@@ -11,7 +11,7 @@
 <addon id="plugin.video.kvifftv" name="Kviff.tv" version="1.3" hash="0f31fd5e31abe7ba7b5e1c66adff14aa" rhash="893db8849b0f55c24845735baacd5cb0" />
 <addon id="plugin.video.magiogo" name="Magio TV" version="1.29" hash="973c2c72fb938aa1665dc5ac382a8708" rhash="2ccbbc0b519f822dcf4becd5fdd92e25" />
 <addon id="plugin.video.markiza" name="Markíza" version="2.13" hash="b94d217229b12375f6800fcd1209aa40" rhash="6729cc316f110ce2fff9cf56940161f0" />
-<addon id="plugin.video.max" name="Max" version="1.4" hash="27f35f18133699416ddfe0dcafcd8b18" rhash="13b95c12ced31650f6084409bab6a40b" />
+<addon id="plugin.video.max" name="Max" version="1.5" hash="010a31c2d0aaa2d6547ddee1a568f495" rhash="98bf7935f47d0769e122494edf476ea6" />
 <addon id="plugin.video.mtr.sk" name="Mestská TV Ružomberok" version="1.3.1" hash="c79805cd13bde8b3e11c25926e4c0b2d" rhash="c79805cd13bde8b3e11c25926e4c0b2d" />
 <addon id="plugin.video.novaplus" name="TV Nova" version="3.12" hash="7dc29834e0d0d15485bd31ffabf863e7" rhash="4fc06b2e43c58bfc964ea6458e638179" />
 <addon id="plugin.video.o2tv" name="O2 TV 2.0" version="1.32" hash="25d00e1d70478f782f8bbd30a472db64" rhash="9637a2c1830c75f781e52af0c7c324ae" />
