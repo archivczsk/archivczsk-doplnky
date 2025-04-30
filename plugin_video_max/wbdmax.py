@@ -32,13 +32,11 @@ class WBDMax(object):
 	SITE_ID = 'beam'
 	BRAND_ID = 'beam'
 	REALM = 'bolt'
-	APP_VERSION = '4.0.1'
+	APP_VERSION = '5.12.0.71'
 	PAGE_SIZE = 100
 
 	HEADERS = {
-		'x-disco-client': 'ANDROIDTV:9:{}:{}'.format(SITE_ID, APP_VERSION),
 		'x-disco-params': 'realm={},bid={},features=ar'.format(REALM, BRAND_ID),
-		'user-agent': 'androidtv {}/{} (android/9; en-NZ; SHIELD Android TV-NVIDIA; Build/1)'.format(SITE_ID, APP_VERSION),
 	}
 
 	def __init__(self, content_provider):
@@ -49,6 +47,8 @@ class WBDMax(object):
 		self.config = {}
 		self.temp_access_token = None
 		self.next_config_update = 0
+		self.app_version = None
+		self.app_version_next_check = 0
 		self.load_login_data()
 
 		if DUMP_API_REQUESTS:
@@ -60,6 +60,24 @@ class WBDMax(object):
 				return response
 
 			self.req_session.request = request_and_dump
+
+	# ##################################################################################################################
+
+	def get_app_version(self):
+		if self.app_version and self.app_version_next_check > int(time()):
+			return self.app_version
+
+		try:
+			self.cp.log_debug("Requesting APP version from web")
+			self.app_version = self.req_session.get('https://i.mjh.nz/.apk/max.version').text.strip()
+			self.cp.log_debug("APP version from web: %s" % self.app_version)
+			self.app_version_next_check = int(time()) + (4*3600)
+		except:
+			self.app_version = self.APP_VERSION
+			self.cp.log_error("Failed to get APP version from web - using %s as fallback" % self.app_version)
+			self.app_version_next_check = int(time()) + 1800
+
+		return self.app_version
 
 	# ##################################################################################################################
 
@@ -91,7 +109,9 @@ class WBDMax(object):
 			self.login_data['device_id'] = str(uuid.uuid1())
 
 		xheaders = {
-			'x-device-info': '{}/{} (NVIDIA/SHIELD Android TV; android/9-mdarcy-userdebug; {}/{})'.format(self.SITE_ID, self.APP_VERSION, self.login_data['device_id'], self.CLIENT_ID),
+			'x-device-info': '{}/{} (NVIDIA/SHIELD Android TV; android/9-mdarcy-userdebug; {}/{})'.format(self.SITE_ID, self.get_app_version(), self.login_data['device_id'], self.CLIENT_ID),
+			'x-disco-client': 'ANDROIDTV:9:{}:{}'.format(self.SITE_ID, self.get_app_version()),
+			'user-agent': 'androidtv {}/{} (android/9; en-NZ; SHIELD Android TV-NVIDIA; Build/1)'.format(self.SITE_ID, self.get_app_version()),
 		}
 
 		access_token = self.login_data.get('access_token') or self.temp_access_token
@@ -126,7 +146,7 @@ class WBDMax(object):
 
 		if isinstance(resp_json, type({})) and resp_json.get('errors',[{}])[0].get('code') == 'invalid.token':
 			self.reset_login_data()
-			raise LoginException(self._("Login data expired. Do new pairing of this device with your account."))
+			raise LoginException(self.cp._("Login data expired. Do new pairing of this device with your account."))
 
 		if not resp.ok:
 			if ignore_error == False:

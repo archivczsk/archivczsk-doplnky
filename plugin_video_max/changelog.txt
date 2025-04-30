@@ -1,3 +1,6 @@
+1.5 - 30.04.2025
+    - oprava po zmenách na strane servera
+
 1.4 - 24.04.2025
     - oprava pádu pri prezeraní niektorých seriálov
 
