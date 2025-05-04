@@ -393,7 +393,7 @@ class MarkizaContentProvider(CommonContentProvider):
 				self.show_info(self._("Failed to play video") + ": %s" % embeded_text.replace('Error', '').strip())
 
 		if resolved_url:
-			stream_links = self.resolve_streams(resolved_url, self.get_setting('max_bitrate'))
+			stream_links = self.resolve_streams(resolved_url, self.get_setting('max_bitrate')) or []
 		else:
 			stream_links = []
 

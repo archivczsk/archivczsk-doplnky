@@ -1,3 +1,6 @@
+2.14: 4.5.2025
+- oprava nahlásených pádov
+
 2.13: 4.1.2025
 - úprava závislostí doplnku
 
@@ -11,7 +14,7 @@
 - úprava závislosti doplnku
 
 2.9: 15.08.2024
-- oprava načítavania posledných epizod po zmene na stránke
+- oprava načítavania posledných epizód po zmene na stránke
 
 2.8: 06.06.2024
 - oprava prehrávania pre niektoré verzie python3-beautifulsoup4 (napr. v OpenPLi 9.0)
@@ -20,7 +23,7 @@
 - oprava prehrávania po zmenách na stránke
 
 2.6: 27.01.2024
-- priadnie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
+- pridanie podpory pre virtuálne profily v ArchivCZSK >= 2.5.0
 
 2.5: 08.01.2024
 - úpravy kvôli zmene API pre verifikáciu SSL certifikátov nastavovanie timeoutov
