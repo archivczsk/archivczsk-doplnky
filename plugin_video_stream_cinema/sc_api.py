@@ -4,6 +4,8 @@ from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.cache import ExpiringLRUCache
 
+import json
+
 try:
 	from urlparse import urlparse, urlunparse, parse_qs
 	from urllib import urlencode
@@ -24,8 +26,6 @@ class SC_API(object):
 		self.req_session = self.cp.get_requests_session()
 		self.cache = ExpiringLRUCache(30, 1800)
 		self.token = None
-		self.need_token_save = False
-		self.load_token()
 
 	# ##################################################################################################################
 
@@ -34,21 +34,18 @@ class SC_API(object):
 
 		if login_data.get('token'):
 			self.cp.log_info("Auth token loaded from local cache")
-			self.token = login_data['token']
+			token = login_data['token']
 		else:
+			token = None
 			self.cp.log_info("No cached auth token found")
 
-		if not self.token:
-			self.load_backup_token()
-			if self.token:
-				self.need_token_save = True
+		return token
 
 	# ##################################################################################################################
 
 	def save_token(self):
 		if self.token:
 			self.cp.save_cached_data('sc', {'token': self.token})
-			self.save_backup_token()
 
 	# ##################################################################################################################
 
@@ -60,9 +57,7 @@ class SC_API(object):
 
 	# ##################################################################################################################
 
-	def call_api(self, url, data=None, params=None, auto_refresh_token=True):
-		request_url = url
-
+	def call_api(self, url, data=None, params=None):
 		if not url.startswith("https://"):
 			url = "https://stream-cinema.online/kodi" + url
 
@@ -148,20 +143,11 @@ class SC_API(object):
 
 				self.cache.put(rurl, resp, ttl)
 
-				# if GET request with refreshed token succeed, then save it
-				if self.need_token_save:
-					self.save_token()
-
 			return resp
-		elif resp.status_code == 404:
-			if auto_refresh_token:
-				self.cp.log_debug("Server returned HTTP 404 - maybe wrong auth token ...")
-				self.refresh_auth_token(True)
-				return self.call_api(request_url, data, params, False)
-			else:
-				raise SCAuthException(self.cp._("Failed to authenticate against stream cinema server. Try again later ..."))
+		elif resp.status_code == 404 or not self.token:
+			raise SCAuthException(self.cp._("Stream Cinema service is not available or you don't have access to it.\nServer returned HTTP error code {code} with description \"{reason}\".").format(code=resp.status_code, reason=resp.reason))
 		else:
-			raise AddonErrorException(self.cp._("Unexpected return code from server") + ": %d" % resp.status_code)
+			raise AddonErrorException(self.cp._("Stream Cinema service is not available or you don't have access to it.\nServer returned HTTP error code {code} with description \"{reason}\".").format(code=resp.status_code, reason=resp.reason))
 
 	# ##################################################################################################################
 
@@ -185,6 +171,7 @@ class SC_API(object):
 		from .kraska import Kraska
 
 		kr = Kraska(self.cp)
+		tokens = []
 
 		try:
 			if kr.refresh_login_data() > 0:
@@ -196,57 +183,93 @@ class SC_API(object):
 							url = kr.resolve(f.get('ident'))
 							data = self.req_session.get(url)
 							if len(data.text) == 32:
-								self.token = data.text
-								self.cp.log_info("Auth token loaded from kraska")
-								return
+								# raw token file
+								tokens.append(data.text)
+								self.cp.log_info("Auth token %s loaded from kraska" % name)
+							else:
+								# try real json encoded file
+								try:
+									token = json.loads(data.text)['token']
+									if len(token) == 32:
+										tokens.append(token)
+										self.cp.log_info("Auth token %s in alternative format loaded from kraska" % name)
+								except:
+									pass
+
 					else:
 						self.cp.log_info("Backup file %s with auth token not found" % name)
 		except:
 			self.cp.log_exception()
 
+		return tokens
 
 	# ##################################################################################################################
 
-	def refresh_auth_token(self, force=False, try_nr=0):
-		if self.token and not force:
-			return
-
-		token = self.token
-
-		# try to get auth token from backup
-		self.load_backup_token()
-		if self.token != token:
-			self.need_token_save = True
-			return
-
-		self.cp.log_info("Requesting auth token from server")
+	def check_token(self):
 		try:
-			self.token = None
-			self.need_token_save = False
-			ret = self.call_api('/auth/token', data='', auto_refresh_token=False)
-		except:
-			ret = {}
-			self.cp.log_exception()
+			self.call_api('/')
+			return True
+		except SCAuthException:
+			return False
 
-		if 'error' in ret:
-			self.cp.log_error("Error in getting auth token: %s" % str(ret))
+	# ##################################################################################################################
+
+	def set_auth_token(self):
+		if self.token:
 			return
 
-		if 'token' not in ret:
-			self.cp.log_error("Response doesn't contain auth token: %s" % str(ret))
-			return
+		self.token = self.load_token()
 
-		if ret['token'] != token:
-			self.token = ret['token']
-			self.need_token_save = True
+		if self.token:
+			if self.check_token():
+				self.cp.log_info("Local auth token is valid")
+				return
+			else:
+				self.cp.log_error("Local auth token is invalid")
 		else:
-			self.cp.log_info("New auth token is the same as the current one")
+			self.cp.log_info("Local auth token not found")
 
-			if force and try_nr == 0:
-				# rebuild device ID and try again ...
-				self.device_id = self.create_device_id()
-				self.cp.set_setting('deviceid', self.device_id)
-				self.cp.log_info("Created new device ID: %s" % self.device_id)
-				return self.refresh_auth_token(True, try_nr+1)
+		self.token = None
+
+		# try to load token from backup
+		for i, token in enumerate(self.load_backup_token()):
+			self.cp.log_info("Trying token #%s from backup ..." % i)
+			self.token = token
+			if self.check_token():
+				self.cp.log_info("Token #%s from backup is valid" % i)
+				# valid token loaded from backup
+				self.save_token()
+				return
+			else:
+				self.cp.log_info("Token #%s from backup is invalid" % i)
+
+		self.token = None
+
+		if self.cp.load_cached_data('sc').get('id') != self.device_id:
+			# the last chance - try to get token directly from sc server
+			self.cp.log_info("Requesting auth token from server")
+			try:
+				ret = self.call_api('/auth/token', data='')
+			except:
+				ret = {}
+				self.cp.log_exception()
+
+			if not ret.get('token'):
+				self.cp.log_error("Error in getting auth token from sc server")
+				return
+
+			self.token = ret['token']
+			self.save_token()
+			self.cp.update_cached_data('sc', {'id': self.device_id})
+
+			if self.check_token():
+				self.cp.log_info("Received valid token from SC server")
+				self.save_backup_token()
+				return
+
+			self.cp.log_error("Auth token received from SC server is invalid")
+
+		self.cp.log_error("No valid auth token available")
+		self.token = None
 
 	# ##################################################################################################################

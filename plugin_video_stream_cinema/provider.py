@@ -101,26 +101,32 @@ class StreamCinemaContentProvider(CommonContentProvider):
 				self.log_info("Kraska subscription account expired")
 
 				if not silent:
-					self.show_info(self._("Subscription for kra.sk expired"), noexit=True)
-				else:
-					# return False, so we can show message about expired account to user when no silent flag will be set
-					return False
+					self.show_error(self._("Wrong username/password provided or subscription for kra.sk expired"), noexit=True)
 			else:
 				self.log_info("No kraska username or password provided")
 
 				if not silent:
 					self.show_info(self._("No kra.sk username and password provided"), noexit=True)
-				else:
-					return False
 
+			return False
+
+		self.api.set_auth_token()
 		return True
 
 	# ##################################################################################################################
 
 	def root(self):
-		self.api.refresh_auth_token()
 		self.build_lang_lists()
-		self.kraska_update_vipdays()
+		vip_days = self.kraska_update_vipdays()
+
+		if vip_days <= 0:
+			self.show_info(self._("Subscription for kra.sk expired"), noexit=True)
+			return
+
+		if vip_days < 7:
+			self.show_info(self._("Subscription for kra.sk will expire in {days} days").format(days=vip_days), noexit=True)
+
+		self.api.set_auth_token()
 
 		try:
 			return self.render_menu('/')
