@@ -1,3 +1,6 @@
+2.2 - 18.06.2025
+    - úprava závislostí doplnku
+
 2.1 - 27.04.2025
     - pridanie možnosti pre odstránenie položky z "Pokračovať v sledovaní"
     - interné dešifrovanie DRM obsahu

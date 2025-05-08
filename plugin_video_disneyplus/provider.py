@@ -818,6 +818,7 @@ class DisneyPlusContentProvider(CommonContentProvider):
 		cache_data = self.scache.get(stream_key['ck'])
 
 		return {
+			'ext_drm_decrypt': self.get_setting('ext_drm_decrypt'),
 			'master_playlist': cache_data['mp'],
 			'drm': {
 				'licence_url': self.disneyplus.get_config()['services']['drm']['client']['endpoints'][cache_data['lic_key']]['href'],

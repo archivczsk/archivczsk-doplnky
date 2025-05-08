@@ -5,7 +5,6 @@ import base64
 from tools_archivczsk.http_handler.dash import DashHTTPRequestHandler
 from tools_archivczsk.http_handler.hls import HlsHTTPRequestHandler, HlsMasterProcessor
 from tools_archivczsk.date_utils import iso8601_duration_to_seconds
-from tools_archivczsk.player.features import PlayerFeatures
 import json
 
 from time import time
@@ -50,11 +49,6 @@ class OneplayHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler):
 		super(OneplayHTTPRequestHandler, self).__init__(content_provider, addon)
 		self.hls_proxy_variants = False
 		self.hls_proxy_segments = False
-
-		ext_drm_decrypt = PlayerFeatures.exteplayer3_cenc_supported and self.cp.get_setting('ext_drm_decrypt') and self.cp.get_setting('auto_used_player') == '2'
-
-		self.dash_proxy_segments = not ext_drm_decrypt
-		self.dash_internal_decrypt = not ext_drm_decrypt
 		self.hls_master_processor = OneplayHlsMasterProcessor
 
 		self.live_cache = {}

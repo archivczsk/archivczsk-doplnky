@@ -275,8 +275,8 @@ msgstr ""
 msgid "MPEG-DASH"
 msgstr ""
 
-msgid "Allow DRM decrypt using exteplayer3 (enigma restart needed)"
-msgstr "Povolit dešifrování DRM pomocí exteplayer3 (nutný restart enigmy)"
+msgid "Allow DRM decrypt using exteplayer3"
+msgstr "Povolit dešifrování DRM pomocí exteplayer3"
 
 msgid "Enable special section in main menu"
 msgstr "Povolit speciální sekci v hlavním menu"

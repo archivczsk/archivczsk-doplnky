@@ -1,3 +1,6 @@
+1.33 - 18.06.2025
+    - úprava závislostí doplnku
+
 1.32 - 02.04.2025
     - oprava nastavovania extra stream cache
 

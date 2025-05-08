@@ -1,5 +1,8 @@
+1.7 - 18.06.2025
+    - úprava závislostí doplnku
+
 1.6 - 15.09.2024
-    - úprava závislosti doplnku
+    - úprava závislostí doplnku
 
 1.5 - 06.09.2024
     - oprava prehrávania živého vysielania

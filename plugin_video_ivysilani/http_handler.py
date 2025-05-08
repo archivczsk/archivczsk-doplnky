@@ -41,7 +41,7 @@ class iVysilaniHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler)
 		super(iVysilaniHTTPRequestHandler, self).__init__(content_provider, addon)
 		self.hls_proxy_variants = False
 		self.hls_proxy_segments = False
-		self.dash_proxy_segments = True
+		self.dash_proxy_segments = False
 		self.dash_internal_decrypt = True
 		self.hls_master_processor = iVysilaniHlsMasterProcessor
 

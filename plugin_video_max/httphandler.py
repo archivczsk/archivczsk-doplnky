@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 
 class WBDMaxHTTPRequestHandler(DashHTTPRequestHandler):
 	def __init__(self, content_provider, addon ):
-		super(WBDMaxHTTPRequestHandler, self).__init__(content_provider, addon, proxy_segments=False)
+		super(WBDMaxHTTPRequestHandler, self).__init__(content_provider, addon, proxy_segments=False, internal_decrypt=False)
 
 	# #################################################################################################
 

@@ -16,7 +16,7 @@
 	</category>
 	<category label="Advanced">
 		<setting label="Prefered stream type for live broadcasting" id="stream_type" type="keyenum" values="HLS;HLS|DASH;MPEG-DASH" default="DASH" />
-		<setting label="Allow DRM decrypt using exteplayer3 (enigma restart needed)" id="ext_drm_decrypt" type="bool" default="true" />
+		<setting label="Allow DRM decrypt using exteplayer3" id="ext_drm_decrypt" type="bool" default="true" />
 		<setting label="Enable special section in main menu" id="enable_extra" type="bool" default="false" />
 		<setting label="Allow downloading of live broadcasting" id="download_live" type="bool" default="false" />
 		<setting label="Show multidimension stream choice" id="show_md_choice" type="bool" default="true" />

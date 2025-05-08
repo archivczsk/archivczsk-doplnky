@@ -2,7 +2,6 @@
 
 from tools_archivczsk.http_handler.hls import HlsHTTPRequestHandler
 from tools_archivczsk.parser.hls import HlsPlaylist
-from tools_archivczsk.player.features import PlayerFeatures
 
 # #################################################################################################
 
@@ -60,8 +59,7 @@ class DisneyHlsMaster(HlsPlaylist):
 
 class DisneyPlusHTTPRequestHandler(HlsHTTPRequestHandler):
 	def __init__(self, content_provider, addon ):
-		ext_drm_decrypt = PlayerFeatures.exteplayer3_cenc_supported and content_provider.get_setting('ext_drm_decrypt') and content_provider.get_setting('auto_used_player') == '2'
-		super(DisneyPlusHTTPRequestHandler, self).__init__(content_provider, addon, proxy_segments=not ext_drm_decrypt, proxy_variants=True, internal_decrypt=not ext_drm_decrypt)
+		super(DisneyPlusHTTPRequestHandler, self).__init__(content_provider, addon, proxy_segments=False, proxy_variants=True, internal_decrypt=True)
 
 	# #################################################################################################
 
@@ -77,6 +75,10 @@ class DisneyPlusHTTPRequestHandler(HlsHTTPRequestHandler):
 				self.reply_error404(request)
 
 			pls = hls_info['master_playlist']
+
+			if int(request.getHeader('X-DRM-Api-Level') or '0') >= 1 and hls_info.get('ext_drm_decrypt', True):
+				# player supports DRM, so don't do internal decryption and let player handle DRM
+				hls_info['hls_internal_decrypt'] = False
 
 			mp_data = self.process_master_playlist(pls.mp_url, pls.to_string(audio_idx=stream_key['aid']), hls_info)
 			return self.reply_ok(request, mp_data, "application/vnd.apple.mpegurl")

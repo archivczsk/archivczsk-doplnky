@@ -11,5 +11,5 @@
 	<setting label="Language of dubbed entries and menu" id="dubbed-lang" type="keyenum" values="auto;Auto|cs;CZ|sk;SK|cs+sk;CZ &amp; SK|sk+cs;SK &amp; CZ|en;EN" default="auto" />
 	<setting label="Start subtitles automatically" id="subs-autostart" type="keyenum" values="always;Always|undubbed;When undubbed|never;Never" default="undubbed" />
 	<setting label="Start forced subtitles automatically" id="forced-subs-autostart" type="bool" default="true" />
-	<setting label="Allow DRM decrypt using exteplayer3 (enigma restart needed)" id="ext_drm_decrypt" type="bool" default="true" />
+	<setting label="Allow DRM decrypt using exteplayer3" id="ext_drm_decrypt" type="bool" default="true" />
 </settings>

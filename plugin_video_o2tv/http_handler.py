@@ -24,7 +24,7 @@ PLAYER_MAPPING = {
 
 class O2HTTPRequestHandler(DashHTTPRequestHandler):
 	def __init__(self, content_provider, addon):
-		DashHTTPRequestHandler.__init__(self, content_provider, addon, proxy_segments=False)
+		DashHTTPRequestHandler.__init__(self, content_provider, addon, proxy_segments=False, internal_decrypt=False)
 		self.live_cache = {}
 		self.o2_session = self.cp.get_requests_session()
 		self.last_played_channel = None

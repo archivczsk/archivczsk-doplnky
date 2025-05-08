@@ -211,8 +211,8 @@ msgstr "Nikdy"
 msgid "Start forced subtitles automatically"
 msgstr "Automaticky spustit forced titulky"
 
-msgid "Allow DRM decrypt using exteplayer3 (enigma restart needed)"
-msgstr "Povolit dešifrování DRM pomocí exteplayeru3 (nutný restart enigmy)"
+msgid "Allow DRM decrypt using exteplayer3"
+msgstr "Povolit dešifrování DRM pomocí exteplayeru3"
 
 #~ msgid "Hubs"
 #~ msgstr "Sbírky"

@@ -627,6 +627,7 @@ class OneplayTVContentProvider(ModuleContentProvider):
 		cache_data = self.scache.get(stream_key['key'])
 
 		ret_data = {
+			'ext_drm_decrypt': self.get_setting('ext_drm_decrypt'),
 			'url': cache_data['url'],
 			'bandwidth': stream_key['bandwidth'],
 			'fix': stream_key.get('fix'),

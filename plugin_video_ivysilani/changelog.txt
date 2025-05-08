@@ -1,3 +1,6 @@
+2025-06-18 [3.5]
+* úprava závislostí doplnku
+
 2025-05-13 [3.4]
 * v sekcii "kategórie" bola do kontextového menu pridaná možnosť voľby zoradenia položiek
 
