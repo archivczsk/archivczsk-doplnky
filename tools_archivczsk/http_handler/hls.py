@@ -7,7 +7,7 @@ import re
 import binascii
 
 from ..compat import quote, unquote, urljoin
-from tools_cenc.mp4decrypt import mp4decrypt
+from tools_cenc.mp4decrypt import mp4decrypt, mp4_cenc_info_remove
 
 # #################################################################################################
 
@@ -191,7 +191,9 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 			# init segment is not encrypted, but we need it for decrypting data segments
 			cache_data['init'] = data
-			return data
+
+			# remove info about encryption from init data - needed for gstreamer
+			return mp4_cenc_info_remove(data)
 
 		# collect keys for protected content
 		keys = self.get_drm_keys(cache_data['pssh'], cache_data['drm'], cache_data['drm'].get('privacy_mode', False))

@@ -9,7 +9,7 @@ try:
 except:
 	from urllib.parse import urljoin
 
-from tools_cenc.mp4decrypt import mp4decrypt
+from tools_cenc.mp4decrypt import mp4decrypt, mp4_cenc_info_remove
 
 # #################################################################################################
 
@@ -172,7 +172,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 			# init segment is not encrypted, but we need it for decrypting data segments
 			cache_data['init'][segment_type[1:]] = data
-			return data
+			return mp4_cenc_info_remove(data)
 
 		# collect keys for protected content
 		keys = self.get_drm_keys(cache_data['pssh'], cache_data['drm'], cache_data['drm'].get('privacy_mode', False))
