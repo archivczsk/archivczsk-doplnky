@@ -1,3 +1,7 @@
+1.5 - 30.06.2025
+- remove mp4decrypt binaries and replace it by mp4modify library
+- properly remove cenc info from mp4's init section
+
 1.4 - 18.03.2024
 - added possibility to decrypt segments with build in init data
 
