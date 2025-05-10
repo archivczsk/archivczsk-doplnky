@@ -1,3 +1,7 @@
+2025-05-10 [3.3]
+* oprava prehrávania ČT Šport Extra po zmenách na strane ČT
+* vylepšenia u živého vysielania
+
 2025-02-19 [3.2]
 * oprava nahlásených pádov
 

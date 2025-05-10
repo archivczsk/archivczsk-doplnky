@@ -33,7 +33,7 @@ class iVysilani(object):
 		self.cp = content_provider
 		self._ = content_provider._
 		self.PAGE_SIZE = 40
-		self.client_version = '1.131.1'
+		self.client_version = '1.142.0'
 		self.req_session = self.cp.get_requests_session()
 		self.req_session.headers.update(COMMON_HEADERS)
 		self.rid = 0
@@ -168,6 +168,70 @@ class iVysilani(object):
 		}
 
 		return self.call_api('video/v1/playlist-live/v1/stream-data/channel/' + str(channel_id), params=params)
+
+	# #################################################################################################
+
+	def live_broadcast_find(self, channels=None):
+		query = '''query LiveBroadcastFind
+		{
+			liveBroadcastFind
+			{
+				id
+				slug
+				current
+				{
+					id
+					idec
+					sidp
+					channel
+					encoder
+					channelSettings
+					{
+						channelLogo
+						channelName
+					}
+					title
+					description
+					previewImage(width: 480, height: 270)
+					startsAt
+					endsAt
+					isExtra
+					isPlayable
+					willBePlayable
+					cardLabels
+					{
+						center
+					}
+				}
+				next
+				{
+					id
+					idec
+					sidp
+					channel
+					encoder
+					channelSettings
+					{
+						channelLogo
+						channelName
+					}
+					title
+					description
+					previewImage(width: 480, height: 270)
+					startsAt
+					endsAt
+					isExtra
+					isPlayable
+					willBePlayable
+					cardLabels
+					{
+						center
+					}
+				}
+			}
+		}'''
+
+		return self.call_graphql('LiveBroadcastFind', query)
 
 	# #################################################################################################
 

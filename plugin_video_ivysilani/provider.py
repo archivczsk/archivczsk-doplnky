@@ -27,24 +27,28 @@ def _(s):
 class iVysilaniModuleLiveTV(CPModuleLiveTV):
 
 	def get_live_tv_channels(self, cat_id=None):
-		channels = self.cp.ivysilani.get_live_channels()
-		data = self.cp.ivysilani.get_current_broadcast(channels)
+		def get_plot(d):
+			if d:
+				start_time = iso8601_to_datetime(d['startsAt'])
+				end_time = iso8601_to_datetime(d['endsAt'])
+				title_time = start_time.strftime('%H:%M') + ' - ' + end_time.strftime('%H:%M')
+				return '[{}] {}\n{}\n'.format(title_time, d.get('title') or '', d.get('description') or '')
+			else:
+				return ''
+
+
+		data = self.cp.ivysilani.live_broadcast_find()
 
 		for item in data:
-			cur_broadcast = (item.get('currentBroadcast') or {}).get('item')
-
-			if not cur_broadcast:
-				continue
-
-			start_time = iso8601_to_datetime(cur_broadcast['start'])
-			end_time = iso8601_to_datetime(cur_broadcast['end'])
-			title_time = start_time.strftime('%H:%M') + ' - ' + end_time.strftime('%H:%M')
+			cur_broadcast = item.get('current') or {}
+			next_broadcast = item.get('next') or {}
+			playable = cur_broadcast.get('isPlayable', False)
 
 			menu = self.cp.create_ctx_menu()
 			sidp = cur_broadcast.get('sidp')
 			if sidp and len(sidp) > 1:
 				self.cp.add_fav_ctx_menu(menu, cur_broadcast)
-				channel_id = channels[item['channel']]['id']
+				channel_id = cur_broadcast.get('encoder')
 			else:
 				try:
 					channel_data = self.cp.ivysilani.get_stream_data(cur_broadcast['idec'])
@@ -53,21 +57,30 @@ class iVysilaniModuleLiveTV(CPModuleLiveTV):
 					channel_id = None
 
 			info_labels = {
-				'plot': '[{}]\n{}'.format(title_time, cur_broadcast.get('description') or '')
+				'plot': (get_plot(cur_broadcast) + '\n' + get_plot(next_broadcast)).strip()
 			}
 
-			if channel_id:
-				title = channels[item['channel']]['name']
+			channel_name = (cur_broadcast.get('channelSettings') or {}).get('channelName') or (next_broadcast.get('channelSettings') or {}).get('channelName') or item['id']
+			if channel_id and playable:
+				title = channel_name
 			else:
-				title = _C('gray', channels[item['channel']]['name'])
+				title = _C('gray', channel_name)
 
-			title += _I( '  (' + cur_broadcast['title'] + ')' )
-			self.cp.add_video(title, cur_broadcast['imageUrl'], info_labels, menu, cmd=self.play_channel, channel_id=channel_id)
+			clabel = (cur_broadcast.get('cardLabels') or {}).get('center') or (next_broadcast.get('cardLabels') or {}).get('center')
+			if playable:
+				title += _I( '  (' + cur_broadcast['title'] + ')' )
+			elif clabel:
+				title += _I( '  (' + clabel + ')' )
+
+			self.cp.add_video(title, cur_broadcast.get('previewImage') or next_broadcast.get('previewImage'), info_labels, menu, cmd=self.play_channel, channel_id=channel_id if playable else None)
 
 
 	# ##################################################################################################################
 
 	def play_channel(self, channel_id):
+		if not channel_id:
+			return
+
 		try_nr = 0
 		while try_nr < 3:
 			data = self.cp.ivysilani.get_live_stream_data(channel_id)
