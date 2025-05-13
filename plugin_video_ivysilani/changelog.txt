@@ -1,3 +1,6 @@
+2025-05-13 [3.4]
+* v sekcii "kategórie" bola do kontextového menu pridaná možnosť voľby zoradenia položiek
+
 2025-05-10 [3.3]
 * oprava prehrávania ČT Šport Extra po zmenách na strane ČT
 * vylepšenia u živého vysielania

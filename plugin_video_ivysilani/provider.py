@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPModuleLiveTV, CPModuleArchive, CPModuleTemplate, CPModuleSearch
 from tools_archivczsk.contentprovider.provider import CommonContentProvider
-from tools_archivczsk.contentprovider.exception import AddonErrorException
+from tools_archivczsk.contentprovider.exception import AddonErrorException, AddonSilentExitException
 from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.string_utils import _I, _C, _B, clean_html
@@ -152,22 +152,38 @@ class iVysilaniModuleCategories(CPModuleTemplate):
 
 	# ##################################################################################################################
 
-	def list_category(self, cat_id, subcategory=False, page=0):
-		if subcategory == False:
-			self.cp.add_dir(self._("Subcategories"), cmd=self.list_subcategories, cat_id = cat_id)
+	def select_order(self, cbk, cur_order):
+		try:
+			idx = iVysilani.ORDER_VALUES.index(cur_order)
+		except:
+			idx = 0
 
-		data = self.cp.ivysilani.get_category_by_id(cat_id, page)
+		new_idx = self.cp.get_list_input([self._(x) for x in iVysilani.ORDER_NAMES], self._('Select order'), idx)
 
-		for item in data['programmeFind']['items']:
-			self.cp.add_media_item(item)
+		if new_idx == -1 or idx == new_idx:
+			raise AddonSilentExitException('')
 
-
-		if int(data['programmeFind']['totalCount']) > ((page+1) * self.cp.ivysilani.PAGE_SIZE):
-			self.cp.add_next(cmd=self.list_category, cat_id=cat_id, subcategory=subcategory, page=page+1)
+		return cbk(order=iVysilani.ORDER_VALUES[new_idx])
 
 	# ##################################################################################################################
 
-	def list_subcategories(self, cat_id):
+	def list_category(self, cat_id, subcategory=False, page=0, order=None):
+		if subcategory == False:
+			self.cp.add_dir(self._("Subcategories"), cmd=self.list_subcategories, cat_id=cat_id, order=order)
+
+		data = self.cp.ivysilani.get_category_by_id(cat_id, page, order)
+
+		for item in data['programmeFind']['items']:
+			menu = self.cp.create_ctx_menu()
+			menu.add_menu_item(self._('Select order'), cmd=self.select_order, cbk=partial(self.list_category, cat_id=cat_id, subcategory=subcategory, page=page), cur_order=order)
+			self.cp.add_media_item(item, menu=menu)
+
+		if int(data['programmeFind']['totalCount']) > ((page+1) * self.cp.ivysilani.PAGE_SIZE):
+			self.cp.add_next(cmd=self.list_category, cat_id=cat_id, subcategory=subcategory, page=page+1, order=order)
+
+	# ##################################################################################################################
+
+	def list_subcategories(self, cat_id, order=None):
 		data = self.cp.ivysilani.get_categories()
 
 		for item in data:
@@ -178,7 +194,7 @@ class iVysilaniModuleCategories(CPModuleTemplate):
 							child['categoryId'].remove(str(cat_id))
 
 						if len(child['categoryId']) > 0:
-							self.cp.add_dir(child['title'], cmd=self.list_category, cat_id=child['categoryId'][0], subcategory=True)
+							self.cp.add_dir(child['title'], cmd=self.list_category, cat_id=child['categoryId'][0], subcategory=True, order=order)
 				break
 
 
@@ -355,8 +371,9 @@ class iVysilaniContentProvider(ModuleContentProvider):
 
 	# ##################################################################################################################
 
-	def add_media_item(self, item, add_season=False, add_show_title=False):
-		menu = self.create_ctx_menu()
+	def add_media_item(self, item, add_season=False, add_show_title=False, menu=None):
+		if not menu:
+			menu = self.create_ctx_menu()
 		self.add_fav_ctx_menu(menu, item)
 
 		plot = item.get('description') or item.get('shortDescription')

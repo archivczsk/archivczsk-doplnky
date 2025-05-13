@@ -29,6 +29,21 @@ ERROR_MESSAGES = [
 # #################################################################################################
 
 class iVysilani(object):
+	ORDER_VALUES = [
+		'popular_previous_seven_days;desc',
+		'popular;desc',
+		'premiere;desc',
+		'alphabet;asc',
+		'alphabet;desc'
+	]
+	ORDER_NAMES= [
+		_("Last week popular"),
+		_("Historically most popular"),
+		_("From newest"),
+		_('By alphabet (A-Z)'),
+		_('By alphabet (Z-A)')
+	]
+
 	def __init__(self, content_provider):
 		self.cp = content_provider
 		self._ = content_provider._
@@ -339,7 +354,10 @@ class iVysilani(object):
 
 	# #################################################################################################
 
-	def get_category_by_id(self, cat_id, page=0):
+	def get_category_by_id(self, cat_id, page=0, order=None):
+		if order == None:
+			order = self.ORDER_VALUES[0]
+
 		query = '''query GetCategoryById($limit: PaginationAmount!, $offset: Int!, $categoryId: String!, $order: OrderByDirection, $orderBy: CategoryOrderByType)
 		{
 			category(categoryId: $categoryId)
@@ -380,9 +398,8 @@ class iVysilani(object):
 			"categoryId": cat_id,
 			"limit": self.PAGE_SIZE,
 			"offset": page * self.PAGE_SIZE,
-#			"order":"asc",
-#			"orderBy": "alphabet"
-#			"orderBy": "popular_previous_seven_days"
+			"order": order.split(';')[1],
+			"orderBy": order.split(';')[0]
 		}
 
 		return self.call_graphql('GetCategoryById', query, variables)
