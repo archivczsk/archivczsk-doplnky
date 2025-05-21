@@ -218,13 +218,14 @@ class Hls2Mpd(object):
 			e = ET.SubElement(e_period, 'AdaptationSet', {
 				'subsegmentAlignment': "true",
 				'subsegmentStartsWithSAP': "1",
-				'id': 'as' + str(i),
+				'id': '100' + str(i),
 				'lang': p.get('LANGUAGE', 'en-US'),
 				'contentType': "audio"
 			})
 			e = ET.SubElement(e, 'Representation',{
 				'mimeType': "audio/mp4",
-				'id': 'a%d' % i,
+				'bandwidth': '100',
+				'id': '1000%d' % i,
 			})
 			if len(p.pssh) > 0:
 				keys = self.get_drm_keys(p.pssh)
@@ -241,12 +242,13 @@ class Hls2Mpd(object):
 			e = ET.SubElement(e_period, 'AdaptationSet', {
 				'subsegmentAlignment': "true",
 				'subsegmentStartsWithSAP': "1",
-				'id': 'vs' + str(i),
+				'id': '1' + str(i),
 				'contentType': "video"
 			})
 			e = ET.SubElement(e, 'Representation',{
 				'mimeType': "video/mp4",
-				'id': 'v%d' % i,
+				'bandwidth': '1000',
+				'id': '10%d' % i,
 			})
 			if len(p.pssh) > 0:
 				keys = self.get_drm_keys(p.pssh)
@@ -264,7 +266,7 @@ class Hls2Mpd(object):
 			e = ET.SubElement(e_period, 'AdaptationSet', {
 				'subsegmentAlignment': "true",
 				'subsegmentStartsWithSAP': "1",
-				'id': 'ss' + str(i),
+				'id': '10000' + str(i),
 				'lang': p.get('LANGUAGE', 'en-US'),
 				'contentType': "text"
 			})
@@ -274,7 +276,8 @@ class Hls2Mpd(object):
 			})
 			e = ET.SubElement(e, 'Representation',{
 				'mimeType': "text/vtt",
-				'id': 's%d' % i,
+				'bandwidth': '10',
+				'id': '100000%d' % i,
 			})
 			fill_segments(e, p)
 
