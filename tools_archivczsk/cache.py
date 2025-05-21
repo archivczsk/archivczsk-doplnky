@@ -467,13 +467,15 @@ class SimpleAutokeyExpiringCache(object):
 	def put_with_key(self, data, key):
 		cur_time = int(monotonic())
 
-		krem = []
-		for k,v in self.scache.items():
-			if (cur_time - v['last_used']) > self.expire_time:
-				krem.append(k)
+		if key not in self.scache:
+			# do cleanup only when inserting new item
+			krem = []
+			for k,v in self.scache.items():
+				if (cur_time - v['last_used']) > self.expire_time:
+					krem.append(k)
 
-		for k in krem:
-			del self.scache[k]
+			for k in krem:
+				del self.scache[k]
 
 		self.scache[key] = {
 			'last_used': cur_time,
