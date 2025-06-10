@@ -123,7 +123,7 @@ class Addon(XmlOnlyAddon):
 			if file.startswith('.') or os.path.basename(file).startswith('.'):
 				return True
 
-			for ext in ('.pyo', '.pyc', '.swo', '.swn', '.swc', '.so', 'atk_client.py') + filter:
+			for ext in ('.pyo', '.pyc', '.swo', '.swn', '.swc', 'atk_client.py') + filter:
 				if file.endswith(ext):
 					return True
 
