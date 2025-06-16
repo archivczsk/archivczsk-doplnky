@@ -26,6 +26,7 @@ class SledovaniTV:
 		self.log_function = self.cp.log_info
 		self._ = self.cp._
 		self.headers = _HEADERS
+		self.player_capabilities = 'vast,clientvast,alerts,people,normalize_id,category,webvtt,adaptive2'
 
 		self.load_login_data()
 		self.req_session = self.cp.get_requests_session()
@@ -202,9 +203,10 @@ class SledovaniTV:
 			params = {
 				'deviceId': data['deviceId'],
 				'password': data['password'],
-				'version': '2.7.4',
+				'version': '2.133.0',
 				'lang': 'cs',
 				'unit': 'default',
+				'capabilities': self.player_capabilities
 			}
 
 			data = self.call_api("device-login", params = params, enable_retry=False )
@@ -412,7 +414,7 @@ class SledovaniTV:
 			'format': 'm3u8',
 			'quality': 40,
 			'drm': 'widevine',
-			'capabilities': 'adaptive2',
+			'capabilities': self.player_capabilities,
 			'cast': 'chromecast',
 			'PHPSESSID': self.sessionid,
 		}
@@ -537,6 +539,7 @@ class SledovaniTV:
 		params = {
 			'format': 'm3u8',
 			'eventId': eventid,
+			'capabilities': self.player_capabilities,
 			'PHPSESSID': self.sessionid
 		}
 
@@ -553,6 +556,7 @@ class SledovaniTV:
 		params = {
 			'format': 'm3u8',
 			'recordId': recordid,
+			'capabilities': self.player_capabilities,
 			'PHPSESSID': self.sessionid
 		}
 
