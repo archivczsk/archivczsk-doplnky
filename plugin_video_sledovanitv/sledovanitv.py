@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-import time, json, re
+import time, json, re, os
 from datetime import datetime
 import traceback
 
@@ -11,10 +11,13 @@ from tools_archivczsk.debug.http import dump_json_request
 ############### init ################
 
 _HEADERS = {
-	"User-Agent": "okhttp/3.12.0"
+	"User-Agent": "okhttp/4.12.0"
 }
 
 class SledovaniTV:
+	APP_VERSION = '2.133.0'
+	PLAYER_CAPABILITIES = 'vast,clientvast,alerts,people,normalize_id,category,webvtt,adaptive2'
+
 	def __init__(self, content_provider):
 		self.cp = content_provider
 		self.username = self.cp.get_setting('username')
@@ -26,7 +29,6 @@ class SledovaniTV:
 		self.log_function = self.cp.log_info
 		self._ = self.cp._
 		self.headers = _HEADERS
-		self.player_capabilities = 'vast,clientvast,alerts,people,normalize_id,category,webvtt,adaptive2'
 
 		self.load_login_data()
 		self.req_session = self.cp.get_requests_session()
@@ -43,7 +45,7 @@ class SledovaniTV:
 		if not self.username or not self.password or len(self.username) == 0 or len( self.password) == 0:
 			return None
 
-		data = "{}|{}|{}".format(self.password, self.username, self.serialid)
+		data = "{}|{}|{}|{}".format(self.password, self.username, self.serialid, self.APP_VERSION)
 		return md5( data.encode('utf-8') ).hexdigest()
 
 	# #################################################################################################
@@ -98,8 +100,6 @@ class SledovaniTV:
 
 	def call_api(self, url, data=None, params=None, enable_retry=True ):
 		err_msg = None
-
-		log_file = url
 
 		if not url.startswith('http'):
 			url = 'https://sledovanitv.cz/api/' + url
@@ -203,10 +203,10 @@ class SledovaniTV:
 			params = {
 				'deviceId': data['deviceId'],
 				'password': data['password'],
-				'version': '2.133.0',
+				'version': self.APP_VERSION,
 				'lang': 'cs',
 				'unit': 'default',
-				'capabilities': self.player_capabilities
+				'capabilities': self.PLAYER_CAPABILITIES
 			}
 
 			data = self.call_api("device-login", params = params, enable_retry=False )
@@ -414,7 +414,7 @@ class SledovaniTV:
 			'format': 'm3u8',
 			'quality': 40,
 			'drm': 'widevine',
-			'capabilities': self.player_capabilities,
+			'capabilities': self.PLAYER_CAPABILITIES,
 			'cast': 'chromecast',
 			'PHPSESSID': self.sessionid,
 		}
@@ -539,7 +539,7 @@ class SledovaniTV:
 		params = {
 			'format': 'm3u8',
 			'eventId': eventid,
-			'capabilities': self.player_capabilities,
+			'capabilities': self.PLAYER_CAPABILITIES,
 			'PHPSESSID': self.sessionid
 		}
 
@@ -556,7 +556,7 @@ class SledovaniTV:
 		params = {
 			'format': 'm3u8',
 			'recordId': recordid,
-			'capabilities': self.player_capabilities,
+			'capabilities': self.PLAYER_CAPABILITIES,
 			'PHPSESSID': self.sessionid
 		}
 

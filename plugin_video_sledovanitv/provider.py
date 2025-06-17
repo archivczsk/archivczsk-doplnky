@@ -14,7 +14,12 @@ from .bouquet import SledovaniTVBouquetXmlEpgGenerator
 import base64
 
 # #################################################################################################
+# needed for gettext ...
 
+def _(s):
+	return s
+
+# #################################################################################################
 
 class SledovaniTVModuleHome(CPModuleTemplate):
 
@@ -43,7 +48,6 @@ class SledovaniTVModuleHome(CPModuleTemplate):
 				self.cp.add_video(title, event.get('thumb'), info_labels, cmd=self.cp.get_event_stream, video_title=event['title'], event_id=event['eventid'])
 
 # #################################################################################################
-
 
 class SledovaniTVModuleLiveTV(CPModuleLiveTV):
 
@@ -351,7 +355,7 @@ class SledovaniTVModuleRecordings(CPModuleTemplate):
 				day_name = self._("Tomorrow") + ' ' + day.strftime("%d.%m.%Y")
 			else:
 				day = date.today() + timedelta(days=i)
-				day_name = self.day_name[day.weekday()] + " " + day.strftime("%d.%m.%Y")
+				day_name = self._(self.day_name[day.weekday()]) + " " + day.strftime("%d.%m.%Y")
 
 			self.cp.add_dir(day_name, cmd=self.plan_recordings_for_channel, channel_id=channel_id, day=i)
 
@@ -388,7 +392,6 @@ class SledovaniTVModuleRecordings(CPModuleTemplate):
 			self.cp.add_video(title, img, info_labels, menu, cmd=self.cp.add_recording, event_id=event_id)
 
 # #################################################################################################
-
 
 class SledovaniTVModuleExtra(CPModuleTemplate):
 
@@ -437,7 +440,6 @@ class SledovaniTVModuleExtra(CPModuleTemplate):
 		self.cp.add_video(_C('red', self._('This operation is not supported yet')), download=False)
 
 # #################################################################################################
-
 
 class SledovaniTVContentProvider(ModuleContentProvider):
 	def __init__(self, settings, http_endpoint, data_dir=None, bgservice=None):

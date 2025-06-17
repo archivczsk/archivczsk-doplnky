@@ -74,7 +74,7 @@ msgstr "Naplánovať nahrávanie"
 
 #: plugin_video_sledovanitv/provider.py:232
 msgid "Futures - planed"
-msgstr "Budoúce - plánovane"
+msgstr "Budúce - plánovane"
 
 #: plugin_video_sledovanitv/provider.py:233
 msgid "Existing"
