@@ -31,7 +31,7 @@ class HlsMasterProcessor(HlsPlaylist):
 	def process_playlist_urls(self):
 		super(HlsMasterProcessor, self).process_playlist_urls()
 
-		if self.request_handler.hls_proxy_variants:
+		if self.hls_info.get('hls_proxy_variants', self.request_handler.hls_proxy_variants):
 			for playlist_group in (self.audio_playlists, self.subtitles_playlists, self.video_playlists):
 				for p in playlist_group:
 					if p.playlist_url:
@@ -57,7 +57,7 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		super(HlsHTTPRequestHandler, self).__init__(content_provider, addon)
 		self.hls_proxy_segments = proxy_segments
 		self.hls_proxy_variants = proxy_variants
-		self.hls_internal_decrypt = proxy_segments and internal_decrypt
+		self.hls_internal_decrypt = internal_decrypt
 		self.hls_master_processor = HlsMasterProcessor
 
 	# #################################################################################################
@@ -96,6 +96,10 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 			if not isinstance(hls_info, type({})):
 				hls_info = { 'url': hls_info }
+
+			if int(request.getHeader('X-DRM-Api-Level') or '0') >= 1 and hls_info.get('ext_drm_decrypt', True):
+				# player supports DRM, so don't do internal decryption and let player handle DRM
+				hls_info['hls_internal_decrypt'] = False
 
 			# resolve HLS playlist and get only best stream
 			self.get_hls_playlist_data_async(hls_info, cbk=hls_continue)
@@ -147,7 +151,7 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 	# #################################################################################################
 
-	def process_drm_key_line(self, line, drm_info, segment_cache_data):
+	def process_drm_key_line(self, line, drm_info, segment_cache_data, hls_internal_decrypt):
 		self.cp.log_debug('Processing DRM line: %s' % line)
 
 		attr = {}
@@ -168,7 +172,7 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				pssh = pssh[24:-1]
 				segment_cache_data['pssh'].append(pssh)
 				keys = self.get_drm_keys([pssh], drm_info)
-				if self.hls_internal_decrypt:
+				if hls_internal_decrypt:
 					# when doing internal decrypt, then remove #EXT-X-KEY: line to not confuse player
 					line = ''
 				else:
@@ -281,13 +285,16 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			'pssh': []
 		}
 
+		hls_proxy_segments = hls_info.get('hls_proxy_segments', self.hls_proxy_segments)
+		hls_internal_decrypt = hls_info.get('hls_internal_decrypt', self.hls_internal_decrypt)
+
 		segment_cache_key = self.calc_cache_key('segment' + playlist_url)
 		self.scache.put_with_key(segment_cache_data, segment_cache_key)
 
 		def process_url(surl, redirect_url, segment_type='m'):
 			surl = urljoin(redirect_url, surl)
 
-			if self.hls_proxy_segments:
+			if hls_proxy_segments or (hls_internal_decrypt and drm_info):
 				surl = self.hls_proxify_segment_url(segment_cache_key if len(segment_cache_data['pssh']) > 0 else None, surl, segment_type)
 
 			return surl
@@ -302,7 +309,7 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				continue
 
 			if drm_info and line.startswith("#EXT-X-KEY:"):
-				line = self.process_drm_key_line(line, drm_info, segment_cache_data)
+				line = self.process_drm_key_line(line, drm_info, segment_cache_data, hls_internal_decrypt)
 			elif 'URI=' in line:
 				# fix uri to full url
 				uri = line[line.find('URI=') + 4:]

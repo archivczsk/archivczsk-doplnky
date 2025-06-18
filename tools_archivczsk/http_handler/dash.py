@@ -29,7 +29,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 	def __init__(self, content_provider, addon, proxy_segments=True, internal_decrypt=True):
 		super(DashHTTPRequestHandler, self).__init__(content_provider, addon)
 		self.dash_proxy_segments = proxy_segments
-		self.dash_internal_decrypt = proxy_segments and internal_decrypt
+		self.dash_internal_decrypt = internal_decrypt
 
 	# #################################################################################################
 
@@ -78,6 +78,10 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			if not isinstance(dash_info, type({})):
 				dash_info = { 'url': dash_info }
 
+			if int(request.getHeader('X-DRM-Api-Level') or '0') >= 1 and dash_info.get('ext_drm_decrypt', True):
+				# player supports DRM, so don't do internal decryption and let player handle DRM
+				dash_info['dash_internal_decrypt'] = False
+
 			self.log_devel("Dash info: %s" % str(dash_info))
 
 			# resolve and process DASH playlist
@@ -91,7 +95,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 	# #################################################################################################
 
-	def dash_proxify_base_url(self, url, pssh=[], drm=None, cache_key=None):
+	def dash_proxify_base_url(self, url, dash_internal_decrypt, pssh=[], drm=None, cache_key=None):
 		'''
 		Redirects segment url to use proxy
 		'''
@@ -113,7 +117,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		else:
 			cache_key = self.scache.put_with_key(cached_data, cache_key)
 
-		if len(pssh) > 0 and self.dash_internal_decrypt:
+		if len(pssh) > 0 and dash_internal_decrypt:
 			self.cp.log_debug("Enabling DRM proxy handler for url %s with key %s" % (url, cache_key))
 			# drm protectet content - use handler for protectet segments
 			return "/%s/dsp/%s/" % (self.name, cache_key)
@@ -237,6 +241,9 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		kid_rep_mapping = {}
 		drm = dash_info.get('drm',{})
 
+		dash_proxy_segments = dash_info.get('dash_proxy_segments', self.dash_proxy_segments)
+		dash_internal_decrypt = dash_info.get('dash_internal_decrypt', self.dash_internal_decrypt)
+
 		# extract namespace of root element and set it as global namespace
 		ns = root.tag[1:root.tag.index('}')]
 		ET.register_namespace('', ns)
@@ -271,7 +278,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			return kid
 
 		def patch_segment_url(element):
-			if self.dash_proxy_segments:
+			if dash_proxy_segments or (dash_internal_decrypt and drm):
 				ck = self.calc_cache_key(element.get('id'))
 				i = 0
 				e_base_url = element.find('{}BaseURL'.format(ns))
@@ -386,7 +393,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				for e in e_adaptation_set.findall('{}Representation'.format(ns)):
 					patch_segment_url(e)
 					cenc_key = kid_rep_mapping[e.get('id')]['key']
-					if cenc_key and self.dash_internal_decrypt == False:
+					if cenc_key and dash_internal_decrypt != True:
 						self.cp.log_debug("Setting CENC key %s for representation %s" % (cenc_key, e.get('id')))
 						e.set('cenc_decryption_key', cenc_key)
 
@@ -414,14 +421,14 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			if e_base_url != None:
 				base_url_set = urljoin(base_url, e_base_url.text)
 
-				if self.dash_proxy_segments:
-					base_url_set = self.dash_proxify_base_url(base_url_set, pssh=list(set(pssh_list)), drm=drm, cache_key=cache_key)
+				if dash_proxy_segments or (dash_internal_decrypt and drm):
+					base_url_set = self.dash_proxify_base_url(base_url_set, pssh=list(set(pssh_list)), drm=drm, cache_key=cache_key, dash_internal_decrypt=dash_internal_decrypt)
 
 				e_base_url.text = base_url_set
 			else:
 				# base path not found in MPD, so set it ...
-				if self.dash_proxy_segments:
-					base_url_set = self.dash_proxify_base_url(base_url, pssh=list(set(pssh_list)), drm=drm, cache_key=cache_key)
+				if dash_proxy_segments or (dash_internal_decrypt and drm):
+					base_url_set = self.dash_proxify_base_url(base_url, pssh=list(set(pssh_list)), drm=drm, cache_key=cache_key, dash_internal_decrypt=dash_internal_decrypt)
 				else:
 					base_url_set = base_url
 

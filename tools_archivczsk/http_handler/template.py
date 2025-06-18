@@ -62,7 +62,6 @@ class SegmentDataWriter(Protocol):
 
 class HTTPRequestHandlerTemplate(AddonHttpRequestHandler, object):
 	def __init__(self, content_provider, addon):
-#		AddonHttpRequestHandler.__init__(self, addon)
 		super(HTTPRequestHandlerTemplate, self).__init__(addon)
 
 		self.cp = content_provider
