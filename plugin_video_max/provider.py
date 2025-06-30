@@ -121,7 +121,7 @@ class WBDMaxContentProvider(CommonContentProvider):
 
 	def root(self):
 		if self.is_supporter():
-			PlayerFeatures.request_exteplayer3_version(self, 176)
+			PlayerFeatures.check_latest_exteplayer3(self)
 		else:
 			self.show_info(self._("Full functionality of this addon is only available for ArchivCZSK product supporters. You can login and list content, but you won't be able to start playback."), noexit=True)
 

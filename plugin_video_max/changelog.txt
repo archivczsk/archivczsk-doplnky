@@ -1,5 +1,6 @@
 1.6 - 18.06.2025
     - úprava závislostí doplnku
+    - pridaná kontrola poslednej dostupne verzie exteplayer3
 
 1.5 - 30.04.2025
     - oprava po zmenách na strane servera
