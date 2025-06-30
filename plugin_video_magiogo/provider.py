@@ -313,7 +313,7 @@ class MagioGOContentProvider(ModuleContentProvider):
 	def root(self):
 		if self.get_setting('player-check'):
 			try:
-				PlayerFeatures.request_exteplayer3_version(self, 176)
+				PlayerFeatures.check_latest_exteplayer3(self)
 			except:
 				self.log_exception()
 
