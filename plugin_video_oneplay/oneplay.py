@@ -17,7 +17,7 @@ from tools_archivczsk.contentprovider.exception import LoginException, AddonErro
 from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.date_utils import iso8601_to_timestamp
 
-from tools_archivczsk.websocket import create_connection
+from tools_archivczsk.websocket import create_connection, WebSocketException
 
 ############### init ################
 
@@ -144,7 +144,10 @@ class Oneplay(object):
 			self.cp.log_exception()
 			raise AddonErrorException('{}:\n{}'.format(self._("Failed to create new connection to server"), str(e)))
 
-		ws_data = json.loads(ws.recv())
+		try:
+			ws_data = json.loads(ws.recv())
+		except WebSocketException as e:
+			raise AddonErrorException('{}:\n{}'.format(self._("Failed to read data from server"), str(e)))
 
 		data = {
 			"deviceInfo": {

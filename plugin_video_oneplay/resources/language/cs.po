@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_oneplay\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-01 19:20+0200\n"
+"POT-Creation-Date: 2025-06-30 14:37+0200\n"
 "PO-Revision-Date: 2025-04-01 19:21+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,8 +16,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.5\n"
 
-#: plugin_video_oneplay/http_handler.py:137
-#: plugin_video_oneplay/provider.py:760
+#: plugin_video_oneplay/http_handler.py:131
+#: plugin_video_oneplay/provider.py:761
 msgid "Multidimension - select stream"
 msgstr "Multidimenze - vyberte stream"
 
@@ -25,27 +25,31 @@ msgstr "Multidimenze - vyberte stream"
 msgid "Failed to create new connection to server"
 msgstr "Nepodařilo se vytvořit nové připojení k serveru"
 
-#: plugin_video_oneplay/oneplay.py:190
+#: plugin_video_oneplay/oneplay.py:150
+msgid "Failed to read data from server"
+msgstr "Nepodařilo se přečíst data ze serveru"
+
+#: plugin_video_oneplay/oneplay.py:193
 msgid "Received wrong response from server"
 msgstr "Přijatá chybná odpověď ze serveru"
 
-#: plugin_video_oneplay/oneplay.py:203
+#: plugin_video_oneplay/oneplay.py:206
 msgid "This content is not available"
 msgstr "Tento obsah není k dispozici"
 
-#: plugin_video_oneplay/oneplay.py:208
+#: plugin_video_oneplay/oneplay.py:211
 msgid "Server returned error response"
 msgstr "Server vrátil chybovou odpověď"
 
-#: plugin_video_oneplay/oneplay.py:214
+#: plugin_video_oneplay/oneplay.py:221
 msgid "Received wrong websocket response from server"
 msgstr "Přijatá chybná websocket odpověď ze serveru"
 
-#: plugin_video_oneplay/oneplay.py:315
+#: plugin_video_oneplay/oneplay.py:322
 msgid "Login failed - no access token in response data received"
 msgstr "Přihlášení selhalo - odpověď ze serveru neobsahuje přístupovej token"
 
-#: plugin_video_oneplay/oneplay.py:1258
+#: plugin_video_oneplay/oneplay.py:1266
 msgid "Available from"
 msgstr "Dostupné od"
 

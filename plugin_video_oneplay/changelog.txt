@@ -1,5 +1,6 @@
 1.8 - 18.06.2025
 - úprava závislostí doplnku
+- ošetrenie chybových stavov pri čítaní odpovede zo severa
 
 1.7: 07.04.2025
 - oprava nahlásených chýb
