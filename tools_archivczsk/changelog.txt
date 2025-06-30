@@ -1,3 +1,9 @@
+2.16 - 30.06.2025
+    - remove cenc info from init sections in hls and mpd
+    - updated hls2mpd to be more gstreamer compatible
+    - fixed some simple cache bugs
+    - automatic switch between internal and external DRM decryption (used in exteplayer3 ver. >=178)
+
 2.15 - 30.03.2025
     - added support for timezone in iso8601 utils
 
