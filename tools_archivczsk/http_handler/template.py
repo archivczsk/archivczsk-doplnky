@@ -17,7 +17,8 @@ except:
 	from http.cookiejar import CookieJar
 
 from tools_cenc.wvdecrypt import WvDecrypt
-from binascii import crc32
+from tools_cenc.mp4decrypt import mp4_pssh_get
+from binascii import crc32, unhexlify
 
 # #################################################################################################
 
@@ -228,6 +229,10 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler, object):
 	def get_drm_keys(self, pssh_list, drm_info, privacy_mode=False):
 		keys = []
 		for p in pssh_list:
+			if p == 'dynamic':
+				# skip dummy pssh
+				continue
+
 			k = self.pssh.get(p)
 			if k == None:
 				self.cp.log_debug("Requesting keys for pssh %s from licence server" % p)
@@ -246,6 +251,21 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler, object):
 				keys.extend(k)
 
 		return keys
+
+	# #################################################################################################
+
+	def get_mp4_pssh(self, data, pssh_list=[]):
+		pssh, kid = mp4_pssh_get(data)
+
+		self.log_devel("Received PSSH from mp4: %s" % pssh)
+		self.log_devel("Received KID from mp4: %s" % kid)
+
+		if pssh and pssh not in pssh_list:
+			pssh_list.append(pssh)
+			self.cp.log_debug("Adding PSSH %s from mp4 to list of available PSSHs" % pssh)
+
+		return pssh_list, kid
+
 
 	# #################################################################################################
 

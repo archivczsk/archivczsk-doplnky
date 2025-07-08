@@ -95,7 +95,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 	# #################################################################################################
 
-	def dash_proxify_base_url(self, url, dash_internal_decrypt, pssh=[], drm=None, cache_key=None):
+	def dash_proxify_base_url(self, url, dash_internal_decrypt, pssh=[], default_kid=False, drm=None, cache_key=None):
 		'''
 		Redirects segment url to use proxy
 		'''
@@ -110,6 +110,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			'url': url,
 			'pssh': pssh,
 			'drm': drm,
+			'default_kid': default_kid
 		})
 
 		if cache_key == None:
@@ -178,14 +179,31 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			cache_data['init'][segment_type[1:]] = data
 			return mp4_cenc_info_remove(data)
 
+		if cache_data['default_kid']:
+			pssh = cache_data['pssh']
+			kid = None
+		else:
+			# we don't have default kid specified - search kid and pssh directly in mp4 data
+			pssh, kid = self.get_mp4_pssh(data, cache_data['pssh'])
+
 		# collect keys for protected content
-		keys = self.get_drm_keys(cache_data['pssh'], cache_data['drm'], cache_data['drm'].get('privacy_mode', False))
+		keys = self.get_drm_keys(pssh, cache_data['drm'], cache_data['drm'].get('privacy_mode', False))
 
 		if len(keys) == 0:
 			self.cp.log_error("No keys to decrypt DRM protected content")
 			return None
 
 		self.log_devel("Keys for pssh: %s" % str(keys))
+
+		if kid:
+			# kid directly from mp4 is found - look for right key and set it as default
+			self.cp.log_debug("Looking for kid %s to set default decryption key" % kid)
+			for k in keys:
+				if k.startswith(kid + ':'):
+					keys.append('00000000000000000000000000000000:' + k.split(':')[1])
+					self.cp.log_debug("Adding default key: %s" % keys[-1][33:])
+					break
+
 		return mp4decrypt(keys, cache_data['init'].get(segment_type[1:]), data)
 
 	# #################################################################################################
@@ -261,8 +279,10 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 		def search_drm_data(element):
 			kid = None
+			is_protected = False
 			e = element.find('./{}ContentProtection[@schemeIdUri="urn:mpeg:dash:mp4protection:2011"]'.format(ns))
 			if e != None:
+				is_protected = True
 				kid = e.get('{urn:mpeg:cenc:2013}default_KID') or e.get('default_KID')
 				if kid:
 					self.cp.log_debug("Found KID: %s" % kid)
@@ -274,6 +294,11 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			if e != None and e.text:
 				self.cp.log_debug("Found PSSH: %s" % e.text)
 				pssh_list.append(e.text.strip())
+			elif is_protected:
+				self.cp.log_debug("Content is DRM protected, but no default PSSH is set - adding dummy one")
+				# add dummy PSSH - this is needed to enable DRM proxy handler
+				# this dummy pssh will be skipped by WV keys receiver
+				pssh_list.append('dynamic')
 
 			return kid
 
@@ -302,6 +327,8 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			for e in element.findall('{}ContentProtection'.format(ns)):
 				element.remove(e)
 
+		have_default_kid = False
+
 		# search for DRM data first
 		for e_period in root.findall('{}Period'.format(ns)):
 			for e_adaptation_set in e_period.findall('{}AdaptationSet'.format(ns)):
@@ -311,6 +338,9 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 					kid_rep_mapping[e.get('id')] = {
 						'kid': r_kid
 					}
+
+					if r_kid:
+						have_default_kid = True
 
 		# request and preprocess CENC keys
 		keys = self.get_drm_keys(pssh_list, drm)
@@ -422,13 +452,13 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				base_url_set = urljoin(base_url, e_base_url.text)
 
 				if dash_proxy_segments or (dash_internal_decrypt and drm):
-					base_url_set = self.dash_proxify_base_url(base_url_set, pssh=list(set(pssh_list)), drm=drm, cache_key=cache_key, dash_internal_decrypt=dash_internal_decrypt)
+					base_url_set = self.dash_proxify_base_url(base_url_set, pssh=list(set(pssh_list)), default_kid=have_default_kid, drm=drm, cache_key=cache_key, dash_internal_decrypt=dash_internal_decrypt)
 
 				e_base_url.text = base_url_set
 			else:
 				# base path not found in MPD, so set it ...
 				if dash_proxy_segments or (dash_internal_decrypt and drm):
-					base_url_set = self.dash_proxify_base_url(base_url, pssh=list(set(pssh_list)), drm=drm, cache_key=cache_key, dash_internal_decrypt=dash_internal_decrypt)
+					base_url_set = self.dash_proxify_base_url(base_url, pssh=list(set(pssh_list)), default_kid=have_default_kid, drm=drm, cache_key=cache_key, dash_internal_decrypt=dash_internal_decrypt)
 				else:
 					base_url_set = base_url
 
