@@ -1,3 +1,6 @@
+1.6 - 08.07.2025
+- added support for dynamic pssh+kid
+
 1.5 - 30.06.2025
 - remove mp4decrypt binaries and replace it by mp4modify library
 - properly remove cenc info from mp4's init section
