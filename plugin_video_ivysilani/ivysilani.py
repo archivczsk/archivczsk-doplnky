@@ -81,6 +81,10 @@ class iVysilani(object):
 					err_msg = msg['errors'][0]['message']
 				elif 'message' in msg:
 					err_msg = msg['message']
+
+					if isinstance(err_msg, dict) and 'labels' in err_msg:
+						err_msg = err_msg.get('labels',{})
+						err_msg = '{}\n{}'.format(err_msg.get('textLong',''), err_msg.get('additionalText',''))
 				else:
 					err_msg = None
 

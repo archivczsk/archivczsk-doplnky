@@ -478,6 +478,7 @@ class iVysilaniContentProvider(ModuleContentProvider):
 			'url': stream_key['url'],
 			'bandwidth': stream_key['bandwidth'],
 			'subs': stream_key['subs'],
+			'ext_drm_decrypt': False,
 			'drm' : {
 				'licence_url': 'https://ivys-wvproxy.o2tv.cz/license?access_token=c3RlcGFuLWEtb25kcmEtanNvdS1wcm9zdGUtbmVqbGVwc2k='
 			}
