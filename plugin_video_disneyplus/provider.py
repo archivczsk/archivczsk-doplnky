@@ -606,9 +606,12 @@ class DisneyPlusContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def list_season(self, season_id):
-		data = self.disneyplus.explore_season(season_id)
+	def list_season(self, season_id, page=0):
+		data = self.disneyplus.explore_season(season_id, page)
 		self._process_rows(data, short_episode_name=True)
+
+		if data['pagination']['hasMore']:
+			self.add_next(cmd=self.list_season, season_id=season_id, page=page+1)
 
 	# ##################################################################################################################
 
