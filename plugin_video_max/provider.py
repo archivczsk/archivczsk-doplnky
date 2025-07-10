@@ -93,7 +93,7 @@ class WBDMaxContentProvider(CommonContentProvider):
 			self.wbdmax = WBDMax(self)
 
 		if not self.wbdmax.need_login():
-			self.show_info(self._("Your already logged in. Please exit addon and run it again."))
+			self.show_info(self._("You are already logged in. Please exit addon and run it again."))
 			return
 
 		url, code = self.wbdmax.get_device_code(provider)
@@ -128,10 +128,10 @@ class WBDMaxContentProvider(CommonContentProvider):
 		self.build_lang_lists()
 
 		if isinstance(self.wbdmax, NoLoginHelper) or self.wbdmax.need_login():
-			self.add_video(self._("Start login process"), info_labels=self._("Use this if you want to pair this device with your MAX account."), cmd=self.process_login)
+			self.add_video(self._("Start login process"), info_labels=self._("Use this if you want to pair this device with your HBO Max account."), cmd=self.process_login)
 
 			if self.get_setting('login_using_provider'):
-				self.add_video(self._("Start login process using provider"), info_labels=self._("Use this if you use login to MAX using provider, like google, amazon, ..."), cmd=self.process_login, provider=True)
+				self.add_video(self._("Start login process using provider"), info_labels=self._("Use this if you use login to HBO Max using provider, like google, amazon, ..."), cmd=self.process_login, provider=True)
 
 			return
 

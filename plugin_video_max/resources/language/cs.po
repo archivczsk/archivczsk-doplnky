@@ -37,7 +37,7 @@ msgid "Enter PIN"
 msgstr "Zadejte PIN"
 
 #: plugin_video_max/provider.py:96
-msgid "Your already logged in. Please exit addon and run it again."
+msgid "You are already logged in. Please exit addon and run it again."
 msgstr "Již jste přihlášen. Ukončete prosím doplněk a spusťte jej znovu."
 
 #: plugin_video_max/provider.py:102
@@ -62,16 +62,16 @@ msgid "Start login process"
 msgstr "Spustit proces přihlášení"
 
 #: plugin_video_max/provider.py:131
-msgid "Use this if you want to pair this device with your MAX account."
-msgstr "Tuto možnost použijte, pokud chcete toto zařízení spárovat s účtem MAX."
+msgid "Use this if you want to pair this device with your HBO Max account."
+msgstr "Tuto možnost použijte, pokud chcete toto zařízení spárovat s účtem HBO Max."
 
 #: plugin_video_max/provider.py:134
 msgid "Start login process using provider"
 msgstr "Spustit proces přihlášení pomocí poskytovatele"
 
 #: plugin_video_max/provider.py:134
-msgid "Use this if you use login to MAX using provider, like google, amazon, ..."
-msgstr "Použijte to, pokud používáte přihlášení k MAX pomocí poskytovatele, jako je Google, Amazon, ..."
+msgid "Use this if you use login to HBO Max using provider, like google, amazon, ..."
+msgstr "Použijte to, pokud používáte přihlášení k HBO Max pomocí poskytovatele, jako je Google, Amazon, ..."
 
 #: plugin_video_max/provider.py:141
 msgid "My items"

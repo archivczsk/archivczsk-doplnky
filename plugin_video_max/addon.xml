@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.max" name="Max" version="1.6">
+<addon id="plugin.video.max" name="HBO Max" version="1.7">
 	<requires>
 		<import addon="enigma2.archivczsk" version="3.3.1"/>
 		<import addon="tools.archivczsk" version="2.16" />
@@ -7,8 +7,8 @@
 	</requires>
 	<extension point="archivczsk.addon.video" import-name="addon" entry-point="main"/>
 	<extension point="archivczsk.addon.metadata">
-		<description>Max brings the worlds of HBO, Warner Bros., the DC Universe, Harry Potter and so much more together with live sports, and favorite channels like Discovery, TLC, and HGTV.</description>
-		<description lang="cs">Max spojuje světy HBO, Warner Bros, DC Universe, Harryho Pottera a mnoho dalšího se sportovními přenosy a oblíbenými kanály jako Discovery, TLC a HGTV.</description>
-		<description lang="sk">Max spája svety HBO, Warner Bros., Harry Potter, univerza DC a mnoho ďalšieho s neprehliadnuteľnými športovými prenosmi a obľúbenými kanálmi ako Discovery, TLC a HGTV.</description>
+		<description>HBO Max brings the worlds of HBO, Warner Bros., the DC Universe, Harry Potter and so much more together with live sports, and favorite channels like Discovery, TLC, and HGTV.</description>
+		<description lang="cs">HBO Max spojuje světy HBO, Warner Bros, DC Universe, Harryho Pottera a mnoho dalšího se sportovními přenosy a oblíbenými kanály jako Discovery, TLC a HGTV.</description>
+		<description lang="sk">HBO Max spája svety HBO, Warner Bros., Harry Potter, univerza DC a mnoho ďalšieho s neprehliadnuteľnými športovými prenosmi a obľúbenými kanálmi ako Discovery, TLC a HGTV.</description>
 	</extension>
 </addon>
