@@ -193,12 +193,17 @@ class DisneyPlus(object):
 				'registerDevice': {
 					'applicationRuntime': 'android',
 					'attributes': {
+						'osDeviceIds': [],
+						'manufacturer': 'NVIDIA',
+						'model': 'SHIELD Android TV',
 						'operatingSystem': 'Android',
-						'operatingSystemVersion': '8.1.0',
+						'operatingSystemVersion': '11',
+						'brand': 'NVIDIA'
 					},
 					'deviceFamily': 'android',
 					'deviceLanguage': 'en',
 					'deviceProfile': 'tv',
+					'devicePlatformId': 'android-tv'
 				}
 			},
 			'query': """mutation ($registerDevice: RegisterDeviceInput!) {registerDevice(registerDevice: $registerDevice) {__typename}}""",
