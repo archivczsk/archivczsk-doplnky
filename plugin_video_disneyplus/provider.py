@@ -11,6 +11,8 @@ import base64
 import json
 
 WATCHED_PERCENT = 95.0
+BRANDS_ID = '552e2219-3eba-4bbd-94df-e99fca24553a'
+CONTINUE_WATCHING_ID = '76aed686-1837-49bd-b4f5-5d2a27c0c8d4'
 SUGGESTED_ID = '3cd8f37d-5480-46fb-9eeb-5002123abe53'
 EXTRAS_ID = '83f33e19-3e08-490d-a59a-6ef5cb93f030'
 
@@ -290,19 +292,12 @@ class DisneyPlusContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def brands(self, page=0, set_id=None):
-		if not set_id:
-			data = self.disneyplus.deeplink('home')
-			page_id = self._get_action_page_id(data)
-			data = self.disneyplus.explore_page(page_id, limit=0, enhanced_limit=0)
-
-			set_id = [x for x in data['containers'] if 'brand' in x['style']['name'].lower()][0]['id']
-
-		data = self.disneyplus.explore_set(set_id, page=page)
+	def brands(self, page=0):
+		data = self.disneyplus.explore_set(BRANDS_ID, page=page)
 		self._process_rows(data)
 
 		if data['pagination']['hasMore']:
-			self.add_next(cmd=self.brands, page=page+1, set_id=set_id)
+			self.add_next(cmd=self.brands, page=page+1)
 
 	# ##################################################################################################################
 
@@ -314,19 +309,12 @@ class DisneyPlusContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def continue_watching(self, page=0, set_id=None):
-		if not set_id:
-			data = self.disneyplus.deeplink('home')
-			page_id = self._get_action_page_id(data)
-			data = self.disneyplus.explore_page(page_id, limit=0, enhanced_limit=0)
-
-			set_id = [x for x in data['containers'] if 'continue_watching' in x['style']['name'].lower()][0]['id']
-
-		data = self.disneyplus.explore_set(set_id, page=page)
+	def continue_watching(self, page=0):
+		data = self.disneyplus.explore_set(CONTINUE_WATCHING_ID, page=page)
 		self._process_rows(data, continue_watching=True)
 
 		if data['pagination']['hasMore']:
-			self.add_next(cmd=self.brands, page=page+1, set_id=set_id)
+			self.add_next(cmd=self.brands, page=page+1)
 
 	# ##################################################################################################################
 

@@ -1,3 +1,6 @@
+2.3 - 10.07.2025
+    - aktualizácia rôznych častí po zmenách na strane Disney+
+
 2.2 - 18.06.2025
     - úprava závislostí doplnku
 

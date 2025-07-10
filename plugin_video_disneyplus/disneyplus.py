@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# based on slyguy.disney.plus v0.20.16
+# based on slyguy.disney.plus v0.20.22
 
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
 from tools_archivczsk.debug.http import dump_json_request
