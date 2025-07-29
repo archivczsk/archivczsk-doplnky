@@ -222,9 +222,11 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			is_fully_watched = False
 			lid = None
 			mid = None
+			trakt_id = None
 			if 'unique_ids' in menu_item:
 				lid = menu_item.get('lid')
 				mid = menu_item['unique_ids'].get('sc')
+				trakt_id = menu_item['unique_ids'].get('trakt')
 				data_item.update({ 'url': menu_item['url'], 'lid': lid, 'mid': mid })
 
 				if self.get_setting('trakt_enabled'):
@@ -249,11 +251,11 @@ class StreamCinemaContentProvider(CommonContentProvider):
 				ctx_menu.add_menu_item(self._('Remove from seen'), cmd=self.remove_last_seen, lid=lid, mid=mid)
 
 			if menu_item['type'] == 'dir':
-				self.add_sc_dir_item(menu_item, ctx_menu, data_item, trakt_item, (is_watched, is_fully_watched,))
+				self.add_sc_dir_item(menu_item, ctx_menu, data_item, trakt_item, (is_watched, is_fully_watched,), trakt_id)
 			elif menu_item['type'] == 'next':
 				self.add_next(cmd=self.render_menu, url=menu_item.get('url'))
 			elif menu_item['type'] == 'video':
-				self.add_sc_video_item(menu_item, ctx_menu, data_item, trakt_item, is_watched)
+				self.add_sc_video_item(menu_item, ctx_menu, data_item, trakt_item, is_watched, trakt_id)
 			elif menu_item['type'] == 'action':
 				if menu_item['action'] == 'csearch':
 					self.add_sc_search_item(menu_item)
@@ -340,6 +342,30 @@ class StreamCinemaContentProvider(CommonContentProvider):
 				return True
 
 		return False
+
+	# #################################################################################################
+
+	def list_related(self, trakt_id, is_movie):
+		self.ensure_supporter()
+
+		@lru_cache(30, timeout=1800)
+		def get_list_items():
+			try:
+				_, ret = self.tapi.call_trakt_api('/%s/%s/related' % ('movies' if is_movie else 'shows', trakt_id))
+
+				return ret or []
+			except Exception as e:
+				self.log_exception()
+				return []
+
+		track_ids = []
+		sc_type = 1 if is_movie else 3
+		# get list from Trakt.tv and extract trakt ID + type
+		for data in get_list_items():
+			track_ids.append("{},{}".format(sc_type, str(data['ids']['trakt'])))
+
+		if len(track_ids) > 0:
+			self.render_menu('/Search/getTrakt', data={ 'ids': json.dumps(track_ids)})
 
 	# #################################################################################################
 
@@ -434,7 +460,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 	# #################################################################################################
 
-	def add_sc_dir_item(self, sc_item, ctx_menu, data_item, trakt_item, is_watched):
+	def add_sc_dir_item(self, sc_item, ctx_menu, data_item, trakt_item, is_watched, trakt_id):
 		url = sc_item.get('url')
 
 		visible = sc_item.get('visible', '')
@@ -536,6 +562,9 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			if info.get('mediatype') == 'tvshow':
 				ctx_menu.add_menu_item(self._('Search on prehraj.to'), cmd=self.prehrajto_search, keyword=otitle)
 
+				if trakt_id:
+					ctx_menu.add_menu_item(self._('Show related'), cmd=self.list_related, trakt_id=trakt_id, is_movie=False)
+
 		self.add_dir(title, img or self.get_poster_url(None), info_labels, menu=ctx_menu, data_item=data_item, trakt_item=trakt_item, cmd=self.render_menu, url=url)
 
 	# #################################################################################################
@@ -550,7 +579,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 	# #################################################################################################
 
-	def add_sc_video_item(self, sc_item, ctx_menu, data_item, trakt_item, is_watched):
+	def add_sc_video_item(self, sc_item, ctx_menu, data_item, trakt_item, is_watched, trakt_id):
 		url = sc_item['url']
 
 		info_labels = {}
@@ -605,6 +634,10 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		else:
 			if info_labels['year']:
 				info_labels['title'] += ' (%s)' % info_labels['year']
+
+			if trakt_id:
+				ctx_menu.add_menu_item(self._('Show related'), cmd=self.list_related, trakt_id=trakt_id, is_movie=True)
+
 
 		search_query = otitle + ep_code2 + ' ' + str(info.get('year', ""))
 
