@@ -12,7 +12,7 @@ __addon__ = ArchivCZSK.get_addon('tools.archivczsk')
 def _(id):
 	return __addon__.get_localized_string(id)
 
-AVAILABLE_EXTEPLAYER3_VERSION=178
+AVAILABLE_EXTEPLAYER3_VERSION=179
 
 EXTEPLAYER3_NAME='exteplayer3_%d' % AVAILABLE_EXTEPLAYER3_VERSION
 FFMPEG_NAME='ffmpeg_%d' % AVAILABLE_EXTEPLAYER3_VERSION
