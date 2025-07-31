@@ -1,6 +1,9 @@
+1.9 - 31.07.2025
+- oprava pádu po zmene formátu dát na strane oneplay
+
 1.8 - 18.06.2025
 - úprava závislostí doplnku
-- ošetrenie chybových stavov pri čítaní odpovede zo severa
+- ošetrenie chybových stavov pri čítaní odpovede zo servera
 
 1.7: 07.04.2025
 - oprava nahlásených chýb
@@ -13,7 +16,7 @@
 - lepšie ošetrenie chýb pri vytváraní spojenia na server
 
 1.4 - 30.03.2025
-- korektné rozoznávanie zimného/letného času a časovej zóny u EPG
+- korektné rozpoznávanie zimného/letného času a časovej zóny u EPG
 
 1.3 - 29.03.2025
 - oprava multidimenzie v userbouquete
