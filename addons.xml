@@ -11,7 +11,7 @@
 <addon id="plugin.video.kvifftv" name="Kviff.tv" version="1.3" hash="0f31fd5e31abe7ba7b5e1c66adff14aa" rhash="893db8849b0f55c24845735baacd5cb0" />
 <addon id="plugin.video.magiogo" name="Magio TV" version="1.30" hash="c5f871a5120809e628106fb908fa0b94" rhash="b1cf261df15f3b035dd76fb56822d7a8" />
 <addon id="plugin.video.markiza" name="Markíza" version="2.14" hash="6445f5d45b4de9d75c148d5f77810edf" rhash="c815c6f011a32117cadab4b88e5e9d13" />
-<addon id="plugin.video.max" name="HBO Max" version="1.7" hash="11255a0dfe1d83466a5df357cee3300a" rhash="b4cb6e0d14940bf5efdc7ed5a9f21377" />
+<addon id="plugin.video.max" name="HBO Max" version="1.8" hash="8a1494b496c62d0f6c01e2e605879070" rhash="d4fdc4a9d60210a59c25ff2a042232db" />
 <addon id="plugin.video.mtr.sk" name="Mestská TV Ružomberok" version="1.3.1" hash="c79805cd13bde8b3e11c25926e4c0b2d" rhash="c79805cd13bde8b3e11c25926e4c0b2d" />
 <addon id="plugin.video.novaplus" name="TV Nova" version="3.13" hash="14e3c462cd1e9a413b6144d1d94fcfa3" rhash="d8cd06aa2353084f30de73081624d80e" />
 <addon id="plugin.video.o2tv" name="O2 TV 2.0" version="1.33" hash="73071221313361165aeb981105336a2b" rhash="e71de816d97459692dcf8023db3cdb49" />
@@ -37,7 +37,7 @@
 <addon id="plugin.video.voyo" name="VOYO" version="1.7" hash="018f7c159360c19daf3ca57f3d942c02" rhash="6e57985b28e6fb4c79afdaf42a0c8dfe" />
 <addon id="plugin.video.webshare" name="Webshare.cz" version="1.4" hash="12e4641b041e07084163090867b91f69" rhash="1e7e7255383c13e3d892587474b74379" />
 <addon id="plugin.video.yt" name="YouTube" version="2.5" hash="1086ed6ccc8414f8cdc1035955af4cc2" rhash="5d810ffc274aa1150c2a0e52039e1229" />
-<addon id="tools.archivczsk" name="Addons base" version="2.18" hash="0870dee3db5ed6b1dde80fb5e870c372" rhash="5d9cee77365994e2e4ec75e500b7f388" />
+<addon id="tools.archivczsk" name="Addons base" version="2.19" hash="af20334051ea0856fb830c41032ec99e" rhash="a041e8e7a5d643f0307a5ca69e8ca741" />
 <addon id="tools.cenc" name="Content encryption support" version="1.6" hash="8f94bad0e6039551bb8210e38891acda" rhash="8f94bad0e6039551bb8210e38891acda" />
 <addon id="tools.xbmc" name="xbmc addons helper" version="1.4" hash="4ec31afb020b221373571c9eb369ddb6" rhash="4ec31afb020b221373571c9eb369ddb6" />
 </addons>
