@@ -113,19 +113,6 @@ class WBDMaxHTTPRequestHandler(DashHTTPRequestHandler):
 					if len(enabled_subs) == 0 or e_adaptation_set.get('lang') in enabled_subs:
 						e_adaptation_set_subtitles.append( (e_adaptation_set, subtitle_type == 'forced',) )
 
-					# create path to full (not splitted) subtitle file
-					for e_representation in e_adaptation_set.findall('{}Representation'.format(ns)):
-						segment_template_list = list(e_representation.findall('{}SegmentTemplate'.format(ns)))
-
-						if not segment_template_list:
-							continue
-
-						for e_segment_template in segment_template_list:
-							stub = e_segment_template.get('media','').split('/')[1]
-							e_representation.remove(e_segment_template)
-
-						ET.SubElement(e_representation, 'BaseURL').text = 't/{stub}/{lang}_{type}.vtt'.format(stub='sub' if stub.startswith('t') else stub, lang=lang, type=subtitle_type)
-
 			# remove not needed adaptation sets
 			for child in e_adaptation_set_rem:
 				e_period.remove(child)

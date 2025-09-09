@@ -1,3 +1,6 @@
+1.8 - 10.07.2025
+    - oprava spustenia programov s titulkami (nutný exteplayer3 ver. >=180)
+
 1.7 - 10.07.2025
     - zmena názvu na HBO Max
 
