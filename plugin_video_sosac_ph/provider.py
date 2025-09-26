@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 from datetime import date, datetime, timedelta
+from time import time
 from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from tools_archivczsk.contentprovider.exception import AddonErrorException, AddonSilentExitException
 from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman
@@ -170,6 +171,7 @@ LANG_LIST = [
 
 class SosacContentProvider(CommonContentProvider):
 	WATCHED_TRESHOLD = 0.8
+	MAX_LOCAL_WATCHED_HISTORY=100
 
 	def __init__(self, settings=None, data_dir=None, icons_dir=None):
 		CommonContentProvider.__init__(self, 'sosac', settings=settings, data_dir=data_dir)
@@ -178,6 +180,21 @@ class SosacContentProvider(CommonContentProvider):
 		self.login_optional_settings_names = ('streamujtv_user', 'streamujtv_pass', 'sosac_user', 'sosac_pass')
 		self.sosac = None
 		self.login_msg = None
+		self.load_watched()
+
+	# ##################################################################################################################
+
+	def load_watched(self):
+		try:
+			self.watched = { int(k): v for k, v in self.load_cached_data('watched').items() }
+		except:
+			self.watched = {}
+			self.log_exception()
+
+		if len(self.watched) > self.MAX_LOCAL_WATCHED_HISTORY:
+			s = sorted([ (k, v) for k, v in self.watched.items() ], key=lambda x: x[1], reverse=True)
+			for i in s[self.MAX_LOCAL_WATCHED_HISTORY:]:
+				del self.watched[i[0]]
 
 	# ##################################################################################################################
 
@@ -514,7 +531,7 @@ class SosacContentProvider(CommonContentProvider):
 		result = self.sosac.get_tvguide(day, page)
 
 		for item in result:
-			if disable_adult and item['adult']:
+			if disable_adult and item.get('adult', False):
 				continue
 
 			if item['type'] == 'movie':
@@ -822,6 +839,10 @@ class SosacContentProvider(CommonContentProvider):
 		disable_adult = not self.get_setting('enable-adult')
 
 		result = self.sosac.get_movies_list(stream, page, **kwargs)
+
+		if stream in ('finished', 'unfinished'):
+			result.sort(key=lambda x: self.watched.get( x.get('patent_id') or x.get('id'), 0), reverse=True )
+
 		for item in result:
 			if disable_adult and item['adult']:
 				continue
@@ -834,12 +855,15 @@ class SosacContentProvider(CommonContentProvider):
 	# #################################################################################################
 
 	def list_tvshows(self, stream, episodes=False, page=1, in_playlist=False, **kwargs):
+		disable_adult = not self.get_setting('enable-adult')
+
 		if episodes:
 			result = self.sosac.get_episodes_list(stream, page, **kwargs)
 		else:
 			result = self.sosac.get_tvshow_list(stream, page, **kwargs)
 
-		disable_adult = not self.get_setting('enable-adult')
+		if stream in ('finished', 'unfinished'):
+			result.sort(key=lambda x: self.watched.get( x.get('patent_id') or x.get('id'), 0), reverse=True )
 
 		for item in result:
 			if disable_adult and item['adult']:
@@ -1182,6 +1206,8 @@ class SosacContentProvider(CommonContentProvider):
 					self.sosac.set_watching_time('episodes' if data_item['parent_id'] else 'movies', data_item['id'], position)
 					data_item['watched'] = position
 
+				self.watched[data_item.get('parent_id') or data_item.get('id')] = int(time())
+				self.save_cached_data('watched', self.watched)
 				self.sosac.clear_cache()
 		except:
 			self.log_error("Stats processing failed")

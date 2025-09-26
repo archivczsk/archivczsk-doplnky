@@ -1,3 +1,6 @@
+2.10: 26.09.2025
+- naposledy sledované filmy a seriály v sekciách nedopozerané a sledované sú radené na začiatku (platí len pre nové položky)
+
 2.9: 01.12.2024
 - oprava pádu pri vyhľadávaní z EPG
 - oprava pádu pri nedostupnosti streamuj.tv
