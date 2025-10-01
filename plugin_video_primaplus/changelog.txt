@@ -1,3 +1,7 @@
+1.8 - 01.10.2025
+- vylepšený výpis chýb pri prihlásení
+- oprava archívu a živého vysielania po zmenách na strane Prima+
+
 1.7 - 17.04.2025
 - prepis veľkej časti doplnku po zmenách na strane Prima+
 

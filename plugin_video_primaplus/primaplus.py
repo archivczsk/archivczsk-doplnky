@@ -363,13 +363,8 @@ class PrimaPlus(object):
 	# ##################################################################################################################
 
 	def get_channels(self):
-		params = {
-			'stripId' : '4e0d6d10-4183-4424-8795-2edc47281e9e',
-			'profileId' : self.login_data['profile_id']
-		}
-
 		channels = []
-		for item in self.call_rpc_api('strip.strip.items.vdm', params).get('items',[]):
+		for item in (self.call_rpc_api('epg.channel.list') or []):
 			channels.append({
 				'id': item['id'],
 				'play_id': item['playId'],
