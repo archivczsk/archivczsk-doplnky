@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_primaplus\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-18 15:18+0100\n"
-"PO-Revision-Date: 2025-02-18 15:20+0100\n"
+"POT-Creation-Date: 2025-10-01 10:07+0200\n"
+"PO-Revision-Date: 2025-10-01 10:08+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -16,27 +16,35 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.5\n"
 
-#: plugin_video_primaplus/primaplus.py:90
+#: plugin_video_primaplus/primaplus.py:94
 msgid "Unexpected return code from Prima RPC server"
 msgstr "Neočakávaný návratový kód z Prima RPC servera"
 
-#: plugin_video_primaplus/primaplus.py:95
+#: plugin_video_primaplus/primaplus.py:99
 msgid "Error by calling Prima RPC API"
 msgstr "Chyba pri volaní Prima RPC API"
 
-#: plugin_video_primaplus/primaplus.py:134
+#: plugin_video_primaplus/primaplus.py:138
 msgid "Unexpected return code from server"
 msgstr "Neočakávaný návratový kód zo servera"
 
-#: plugin_video_primaplus/primaplus.py:165
+#: plugin_video_primaplus/primaplus.py:209
 msgid "Wrong login response. Probably wrong login name/password combination."
 msgstr "Nesprávna odpoveď na prihlásenie. Pravdepodobne nesprávna kombinácia prihlasovacieho mena a hesla."
 
-#: plugin_video_primaplus/primaplus.py:193
+#: plugin_video_primaplus/primaplus.py:240
+msgid "Incorrect login username or password"
+msgstr "Nesprávne prihlasovacie meno alebo heslo"
+
+#: plugin_video_primaplus/primaplus.py:242
+msgid "Login user name not found"
+msgstr "Prihlasovacie meno používateľa nebolo nájdené"
+
+#: plugin_video_primaplus/primaplus.py:244
 msgid "Access token not found in response data from server"
 msgstr "V odpovedi zo servera sa nepodarilo nájsť prístupový token"
 
-#: plugin_video_primaplus/primaplus.py:375
+#: plugin_video_primaplus/primaplus.py:414
 msgid "No stream informations returned from server"
 msgstr "Server nevrátil informácie o streamoch"
 
@@ -136,7 +144,7 @@ msgstr "Adresa"
 msgid "E-Mail"
 msgstr "E-Mail"
 
-#: plugin_video_primaplus/provider.py:72 plugin_video_primaplus/provider.py:117
+#: plugin_video_primaplus/provider.py:72 plugin_video_primaplus/provider.py:124
 msgid "Year of birth"
 msgstr "Rok narodenia"
 
@@ -160,59 +168,59 @@ msgstr "Áno"
 msgid "No"
 msgstr "Nie"
 
-#: plugin_video_primaplus/provider.py:79
+#: plugin_video_primaplus/provider.py:80
 msgid "Valid from"
 msgstr "Platné od"
 
-#: plugin_video_primaplus/provider.py:81
+#: plugin_video_primaplus/provider.py:86
 msgid "Valid until"
 msgstr "Platné do"
 
-#: plugin_video_primaplus/provider.py:91
+#: plugin_video_primaplus/provider.py:98
 msgid "Registered at"
 msgstr "Registrované"
 
-#: plugin_video_primaplus/provider.py:94
+#: plugin_video_primaplus/provider.py:101
 msgid "Last change"
 msgstr "Posledná zmena"
 
-#: plugin_video_primaplus/provider.py:107
+#: plugin_video_primaplus/provider.py:114
 msgid "Do you realy want to delete this device?"
 msgstr "Naozaj chcete odstrániť toto zariadenie?"
 
-#: plugin_video_primaplus/provider.py:116
+#: plugin_video_primaplus/provider.py:123
 msgid "Created at"
 msgstr "Vytvorené"
 
-#: plugin_video_primaplus/provider.py:119
+#: plugin_video_primaplus/provider.py:126
 msgid "Main profile"
 msgstr "Hlavný profil"
 
-#: plugin_video_primaplus/provider.py:121
+#: plugin_video_primaplus/provider.py:128
 msgid "Kids profile"
 msgstr "Detský profil"
 
-#: plugin_video_primaplus/provider.py:136
+#: plugin_video_primaplus/provider.py:143
 msgid "Do you realy want to switch profile?"
 msgstr "Naozaj chcete prepnúť profil?"
 
-#: plugin_video_primaplus/provider.py:184
+#: plugin_video_primaplus/provider.py:196
 msgid "Remove from my list"
 msgstr "Odstrániť z môjho zoznamu"
 
-#: plugin_video_primaplus/provider.py:186
+#: plugin_video_primaplus/provider.py:198
 msgid "Add to my list"
 msgstr "Pridať na môj zoznam"
 
-#: plugin_video_primaplus/provider.py:224
+#: plugin_video_primaplus/provider.py:258
 msgid "Order by alphabet"
 msgstr "Zoradiť podľa abecedy"
 
-#: plugin_video_primaplus/provider.py:284
+#: plugin_video_primaplus/provider.py:316
 msgid "Today"
 msgstr "Dnes"
 
-#: plugin_video_primaplus/provider.py:286
+#: plugin_video_primaplus/provider.py:318
 msgid "Yesterday"
 msgstr "Včera"
 

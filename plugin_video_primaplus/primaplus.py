@@ -208,7 +208,8 @@ class PrimaPlus(object):
 		if not response.ok:
 			raise LoginException(self.cp._('Wrong login response. Probably wrong login name/password combination.'))
 
-		token_data = response.json().get('accessToken')
+		response_data = response.json()
+		token_data = response_data.get('accessToken')
 
 		if token_data:
 			self.login_data['access_token'] = token_data['value']
@@ -234,7 +235,13 @@ class PrimaPlus(object):
 
 			self.save_login_data()
 		else:
-			raise LoginException(self.cp._("Access token not found in response data from server"))
+			status_message = response_data.get('statusMessage')
+			if status_message == 'Incorrect credentials':
+				raise LoginException(self.cp._("Incorrect login username or password"))
+			elif status_message == 'User not found':
+				raise LoginException(self.cp._("Login user name not found"))
+			else:
+				raise LoginException(self.cp._("Access token not found in response data from server"))
 
 	# ##################################################################################################################
 
