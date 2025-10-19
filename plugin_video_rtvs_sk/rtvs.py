@@ -64,7 +64,7 @@ START_LISTING = "<div class='calendar modal-body'>"
 END_LISTING = '</table>'
 LISTING_PAGER_RE = "<a class=\'prev calendarRoller' href=\'(?P<prevurl>[^\']+)\'.+?<a class=\'next calendarRoller\' href=\'(?P<nexturl>[^\']+)"
 LISTING_DATE_RE = '<div class=\'calendar-header\'>\s+.*?<h6>(?P<date>[^<]+)</h6>'
-LISTING_ITER_RE = '<td class=(\"day\"|\"active day\")>\s+<a href=[\'\"](?P<url>[^\"^\']+)[\"\']>(?P<daynum>[\d]+)</a>\s+</td>'
+LISTING_ITER_RE = '<td class=(\"day\"|\"active day\")>\s+<a href=[\'\"](?P<url>[^\"^\']+)[\"\'] data-datalayer-item=[\"\']Kalendár[\"\']\s*>(?P<daynum>[\d]+)</a>\s+</td>'
 
 EPISODE_RE = '<div class=\"article-header\">\s+?<h2>(?P<title>[^<]+)</h2>.+?(<div class=\"span6">\s+?<div[^>]+?>(?P<plot>[^<]+)</div>)?'
 
@@ -267,13 +267,13 @@ class RtvsContentProvider(ContentProvider):
 						item = self.video_item()
 						item['title'] = hit.get('name')
 						if hit.get('air_start_p'): item['title'] = item['title'] + ' (' + hit.get('air_start_p') + ')'
-						item['url'] = self._fix_url(hit.get('uri'))
+						item['url'] = hit.get('uri')
 						item['img'] = hit.get('thumbnail')
 						self._filter(result,item)
 					elif hit['uri'].find('/televizia/program/'):
 						item = self.dir_item()
 						item['title'] = hit.get('name')
-						item['url'] = self._fix_url(hit.get('uri').replace('/program/','/archiv/'))
+						item['url'] = hit.get('uri').replace('/program/','/archiv/')
 						item['img'] = hit.get('thumbnail')
 						self._filter(result,item)
 		return result
@@ -293,7 +293,7 @@ class RtvsContentProvider(ContentProvider):
 				item['title'] = m.group('title')
 			item['img'] = img['local']
 #			item['img'] = img['remote']
-			item['url'] = self._fix_url(m.group('url'))
+			item['url'] = m.group('url')
 			self._filter(result, item)
 			images.append(img)
 		self._get_images(images)
@@ -310,7 +310,7 @@ class RtvsContentProvider(ContentProvider):
 			item['title'] = "%s (%s)" % (m.group('title'), m.group('time'))
 			item['img'] = img['local']
 #			item['img'] = img['remote']
-			item['url'] = self._fix_url(m.group('url'))
+			item['url'] = m.group('url')
 			item['menu'] = {'$30070':{'list':item['url'], 'action-type':'list'}}
 			self._filter(result, item)
 			images.append(img)
