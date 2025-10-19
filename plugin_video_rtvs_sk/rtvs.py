@@ -293,7 +293,7 @@ class RtvsContentProvider(ContentProvider):
 				item['title'] = m.group('title')
 			item['img'] = img['local']
 #			item['img'] = img['remote']
-			item['url'] = m.group('url')
+			item['url'] = self._fix_url(m.group('url'))
 			self._filter(result, item)
 			images.append(img)
 		self._get_images(images)
@@ -310,7 +310,7 @@ class RtvsContentProvider(ContentProvider):
 			item['title'] = "%s (%s)" % (m.group('title'), m.group('time'))
 			item['img'] = img['local']
 #			item['img'] = img['remote']
-			item['url'] = m.group('url')
+			item['url'] = self._fix_url(m.group('url'))
 			item['menu'] = {'$30070':{'list':item['url'], 'action-type':'list'}}
 			self._filter(result, item)
 			images.append(img)
