@@ -52,11 +52,11 @@ try:
 except:
 	from hashlib import md5
 
-START_AZ = '<div class=\"row tv__archive tv__archive--list\">'
+START_AZ = '<div data-content-list="list" class=\"row tv__archive tv__archive--list\">'
 END_AZ = '<div class="footer'
 AZ_ITER_RE = '<a title=\"(?P<title>[^"]+)\"(.+?)href=\"(?P<url>[^"]+)\"(.+?)<img src=\"(?P<img>[^"]+)\"(.+?)<span class=\"date\">(?P<date>[^<]+)<\/span>(.+?)<span class=\"program time--start\">(?P<time>[^<]+)'
 
-START_DATE = '<div class=\"row tv__archive tv__archive--date\"'
+START_DATE = '<div data-content-list="carousel" class=\"row tv__archive tv__archive--date\"'
 END_DATE = '<!-- FOOTER -->'
 DATE_ITER_RE = '<div class=\"media.+?\">\s*<a href=\"(?P<url>[^\"]+)\".+?<img src=\"(?P<img>[^\"]+)\".+?<\/a>\s*<div class=\"media__body\">.+?<div class=\"program time--start\">(?P<time>[^\<]+)<span>.+?<a class=\"link\".+?title=\"(?P<title>[^\"]+)\">'
 
@@ -262,19 +262,20 @@ class RtvsContentProvider(ContentProvider):
 		pj = json.loads(page)
 		for block in pj.get('blocks'):
 			for hit in pj['blocks'][block]['hits']:
-				if hit['uri'].startswith('/televizia/archiv/'):
-					item = self.video_item()
-					item['title'] = hit.get('name') + ' [' + pj['blocks'][block]['title'] + ']'
-					if hit.get('air_start_p'): item['title'] = item['title'] + ' (' + hit.get('air_start_p') + ')'
-					item['url'] = 'https://www.stvr.sk' + hit.get('uri')
-					item['img'] = hit.get('thumbnail')
-					self._filter(result,item)
-				elif hit['uri'].startswith('/televizia/program/'):
-					item = self.dir_item()
-					item['title'] = hit.get('name') + ' [' + pj['blocks'][block]['title'] + ']'
-					item['url'] = 'https://www.stvr.sk' + hit.get('uri').replace('/program/','/archiv/')
-					item['img'] = hit.get('thumbnail')
-					self._filter(result,item)
+				if pj['blocks'][block]['title'] == 'TV archív':
+					if hit['uri'].find('/televizia/archiv/'):
+						item = self.video_item()
+						item['title'] = hit.get('name')
+						if hit.get('air_start_p'): item['title'] = item['title'] + ' (' + hit.get('air_start_p') + ')'
+						item['url'] = self._fix_url(hit.get('uri'))
+						item['img'] = hit.get('thumbnail')
+						self._filter(result,item)
+					elif hit['uri'].find('/televizia/program/'):
+						item = self.dir_item()
+						item['title'] = hit.get('name')
+						item['url'] = self._fix_url(hit.get('uri').replace('/program/','/archiv/'))
+						item['img'] = hit.get('thumbnail')
+						self._filter(result,item)
 		return result
 
 	def list_az(self, page):
