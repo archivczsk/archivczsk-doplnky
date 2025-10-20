@@ -1,3 +1,6 @@
+1.15.0:
+- oprava po zmenách na stránke (vďaka bluedawe za úpravu)
+
 1.14.0:
 - oprava po zmene domény na stvr.sk
 
