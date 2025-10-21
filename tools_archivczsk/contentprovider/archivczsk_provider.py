@@ -2,6 +2,7 @@
 
 import sys, os, re, traceback, time, json, errno
 from Plugins.Extensions.archivCZSK.engine import client
+from Plugins.Extensions.archivCZSK.engine.tools import task
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.version import version as archivczsk_version
 from .exception import LoginException, AddonErrorException, AddonInfoException, AddonWarningException, AddonSilentExitException
@@ -303,7 +304,7 @@ class ArchivCZSKContentProvider(object):
 		if not self.login_refresh_running:
 			self.log_debug("Login data changed - starting new login in background")
 			self.login_refresh_running = True
-			self.addon.bgservice.run_delayed('logindata_changed(refresh login)', 1, __login_refreshed, __process_login_refresh)
+			task.Task(__login_refreshed, __process_login_refresh).run()
 		else:
 			self.log_debug("Background login already running")
 
