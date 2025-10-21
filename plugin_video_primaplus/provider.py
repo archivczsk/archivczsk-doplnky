@@ -452,7 +452,7 @@ class PrimaPlusContentProvider(CommonContentProvider):
 		prefered_stream_type  = self.get_setting('stream_type')
 		all_streams = sorted(self.primaplus.get_streams(play_id), key=lambda x: x['lang'] == 'cs', reverse=True)
 
-		for s in filter(lambda x: x['type'] == prefered_stream_type, all_streams) or all_streams:
+		for s in list(filter(lambda x: x['type'] == prefered_stream_type, all_streams)) or all_streams:
 			if s['type'] == 'HLS':
 				self.resolve_hls_streams(s['url'], '[%s] %s'% (s['lang'].upper(), play_title))
 			elif s['type'] == 'DASH':
