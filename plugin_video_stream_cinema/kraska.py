@@ -29,7 +29,6 @@ class KraskaNoSubsctiption(Exception):
 class Kraska:
 	def __init__(self, content_provider):
 		self.cp = content_provider
-		self.data_dir = content_provider.data_dir
 		self.req_session = self.cp.get_requests_session()
 		self.login_data = {}
 		self.load_login_data()
@@ -37,22 +36,17 @@ class Kraska:
 	# #################################################################################################
 
 	def load_login_data(self):
-		if self.data_dir:
-			try:
-				# load access token
-				with open(os.path.join(self.data_dir, 'kraska_login.json'), "r") as f:
-					self.login_data = json.load(f)
-					self.login_data['load_time'] = 0 # this will force reload of user data
-					self.cp.log_debug("Kraska login data loaded from cache")
-			except:
-				pass
+		self.login_data = self.cp.load_cached_data('kraska_login')
+
+		if self.login_data:
+			self.cp.log_debug("Kraska login data loaded from cache")
+
+		self.login_data['load_time'] = 0 # this will force reload of user data
 
 	# #################################################################################################
 
 	def save_login_data(self):
-		if self.data_dir:
-			with open(os.path.join(self.data_dir, 'kraska_login.json'), "w") as f:
-				json.dump(self.login_data, f )
+		self.cp.save_cached_data('kraska_login', self.login_data)
 
 	# #################################################################################################
 
@@ -162,7 +156,7 @@ class Kraska:
 	def _resolve(self, ident):
 		self.refresh_login_data()
 
-		token = self.login_data.get('token')
+		token = self.get_token()
 
 		if not token:
 			raise KraskaLoginFail(self.cp._("Wrong kra.sk login data"))
@@ -185,6 +179,11 @@ class Kraska:
 
 	# #################################################################################################
 
+	def get_token(self):
+		return self.login_data.get('token')
+
+	# #################################################################################################
+
 	def list_files(self, parent=None, filter=None):
 		self.refresh_login_data()
 
@@ -196,7 +195,7 @@ class Kraska:
 	def upload(self, data, filename):
 		self.refresh_login_data()
 
-		token = self.login_data.get('token')
+		token = self.get_token()
 
 		if not token:
 			raise KraskaLoginFail(self.cp._("Wrong kra.sk login data"))

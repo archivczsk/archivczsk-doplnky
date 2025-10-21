@@ -35,6 +35,14 @@ class SC_API(object):
 		if login_data.get('token'):
 			self.cp.log_info("Auth token loaded from local cache")
 			token = login_data['token']
+
+			if self.cp.kraska.login_data.get('checksum') != login_data.get('kr_checksum'):
+				self.cp.log_info("SC auth token was created for another Kraska account - ignoring")
+				token = None
+			else:
+				if login_data.get('addon_ver') != self.cp.get_addon_version():
+					self.update_token(token)
+					self.cp.update_cached_data('sc', {'addon_ver': self.cp.get_addon_version()})
 		else:
 			token = None
 			self.cp.log_info("No cached auth token found")
@@ -43,9 +51,25 @@ class SC_API(object):
 
 	# ##################################################################################################################
 
+	def update_token(self, token):
+		try:
+			krt = self.cp.kraska.get_token()
+
+			ret = self.call_api('/auth/token/update', data='', params={'krt': krt, 'token': token})
+			self.cp.log_debug("Token update response: %s" % ret)
+		except:
+			self.cp.log_exception()
+
+
+	# ##################################################################################################################
+
 	def save_token(self):
 		if self.token:
-			self.cp.save_cached_data('sc', {'token': self.token})
+			self.cp.save_cached_data('sc', {
+				'token': self.token,
+				'addon_ver': self.cp.get_addon_version(),
+				'kr_checksum': self.cp.kraska.login_data.get('checksum')
+			})
 
 	# ##################################################################################################################
 
@@ -58,6 +82,14 @@ class SC_API(object):
 	# ##################################################################################################################
 
 	def call_api(self, url, data=None, params=None):
+		if url.startswith('/auth/'):
+			token = None
+		else:
+			token = self.token
+
+			if not token:
+				raise SCAuthException(self.cp._("You are not authorized to access Stream Cinema service"))
+
 		if not url.startswith("https://"):
 			url = "https://stream-cinema.online/kodi" + url
 
@@ -113,11 +145,11 @@ class SC_API(object):
 
 		headers = {
 			'User-Agent': 'ArchivCZSK/%s (plugin.video.stream-cinema/%s)' % (self.cp.get_engine_version(), self.cp.get_addon_version()),
-			'X-Uuid': self.device_id,
+			'X-Uuid': self.device_id
 		}
 
-		if self.token:
-			headers['X-AUTH-TOKEN'] = self.token
+		if token:
+			headers['X-AUTH-TOKEN'] = token
 
 		if data != None:
 			rurl = url + '?' + urlencode(sorted(default_params.items(), key=lambda val: val[0]), True)
@@ -144,7 +176,7 @@ class SC_API(object):
 				self.cache.put(rurl, resp, ttl)
 
 			return resp
-		elif resp.status_code == 404 or not self.token:
+		elif resp.status_code == 404 or not token:
 			raise SCAuthException(self.cp._("Stream Cinema service is not available or you don't have access to it.\nServer returned HTTP error code {code} with description \"{reason}\".").format(code=resp.status_code, reason=resp.reason))
 		else:
 			raise AddonErrorException(self.cp._("Stream Cinema service is not available or you don't have access to it.\nServer returned HTTP error code {code} with description \"{reason}\".").format(code=resp.status_code, reason=resp.reason))
@@ -155,8 +187,7 @@ class SC_API(object):
 		if not self.token:
 			return
 
-		from .kraska import Kraska
-		kr = Kraska(self.cp)
+		kr = self.cp.kraska
 
 		try:
 			if kr.refresh_login_data() > 0:
@@ -168,9 +199,7 @@ class SC_API(object):
 	# ##################################################################################################################
 
 	def load_backup_token(self):
-		from .kraska import Kraska
-
-		kr = Kraska(self.cp)
+		kr = self.cp.kraska
 		tokens = []
 
 		try:
@@ -214,8 +243,8 @@ class SC_API(object):
 
 	# ##################################################################################################################
 
-	def set_auth_token(self):
-		if self.token:
+	def set_auth_token(self, force=False):
+		if force == False and self.token:
 			return
 
 		self.token = self.load_token()
@@ -244,23 +273,25 @@ class SC_API(object):
 				self.cp.log_info("Token #%s from backup is invalid" % i)
 
 		self.token = None
+		krt = self.cp.kraska.get_token()
+		token_data = self.cp.load_cached_data('sc')
 
-		if self.cp.load_cached_data('sc').get('id') != self.device_id:
+		if krt and (token_data.get('id') != self.device_id or token_data.get('krt') != krt):
 			# the last chance - try to get token directly from sc server
 			self.cp.log_info("Requesting auth token from server")
 			try:
-				ret = self.call_api('/auth/token', data='')
+				ret = self.call_api('/auth/token', data='', params={'krt': krt})
 			except:
 				ret = {}
 				self.cp.log_exception()
 
 			if not ret.get('token'):
-				self.cp.log_error("Error in getting auth token from sc server")
+				self.cp.log_error("Error in getting auth token from SC server: %s" % ret)
 				return
 
 			self.token = ret['token']
 			self.save_token()
-			self.cp.update_cached_data('sc', {'id': self.device_id})
+			self.cp.update_cached_data('sc', {'id': self.device_id, 'krt': krt})
 
 			if self.check_token():
 				self.cp.log_info("Received valid token from SC server")

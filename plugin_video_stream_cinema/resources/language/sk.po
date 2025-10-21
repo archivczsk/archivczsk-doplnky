@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_stream_cinema\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-29 20:03+0200\n"
-"PO-Revision-Date: 2025-07-29 20:03+0200\n"
+"POT-Creation-Date: 2025-10-21 15:49+0200\n"
+"PO-Revision-Date: 2025-10-21 15:50+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -16,38 +16,38 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.5\n"
 
-#: plugin_video_stream_cinema/kraska.py:64
+#: plugin_video_stream_cinema/kraska.py:58
 msgid "Login data for kra.sk not provided"
 msgstr "Nezadané prihlasovacie údaje pre kra.sk"
 
-#: plugin_video_stream_cinema/kraska.py:73
+#: plugin_video_stream_cinema/kraska.py:67
 msgid "Wrong response to login command"
 msgstr "Chybná odpoveď na príkaz login"
 
-#: plugin_video_stream_cinema/kraska.py:126
+#: plugin_video_stream_cinema/kraska.py:120
 msgid "Failed to get user informations"
 msgstr "Nepodarilo sa získať informácie o používateľovi"
 
-#: plugin_video_stream_cinema/kraska.py:147
+#: plugin_video_stream_cinema/kraska.py:141
 msgid "Wrong response status code"
 msgstr "Nesprávny návratový kód"
 
-#: plugin_video_stream_cinema/kraska.py:168
-#: plugin_video_stream_cinema/kraska.py:202
+#: plugin_video_stream_cinema/kraska.py:162
+#: plugin_video_stream_cinema/kraska.py:201
 msgid "Wrong kra.sk login data"
 msgstr "Nesprávne prihlasovacie údaje pre kra.sk"
 
-#: plugin_video_stream_cinema/kraska.py:171
+#: plugin_video_stream_cinema/kraska.py:165
 msgid "Subscription expired"
 msgstr "Predplatné vypršalo"
 
-#: plugin_video_stream_cinema/kraska.py:184
+#: plugin_video_stream_cinema/kraska.py:178
 msgid "Failed to resolve file address"
 msgstr "Nepodarilo sa získať adresu súboru"
 
-#: plugin_video_stream_cinema/kraska.py:216
-#: plugin_video_stream_cinema/kraska.py:222
-#: plugin_video_stream_cinema/kraska.py:239
+#: plugin_video_stream_cinema/kraska.py:215
+#: plugin_video_stream_cinema/kraska.py:221
+#: plugin_video_stream_cinema/kraska.py:238
 msgid "Failed to upload file"
 msgstr "Nepodarilo sa nahrať súbor"
 
@@ -285,8 +285,12 @@ msgstr "Prosím zvoľte stream"
 msgid "Video file not found. It was probably deleted or there is an error in data."
 msgstr "Video súbor nebol nájdený. Pravdepodobne bol vymazaný alebo je chyba v údajoch."
 
-#: plugin_video_stream_cinema/sc_api.py:148
-#: plugin_video_stream_cinema/sc_api.py:150
+#: plugin_video_stream_cinema/sc_api.py:91
+msgid "You are not authorized to access Stream Cinema service"
+msgstr "Nemáte oprávnenie na prístup k službe Stream Cinema"
+
+#: plugin_video_stream_cinema/sc_api.py:180
+#: plugin_video_stream_cinema/sc_api.py:182
 #, python-brace-format
 msgid ""
 "Stream Cinema service is not available or you don't have access to it.\n"

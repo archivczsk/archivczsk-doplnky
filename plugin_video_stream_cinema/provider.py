@@ -70,8 +70,8 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 		self.watched = SCWatched(self.data_dir, trakttv, int(self.get_setting('keep-last-seen')))
 
-		self.api = SC_API(self)
 		self.kraska = Kraska(self)
+		self.api = SC_API(self)
 
 	# ##################################################################################################################
 
@@ -110,7 +110,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 			return False
 
-		self.api.set_auth_token()
+		self.api.set_auth_token(True)
 		return True
 
 	# ##################################################################################################################

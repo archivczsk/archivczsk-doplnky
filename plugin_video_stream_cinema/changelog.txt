@@ -1,3 +1,6 @@
+2025-10-21 3.24
+    - aktualizácia prihlásenia k SC službe podľa najnovších zmien
+
 2025-07-29 3.23
     - do kontextového menu pre film/seriál pribudla možnosť zobraziť súvisiace filmy/seriály
 
