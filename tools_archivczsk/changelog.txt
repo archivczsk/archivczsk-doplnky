@@ -1,5 +1,6 @@
 2.20 - 21.10.2025
     - fixed background login when thread is busy
+    - updated available exteplayer3 version
 
 2.19 - 09.09.2025
     - updated available exteplayer3 version
