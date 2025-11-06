@@ -1,3 +1,8 @@
+2025-11-06 [3.7]
+* pridaná možnosť zobraziť archív až do roku 2005
+* možnosť prechodu z archívu priamo na info o programe
+* vylepšenia chybových hlášok
+
 2025-07-08 [3.6]
 * podpora pre dynamické DRM kľúče v archíve
 

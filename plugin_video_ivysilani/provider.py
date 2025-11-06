@@ -14,7 +14,7 @@ import time
 
 from .ivysilani import iVysilani
 
-ARCHIVE_MIN_YEAR = 2015
+ARCHIVE_MIN_YEAR = 2005
 
 # ##################################################################################################################
 
@@ -120,6 +120,7 @@ class iVysilaniModuleArchive(CPModuleArchive):
 			title = "{:02}:{:02} - {:02d}:{:02d}".format(epg_start.hour, epg_start.minute, epg_stop.hour, epg_stop.minute)
 
 			menu = self.cp.create_ctx_menu()
+			menu.add_menu_item(self._("Go to program"), cmd=self.cp.list_seasons, show_id=epg['sidp'])
 
 			if epg.get('idec') is not None and epg.get('isPlayableNow') == True and epg.get('liveOnly', False) == False:
 				title = title + " - " + _I(epg["title"])

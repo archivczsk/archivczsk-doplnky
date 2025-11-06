@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_ivysilani\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-05-13 08:14+0200\n"
-"PO-Revision-Date: 2025-05-13 08:17+0200\n"
+"POT-Creation-Date: 2025-11-06 10:12+0100\n"
+"PO-Revision-Date: 2025-11-06 10:12+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -16,64 +16,68 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.5\n"
 
-#: plugin_video_ivysilani/ivysilani.py:26
+#: plugin_video_ivysilani/ivysilani.py:27
 msgid "Medium does not have valid licence"
 msgstr "Tento obsah nemá platnú licenciu pre prehrávanie prostredníctvom internetu"
 
-#: plugin_video_ivysilani/ivysilani.py:40
+#: plugin_video_ivysilani/ivysilani.py:41
 msgid "Last week popular"
 msgstr "Najobľúbenejšie za posledný týždeň"
 
-#: plugin_video_ivysilani/ivysilani.py:41
+#: plugin_video_ivysilani/ivysilani.py:42
 msgid "Historically most popular"
 msgstr "Historicky najobľúbenejšie"
 
-#: plugin_video_ivysilani/ivysilani.py:42
+#: plugin_video_ivysilani/ivysilani.py:43
 msgid "From newest"
 msgstr "Z najnovších"
 
-#: plugin_video_ivysilani/ivysilani.py:43
+#: plugin_video_ivysilani/ivysilani.py:44
 msgid "By alphabet (A-Z)"
 msgstr "Podľa abecedy (A-Z)"
 
-#: plugin_video_ivysilani/ivysilani.py:44
+#: plugin_video_ivysilani/ivysilani.py:45
 msgid "By alphabet (Z-A)"
 msgstr "Podľa abecedy (Z-A)"
 
-#: plugin_video_ivysilani/provider.py:142
+#: plugin_video_ivysilani/provider.py:123
+msgid "Go to program"
+msgstr "Prejsť na program"
+
+#: plugin_video_ivysilani/provider.py:143
 msgid "Categories"
 msgstr "Kategórie"
 
-#: plugin_video_ivysilani/provider.py:161
-#: plugin_video_ivysilani/provider.py:178
+#: plugin_video_ivysilani/provider.py:162
+#: plugin_video_ivysilani/provider.py:179
 msgid "Select order"
 msgstr "Zvoliť poradie"
 
-#: plugin_video_ivysilani/provider.py:172
+#: plugin_video_ivysilani/provider.py:173
 msgid "Subcategories"
 msgstr "Podkategórie"
 
-#: plugin_video_ivysilani/provider.py:205
+#: plugin_video_ivysilani/provider.py:206
 msgid "Recommended"
 msgstr "Doporučené"
 
-#: plugin_video_ivysilani/provider.py:238
+#: plugin_video_ivysilani/provider.py:239
 msgid "Favourites"
 msgstr "Obľúbené"
 
-#: plugin_video_ivysilani/provider.py:328
+#: plugin_video_ivysilani/provider.py:329
 msgid "Show related"
 msgstr "Zobraziť súvisiace"
 
-#: plugin_video_ivysilani/provider.py:333
+#: plugin_video_ivysilani/provider.py:334
 msgid "Remove from favourites"
 msgstr "Odstrániť z obľúbených"
 
-#: plugin_video_ivysilani/provider.py:335
+#: plugin_video_ivysilani/provider.py:336
 msgid "Add to favourites"
 msgstr "Pridať do obľúbených"
 
-#: plugin_video_ivysilani/provider.py:356
+#: plugin_video_ivysilani/provider.py:357
 msgid "All"
 msgstr ""
 

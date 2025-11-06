@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import re
 from datetime import date
 
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
@@ -48,7 +49,7 @@ class iVysilani(object):
 		self.cp = content_provider
 		self._ = content_provider._
 		self.PAGE_SIZE = 40
-		self.client_version = '1.142.0'
+		self.client_version = '1.167.1'
 		self.req_session = self.cp.get_requests_session()
 		self.req_session.headers.update(COMMON_HEADERS)
 		self.rid = 0
@@ -102,7 +103,8 @@ class iVysilani(object):
 			ret = {}
 
 		if 'errors' in ret:
-			raise AddonErrorException(self._(ret['errors'][0]['message']))
+			err_msg = re.sub(' +', ' ', ret['errors'][0]['message'].replace('\n', ''))
+			raise AddonErrorException(self._(err_msg))
 
 		return ret
 
