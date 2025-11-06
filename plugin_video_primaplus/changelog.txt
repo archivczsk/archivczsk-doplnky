@@ -1,3 +1,6 @@
+1.10 - 06.11.2025
+- oprava funkcionality po zmenách na strane Prima+
+
 1.9 - 21.10.2025
 - oprava prehrávania streamov s DRM pre python3
 

@@ -36,7 +36,7 @@ class PrimaPlusContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def root(self):
-#		subscription = self.primaplus.get_subscription()
+		self.primaplus.clear_subscription()
 
 		self.add_search_dir()
 		self.add_dir(self._("Movies"), cmd=self.list_layout, layout='categoryMovie')
@@ -156,6 +156,7 @@ class PrimaPlusContentProvider(CommonContentProvider):
 		if item['type'] not in ('movie', 'episode', 'series'):
 			return
 
+		subscription = self.primaplus.get_subscription()
 		additionals = item.get('additionals',{}) or {}
 		date = ''
 		if additionals.get('broadcastDateTime') is not None:
@@ -171,9 +172,10 @@ class PrimaPlusContentProvider(CommonContentProvider):
 			title = item['title']
 
 		locked = False
-		if item['distribution']['showLock']:
-			title = _C('gray', title )
-			locked = True
+		for d in filter(lambda x: x['userLevel'] == subscription, item['distributions']):
+			if d['showLock']:
+				title = _C('gray', title )
+				locked = True
 
 		info_labels = {
 			'title': item['title'],
@@ -200,7 +202,7 @@ class PrimaPlusContentProvider(CommonContentProvider):
 		img = item['images']['3x5'] or additionals.get('programImages',{}).get('3x5') or additionals.get('parentImages',{}).get('3x5') or item['images']['16x9'] or additionals.get('programImages',{}).get('16x9') or additionals.get('parentImages',{}).get('16x9')
 
 		if item['type'] == 'series':
-			self.add_dir(item['title'], img=img, info_labels=info_labels, menu=menu, cmd=self.list_series, slug=item['slug'])
+			self.add_dir(item['title'], img=img, info_labels=info_labels, menu=menu, cmd=self.list_series, series_id=item['id'])
 		else:
 			self.add_video(title, img=img, info_labels=info_labels, menu=menu, cmd=self.play_stream, play_id=None if locked else item['playId'], play_title=title)
 
@@ -357,20 +359,19 @@ class PrimaPlusContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def list_series(self, slug):
-		seasons = self.primaplus.get_series(slug)
+	def list_series(self, series_id):
+		seasons = self.primaplus.get_seasons(series_id)
 		if len(seasons) > 1:
 			for season in seasons:
-				self.add_dir(season['title'], cmd=self.list_season, season=season)
+				self.add_dir(season['title'], cmd=self.list_season, season_id=season['id'])
 		else:
 			for season in seasons:
-				self.list_season(season)
+				self.list_season(season['id'])
 
 	# ##################################################################################################################
 
-	def list_season(self, season):
-		episodes = list(season['episodes'])
-		episodes.reverse()
+	def list_season(self, season_id):
+		episodes = self.primaplus.get_episodes(season_id)
 		for item in episodes:
 			self.add_media_item(item)
 

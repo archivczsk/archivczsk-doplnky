@@ -27,6 +27,7 @@ class PrimaPlus(object):
 		self.req_session = self.cp.get_requests_session()
 		self.req_session.headers.update(COMMON_HEADERS)
 		self.watchlist = None
+		self.subscription = None
 		self.load_login_data()
 
 		if DUMP_API_REQUESTS:
@@ -256,8 +257,16 @@ class PrimaPlus(object):
 
 	# ##################################################################################################################
 
+	def clear_subscription(self):
+		self.subscription = None
+
+	# ##################################################################################################################
+
 	def get_subscription(self):
-		return self.get_account_info().get('primaPlay',{}).get('userLevelShort', 'free').lower()
+		if not self.subscription:
+			self.subscription = self.get_account_info().get('primaPlay',{}).get('userLevelShort', 'free').lower()
+
+		return self.subscription
 
 	# ##################################################################################################################
 
@@ -350,15 +359,37 @@ class PrimaPlus(object):
 
 	# ##################################################################################################################
 
-	def get_series(self, slug):
+	def get_seasons(self, series_id):
 		params = {
-			'slug' : slug,
-			'limit' : 200,
+			'id' : series_id,
+			'pager': {
+				'limit': 200,
+				'offset': 0
+			},
 			'profileId' : self.login_data['profile_id']
 		}
-		data = self.call_rpc_api('vdm.frontend.title', params)
+		data = self.call_rpc_api('vdm.frontend.season.list.hbbtv', params)
 
-		return data['title']['seasons']
+		return data
+
+	# ##################################################################################################################
+
+	def get_episodes(self, season_id):
+		params = {
+			'id' : season_id,
+			'pager': {
+				'limit': 200,
+				'offset': 0
+			},
+			'ordering': {
+				"field": "episodeNumber",
+				"direction": "asc"
+			},
+			'profileId' : self.login_data['profile_id']
+		}
+		data = self.call_rpc_api('vdm.frontend.episodes.list.hbbtv', params)
+
+		return data['episodes']
 
 	# ##################################################################################################################
 
