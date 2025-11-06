@@ -72,7 +72,7 @@ class MagioGO(object):
 	]
 
 	os_version = '12.0'
-	app_version = '4.0.16'
+	app_version = '4.1.0'
 
 	def __init__(self, content_provider):
 		self.cp = content_provider
@@ -138,7 +138,7 @@ class MagioGO(object):
 			self.log_function("Failed to get last app version: response code = %d" % response.status_code )
 			return
 
-		ver_text = BeautifulSoup(response.content, "html.parser").find('p', {'class': 'whats-new__latest__version'}).get_text()
+		ver_text = BeautifulSoup(response.content, "html.parser").find('section', {'id': 'mostRecentVersion'}).find('article', {'class': 'overview'}).find('h4').get_text()
 
 		if ver_text and ver_text.startswith('Version '):
 			self.app_version = ver_text.split(' ')[1]

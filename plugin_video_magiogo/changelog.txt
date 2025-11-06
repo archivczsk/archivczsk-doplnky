@@ -1,3 +1,6 @@
+1.31 - 06.11.2025
+    - oprava kontroly najnovšej verzie aplikácie
+
 1.30 - 30.06.2025
     - pridaná kontrola aktuálnej verzie exteplayer3
 
