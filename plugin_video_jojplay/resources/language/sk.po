@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_jojplay\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-07 18:30+0200\n"
-"PO-Revision-Date: 2025-04-07 18:30+0200\n"
+"POT-Creation-Date: 2025-11-06 15:57+0100\n"
+"PO-Revision-Date: 2025-11-06 15:57+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -26,8 +26,8 @@ msgid "Live TV"
 msgstr "Živé televízne vysielanie"
 
 #: plugin_video_jojplay/provider.py:46
-msgid "Videoportal"
-msgstr "Videoportál"
+msgid "List of shows"
+msgstr "Zoznam relácií"
 
 #: plugin_video_jojplay/provider.py:48
 msgid "Favourites"
@@ -93,15 +93,15 @@ msgstr "Sezóna"
 msgid "This video is not available for your subscription. Play trailer instead?"
 msgstr "Toto video nie je k dispozícii pre vaše predplatné. Prehrať si namiesto toho trailer?"
 
-#: plugin_video_jojplay/videoportal.py:48
+#: plugin_video_jojplay/videoportal.py:49
 msgid "Request to remote server failed. Try to repeat operation."
 msgstr "Požiadavka na vzdialený server zlyhala. Skúste operáciu zopakovať."
 
-#: plugin_video_jojplay/videoportal.py:64
+#: plugin_video_jojplay/videoportal.py:65
 msgid "HTTP response code"
 msgstr "Kód HTTP odpovede"
 
-#: plugin_video_jojplay/videoportal.py:70
+#: plugin_video_jojplay/videoportal.py:71
 #, python-brace-format
 msgid ""
 "In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\n"
@@ -110,19 +110,7 @@ msgstr ""
 "Aby doplnok fungoval, musíte si nainštalovať BeautifulSoup4 pomocou správcu balíkov. Vyhľadajte balík s názvom:\n"
 "(python{0}-beautifulsoup4 alebo python{0}-bs4)"
 
-#: plugin_video_jojplay/videoportal.py:73
-msgid "TOP shows"
-msgstr "TOP relácie"
-
-#: plugin_video_jojplay/videoportal.py:74
-msgid "By alphabet"
-msgstr "Podľa abecedy"
-
-#: plugin_video_jojplay/videoportal.py:75
-msgid "All"
-msgstr "Všetky"
-
-#: plugin_video_jojplay/videoportal.py:272
+#: plugin_video_jojplay/videoportal.py:139
 msgid "Unsupported JOJ Play redirect type"
 msgstr "Nepodporovaný typ presmerovania JOJ Play"
 
@@ -181,3 +169,15 @@ msgstr ""
 
 msgid "2 Mbit/s"
 msgstr ""
+
+#~ msgid "Videoportal"
+#~ msgstr "Videoportál"
+
+#~ msgid "TOP shows"
+#~ msgstr "TOP relácie"
+
+#~ msgid "By alphabet"
+#~ msgstr "Podľa abecedy"
+
+#~ msgid "All"
+#~ msgstr "Všetky"

@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
 from tools_archivczsk.compat import urlparse, parse_qsl
-from tools_archivczsk.parser.js import get_js_data
 import sys
 from tools_archivczsk.cache import ExpiringLRUCache
-from Plugins.Extensions.archivCZSK.engine import client
 
 try:
 	from bs4 import BeautifulSoup
@@ -34,7 +32,7 @@ class JojVideoportal(object):
 		if endpoint.startswith('http'):
 			url = endpoint
 		else:
-			url = 'https://videoportal.joj.sk/' + endpoint
+			url = 'https://www.joj.sk/' + endpoint
 
 		if use_cache and params == None:
 			soup = self.req_cache.get(url)
@@ -73,155 +71,21 @@ class JojVideoportal(object):
 			self.cp.show_info(self._("In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\npython{0}-beautifulsoup4 or python{0}-bs4)").format('3' if sys.version_info[0] == 3 else ''))
 			return
 
-		self.cp.add_dir(self._("TOP shows"), cmd=self.list_category, cat_name='')
-		self.cp.add_dir(self._("By alphabet"), cmd=self.list_alphabet)
-		self.cp.add_dir(self._("All"), cmd=self.list_category, cat_name='vsetko')
+		soup = self.call_api('relacie')
 
-	# ##################################################################################################################
+		for a in soup.find_all('a'):
+			if a.get('v-if'):
+				title = a.find('img').get('alt')
+				img = a.find('img').get('src')
+				self.cp.add_dir(title, img, cmd=self.list_joj_show, show_url=a.get('href'))
 
-	def list_alphabet(self):
-		soup = self.call_api('/relacie')
-
-		for a in soup.find('div', {'class': 'e-az-list' } ).find_all('a'):
-			if not a.get('id') and a.get('title') != 'Top':
-				self.cp.add_dir(a.get_text(), cmd=self.list_category, cat_name=a.get('href').split('/')[-1] )
-
-	# ##################################################################################################################
-
-	def list_category(self, cat_name):
-		if cat_name:
-			soup = self.call_api('/relacie/' + cat_name)
-		else:
-			soup = self.call_api('/relacie')
-
-		for a in soup.find('div', {'class': 's-fullwidth-mobile'}).find_all('a'):
-			title = a.find('h3', {'class': 'title'}).get_text().strip()
-			img = a.find('img').get('data-original')
-			perex_div = a.find('p', {'class': 'perex'})
-			info_labels = {
-				'plot': perex_div.get_text().strip() if perex_div != None else None
-			}
-			url = a.get('href')
-
-			if url == 'https://www.joj.sk/jojplay':
-				pass
-			elif url.startswith('https://videoportal.joj.sk'):
-				self.cp.add_dir(title, img, info_labels, cmd=self.check_and_list_show, show_url=url)
-			elif url.startswith('https://www.joj.sk/'):
-				self.cp.add_dir(title, img, info_labels, cmd=self.list_joj_show, show_url=url)
-			else:
-				self.cp.log_error("Item %s points to unsupported URL: %s" % (title, url))
-
-
-	# ##################################################################################################################
-
-	def check_and_list_show(self, show_url):
-		# check if we can found this show on JOJ Play and redirect if possible ...
-		tag_id = show_url.split('/')[-1]
-
-		data = self.cp.jojplay.client.load_tags_by_id(tag_id)
-
-		if len(data) > 0:
-			self.cp.log_debug("Found matching JOJ Play show for tag %s with ref %s" % (tag_id, data[0]['documentId']))
-			# found match ... try redirect to JOJ Play
-			self.cp.list_tag(data[0]['documentId'])
-			if len(client.GItem_lst[0]) > 0:
-				# check if there are any episodes in, because some shows are not fully migrated
-				return
-
-		self.cp.log_debug("No matching JOJ Play show found for tag %s - continuing to videoportal" % tag_id)
-		# not found on JOJ Play - continue to videoportal ...
-		return self.list_show(show_url)
-
-	# ##################################################################################################################
-
-	def list_show(self, show_url, season_id=None):
-		params = None
-		if season_id:
-			params = {
-				'seasonId': season_id
-			}
-
-		try:
-			soup = self.call_api(show_url, params=params)
-		except JojPlayRedirect as e:
-			return self.handle_jojplay_redirect(str(e))
-
-		if season_id == None:
-			# search for series a and show list if thare are any
-			season_div = soup.find('select', {'onchange': 'return selectSeason(this.value);'})
-			if season_div != None:
-				for op in season_div.find_all('option'):
-					title = op.get_text().strip()
-					season_id = op.get('value')
-
-					self.cp.add_dir(title, cmd=self.list_show, show_url=show_url, season_id=season_id)
-				return
-
-		for a in soup.find('div', {'class': 'row scroll-item'}).find_all('a'):
-			if a.get('href') == '#':
-				# ignore next page button - it does nothing ...
-				continue
-
-			subtitles = [s.get_text().strip() for s in a.find_all('span', {'class': 'date'})]
-			if len(subtitles) > 1:
-				title = '{}: {}'.format(subtitles[1], a.find('h3', {'class': 'title'}).get_text().strip())
-			else:
-				title = a.find('h3', {'class': 'title'}).get_text().strip()
-
-			img = a.find('img').get('data-original')
-			info_labels = {
-				'plot': subtitles[0] if subtitles else None
-			}
-			url = a.get('href')
-
-			self.cp.add_video(title, img, info_labels, cmd=self.play_item, item_url=url)
 
 	# ##################################################################################################################
 
 	def list_joj_show(self, show_url):
 		soup = self.call_api(show_url)
-
-		subnav_div = soup.find('ul', {'class': 'e-subnav'})
-
-		if subnav_div != None:
-			for a in soup.find('ul', {'class': 'e-subnav'}).find_all('a'):
-				if a.get('title') == u'Archív':
-					url = a.get('href')
-					if url.startswith('https://play.joj.sk/'):
-						return self.handle_jojplay_redirect(url)
-					elif url.startswith('https://videoportal.joj.sk/'):
-						return self.list_show(url)
-					else:
-						self.cp.log_error("Archive of item %s points to unsupported URL: %s" % (show_url, url))
-					return
-
-		# direct link to archive not found - try to use tag from URL directly on JOJ Play and see what happens ...
-		tag_id = show_url.split('/')[-1]
-		data = self.cp.jojplay.client.load_tags_by_id(tag_id)
-
-		if len(data) > 0:
-			self.cp.log_debug("Found matching JOJ Play show for tag %s with ref %s" % (tag_id, data[0]['documentId']))
-			# found match ... try redirect to JOJ Play
-			self.cp.list_tag(data[0]['documentId'])
-			if len(client.GItem_lst[0]) > 0:
-				# check if there are any episodes in, because some shows are not fully migrated
-				return
-
-		# link to archive still not found - try to guess it ...
-		try:
-			return self.list_show(show_url + '/archiv')
-		except:
-			self.cp.log_exception()
-			try:
-				title = soup.find('div', {'class': 's-header'}).find('h2', {'class': 'title'}).find('a').get('title')
-			except:
-				self.cp.log_exception()
-				title = None
-
-			if title:
-				# last chance - search for show by its name
-				return self.cp.search(title, 'series')
+		url = soup.find('div', {'class': 'text-joj-black'}).find('a', {'class': 'j-button--variant-primary'}).get('href')
+		return self.handle_jojplay_redirect(url)
 
 	# ##################################################################################################################
 
@@ -273,56 +137,5 @@ class JojVideoportal(object):
 						return self.cp.list_tag(tag_id)
 
 		self.cp.show_info(self._("Unsupported JOJ Play redirect type") + ":\n" + url)
-
-	# ##################################################################################################################
-
-	def play_item(self, item_url):
-		try:
-			soup = self.call_api(item_url)
-		except JojPlayRedirect as e:
-			return self.handle_jojplay_redirect(str(e), video=True)
-
-		title_div = soup.find('div', {'class': 'b-video-title'}).find('h2')
-		try:
-			ep_code = title_div.find('span').get_text().strip()
-		except:
-			ep_code = ''
-
-		title = '{} {}'.format(title_div.get_text().strip()[:-len(ep_code)], ep_code)
-
-		player_url = soup.find('section', {'class' : 's-video-detail'}).find('iframe').get('src')
-
-		soup = self.call_api(player_url)
-
-		# get last script from page
-		script = None
-		for s in soup.find_all('script'):
-			script = s
-
-		play_data = get_js_data(script.string, r'var src = ({.+?});')
-
-		if play_data.get('hls'):
-			self.cp.resolve_streams(play_data.get('hls'), title.strip())
-		else:
-			# HLS not available - try MP4 as fallback ...
-			labels = get_js_data(script.string, r'var labels = ({.+?});')
-
-			streams = []
-			for i, u in enumerate(play_data.get('mp4', [])):
-				q = labels['bitrates']['renditions'][i]
-				info_labels = {
-					'bandwidth': int(q[:-1]),
-					'quality': q
-				}
-
-				if self.cp.is_supporter() or info_labels['bandwidth'] <= 720:
-					streams.append({
-						'url': u,
-						'info_labels': info_labels
-					})
-
-			for s in sorted(streams, key=lambda x: x['info_labels']['bandwidth'], reverse=True):
-				self.cp.add_play(title.strip(), info_labels=s['info_labels'], url=s['url'])
-
 
 	# ##################################################################################################################
