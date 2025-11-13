@@ -1,3 +1,6 @@
+1.32 - 13.11.2025
+    - oprava prehrávania archívu
+
 1.31 - 06.11.2025
     - oprava kontroly najnovšej verzie aplikácie
 

@@ -490,7 +490,7 @@ class MagioGO(object):
 
 						yield {
 							'title': title,
-							'id': one['program']['programId'],
+							'id': one['scheduleId'],
 							'image': img,
 							'plot': one['program']["description"],
 							'start': one_startts,
