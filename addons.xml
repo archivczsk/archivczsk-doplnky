@@ -9,7 +9,7 @@
 <addon id="plugin.video.ivysilani" name="iVysílání - Česká televize" version="3.7" hash="09cc7c958cd1aa4de3811d9914ad0f1a" rhash="62c2249dd5a6e8d3eea3d3edf57adcdc" />
 <addon id="plugin.video.jojplay" name="JOJ Play" version="1.4" hash="1f0907facf333c079635128547cab258" rhash="8ab2d6fa5159f06712683a6163da94e0" />
 <addon id="plugin.video.kvifftv" name="Kviff.tv" version="1.3" hash="0f31fd5e31abe7ba7b5e1c66adff14aa" rhash="893db8849b0f55c24845735baacd5cb0" />
-<addon id="plugin.video.magiogo" name="Magio TV" version="1.31" hash="d9738f194065da39ad6723bde6ebf803" rhash="4a2221c4927eb34d5af167c6f5ffd033" />
+<addon id="plugin.video.magiogo" name="Magio TV" version="1.32" hash="5add780f92b09cf25fc063bcb10273fd" rhash="3bda8cdcf885129a81fd37a0fc73a0f6" />
 <addon id="plugin.video.markiza" name="Markíza" version="2.14" hash="6445f5d45b4de9d75c148d5f77810edf" rhash="c815c6f011a32117cadab4b88e5e9d13" />
 <addon id="plugin.video.max" name="HBO Max" version="1.8" hash="8a1494b496c62d0f6c01e2e605879070" rhash="d4fdc4a9d60210a59c25ff2a042232db" />
 <addon id="plugin.video.mtr.sk" name="Mestská TV Ružomberok" version="1.3.1" hash="c79805cd13bde8b3e11c25926e4c0b2d" rhash="c79805cd13bde8b3e11c25926e4c0b2d" />
