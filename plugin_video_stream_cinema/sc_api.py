@@ -3,6 +3,7 @@
 from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.cache import ExpiringLRUCache
+from time import time
 
 import json
 
@@ -35,8 +36,9 @@ class SC_API(object):
 		if login_data.get('token'):
 			self.cp.log_info("Auth token loaded from local cache")
 			token = login_data['token']
+			kr_checksum = login_data.get('kr_checksum')
 
-			if self.cp.kraska.login_data.get('checksum') != login_data.get('kr_checksum'):
+			if kr_checksum and (self.cp.kraska.login_data.get('checksum') != kr_checksum):
 				self.cp.log_info("SC auth token was created for another Kraska account - ignoring")
 				token = None
 			else:
@@ -168,7 +170,7 @@ class SC_API(object):
 		if resp.status_code == 200:
 			resp = resp.json()
 
-			if not data:
+			if data == None:
 				ttl = 3600
 				if 'system' in resp and 'TTL' in resp['system']:
 					ttl = int(resp['system']['TTL'])
@@ -183,6 +185,19 @@ class SC_API(object):
 
 	# ##################################################################################################################
 
+	def update_backup_token(self):
+		tokens = self.load_backup_token()
+
+		if len(tokens) > 0 and tokens[0] != self.token:
+			self.cp.log_info("Updating backup auth token on kraska")
+			self.save_backup_token()
+
+			if len(tokens) > 1:
+				self.cp.log_info("Removing file sc_token.txt from kraska - it is not needed anymore")
+				self.cp.kraska.delete_file('sc_token.txt')
+
+	# ##################################################################################################################
+
 	def save_backup_token(self):
 		if not self.token:
 			return
@@ -192,7 +207,7 @@ class SC_API(object):
 		try:
 			if kr.refresh_login_data() > 0:
 				self.cp.log_info("Saving auth token to kraska")
-				kr.upload(self.token, 'sc_token.txt')
+				kr.upload(self.token, 'sc.json')
 		except:
 			self.cp.log_exception()
 
@@ -204,7 +219,7 @@ class SC_API(object):
 
 		try:
 			if kr.refresh_login_data() > 0:
-				for name in ('sc_token.txt', 'sc.json'):
+				for name in ('sc.json', 'sc_token.txt'):
 					found = kr.list_files(filter=name)
 
 					if len(found.get('data', [])) == 1:
@@ -227,6 +242,8 @@ class SC_API(object):
 
 					else:
 						self.cp.log_info("Backup file %s with auth token not found" % name)
+			else:
+				self.cp.log_error("No valid subscription for kraska available - can't load backup SC login token")
 		except:
 			self.cp.log_exception()
 
@@ -252,6 +269,9 @@ class SC_API(object):
 		if self.token:
 			if self.check_token():
 				self.cp.log_info("Local auth token is valid")
+				if force:
+					self.update_backup_token()
+
 				return
 			else:
 				self.cp.log_error("Local auth token is invalid")
@@ -276,9 +296,9 @@ class SC_API(object):
 		krt = self.cp.kraska.get_token()
 		token_data = self.cp.load_cached_data('sc')
 
-		if krt and (token_data.get('id') != self.device_id or token_data.get('krt') != krt):
+		if krt and self.cp.kraska.refresh_login_data() > 0 and (token_data.get('id') != self.device_id or token_data.get('krt') != krt):
 			# the last chance - try to get token directly from sc server
-			self.cp.log_info("Requesting auth token from server")
+			self.cp.log_info("Requesting auth token from SC server")
 			try:
 				ret = self.call_api('/auth/token', data='', params={'krt': krt})
 			except:
@@ -291,14 +311,15 @@ class SC_API(object):
 
 			self.token = ret['token']
 			self.save_token()
+			self.save_backup_token()
 			self.cp.update_cached_data('sc', {'id': self.device_id, 'krt': krt})
 
+			time.sleep(5)
 			if self.check_token():
 				self.cp.log_info("Received valid token from SC server")
-				self.save_backup_token()
 				return
 
-			self.cp.log_error("Auth token received from SC server is invalid")
+			self.cp.log_error("Auth token received from SC server is invalid - you are banned or you need to wait for validation")
 
 		self.cp.log_error("No valid auth token available")
 		self.token = None

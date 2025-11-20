@@ -1,3 +1,6 @@
+2025-11-20 3.25
+    - synchronizácia prihlásenia s doplnkom pre kodi
+
 2025-10-21 3.24
     - aktualizácia prihlásenia k SC službe podľa najnovších zmien
 

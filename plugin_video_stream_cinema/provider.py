@@ -60,7 +60,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 	def __init__(self, settings=None, data_dir=None):
 		CommonContentProvider.__init__(self, 'stream-cinema', settings=settings, data_dir=data_dir)
-		self.login_optional_settings_names = ('kruser', 'krpass')
+		self.login_settings_names = ('kruser', 'krpass')
 		self.tapi = trakttv
 		self.dubbed_lang_list = ['en']
 		self.lang_list = ['en']
@@ -75,9 +75,9 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def kraska_update_vipdays(self):
+	def kraska_update_vipdays(self, check_login_change=False):
 		try:
-			days_left = self.kraska.refresh_login_data()
+			days_left = self.kraska.refresh_login_data(check_login_change)
 			if days_left == None:
 				days_left = -1
 		except:
@@ -93,20 +93,12 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 	def login(self, silent):
 		self.build_lang_lists()
-		self.kraska_update_vipdays()
 
-		if self.kraska_update_vipdays() <= 0:
-			# no username/password provided or vip expired - continue with free account
-			if self.get_setting('kruser') and self.get_setting('krpass'):
-				self.log_info("Kraska subscription account expired")
+		if self.kraska_update_vipdays(True) <= 0:
+			self.log_info("Kraska subscription account expired")
 
-				if not silent:
-					self.show_error(self._("Wrong username/password provided or subscription for kra.sk expired"), noexit=True)
-			else:
-				self.log_info("No kraska username or password provided")
-
-				if not silent:
-					self.show_info(self._("No kra.sk username and password provided"), noexit=True)
+			if not silent:
+				self.show_error(self._("Wrong username/password provided or subscription for kra.sk expired"), noexit=True)
 
 			return False
 

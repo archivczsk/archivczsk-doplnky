@@ -20,7 +20,7 @@ class KraskaLoginFail(Exception):
 class KraskaApiError(Exception):
 	pass
 
-class KraskaNoSubsctiption(Exception):
+class KraskaNoSubsctiption(KraskaLoginFail):
 	pass
 
 
@@ -70,16 +70,16 @@ class Kraska:
 
 	# #################################################################################################
 
-	def refresh_login_data(self, try_nr=0):
+	def refresh_login_data(self, check_login_change=False, try_nr=0):
 		try:
 			login_checksum = self.cp.get_settings_checksum(('kruser', 'krpass',))
 
-			if 'token' not in self.login_data or self.login_data.get('checksum','') != login_checksum:
+			if not self.get_token() or (check_login_change and self.login_data.get('checksum','') != login_checksum):
 				# data not loaded from cache or data from other account stored - do fresh login
 				self.login_data = { 'checksum': login_checksum }
 				self.login()
 
-			if 'token' in self.login_data:
+			if self.get_token():
 				if not 'expiration' in self.login_data or self.login_data.get('load_time', 0) + (3600*24) < int(time()):
 					self.get_user_info()
 
@@ -91,7 +91,7 @@ class Kraska:
 				del self.login_data['token']
 
 				# something failed try once more time with fresh login
-				self.refresh_login_data(try_nr+1)
+				self.refresh_login_data(check_login_change, try_nr+1)
 			else:
 				self.cp.log_error("Kraska login failed: %s" % str(e))
 				self.save_login_data()
@@ -192,6 +192,18 @@ class Kraska:
 
 	# #################################################################################################
 
+	def delete_file(self, filename):
+		found = self.list_files(filter=filename).get('data', [])
+		if len(found) == 1:
+			for f in found:
+				if f.get('name', None) == filename:
+					self.delete(f.get('ident', None))
+					return True
+
+		return False
+
+	# #################################################################################################
+
 	def upload(self, data, filename):
 		self.refresh_login_data()
 
@@ -203,12 +215,8 @@ class Kraska:
 		item = self.call_kraska_api('/api/file/create', {'data': {'name': filename}, 'shared': False})
 
 		if item and item.get('error', None) == 1205:
-			found = self.list_files(filter=filename).get('data', [])
-			if len(found) == 1:
-				for f in found:
-					if f.get('name', None) == filename:
-						self.delete(f.get('ident', None))
-						return self.upload(data, filename)
+			if self.delete_file(filename):
+				return self.upload(data, filename)
 
 		if not item or 'data' not in item:
 			self.cp.log_error('File upload error 1: {} / {}'.format(item, item.get('error', None)))
