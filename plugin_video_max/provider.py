@@ -320,7 +320,7 @@ class WBDMaxContentProvider(CommonContentProvider):
 #				item.info['mpaa'] = rating['code']
 #				break
 
-		if 'trailerVideo' in data:
+		if 'trailerVideo' in data and 'edit' in data['trailerVideo']:
 			menu.add_media_menu_item(self._("Trailer"), cmd=self.play_item, edit_id=data['trailerVideo']['edit']['id'], video_title=self._("Trailer") + ': ' + label)
 
 		if 'shortPreviewVideo' in data:
@@ -330,6 +330,11 @@ class WBDMaxContentProvider(CommonContentProvider):
 			menu.add_menu_item(self._("Remove from watchlist"), cmd=self.del_watchlist, item_id=data.get('show', data)['id'])
 		else:
 			menu.add_menu_item(self._("Add to watchlist"), cmd=self.add_watchlist, item_id=data.get('show', data)['id'])
+
+		# bug in hbo sometimes returns missing the edit relationship for episode, so link to show instead (website does same)
+		if data.get('videoType') == 'EPISODE' and 'edit' not in data:
+			data['showType'] = 'SERIES'
+			data['id'] = data['show']['id']
 
 		if data.get('showType') in ('SERIES', 'TOPICAL', 'MINISERIES'):
 			if data.get('showType') in ('SERIES', 'MINISERIES') and year:

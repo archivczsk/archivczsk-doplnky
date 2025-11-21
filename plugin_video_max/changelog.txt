@@ -1,3 +1,7 @@
+1.9 - 21.11.2025
+    - oprava radenia sezón
+    - oprava pádov pri nekompletných dátach vrátených zo servera
+
 1.8 - 10.07.2025
     - oprava spustenia programov s titulkami (nutný exteplayer3 ver. >=180)
 
