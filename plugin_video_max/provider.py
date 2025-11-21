@@ -414,7 +414,7 @@ class WBDMaxContentProvider(CommonContentProvider):
 		data = self.wbdmax.get_series(series_id)
 		img = self._art(data.get('images',{}))
 
-		for row in data.get('seasons', []):
+		for row in sorted(data.get('seasons', []), key=lambda x: x['seasonNumber']):
 			# ignore empty seasons
 			if not 'videoCountByType' in row or not row['videoCountByType'].get('EPISODE'):
 				continue
