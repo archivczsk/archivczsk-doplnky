@@ -24,7 +24,7 @@
 <addon id="plugin.video.rtvs.sk" name="rtvs.sk" version="1.15.0" hash="c31242e5850799adabc9b5900508afe8" rhash="c31242e5850799adabc9b5900508afe8" />
 <addon id="plugin.video.sktonline" name="SkTonline" version="2.8" hash="b7545957eb417b2b7046e5e3b62492e4" rhash="ba0e4e56b70d28a2d98ae52da07f7122" />
 <addon id="plugin.video.sledovanitv" name="Sledovani.tv" version="2.19" hash="cd29e2ce490ab7e65e5eb6a68c5f3eab" rhash="8e78828456cf145f45ea6051cb98c9f3" />
-<addon id="plugin.video.sosac.ph" name="Sosáč" version="2.10" hash="9a8bf45ff6a27627d367a5c93f4dcb6e" rhash="ed225f294118f3430adc2a85ee1aa4f4" />
+<addon id="plugin.video.sosac.ph" name="Sosáč" version="2.11" hash="4913239e14bafa1d0b5d790706eef446" rhash="6529f94c01964a5e766c2800d9b4c14f" />
 <addon id="plugin.video.stalker" name="Stalker" version="1.9" hash="2bf2ab3f3c07dccc2e4bc83b61179cee" rhash="2bf2ab3f3c07dccc2e4bc83b61179cee" />
 <addon id="plugin.video.stream-cinema" name="Stream Cinema" version="3.25" hash="6c267e750e332bfa9518ec21f89eb6ca" rhash="45daa893c1a7d18c5ecce600272e026e" />
 <addon id="plugin.video.sweettv" name="Sweet.tv" version="1.23" hash="77f319f32e477069d20aad017b720e69" rhash="d2bf75a8f4a06b62e4fee5d11260933e" />
