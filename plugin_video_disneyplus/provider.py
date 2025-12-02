@@ -706,6 +706,7 @@ class DisneyPlusContentProvider(CommonContentProvider):
 		fanart_count = 0
 		for name in images or []:
 			art_type = images[name]
+			cr = None
 
 			tr = br = pr = ''
 

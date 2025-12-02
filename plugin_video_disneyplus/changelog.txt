@@ -1,3 +1,6 @@
+2.4 - 02.12.2025
+    - oprava pádu pri vyhľadávaní obrázkov
+
 2.3 - 10.07.2025
     - aktualizácia rôznych častí po zmenách na strane Disney+
 
