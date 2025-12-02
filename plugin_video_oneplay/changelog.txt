@@ -1,3 +1,6 @@
+1.10 - 02.12.2025
+- oprava po zmene API na strane oneplay
+
 1.9 - 31.07.2025
 - oprava pádu po zmene formátu dát na strane oneplay
 

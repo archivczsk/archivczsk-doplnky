@@ -123,7 +123,7 @@ class Oneplay(object):
 		if self.access_token:
 			headers['Authorization'] = 'Bearer ' + self.access_token
 
-		url = 'https://http.cms.jyxo.cz/api/v3/' + endpoint
+		url = 'https://http.cms.jyxo.cz/api/v1.6/' + endpoint
 
 		request_id = str(uuid.uuid4())
 		client_id = str(uuid.uuid4())
