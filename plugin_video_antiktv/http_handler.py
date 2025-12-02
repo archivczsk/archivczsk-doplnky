@@ -61,6 +61,9 @@ class AntikTVHTTPRequestHandler( AddonHttpRequestHandler ):
 
 	def P_getslive(self, request, path, live=True):
 		try:
+			if path.endswith('.ts'):
+				path = path[:-3]
+
 			segment_url = base64.b64decode(path.encode('utf-8')).decode("utf-8")
 
 			def http_data_write( code, header, data ):
