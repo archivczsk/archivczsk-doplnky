@@ -538,6 +538,9 @@ class AntikTVContentProvider(ModuleContentProvider):
 		if url.endswith('.m3u8'):
 			url = url[:-5]
 
+		if url.endswith('.ts'):
+			url = url[:-3]
+
 		return base64.b64decode(url.encode("utf-8")).decode("utf-8").split(':')
 
 	# #################################################################################################
@@ -545,6 +548,10 @@ class AntikTVContentProvider(ModuleContentProvider):
 	def decode_playarchive_url(self, url):
 		if url.endswith('.m3u8'):
 			url = url[:-5]
+
+		if url.endswith('.ts'):
+			url = url[:-3]
+
 		return base64.b64decode(url.encode("utf-8")).decode("utf-8").split('$')
 
 # #################################################################################################

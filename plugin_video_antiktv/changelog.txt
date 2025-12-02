@@ -1,3 +1,6 @@
+2.25:
+- oprava kompatibility s novšími verziami ffmpeg/exteplayer3
+
 2.24:
 - aktualizácia prístupových údajov
 
