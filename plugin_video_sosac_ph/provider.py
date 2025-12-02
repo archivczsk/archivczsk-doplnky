@@ -113,6 +113,7 @@ SORT_TVSHOWS_LIST = [
 COUNTRY_LIST = [
 	("", _("All"),),
 	("cs", _("Czech Republic"),),
+	('cz', _('Czechoslovakia'),),
 	("us", _("USA"),),
 	("sk", _("Slovakia"),),
 	("uk", _("Great Britain"),),
