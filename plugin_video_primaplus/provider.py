@@ -359,28 +359,34 @@ class PrimaPlusContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def list_series(self, series_id):
-		seasons = self.primaplus.get_seasons(series_id)
-		if len(seasons) > 1:
+	def list_series(self, series_id, page=0):
+		seasons, add_next = self.primaplus.get_seasons(series_id, page)
+		if len(seasons) > 1 or page > 0:
 			for season in seasons:
-				self.add_dir(season['title'], cmd=self.list_season, season_id=season['id'])
+				self.add_dir('%02d - %s' % (season['seasonNumber'], season['title']), cmd=self.list_season, season_id=season['id'])
+
+			if add_next:
+				self.add_next(cmd=self.list_series, series_id=series_id, page=page+1)
 		else:
 			for season in seasons:
 				self.list_season(season['id'])
 
 	# ##################################################################################################################
 
-	def list_season(self, season_id):
-		episodes = self.primaplus.get_episodes(season_id)
+	def list_season(self, season_id, page=0):
+		episodes, add_next = self.primaplus.get_episodes(season_id, page)
 		for item in episodes:
 			self.add_media_item(item)
+
+		if add_next:
+			self.add_next(cmd=self.list_season, season_id=season_id, page=page+1)
 
 	# ##################################################################################################################
 
 	def get_hls_info(self, stream_key):
 		return {
 			'url': stream_key['url'],
-			'bandwidth': stream_key['bandwidth'],
+			'bandwidth': stream_key['bandwidth']
 		}
 
 	# ##################################################################################################################
@@ -391,7 +397,7 @@ class PrimaPlusContentProvider(CommonContentProvider):
 
 		ret_data = {
 			'url': data['url'],
-			'bandwidth': stream_key['bandwidth'],
+			'bandwidth': stream_key['bandwidth']
 		}
 
 		if drm_info.get('licence_url') and drm_info.get('licence_key'):

@@ -21,6 +21,7 @@ class PrimaPlus(object):
 	DEVICE_TYPE='WEB'
 	DEVICE_NAME='Linux E2'
 	RECOMBEE_TOKEN=b'syGAjIijTmzHy7kPeckrr8GBc8HYHvEyQpuJsfjV7Dnxq02wUf3k5IAzgVTfCtx6'
+	PAGE_SIZE = 100
 
 	def __init__(self, content_provider):
 		self.cp = content_provider
@@ -359,27 +360,27 @@ class PrimaPlus(object):
 
 	# ##################################################################################################################
 
-	def get_seasons(self, series_id):
+	def get_seasons(self, series_id, page=0):
 		params = {
 			'id' : series_id,
 			'pager': {
-				'limit': 200,
-				'offset': 0
+				'limit': self.PAGE_SIZE,
+				'offset': page * self.PAGE_SIZE
 			},
 			'profileId' : self.login_data['profile_id']
 		}
 		data = self.call_rpc_api('vdm.frontend.season.list.hbbtv', params)
 
-		return data
+		return data, len(data) >= self.PAGE_SIZE
 
 	# ##################################################################################################################
 
-	def get_episodes(self, season_id):
+	def get_episodes(self, season_id, page=0):
 		params = {
 			'id' : season_id,
 			'pager': {
-				'limit': 200,
-				'offset': 0
+				'limit': self.PAGE_SIZE,
+				'offset': page * self.PAGE_SIZE
 			},
 			'ordering': {
 				"field": "episodeNumber",
@@ -389,7 +390,7 @@ class PrimaPlus(object):
 		}
 		data = self.call_rpc_api('vdm.frontend.episodes.list.hbbtv', params)
 
-		return data['episodes']
+		return data['episodes'], len(data['episodes']) >= self.PAGE_SIZE
 
 	# ##################################################################################################################
 

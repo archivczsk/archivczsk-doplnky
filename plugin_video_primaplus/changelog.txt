@@ -1,3 +1,6 @@
+1.11 - 03.12.2025
+- pridanie stránkovania do zoznamu sezón a epizód
+
 1.10 - 06.11.2025
 - oprava funkcionality po zmenách na strane Prima+
 
