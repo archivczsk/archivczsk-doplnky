@@ -1,3 +1,6 @@
+v1.6 (03.12.2025)
+- mark addon as broken
+
 v1.5 (22.12.2024)
 - adjustment due to change in ad settings on the website
 
