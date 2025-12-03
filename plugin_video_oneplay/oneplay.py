@@ -22,7 +22,7 @@ from tools_archivczsk.websocket import create_connection, WebSocketException
 ############### init ################
 
 class Oneplay(object):
-	APP_VERSION = '1.0.25'
+	APP_VERSION = 'R6.19'
 
 	def __init__(self, cp):
 		self.cp = cp
@@ -200,27 +200,31 @@ class Oneplay(object):
 		ws.close()
 
 #		dump_json_request(resp, json_response)
-		result = json_response.get('response',{}).get('result',{})
-		if result.get('status') == 'Error':
-			if result.get('code') == '5029':
-				msg = self._("This content is not available")
-			else:
-				msg = '{}\n{}'.format(result.get('message',''), result.get('description',''))
-			msg = msg.strip()
-			if not msg:
-				msg = '{}: {}'.format(self._("Server returned error response"), result.get('customError',{}).get('schema',result.get('code', '?')))
+		if json_response.get('schema') == 'Event':
+			resp_data = json_response.get('eventData')
+		else:
+			result = json_response.get('response',{}).get('result',{})
 
-			if result.get('code') == '4001':
-				self.reset_login_data()
-				self.showLoginError(msg.strip())
-			else:
-				self.showError(msg.strip())
+			if result.get('status') == 'Error':
+				if result.get('code') == '5029':
+					msg = self._("This content is not available")
+				else:
+					msg = '{}\n{}'.format(result.get('message',''), result.get('description',''))
+				msg = msg.strip()
+				if not msg:
+					msg = '{}: {}'.format(self._("Server returned error response"), result.get('customError',{}).get('schema',result.get('code', '?')))
 
-		if result.get('status') != 'Ok' or json_response.get('response',{}).get('context',{}).get('requestId') != request_id:
-			self.cp.log_error("Wrong websocket response received:\n%s\n%s" % (resp.text, str(json_response)))
-			self.showError(self._("Received wrong websocket response from server"))
+				if result.get('code') == '4001':
+					self.reset_login_data()
+					self.showLoginError(msg.strip())
+				else:
+					self.showError(msg.strip())
 
-		resp_data = json_response.get('response',{}).get('data')
+			if result.get('status') != 'Ok' or json_response.get('response',{}).get('context',{}).get('requestId') != request_id:
+				self.cp.log_error("Wrong websocket response received:\n%s\n%s" % (resp.text, str(json_response)))
+				self.showError(self._("Received wrong websocket response from server"))
+
+			resp_data = json_response.get('response',{}).get('data')
 		return resp_data
 
 	# #################################################################################################
@@ -727,19 +731,34 @@ class Oneplay(object):
 
 	def mylist_remove( self, content_id):
 		payload = {
-			"contentId": content_id
+			"changes": [ {
+				"schema":"UserMyListChange",
+				"ref":{
+					"schema":"MyListRef",
+					"id":content_id
+				},
+				"type":"remove"
+			}]
 		}
-		self.call_api('user.mylist.remove', payload)
+		self.call_api('user.list.change', payload)
 		return None
 
 	# #################################################################################################
 
 	def mylist_add( self, content_id ):
 		payload = {
-			"contentId": content_id
+			"changes": [ {
+				"schema":"UserMyListChange",
+				"ref":{
+					"schema":"MyListRef",
+					"id":content_id
+				},
+				"type":"add"
+			}]
 		}
-		response = self.call_api('user.mylist.add', payload)
-		return response.get('referenceId') == content_id
+
+		response = self.call_api('user.list.change', payload)
+		return response['changes'][0]['data']['type'] == 'add'
 
 	# #################################################################################################
 
