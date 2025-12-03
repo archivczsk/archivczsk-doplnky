@@ -1,3 +1,6 @@
+2.27:
+- vypnutie zabudnutých logovacích hlásení
+
 2.26:
 - oprava chyby vo verzii 2.25
 
