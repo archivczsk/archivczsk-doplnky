@@ -1,3 +1,8 @@
+1.4: 03.12.2025
+- oprava prihlásenia k premium účtu
+- oprava vyhľadávania (niektoré položky neboli nájdené)
+- oprava načítavania výsledkov z viacerých stránok
+
 1.3: 14.1.2025
 - úprava závislostí doplnku
 
