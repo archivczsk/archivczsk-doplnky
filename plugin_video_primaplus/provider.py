@@ -172,7 +172,7 @@ class PrimaPlusContentProvider(CommonContentProvider):
 			title = item['title']
 
 		locked = False
-		for d in filter(lambda x: x['userLevel'] == subscription, item['distributions']):
+		for d in filter(lambda x: x['userLevel'] == subscription, item.get('distributions') or []):
 			if d['showLock']:
 				title = _C('gray', title )
 				locked = True
