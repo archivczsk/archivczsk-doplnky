@@ -133,7 +133,7 @@ class JojVideoportal(object):
 					tag_id = tag_id.split('/')[-1]
 					self.cp.log_debug("Found tag ID: %s" % tag_id)
 					data = self.cp.jojplay.get_tag_data(tag_id)
-					if data[0]['tagTypeRef'].endswith('1X9nXUOc9XbtobIcFdyA'):
+					if data and data[0]['tagTypeRef'].endswith('1X9nXUOc9XbtobIcFdyA'):
 						return self.cp.list_tag(tag_id)
 
 		self.cp.show_info(self._("Unsupported JOJ Play redirect type") + ":\n" + url)

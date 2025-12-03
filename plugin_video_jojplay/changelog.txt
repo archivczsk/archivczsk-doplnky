@@ -1,3 +1,6 @@
+1.5: 03.12.2025
+- oprava pádu pri zobrazení niektorých relácií
+
 1.4: 06.11.2025
 - vymazanie videoportálu ktorý zanikol a nahradenie jednoduchým zoznamom relácií
 
