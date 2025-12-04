@@ -7,7 +7,7 @@
 <addon id="plugin.video.dokumenty.tv" name="Dokumenty.tv" version="2.3" hash="5acf9bad0ca9e7d4c2f7b5817e7f8a96" rhash="e0f0a2d2bc0fbdac1aa12bc12d03d15c" />
 <addon id="plugin.video.idnestv" name="iDNES.tv" version="1.6" hash="b78675aa66e4aa1b626d820b8440070b" rhash="b78675aa66e4aa1b626d820b8440070b"><extension point="archivczsk.addon.metadata"><broken>Stránka iDNES.tv zmenila svoj formát. Z tohto dôvodu doplnok viac nie je funkčný.</broken></extension></addon>
 <addon id="plugin.video.ivysilani" name="iVysílání - Česká televize" version="3.7" hash="09cc7c958cd1aa4de3811d9914ad0f1a" rhash="62c2249dd5a6e8d3eea3d3edf57adcdc" />
-<addon id="plugin.video.jojplay" name="JOJ Play" version="1.5" hash="7731068341720f4a3e557f7fac472036" rhash="306acc60387df31515eba5c1932af8e8" />
+<addon id="plugin.video.jojplay" name="JOJ Play" version="1.6" hash="f08ff77257c5d54becb069ac283d0869" rhash="42a41c9c0d51ee0e680293fcbcb6a6d8" />
 <addon id="plugin.video.kvifftv" name="Kviff.tv" version="1.3" hash="0f31fd5e31abe7ba7b5e1c66adff14aa" rhash="893db8849b0f55c24845735baacd5cb0" />
 <addon id="plugin.video.magiogo" name="Magio TV" version="1.32" hash="5add780f92b09cf25fc063bcb10273fd" rhash="3bda8cdcf885129a81fd37a0fc73a0f6" />
 <addon id="plugin.video.markiza" name="Markíza" version="2.14" hash="6445f5d45b4de9d75c148d5f77810edf" rhash="c815c6f011a32117cadab4b88e5e9d13" />
@@ -40,4 +40,11 @@
 <addon id="tools.archivczsk" name="Addons base" version="2.20" hash="2c0ea098567fe403209cbd770d699141" rhash="4395c33f07430e78451e7d0e023b1b39" />
 <addon id="tools.cenc" name="Content encryption support" version="1.6" hash="8f94bad0e6039551bb8210e38891acda" rhash="8f94bad0e6039551bb8210e38891acda" />
 <addon id="tools.xbmc" name="xbmc addons helper" version="1.4" hash="4ec31afb020b221373571c9eb369ddb6" rhash="4ec31afb020b221373571c9eb369ddb6" />
+<addon id="plugin.video.archivo2tv" name="Archív O2TV" version="1.11.0"><extension point="archivczsk.addon.metadata"><broken>Prevádzka služby O2TV bola ukončená. Pokračovaním je služba Oneplay.</broken></extension></addon>
+<addon id="plugin.video.eurosport" name="Eurosport player" version="1.11"><extension point="archivczsk.addon.metadata"><broken>Prevádzka služby eurosport player bola ukončená.</broken></extension></addon>
+<addon id="plugin.video.hbomax" name="HBO Max (old)" version="1.1"><extension point="archivczsk.addon.metadata"><broken>Toto je doplnok pre starú verziu služby HBO Max. Ak ju chcete používať, tak použite nový doplnok.</broken></extension></addon>
+<addon id="plugin.video.iprima" name="iPrima" version="1.14"><extension point="archivczsk.addon.metadata"><broken>Prevádzka služby iPrima bola prevádzkovateľom ukončená. Prejdite na doplnok Prima+.</broken></extension></addon>
+<addon id="plugin.video.joj.sk" name="TV Joj" version="1.7.0"><extension point="archivczsk.addon.metadata"><broken>Videoportál TV JOJ bol ukončený. Prejdite na doplnok JOJ Play.</broken></extension></addon>
+<addon id="plugin.video.mall.tv" name="Fameplay and Mall.tv" version="1.10"><extension point="archivczsk.addon.metadata"><broken>Doplnok už nie je viac udržiavaný.</broken></extension></addon>
+<addon id="plugin.video.sc2" name="Stream Cinema Community" version="3.25"><extension point="archivczsk.addon.metadata"><broken>Služba Stream Cinema Community ukončila prevádzku.</broken></extension></addon>
 </addons>
