@@ -292,8 +292,9 @@ class JojPlayContentProvider(CommonContentProvider):
 
 	def list_tag(self, tag_id):
 		data = self.jojplay.get_tag_data(tag_id)
-		item = self.jojplay._add_tag_item(data[0])
-		return self.list_series(item['id'], item.get('seasons'))
+		if data:
+			item = self.jojplay._add_tag_item(data[0])
+			return self.list_series(item['id'], item.get('seasons'))
 
 	# ##################################################################################################################
 

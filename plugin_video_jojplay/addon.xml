@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.jojplay" name="JOJ Play" version="1.5">
+<addon id="plugin.video.jojplay" name="JOJ Play" version="1.6">
 	<requires>
 		<import addon="enigma2.archivczsk" version="3.4.9"/>
 		<import addon="tools.archivczsk" version="2.20" />

@@ -84,8 +84,11 @@ class JojVideoportal(object):
 
 	def list_joj_show(self, show_url):
 		soup = self.call_api(show_url)
-		url = soup.find('div', {'class': 'text-joj-black'}).find('a', {'class': 'j-button--variant-primary'}).get('href')
-		return self.handle_jojplay_redirect(url)
+		div = soup.find('div', {'class': 'text-joj-black'}).find('a', {'class': 'j-button--variant-primary'})
+
+		if div != None:
+			url = div.get('href')
+			return self.handle_jojplay_redirect(url)
 
 	# ##################################################################################################################
 

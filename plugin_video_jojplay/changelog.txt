@@ -1,3 +1,6 @@
+1.6: 04.12.2025
+- oprava pádu pri zobrazení niektorých relácií
+
 1.5: 03.12.2025
 - oprava pádu pri zobrazení niektorých relácií
 
