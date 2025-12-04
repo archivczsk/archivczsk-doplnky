@@ -37,11 +37,12 @@ class XmlOnlyAddon(object):
 		self.addon_id = self.xml_root.attrib.get('id')
 		self.name = self.xml_root.attrib.get('name')
 		self.version = self.xml_root.attrib.get('version')
-		self.broken_msg = None
+		self.broken_msg = self.xml_root.attrib.get('broken')
+		self.can_be_removed = True
 
 		for e in self.xml_root.findall('extension'):
 			if e.attrib.get('point') == 'archivczsk.addon.metadata':
-				self.broken_msg = e.findtext('broken')
+				self.broken_msg = e.findtext('broken', self.broken_msg)
 
 		if self.addon_id == None or self.name == None or self.version == None:
 			raise Exception('Some of mandatory attributes (id, name, version) in file %s missing' % self.addon_xml_file)
@@ -67,10 +68,15 @@ class XmlOnlyAddon(object):
 		e = ET.Element('addon', {
 			'id': self.addon_id,
 			'name': self.name,
-			'version': self.version,
-			'hash': self.hash,
-			'rhash': self.rhash,
+			'version': self.version
 		})
+
+		if self.hash:
+			e.set('hash', self.hash)
+
+		if self.rhash:
+			e.set('rhash', self.rhash)
+
 		e.tail = '\n'
 
 		if self.broken_msg != None:
@@ -102,6 +108,11 @@ class XmlOnlyAddon(object):
 	def add_to_git_index(self):
 		addon_repo_dir = os.path.join(REPO_DIR, self.addon_id)
 		subprocess.check_call( ['git', 'add', addon_repo_dir] )
+
+	# ###########################################################################################################
+
+	def check_git_status(self):
+		return
 
 
 # ###########################################################################################################
@@ -263,6 +274,9 @@ class ArchivczskAddonsReleaser(object):
 
 		log_info('Reading released addons ...')
 		released_addons = self.get_released_addons()
+
+		log_info('Reading broken addons ...')
+		self.get_broken_addons(available_addons, released_addons)
 
 		log_info('Comparing addons data ...')
 		updated_addons, del_addons = self.compare_addons(available_addons, released_addons)
@@ -428,8 +442,9 @@ class ArchivczskAddonsReleaser(object):
 		if len(self.addon_dirs) == 0:
 			for aid in set(set(sorted(released_addons.keys())) - set(sorted(available_ids))):
 				a = released_addons[aid]
-				log_debug("Addon %s (%s) version %s is not available anymore and will be removed from release" % (a.name, a.addon_id, a.version))
-				del_addons.append(a)
+				if a.can_be_removed:
+					log_debug("Addon %s (%s) version %s is not available anymore and will be removed from release" % (a.name, a.addon_id, a.version))
+					del_addons.append(a)
 
 		return newer_addons, del_addons
 
@@ -476,11 +491,32 @@ class ArchivczskAddonsReleaser(object):
 
 	# ###########################################################################################################
 
+	def get_broken_addons(self, addons, released_addons):
+		try:
+			xml_root = ET.parse('broken.xml').getroot()
+		except FileNotFoundError:
+			log_debug("File broken.xml with broken addons not found. Skipping ...")
+			return
+
+		for element in xml_root:
+			addon = XmlOnlyAddon(element)
+			addon.can_be_removed = False
+			log_debug("Readed broken addon: %s (%s) version %s" % (addon.name, addon.addon_id, addon.version))
+			if addon.addon_id in addons:
+				if self.check_version(addon.version, addons[addon.addon_id].version):
+					log_warning("Addon %s (%s) version %s is marked as broken, but repository contains newer version. Ignoring entry from broken.xml file." % (addon.name, addon.addon_id, addon.version))
+				else:
+					addons[addon.addon_id].broken_msg = addon.broken_msg
+			else:
+				released_addons[addon.addon_id] = addon
+
+	# ###########################################################################################################
+
 	def write_addons_xml(self, addons):
 		root = ET.Element('addons')
 		root.tail = '\n'
 		root.text = '\n'
-		for addon in sorted(addons, key=lambda a: a.addon_id):
+		for addon in sorted(addons, key=lambda a: (not a.can_be_removed, a.addon_id)):
 			root.append(addon.get_simple_xml_root())
 
 		ET.ElementTree(element=root).write('addons.xml', encoding='UTF-8', xml_declaration=True)
