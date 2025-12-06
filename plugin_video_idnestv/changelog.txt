@@ -1,3 +1,6 @@
+v1.7 (0ž.12.2025)
+- new version of addon (rewrite)
+
 v1.6 (03.12.2025)
 - mark addon as broken
 
