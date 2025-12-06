@@ -1,0 +1,24 @@
+name: Build Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install deps
+      run: |
+        pip install -r requirements.txt || true
+
+    - name: Run build script
+      run: python make_release.py -c
