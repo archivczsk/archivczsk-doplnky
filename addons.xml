@@ -5,7 +5,7 @@
 <addon id="plugin.video.autosalontv" name="Autosalon" version="1.9" hash="e1836431641d28c728f02e2b0a0037e4" rhash="e1836431641d28c728f02e2b0a0037e4" />
 <addon id="plugin.video.disneyplus" name="Disney+" version="2.4" hash="bcf3351c3fa0051cf26a735f9b6ea35a" rhash="20e3400212a5ed9fc4d44bf4b1e221ff" />
 <addon id="plugin.video.dokumenty.tv" name="Dokumenty.tv" version="2.3" hash="5acf9bad0ca9e7d4c2f7b5817e7f8a96" rhash="e0f0a2d2bc0fbdac1aa12bc12d03d15c" />
-<addon id="plugin.video.idnestv" name="iDNES.tv" version="1.6" hash="b78675aa66e4aa1b626d820b8440070b" rhash="b78675aa66e4aa1b626d820b8440070b"><extension point="archivczsk.addon.metadata"><broken>Stránka iDNES.tv zmenila svoj formát. Z tohto dôvodu doplnok viac nie je funkčný.</broken></extension></addon>
+<addon id="plugin.video.idnestv" name="iDNES.tv" version="1.7" hash="2db038230924ebbea7bc0b9a371528da" rhash="2db038230924ebbea7bc0b9a371528da" />
 <addon id="plugin.video.ivysilani" name="iVysílání - Česká televize" version="3.7" hash="09cc7c958cd1aa4de3811d9914ad0f1a" rhash="62c2249dd5a6e8d3eea3d3edf57adcdc" />
 <addon id="plugin.video.jojplay" name="JOJ Play" version="1.6" hash="f08ff77257c5d54becb069ac283d0869" rhash="42a41c9c0d51ee0e680293fcbcb6a6d8" />
 <addon id="plugin.video.kvifftv" name="Kviff.tv" version="1.3" hash="0f31fd5e31abe7ba7b5e1c66adff14aa" rhash="893db8849b0f55c24845735baacd5cb0" />
