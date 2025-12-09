@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.sledovanitv" name="Sledovani.tv" version="2.19">
+<addon id="plugin.video.sledovanitv" name="Sledovani.tv" version="2.20~2">
 	<requires>
-		<import addon="enigma2.archivczsk" version="3.3.1"/>
-		<import addon="tools.archivczsk" version="2.15" />
+		<import addon="enigma2.archivczsk" version="3.4.9"/>
+		<import addon="tools.archivczsk" version="2.21" />
 	</requires>
 	<extension point="archivczsk.addon.video" preload="yes"/>
 	<extension point="archivczsk.addon.shortcut" preload="archive"/>

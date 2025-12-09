@@ -489,53 +489,7 @@ class SledovaniTV:
 
 	# #################################################################################################
 
-	def resolve_streams(self, url, max_bitrate=None ):
-		try:
-			req = self.req_session.get(url)
-		except:
-			self.showError(self._("Error by loading video. If it's red, the check PIN code."))
-			return
-
-		if req.status_code != 200:
-			self.showError(self._("Error by loading video"))
-			return
-
-		streams = []
-
-		if max_bitrate and int(max_bitrate) > 0:
-			max_bitrate = int(max_bitrate) * 1000000
-		else:
-			max_bitrate = 100000000
-
-		for m in re.finditer(r'^#EXT-X-STREAM-INF:(?P<info>.+)\n(?P<chunk>.+)', req.text, re.MULTILINE):
-			stream_info = {}
-			for info in re.split(r''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', m.group('info')):
-				key, val = info.split('=', 1)
-				stream_info[key.lower()] = val
-
-			stream_url = m.group('chunk')
-
-			if not stream_url.startswith('http'):
-				if stream_url.startswith('/'):
-					stream_url = url[:url[9:].find('/') + 9] + stream_url
-				else:
-					stream_url = url[:url.rfind('/') + 1] + stream_url
-
-			stream_info['url'] = stream_url
-			stream_info['quality'] = stream_info.get('resolution', 'x720').split('x')[1] + 'p'
-			if int(stream_info['bandwidth']) <= max_bitrate:
-				streams.append(stream_info)
-
-		return sorted(streams, key=lambda i: int(i['bandwidth']), reverse=True)
-
-	# #################################################################################################
-
-	def get_live_link(self, url, max_bitrate=None):
-		return self.resolve_streams(url, max_bitrate)
-
-	# #################################################################################################
-
-	def get_event_link(self, eventid, max_bitrate=None):
+	def get_event_link(self, eventid):
 		params = {
 			'format': 'm3u8',
 			'eventId': eventid,
@@ -548,11 +502,11 @@ class SledovaniTV:
 			self.showError(self._("Error by loading event") + ": %s" % data['error'])
 			return None
 
-		return self.resolve_streams(data['url'], max_bitrate)
+		return data['url']
 
 	# #################################################################################################
 
-	def get_recording_link(self, recordid, max_bitrate=None):
+	def get_recording_link(self, recordid):
 		params = {
 			'format': 'm3u8',
 			'recordId': recordid,
@@ -565,6 +519,6 @@ class SledovaniTV:
 			self.showError(self._("Error by loading recording") + "%s" % data['error'])
 			return None
 
-		return self.resolve_streams(data['url'], max_bitrate)
+		return data['url']
 
 	# #################################################################################################

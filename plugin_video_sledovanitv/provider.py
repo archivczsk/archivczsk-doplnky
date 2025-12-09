@@ -8,6 +8,7 @@ from hashlib import md5
 from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPModuleLiveTV, CPModuleArchive, CPModuleTemplate, CPModuleSearch
 from tools_archivczsk.contentprovider.exception import LoginException
 from tools_archivczsk.string_utils import _I, _C, _B
+from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.generator.lamedb import channel_name_normalise
 from .sledovanitv import SledovaniTV
 from .bouquet import SledovaniTVBouquetXmlEpgGenerator
@@ -29,7 +30,6 @@ class SledovaniTVModuleHome(CPModuleTemplate):
 	# #################################################################################################
 
 	def root(self):
-
 		for event in self.cp.sledovanitv.get_home():
 			info_labels = {
 				'plot': event.get('plot'),
@@ -102,26 +102,30 @@ class SledovaniTVModuleLiveTV(CPModuleLiveTV):
 					'adult': channel['adult']
 				}
 				img = None
+				start_ts = None
 
-			self.cp.add_video(title + epg_str, img, info_labels, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_url=channel['url'])
+			menu = self.cp.create_ctx_menu()
+			if epg and epg.get('availability') == 'timeshift':
+				menu.add_media_menu_item(self._("Play from beginning"), cmd=self.get_startover_stream, channel_title=channel['name'], event_id=epg['eventId'])
+
+			# fast channel are not standard linear channels, so set event start to seek to proper position
+			self.cp.add_video(title + epg_str, img, info_labels, menu=menu, download=enable_download, cmd=self.get_livetv_stream, channel_title=channel['name'], channel_url=channel['url'], event_start=start_ts if channel['id'].startswith('fast_') else None)
 
 	# #################################################################################################
 
-	def get_livetv_stream(self, channel_title, channel_url):
-		enable_download = self.cp.get_setting('download_live')
+	def get_livetv_stream(self, channel_title, channel_url, event_start):
+		return self.cp.resolve_hls_streams(channel_title, channel_url, download=self.cp.get_setting('download_live'), event_start=event_start)
 
-		for one in self.cp.sledovanitv.get_live_link(channel_url, self.cp.get_setting('max_bitrate')):
-			info_labels = {
-				'quality': one['quality'],
-				'bandwidth': one['bandwidth']
-			}
-			self.cp.add_play(channel_title, one['url'], info_labels, download=enable_download)
+	# #################################################################################################
+
+	def get_startover_stream(self, channel_title, event_id):
+		self.cp.ensure_supporter()
+		return self.cp.get_event_stream(video_title=channel_title, event_id=event_id)
 
 # #################################################################################################
 
 
 class SledovaniTVModuleRadio(CPModuleLiveTV):
-
 	def __init__(self, content_provider):
 		CPModuleLiveTV.__init__(self, content_provider, content_provider._('Radios'), plot=content_provider._('Here you will find the list of radios available in your subscription'))
 
@@ -168,7 +172,6 @@ class SledovaniTVModuleRadio(CPModuleLiveTV):
 
 
 class SledovaniTVModuleArchive(CPModuleArchive):
-
 	def __init__(self, content_provider):
 		CPModuleArchive.__init__(self, content_provider)
 
@@ -319,12 +322,8 @@ class SledovaniTVModuleRecordings(CPModuleTemplate):
 	# #################################################################################################
 
 	def play_recording(self, pvr_title, pvr_id):
-		for one in self.cp.sledovanitv.get_recording_link(pvr_id, self.cp.get_setting('max_bitrate')):
-			info_labels = {
-				'quality': one['quality'],
-				'bandwidth': one['bandwidth']
-			}
-			self.cp.add_play(pvr_title, one['url'], info_labels)
+		url = self.cp.sledovanitv.get_recording_link(pvr_id)
+		return self.cp.resolve_hls_streams(pvr_title, url)
 
 	# #################################################################################################
 
@@ -442,7 +441,7 @@ class SledovaniTVModuleExtra(CPModuleTemplate):
 # #################################################################################################
 
 class SledovaniTVContentProvider(ModuleContentProvider):
-	def __init__(self, settings, http_endpoint, data_dir=None, bgservice=None):
+	def __init__(self, settings, http_endpoint, http_endpoint_rel, data_dir=None, bgservice=None):
 		ModuleContentProvider.__init__(self, name='SledovaniTV', settings=settings, data_dir=data_dir, bgservice=bgservice)
 
 		# list of settings used for login - used to auto call login when they change
@@ -456,6 +455,7 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 		self.channels_next_load_time = 0
 		self.checksum = None
 		self.http_endpoint = http_endpoint
+		self.http_endpoint_rel = http_endpoint_rel
 		self.day_name_short = (self._("Mo"), self._("Tu"), self._("We"), self._("Th"), self._("Fr"), self._("Sa"), self._("Su"))
 
 		if not self.get_setting('serialid'):
@@ -531,21 +531,21 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 		channel = self.channels_by_id.get(channel_key)
 
 		if channel:
-			streams = self.sledovanitv.get_live_link(channel['url'], self.get_setting('max_bitrate'))
+			streams = self.get_hls_streams(channel['url'], self.sledovanitv.req_session, max_bitrate=self.get_setting('max_bitrate'))
 			if len(streams) > 0:
-				return streams[0]['url']
+				if self.get_setting('hls_multiaudio'):
+					# when multiaudio is enabled, then this stream doesn't work for exteplayer3 - audio is silent and the picture is choppy
+					return stream_key_to_hls_url(self.http_endpoint_rel, {'url': streams[0]['playlist_url'], 'bandwidth': streams[0]['bandwidth']})
+				else:
+					return streams[0]['url']
 
 		return None
 
 	# #################################################################################################
 
 	def get_event_stream(self, video_title, event_id):
-		for one in self.sledovanitv.get_event_link(event_id, self.get_setting('max_bitrate')):
-			info_labels = {
-				'quality': one['quality'],
-				'bandwidth': one['bandwidth']
-			}
-			self.add_play(video_title, one['url'], info_labels)
+		url = self.sledovanitv.get_event_link(event_id)
+		return self.resolve_hls_streams(video_title, url)
 
 	# #################################################################################################
 
@@ -578,5 +578,41 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 			menu = {}
 			self.add_menu_item(menu, self._('Record the event'), self.add_recording, event_id=event['eventId'])
 			self.add_video(title, event.get("poster"), info_labels, menu, cmd=self.get_event_stream, video_title=event["title"], event_id=event['eventId'])
+
+	# #################################################################################################
+
+	def get_hls_info(self, stream_key):
+		resp = {
+			'url': stream_key['url'],
+			'bandwidth': stream_key['bandwidth'],
+		}
+
+		return resp
+
+	# #################################################################################################
+
+	def resolve_hls_streams(self, title, playlist_url, download=True, event_start=None):
+		hls_multiaudio = self.get_setting('hls_multiaudio')
+
+		play_settings = {
+			"resume_time_sec": int(time.time() - event_start) if event_start != None else None,
+			'check_seek_borders': True,
+			"resume_popup": False,
+			'seek_border_up': 30
+		}
+
+		for one in self.get_hls_streams(playlist_url, self.sledovanitv.req_session, max_bitrate=self.get_setting('max_bitrate')):
+			info_labels = {
+				'quality': one.get('resolution', 'x720').split('x')[1] + 'p',
+				'bandwidth': one['bandwidth']
+			}
+
+			if hls_multiaudio:
+				# when multiaudio is enabled, then this stream doesn't work for exteplayer3 - audio is silent and the picture is choppy
+				url = stream_key_to_hls_url(self.http_endpoint, {'url': one['playlist_url'], 'bandwidth': one['bandwidth']})
+			else:
+				url = one['url']
+
+			self.add_play(title, url, info_labels, download=download, settings=play_settings)
 
 	# #################################################################################################
