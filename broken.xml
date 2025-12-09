@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <addons>
-<addon id="plugin.video.idnestv" name="iDNES.tv" version="1.6" broken="Stránka iDNES.tv zmenila svoj formát. Z tohto dôvodu doplnok viac nie je funkčný." />
 <addon id="plugin.video.eurosport" name="Eurosport player" version="1.11" broken="Prevádzka služby eurosport player bola ukončená." />
 <addon id="plugin.video.hbomax" name="HBO Max (old)" version="1.1" broken="Toto je doplnok pre starú verziu služby HBO Max. Ak ju chcete používať, tak použite nový doplnok." />
 <addon id="plugin.video.joj.sk" name="TV Joj" version="1.7.0" broken="Videoportál TV JOJ bol ukončený. Prejdite na doplnok JOJ Play." />
