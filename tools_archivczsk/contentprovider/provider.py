@@ -26,6 +26,7 @@ from datetime import datetime
 from hashlib import md5
 import xml.etree.ElementTree as ET
 from .exception import LoginException, AddonErrorException
+from ..compat import urljoin
 
 # this import is needed to run shortcuts with serialised OrderedDict()
 from collections import OrderedDict
@@ -387,11 +388,14 @@ class CommonContentProvider(object):
 			response = requests_session.get(url, headers=headers)
 		except:
 			self.log_exception()
-			return None
+			return []
 
-		if response.status_code != 200:
+		try:
+			response.raise_for_status()
+		except:
 			self.log_error("Status code response for HLS master playlist: %d" % response.status_code)
-			return None
+			self.log_exception()
+			return []
 
 		if max_bitrate and int(max_bitrate) > 0:
 			max_bitrate = int(max_bitrate) * 1000000
@@ -409,15 +413,8 @@ class CommonContentProvider(object):
 				key, val = info.split('=', 1)
 				stream_info[key.strip().lower()] = val.strip()
 
-			stream_url = m.group('chunk')
+			stream_info['url'] = urljoin(response.url, m.group('chunk'))
 
-			if not stream_url.startswith('http'):
-				if stream_url.startswith('/'):
-					stream_url = url[:url[9:].find('/') + 9] + stream_url
-				else:
-					stream_url = url[:url.rfind('/') + 1] + stream_url
-
-			stream_info['url'] = stream_url
 			if int(stream_info.get('bandwidth', 0)) <= max_bitrate:
 				streams.append(stream_info)
 
@@ -442,11 +439,14 @@ class CommonContentProvider(object):
 			response = requests_session.get(url, headers=headers)
 		except:
 			self.log_exception()
-			return None
+			return []
 
-		if response.status_code != 200:
-			self.log_error("Status code response for DASH playlist: %d" % response.status_code)
-			return None
+		try:
+			response.raise_for_status()
+		except:
+			self.log_error("Status code response for DASH master playlist: %d" % response.status_code)
+			self.log_exception()
+			return []
 
 		if max_bitrate and int(max_bitrate) > 0:
 			max_bitrate = int(max_bitrate) * 1000000

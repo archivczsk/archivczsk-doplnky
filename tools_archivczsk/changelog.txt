@@ -1,3 +1,6 @@
+2.21 - 09.12.2025
+    - fixed and updated HLS streams resolver
+
 2.20 - 21.10.2025
     - fixed background login when thread is busy
     - updated available exteplayer3 version
