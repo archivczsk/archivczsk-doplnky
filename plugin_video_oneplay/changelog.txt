@@ -1,3 +1,6 @@
+1.12 - 04.12.2025
+- oprava pádu pri generovaní hlavného menu
+
 1.11 - 03.12.2025
 - oprava nahrávok po zmene na strane oneplay
 

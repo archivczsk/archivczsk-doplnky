@@ -929,9 +929,9 @@ class Oneplay(object):
 
 		ret = []
 		for group in response.get('menu',{}).get('groups',[]):
-			if group['position'] == 'top':
-				for item in group['items']:
-					if item['action']['call'] == 'page.category.display':
+			if group.get('position') == 'top':
+				for item in (group.get('items') or []):
+					if (item.get('action') or {}).get('call') == 'page.category.display':
 						ret.append({
 							'title': item['title'],
 							'id': item['action']['params']['payload']['categoryId']
