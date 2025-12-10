@@ -1,21 +1,45 @@
 # -*- coding: utf-8 -*-
 
 from Plugins.Extensions.archivCZSK.engine.addon import XBMCAddon
+from Plugins.Extensions.archivCZSK.engine import client
+from .tools.xbmcutil import __lang__
+
+addons_blacklist = {
+	# adddon id, list of blacklisted versions (or empty if all)
+	'plugin.video.joj.sk': []
+}
 
 class XBMCCompatInterface(object):
-
 	def __init__(self, xbmc_run_cbk, addon):
 		self.xbmc_run_cbk = xbmc_run_cbk
 		self.addon = XBMCAddon(addon)
+		self.blacklisted = False
+
+		if addon.id in addons_blacklist:
+			versions = addons_blacklist[addon.id]
+
+			if len(versions) > 0:
+				if addon.version in versions:
+					self.blacklisted = True
+			else:
+				self.blacklisted = True
+
+	# #################################################################################################
+
+	def check_blacklist(self):
+		if self.blacklisted:
+			client.showError(__lang__(300))
 
 	# #################################################################################################
 
 	def run(self, session, params):
+		self.check_blacklist()
 		self.xbmc_run_cbk(session, params, self.addon)
 
 	# #################################################################################################
 
 	def run_silent(self, session, params):
+		self.check_blacklist()
 		params['silent_mode'] = True
 		self.xbmc_run_cbk(session, params, self.addon)
 

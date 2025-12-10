@@ -2,6 +2,7 @@
 <strings>
 	<string id="200">Je vyžadováno opsání kódu obrázku</string>
 	<string id="201">Vyčkejte...</string>
+	<string id="300">Spuštění tohoto doplňku není povoleno. Obsahuje závažnou chybu nebo z jiných důvodů není povoleno jej používat.</string>
 	<string id="30003">[B]Vyhledat[/B]</string>
 	<string id="30004">[B]Nové hledání[/B]</string>
 	<string id="30005">Vyberte zdroj</string>

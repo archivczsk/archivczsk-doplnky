@@ -2,6 +2,7 @@
 <strings>
 	<string id="200">Captcha requested</string>
 	<string id="201">Please wait...</string>
+	<string id="300">Running of this addon is not allowed. I has a major bug or from other reasons it is not allowed to use it.</string>
 	<string id="30003">[B]Search[/B]</string>
 	<string id="30004">[B]New search[/B]</string>
 	<string id="30005">Select video source</string>

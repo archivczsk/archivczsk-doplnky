@@ -1,3 +1,6 @@
+1.5:
+    - introduced blacklist that forbids running addon based on id and version
+
 1.4:
     - fixed run on python 3.13, where module cgi is not available
 
