@@ -7,6 +7,8 @@ import traceback
 from hashlib import md5
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
 from tools_archivczsk.debug.http import dump_json_request
+from tools_archivczsk.compat import quote
+from base64 import b64encode
 
 ############### init ################
 
@@ -29,6 +31,7 @@ class SledovaniTV:
 		self.log_function = self.cp.log_info
 		self._ = self.cp._
 		self.headers = _HEADERS
+		self.wv_license_url = None
 
 		self.load_login_data()
 		self.req_session = self.cp.get_requests_session()
@@ -153,6 +156,34 @@ class SledovaniTV:
 			return True
 
 		return False
+
+	# #################################################################################################
+
+	def register_drm(self):
+		params = {
+			'type': 'widevine',
+			'PHPSESSID': self.sessionid,
+		}
+
+		data = self.call_api('drm-registration', params = params )
+
+		if "status" in data and data['status'] == 1:
+			self.wv_license_url = data.get('info',{}).get('licenseUrl')
+
+			if self.wv_license_url:
+				if '{streamURL|base64}' not in self.wv_license_url:
+					self.cp.log_error("Widevine license URL is in unsupported format - ignoring")
+					self.wv_license_url = None
+				else:
+					self.wv_license_url = self.wv_license_url.replace('{streamURL|base64}', '{streamURL}')
+
+	# #################################################################################################
+
+	def get_wv_license_url(self, stream_url):
+		if self.wv_license_url:
+			return self.wv_license_url.format(streamURL=quote(b64encode(stream_url.encode('utf-8')).decode('utf-8')))
+
+		return None
 
 	# #################################################################################################
 
@@ -502,7 +533,7 @@ class SledovaniTV:
 			self.showError(self._("Error by loading event") + ": %s" % data['error'])
 			return None
 
-		return data['url']
+		return data['url'], data.get('drm') == 1
 
 	# #################################################################################################
 

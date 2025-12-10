@@ -1,3 +1,7 @@
+2.20 - 11.12.2025
+- pridanie podpory pre fast kanály (SledovanieTV Family, Comedy, CZ/SK)
+- pridanie podpory pre obsah chránený DRM ochranou
+
 2.19 - 17.06.2025
 - obnovenie prihlásenia po zmene verzie doplnku
 - oprava preklepov a drobných chýb

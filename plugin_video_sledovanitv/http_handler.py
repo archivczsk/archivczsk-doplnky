@@ -39,6 +39,8 @@ class SledovaniTVHTTPRequestHandler(PlayliveTVHTTPRequestHandler, HlsHTTPRequest
 	def __init__(self, content_provider, addon ):
 		super(SledovaniTVHTTPRequestHandler, self).__init__(content_provider, addon)
 		self.hls_proxy_variants = True
+		self.hls_internal_decrypt = True
+
 		self.hls_master_processor = SledovaniTVHlsMasterProcessor
 
 # #################################################################################################

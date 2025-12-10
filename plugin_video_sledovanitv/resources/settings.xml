@@ -9,6 +9,7 @@
 	<setting label="Enable special section in main menu" id="enable_extra" type="bool" default="false" />
 	<setting label="Allow downloading of live broadcasting" id="download_live" type="bool" default="false" />
 	<setting label="Enable multiple audio tracks and subtitles" id="hls_multiaudio" type="bool" default="false" visible="false"/>
+	<setting label="Allow DRM decrypt using exteplayer3" id="ext_drm_decrypt" type="bool" default="true" />
 	<category label="Userbouquet">
 		<setting label="Automatically export channel list as userbouquet" id="enable_userbouquet" type="bool" default="false" />
 		<setting label="Generate XML EPG for epgimport plugin (if installed)" id="enable_xmlepg" type="bool" default="false" />

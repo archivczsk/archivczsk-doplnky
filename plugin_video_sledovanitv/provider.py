@@ -10,6 +10,7 @@ from tools_archivczsk.contentprovider.exception import LoginException
 from tools_archivczsk.string_utils import _I, _C, _B
 from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.generator.lamedb import channel_name_normalise
+from tools_archivczsk.cache import SimpleAutokeyExpiringCache
 from .sledovanitv import SledovaniTV
 from .bouquet import SledovaniTVBouquetXmlEpgGenerator
 import base64
@@ -456,6 +457,7 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 		self.checksum = None
 		self.http_endpoint = http_endpoint
 		self.http_endpoint_rel = http_endpoint_rel
+		self.scache = SimpleAutokeyExpiringCache()
 		self.day_name_short = (self._("Mo"), self._("Tu"), self._("We"), self._("Th"), self._("Fr"), self._("Sa"), self._("Su"))
 
 		if not self.get_setting('serialid'):
@@ -484,6 +486,7 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 		if not sledovanitv.check_pairing():
 			raise LoginException(self._('Login failed'))
 
+		sledovanitv.register_drm()
 		self.sledovanitv = sledovanitv
 
 		return True
@@ -544,8 +547,11 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def get_event_stream(self, video_title, event_id):
-		url = self.sledovanitv.get_event_link(event_id)
-		return self.resolve_hls_streams(video_title, url)
+		url, need_drm = self.sledovanitv.get_event_link(event_id)
+		if need_drm:
+			self.ensure_supporter(self._("Playing of DRM protected content is not available for you."))
+
+		return self.resolve_hls_streams(video_title, url, need_drm=need_drm)
 
 	# #################################################################################################
 
@@ -585,13 +591,22 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 		resp = {
 			'url': stream_key['url'],
 			'bandwidth': stream_key['bandwidth'],
+			'ext_drm_decrypt': self.get_setting('ext_drm_decrypt'),
 		}
+
+		if stream_key.get('ck'):
+			drm_info = self.scache.get(stream_key['ck'])
+			lic_url = self.sledovanitv.get_wv_license_url(drm_info['stream_url'])
+			self.log_debug("License URL: %s" % lic_url)
+
+			if lic_url:
+				resp['drm'] = { 'licence_url': lic_url }
 
 		return resp
 
 	# #################################################################################################
 
-	def resolve_hls_streams(self, title, playlist_url, download=True, event_start=None):
+	def resolve_hls_streams(self, title, playlist_url, download=True, event_start=None, need_drm=False):
 		hls_multiaudio = self.get_setting('hls_multiaudio')
 
 		play_settings = {
@@ -601,15 +616,20 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 			'seek_border_up': 30
 		}
 
+		if need_drm:
+			cache_key = self.scache.put({'stream_url': playlist_url})
+		else:
+			cache_key = None
+
 		for one in self.get_hls_streams(playlist_url, self.sledovanitv.req_session, max_bitrate=self.get_setting('max_bitrate')):
 			info_labels = {
 				'quality': one.get('resolution', 'x720').split('x')[1] + 'p',
 				'bandwidth': one['bandwidth']
 			}
 
-			if hls_multiaudio:
+			if hls_multiaudio or need_drm:
 				# when multiaudio is enabled, then this stream doesn't work for exteplayer3 - audio is silent and the picture is choppy
-				url = stream_key_to_hls_url(self.http_endpoint, {'url': one['playlist_url'], 'bandwidth': one['bandwidth']})
+				url = stream_key_to_hls_url(self.http_endpoint, {'url': one['playlist_url'], 'bandwidth': one['bandwidth'], 'ck': cache_key})
 			else:
 				url = one['url']
 
