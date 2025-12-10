@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import base64
+import struct
 from .cdm import cdm, deviceconfig
 from Plugins.Extensions.archivCZSK.engine import client
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
@@ -49,8 +50,52 @@ class WvDecrypt(object):
 		else:
 			return pssh_b64
 
+	def convert_pssh_to_v0(self, pssh_b64):
+		data = base64.b64decode(pssh_b64)
+
+		# Box header
+		size = struct.unpack(">I", data[0:4])[0]
+		box_type = data[4:8]
+
+		if box_type != b'pssh':
+			raise ValueError("Not a PSSH box")
+
+		version = data[8]
+		flags = data[9:12]
+
+		if version == 0:
+			return pssh_b64
+
+		system_id = data[12:28]
+		if system_id != self.WV_SYSTEM_ID:
+			raise ValueError("Not a Widevine PSSH")
+
+		offset = 28
+
+		if version == 1:
+			kid_count = struct.unpack(">I", data[offset:offset+4])[0]
+			offset += 4 + kid_count * 16  # skip KIDs
+
+		data_len = struct.unpack(">I", data[offset:offset+4])[0]
+		offset += 4
+		pssh_data = data[offset : offset + data_len]
+
+		version = 0
+		flags = b"\x00\x00\x00"
+
+		body = (
+			bytes([version]) +
+			flags +
+			self.WV_SYSTEM_ID +
+			struct.pack(">I", len(pssh_data)) +
+			pssh_data
+		)
+
+		box = struct.pack(">I", 8 + len(body)) + b'pssh' + body
+		return base64.b64encode(box).decode('ascii')
+
 	def get_content_keys(self, pssh, lic_cbk, service_cert_cbk=None):
-		session = self.cdm.open_session(self.check_pssh(pssh), self.device_config)
+		session = self.cdm.open_session(self.convert_pssh_to_v0(self.check_pssh(pssh)), self.device_config)
 		if service_cert_cbk:
 			self.cdm.set_service_certificate(session, service_cert_cbk(self.cdm.CERTIFICATE_CHALLENGE))
 

@@ -1,3 +1,6 @@
+1.7 - 10.12.2025
+- always convert pssh to version 0
+
 1.6 - 08.07.2025
 - added support for dynamic pssh+kid
 
