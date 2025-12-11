@@ -302,6 +302,16 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		resp_data = []
 		stream_url_line = False
 
+		drm_lines = []
+		# look for DRM keys first - this is needed to properly process init data in #EXT-X-MAP
+		for line in iter(playlist_data.splitlines()):
+			if drm_info and line.startswith("#EXT-X-KEY:"):
+				drm_lines.append(self.process_drm_key_line(line, drm_info, segment_cache_data, hls_internal_decrypt))
+
+			if line.startswith("#EXTINF:"):
+				break
+
+
 		for line in iter(playlist_data.splitlines()):
 			if stream_url_line and not line.startswith('#'):
 				resp_data.append(process_url(line, playlist_url))
@@ -309,7 +319,7 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				continue
 
 			if drm_info and line.startswith("#EXT-X-KEY:"):
-				line = self.process_drm_key_line(line, drm_info, segment_cache_data, hls_internal_decrypt)
+				line = drm_lines.pop(0)
 			elif 'URI=' in line:
 				# fix uri to full url
 				uri = line[line.find('URI=') + 4:]
