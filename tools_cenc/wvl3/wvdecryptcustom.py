@@ -51,7 +51,7 @@ class WvDecrypt(object):
 			return pssh_b64
 
 	def convert_pssh_to_v0(self, pssh_b64):
-		data = base64.b64decode(pssh_b64)
+		data = bytearray(base64.b64decode(pssh_b64))
 
 		# Box header
 		size = struct.unpack(">I", data[0:4])[0]
@@ -80,11 +80,11 @@ class WvDecrypt(object):
 		offset += 4
 		pssh_data = data[offset : offset + data_len]
 
-		version = 0
+		version = b'\x00'
 		flags = b"\x00\x00\x00"
 
 		body = (
-			bytes([version]) +
+			version +
 			flags +
 			self.WV_SYSTEM_ID +
 			struct.pack(">I", len(pssh_data)) +
