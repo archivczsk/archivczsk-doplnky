@@ -8,7 +8,7 @@ from Plugins.Extensions.archivCZSK.engine.client import log
 from Plugins.Extensions.archivCZSK.engine.tools import util
 from Components.config import config
 
-ATKClient_API_VER = 7
+ATKClient_API_VER = 8
 
 def have_client_module(name):
 	for ext in ('.py', '.so'):
