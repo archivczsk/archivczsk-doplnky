@@ -2,6 +2,7 @@ import struct
 import base64
 
 WIDEVINE_UUID = bytearray([237, 239, 139, 169, 121, 214, 74, 206, 163, 200, 39, 220, 213, 29, 33, 237])
+PLAYREADY_UUID = bytearray([0x9a, 0x04, 0xf0, 0x79, 0x98, 0x40, 0x42, 0x86, 0xab, 0x92, 0xe6, 0x5b, 0xe0, 0x88, 0x5f, 0x95])
 WIDEVINE_PSSH = bytearray([112, 115, 115, 104])
 
 def cenc_init(data=None, uuid=None, kids=None):

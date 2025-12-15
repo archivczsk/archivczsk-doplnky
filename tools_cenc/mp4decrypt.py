@@ -43,8 +43,10 @@ def mp4_cenc_info_remove(data):
 	return data[:ret]
 
 def mp4_pssh_get(data):
+	# only WV DRM is currently supported
+
 	ret = get_mp4modify().mp4_pssh_get(data, len(data))
 	pssh, kid = ctypes.cast(ret, ctypes.c_char_p).value.split(b';')
 	libc.free(ret)
 
-	return cenc_init(unhexlify(pssh)) if pssh else None, kid.decode('utf-8')[8:].lower()
+	return cenc_init(unhexlify(pssh)) if pssh else None, kid.decode('utf-8')[8:].lower(), 'wv'

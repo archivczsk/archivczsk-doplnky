@@ -1,3 +1,6 @@
+1.9 - 16.12.2025
+- added support for playready (for python 3.8+)
+
 1.8 - 12.12.2025
 - fixed pssh convertor for python 2
 
