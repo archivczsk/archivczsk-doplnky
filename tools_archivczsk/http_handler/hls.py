@@ -8,6 +8,7 @@ import binascii
 
 from ..compat import quote, unquote, urljoin
 from tools_cenc.mp4decrypt import mp4decrypt, mp4_cenc_info_remove
+from tools_cenc.pssh import cenc_init, PLAYREADY_UUID
 
 # #################################################################################################
 
@@ -170,8 +171,8 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				line = ''
 			else:
 				pssh = pssh[24:-1]
-				segment_cache_data['pssh'].append(pssh)
-				keys = self.get_drm_keys([pssh], drm_info)
+				segment_cache_data['pssh']['wv'].append(pssh)
+				keys = self.get_drm_keys({'wv': [pssh]}, drm_info)
 				if hls_internal_decrypt:
 					# when doing internal decrypt, then remove #EXT-X-KEY: line to not confuse player
 					line = ''
@@ -180,6 +181,32 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 						line = '#EXT-X-KEY:METHOD=SAMPLE-AES,URI="/%s/clearkey/%s"' % (self.name, keys[0].split(':')[1])
 					else:
 						line = '#EXT-X-KEY:METHOD=SAMPLE-AES,URI="keys://' + ':'.join(k.replace(':','=') for k in keys) + '"'
+		elif attr.get('KEYFORMAT','').lower() == '"com.microsoft.playready"':
+			self.cp.log_debug("Playready keyformat found")
+			# pr drm data
+			uri_parts = attr.get('URI','').split(';')
+
+			if not uri_parts[0].startswith('"data:text/plain'):
+				self.cp.log_error("Failed to process PSSH key - URI format not supported: '%s'" % line)
+				line = ''
+			elif not uri_parts[-1].startswith('base64,'):
+				self.cp.log_error("Failed to process PSSH key - URI format not supported (not base64): '%s'" % line)
+				line = ''
+			else:
+				# The data encoded in the URI is a PlayReady Pro Object, so we need convert it to pssh.
+				pssh = cenc_init(base64.b64decode(uri_parts[-1][7:-1].encode('ascii')), PLAYREADY_UUID)
+
+				segment_cache_data['pssh']['pr'].append(pssh)
+				keys = self.get_drm_keys({'pr': [pssh]}, drm_info)
+				if hls_internal_decrypt:
+					# when doing internal decrypt, then remove #EXT-X-KEY: line to not confuse player
+					line = ''
+				else:
+					if len(keys) == 1:
+						line = '#EXT-X-KEY:METHOD=SAMPLE-AES,URI="/%s/clearkey/%s"' % (self.name, keys[0].split(':')[1])
+					else:
+						line = '#EXT-X-KEY:METHOD=SAMPLE-AES,URI="keys://' + ':'.join(k.replace(':','=') for k in keys) + '"'
+
 		elif attr.get('METHOD') == 'SAMPLE-AES-CTR':
 			# remove not supported DRM line by player
 			line = ''
@@ -200,7 +227,7 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			return mp4_cenc_info_remove(data)
 
 		# collect keys for protected content
-		keys = self.get_drm_keys(cache_data['pssh'], cache_data['drm'], cache_data['drm'].get('privacy_mode', False))
+		keys = self.get_drm_keys(cache_data['pssh'], cache_data['drm'])
 
 		if len(keys) == 0:
 			self.cp.log_error("No keys to decrypt DRM protected content")
@@ -282,7 +309,7 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		drm_info = hls_info.get('drm', {})
 		segment_cache_data = {
 			'drm': drm_info,
-			'pssh': []
+			'pssh': {'wv': [], 'pr': []}
 		}
 
 		hls_proxy_segments = hls_info.get('hls_proxy_segments', self.hls_proxy_segments)
@@ -295,7 +322,7 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			surl = urljoin(redirect_url, surl)
 
 			if hls_proxy_segments or (hls_internal_decrypt and drm_info):
-				surl = self.hls_proxify_segment_url(segment_cache_key if len(segment_cache_data['pssh']) > 0 else None, surl, segment_type)
+				surl = self.hls_proxify_segment_url(segment_cache_key if (len(segment_cache_data['pssh']['wv']) > 0 or len(segment_cache_data['pssh']['pr']) > 0) else None, surl, segment_type)
 
 			return surl
 

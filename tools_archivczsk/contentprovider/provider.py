@@ -468,18 +468,32 @@ class CommonContentProvider(object):
 			if e != None:
 				kid = e.get('{urn:mpeg:cenc:2013}default_KID') or e.get('default_KID')
 
+			if kid:
+				stream_info['kid'] = kid
+
 			e = element.find('./%sContentProtection[@schemeIdUri="urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed"]/{urn:mpeg:cenc:2013}pssh' % ns)
 			if e == None:
 				e = element.find('./%sContentProtection[@schemeIdUri="urn:uuid:EDEF8BA9-79D6-4ACE-A3C8-27DCD51D21ED"]/{urn:mpeg:cenc:2013}pssh' % ns)
 
 			if e != None and e.text:
 				pssh = e.text.strip()
-
-			if kid:
-				stream_info['kid'] = kid
+			else:
+				pssh = None
 
 			if pssh:
-				stream_info['pssh'] = pssh
+				stream_info['wv_pssh'] = pssh
+
+			e = element.find('./%sContentProtection[@schemeIdUri="urn:uuid:9a04f079-9840-4286-ab92-e65be0885f95"]/{urn:mpeg:cenc:2013}pssh' % ns)
+			if e == None:
+				e = element.find('./%sContentProtection[@schemeIdUri="urn:uuid:9A04F079-9840-4286-AB92-E65BE0885F95"]/{urn:mpeg:cenc:2013}pssh' % ns)
+
+			if e != None and e.text:
+				pssh = e.text.strip()
+			else:
+				pssh = None
+
+			if pssh:
+				stream_info['pr_pssh'] = pssh
 
 		for e_period in root.findall('{}Period'.format(ns)):
 			for e_adaptation_set in e_period.findall('{}AdaptationSet'.format(ns)):
@@ -498,8 +512,11 @@ class CommonContentProvider(object):
 							if drm_info_adaptation.get('kid') and not stream_info.get('kid'):
 								stream_info['kid'] = drm_info_adaptation['kid']
 
-							if drm_info_adaptation.get('pssh') and not stream_info.get('pssh'):
-								stream_info['pssh'] = drm_info_adaptation['pssh']
+							if drm_info_adaptation.get('wv_pssh') and not stream_info.get('wv_pssh'):
+								stream_info['wv_pssh'] = drm_info_adaptation['wv_pssh']
+
+							if drm_info_adaptation.get('pr_pssh') and not stream_info.get('pr_pssh'):
+								stream_info['pr_pssh'] = drm_info_adaptation['pr_pssh']
 
 							streams.append(stream_info)
 

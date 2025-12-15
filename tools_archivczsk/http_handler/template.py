@@ -17,6 +17,7 @@ except:
 	from http.cookiejar import CookieJar
 
 from tools_cenc.wvdecrypt import WvDecrypt
+from tools_cenc.prdecrypt import PrDecrypt
 from tools_cenc.mp4decrypt import mp4_pssh_get
 from binascii import crc32, unhexlify
 
@@ -87,6 +88,7 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler, object):
 
 		self.enable_devel_logs = os.path.isfile('/tmp/archivczsk_enable_devel_logs')
 		self.wvdecrypt = WvDecrypt(enable_logging=self.enable_devel_logs)
+		self.prdecrypt = PrDecrypt(enable_logging=self.enable_devel_logs)
 		self.pssh = {}
 
 	# #################################################################################################
@@ -210,14 +212,15 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler, object):
 
 	# #################################################################################################
 
-	def get_wv_licence(self, drm_info, lic_request):
+	def get_drm_license(self, drm_info, lic_request):
 		session = self.cp.get_requests_session()
+
 		try:
-			response = session.post(drm_info['licence_url'], data=lic_request, headers=drm_info.get('headers',{}))
+			response = session.post(drm_info['license_url'], data=lic_request, headers=drm_info.get('headers',{}))
 			response.raise_for_status()
 			content = response.content
 		except Exception as e:
-			self.cp.log_error("Failed to get DRM licence: %s" % str(e))
+			self.cp.log_error("Failed to get DRM license: %s" % str(e))
 			content = None
 
 		session.close()
@@ -226,46 +229,62 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler, object):
 
 	# #################################################################################################
 
-	def get_drm_keys(self, pssh_list, drm_info, privacy_mode=False):
-		keys = []
-		for p in pssh_list:
-			if p == 'dynamic':
-				# skip dummy pssh
-				continue
 
-			k = self.pssh.get(p)
-			if k == None:
-				self.cp.log_debug("Requesting keys for pssh %s from licence server" % p)
-				if privacy_mode:
-					k = self.wvdecrypt.get_content_keys(p, lambda lic_request: self.get_wv_licence(drm_info, lic_request), lambda cert_request: self.get_wv_licence(drm_info, cert_request))
+	def get_drm_keys(self, pssh_list, drm_info):
+		wv_drm_info = drm_info.get('wv',{})
+		pr_drm_info = drm_info.get('pr',{})
+
+		keys = []
+		for drm_type in ('wv', 'pr'):
+			for p in pssh_list.get(drm_type,[]):
+				if p == 'dynamic':
+					# skip dummy pssh
+					continue
+
+				k = self.pssh.get(p)
+				if k == None:
+					self.cp.log_debug("Requesting keys for pssh from %s license server" % p)
+
+					if drm_type == 'wv':
+						if wv_drm_info:
+							if wv_drm_info.get('privacy_mode', False):
+								k = self.wvdecrypt.get_content_keys(p, lambda lic_request: self.get_drm_license(wv_drm_info, lic_request), lambda cert_request: self.get_drm_license(wv_drm_info, cert_request))
+							else:
+								k = self.wvdecrypt.get_content_keys(p, lambda lic_request: self.get_drm_license(wv_drm_info, lic_request))
+						else:
+							self.cp.log_debug("No widevine license URL provided")
+
+					elif drm_type == 'pr':
+						if pr_drm_info:
+							k = self.prdecrypt.get_content_keys(p, lambda lic_request: self.get_drm_license(pr_drm_info, lic_request))
+						else:
+							self.cp.log_debug("No playready license URL provided")
+
+					self.pssh[p] = k
+					if k:
+						keys.extend(k)
+						self.cp.log_debug("Received %d keys for pssh %s" % (len(k), p))
+					else:
+						self.cp.log_error("Failed to get DRM keys for pssh %s" % p)
 				else:
-					k = self.wvdecrypt.get_content_keys(p, lambda lic_request: self.get_wv_licence(drm_info, lic_request))
-				self.pssh[p] = k
-				if k:
+					self.cp.log_debug("Keys for pssh %s found in cache" % p)
 					keys.extend(k)
-					self.cp.log_debug("Received %d keys for pssh %s" % (len(k), p))
-				else:
-					self.cp.log_error("Failed to get DRM keys for pssh %s" % p)
-			else:
-				self.cp.log_debug("Keys for pssh %s found in cache" % p)
-				keys.extend(k)
 
 		return keys
 
 	# #################################################################################################
 
-	def get_mp4_pssh(self, data, pssh_list=[]):
-		pssh, kid = mp4_pssh_get(data)
+	def get_mp4_pssh(self, data, pssh_list={}):
+		pssh, kid, drm_type = mp4_pssh_get(data)
 
-		self.log_devel("Received PSSH from mp4: %s" % pssh)
+		self.log_devel("Received %s PSSH from mp4: %s" % (drm_type, pssh))
 		self.log_devel("Received KID from mp4: %s" % kid)
 
-		if pssh and pssh not in pssh_list:
+		if pssh and pssh not in pssh_list[drm_type]:
 			pssh_list.append(pssh)
 			self.cp.log_debug("Adding PSSH %s from mp4 to list of available PSSHs" % pssh)
 
-		return pssh_list, kid
-
+		return kid
 
 	# #################################################################################################
 

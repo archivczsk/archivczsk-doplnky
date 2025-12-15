@@ -4,12 +4,10 @@ import re
 from collections import OrderedDict
 import requests
 import xml.etree.ElementTree as ET
+import base64
+from ..compat import urljoin
+from tools_cenc.pssh import cenc_init, PLAYREADY_UUID
 
-try:
-	from urllib import quote, unquote
-	from urlparse import urljoin
-except:
-	from urllib.parse import urljoin, quote, unquote
 
 def parse_attributes(line):
 	attr = OrderedDict()
@@ -38,7 +36,7 @@ class Playlist(object):
 		self.attrs = attrs
 		self.segments = []
 		self.duration = 0.0
-		self.pssh = []
+		self.pssh = {'wv': [], 'pr': {}}
 
 	def has_segments(self):
 		return len(self.segments) > 0
@@ -57,7 +55,15 @@ class Playlist(object):
 			# wv drm data
 			pssh = attrs.get('URI','')
 			if pssh.startswith('data:text/plain;base64,'):
-				self.pssh.append(pssh[23:])
+				self.pssh['wv'].append(pssh[23:])
+
+		elif attrs.get('KEYFORMAT','').lower() == 'com.microsoft.playready':
+			# pr drm data
+			uri_parts = attrs.get('URI','').split(';')
+
+			if uri_parts[0].startswith('data:text/plain') and uri_parts[-1].startswith('base64,'):
+				# The data encoded in the URI is a PlayReady Pro Object, so we need convert it to pssh.
+				self.pssh['pr'].append( cenc_init(base64.b64decode(uri_parts[-1][7:].encode('ascii')), PLAYREADY_UUID) )
 
 	def load_segments(self, data):
 		duration = 0.0
@@ -227,7 +233,7 @@ class Hls2Mpd(object):
 				'bandwidth': '100',
 				'id': '1000%d' % i,
 			})
-			if len(p.pssh) > 0:
+			if len(p.pssh['wv']) > 0 or len(p.pssh['pr']) > 0:
 				keys = self.get_drm_keys(p.pssh)
 				if keys:
 					e.set('cenc_decryption_keys', ':'.join(k.replace(':','=') for k in keys))
@@ -250,7 +256,7 @@ class Hls2Mpd(object):
 				'bandwidth': '1000',
 				'id': '10%d' % i,
 			})
-			if len(p.pssh) > 0:
+			if len(p.pssh['wv']) > 0 or len(p.pssh['pr']) > 0:
 				keys = self.get_drm_keys(p.pssh)
 				if keys:
 					e.set('cenc_decryption_keys', ':'.join(k.replace(':','=') for k in keys))

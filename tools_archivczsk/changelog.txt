@@ -1,3 +1,6 @@
+2.22 - 16.12.2025
+    - added support for playready protected hls and dash streams
+
 2.21 - 09.12.2025
     - fixed and updated HLS streams resolver
 
