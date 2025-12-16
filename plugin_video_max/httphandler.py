@@ -37,7 +37,7 @@ class WBDMaxHTTPRequestHandler(DashHTTPRequestHandler):
 				for e_adaptation_set in e_period.findall('{}AdaptationSet'.format(ns)):
 					if cenc_found == False:
 						for e_content_protection in e_adaptation_set.findall('{}ContentProtection'.format(ns)):
-							if e_content_protection.get('schemeIdUri') == 'urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed':
+							if e_content_protection.get('schemeIdUri') in ('urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed', 'urn:uuid:9a04f079-9840-4286-ab92-e65be0885f95'):
 								cenc_found = True
 								break
 
@@ -59,8 +59,11 @@ class WBDMaxHTTPRequestHandler(DashHTTPRequestHandler):
 		# let's do processing by default manifest handler
 		super(WBDMaxHTTPRequestHandler, self).handle_mpd_manifest(base_url, root, bandwidth, dash_info, cache_key)
 
-		# prefer h264, because exteplayer3 has problem with seeking in encrypted h265 and sometimes returns corrupted data
-		video_codec = 'avc1' #self.cp.get_setting('video_codec')
+		if self.cp.is_supporter() and self.cp.drm_failed == False and self.cp.get_setting('drm_playready'):
+			video_codec = self.cp.get_setting('video_codec')
+		else:
+			# prefer h264, because exteplayer3 has problem with seeking in encrypted h265 and sometimes returns corrupted data
+			video_codec = 'avc1'
 
 		# keep only one adaption set for video - player doesn't support smooth streaming
 		for e_period in root.findall('{}Period'.format(ns)):
@@ -69,7 +72,20 @@ class WBDMaxHTTPRequestHandler(DashHTTPRequestHandler):
 				if e_adaptation_set.get('contentType','') == 'video' or e_adaptation_set.get('mimeType','').startswith('video/'):
 					e_adaptation_list.append(e_adaptation_set)
 
+			if len(e_adaptation_list) == 0:
+				# list of video adaptations is empty after filtering - probably we don't have any decryption key
+				self.cp.drm_failed = True
+
 			e_adaptation_list.sort(key=lambda x: (int(x.get('maxHeight', x.find('{}Representation'.format(ns)).get('height'))), x.find('{}Representation'.format(ns)).get('codecs').startswith(video_codec),), reverse=True)
+			if not self.cp.is_supporter():
+				e_adaptation_list2 = []
+				for child2 in e_adaptation_list:
+					if int(child2.get('maxHeight', child2.find('{}Representation'.format(ns)).get('height'))) >= 720:
+						e_period.remove(child2)
+					else:
+						e_adaptation_list2.append(child2)
+				e_adaptation_list = e_adaptation_list2
+
 			for child2 in e_adaptation_list[1:]:
 				e_period.remove(child2)
 

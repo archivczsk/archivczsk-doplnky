@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_max\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-17 17:44+0100\n"
-"PO-Revision-Date: 2025-02-09 18:33+0100\n"
+"POT-Creation-Date: 2025-12-16 11:45+0100\n"
+"PO-Revision-Date: 2025-12-16 11:46+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -16,31 +16,31 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.5\n"
 
-#: plugin_video_max/wbdmax.py:125
+#: plugin_video_max/wbdmax.py:148
 msgid "No response received from server."
 msgstr "Ze serveru nepřišla žádná odpověď."
 
-#: plugin_video_max/wbdmax.py:129
+#: plugin_video_max/wbdmax.py:152
 msgid "Login data expired. Do new pairing of this device with your account."
 msgstr "Platnost přihlašovacích údajů vypršela. Vykonejte nové spárovanání tohto zařízení s vašim účtem."
 
-#: plugin_video_max/wbdmax.py:141
+#: plugin_video_max/wbdmax.py:164
 msgid "Unexpected return code from server"
 msgstr "Neočekávaný návratový kód ze serveru"
 
-#: plugin_video_max/provider.py:70
+#: plugin_video_max/provider.py:74
 msgid "Select profile"
 msgstr "Vyberte profil"
 
-#: plugin_video_max/provider.py:80 plugin_video_max/provider.py:511
+#: plugin_video_max/provider.py:84 plugin_video_max/provider.py:517
 msgid "Enter PIN"
 msgstr "Zadejte PIN"
 
-#: plugin_video_max/provider.py:96
+#: plugin_video_max/provider.py:100
 msgid "You are already logged in. Please exit addon and run it again."
 msgstr "Již jste přihlášen. Ukončete prosím doplněk a spusťte jej znovu."
 
-#: plugin_video_max/provider.py:102
+#: plugin_video_max/provider.py:106
 #, python-brace-format
 msgid ""
 "Go to following URL and enter device code:\n"
@@ -53,128 +53,139 @@ msgstr ""
 "URL: {url}\n"
 "Kód zařízení: {code}"
 
-#: plugin_video_max/provider.py:126
-msgid "Full functionality of this addon is only available for ArchivCZSK product supporters. You can login and list content, but you won't be able to start playback."
-msgstr "Plná funkčnost tohoto doplňku je k dispozici pouze pro podporovatele produktu ArchivCZSK. Můžete se přihlásit a zobrazit obsah, ale nebudete moci spustit přehrávání."
-
-#: plugin_video_max/provider.py:131
+#: plugin_video_max/provider.py:132
 msgid "Start login process"
 msgstr "Spustit proces přihlášení"
 
-#: plugin_video_max/provider.py:131
+#: plugin_video_max/provider.py:132
 msgid "Use this if you want to pair this device with your HBO Max account."
 msgstr "Tuto možnost použijte, pokud chcete toto zařízení spárovat s účtem HBO Max."
 
-#: plugin_video_max/provider.py:134
+#: plugin_video_max/provider.py:135
 msgid "Start login process using provider"
 msgstr "Spustit proces přihlášení pomocí poskytovatele"
 
-#: plugin_video_max/provider.py:134
+#: plugin_video_max/provider.py:135
 msgid "Use this if you use login to HBO Max using provider, like google, amazon, ..."
 msgstr "Použijte to, pokud používáte přihlášení k HBO Max pomocí poskytovatele, jako je Google, Amazon, ..."
 
-#: plugin_video_max/provider.py:141
+#: plugin_video_max/provider.py:142
 msgid "My items"
 msgstr "Moje položky"
 
-#: plugin_video_max/provider.py:143
+#: plugin_video_max/provider.py:144
 msgid "Informations and settings"
 msgstr "Informace a nastavení"
 
-#: plugin_video_max/provider.py:264
+#: plugin_video_max/provider.py:265
 msgid "Remove from viewed"
 msgstr "Odebrat z viděných"
 
-#: plugin_video_max/provider.py:324
+#: plugin_video_max/provider.py:325
 msgid "Trailer"
 msgstr "Trailer"
 
-#: plugin_video_max/provider.py:327
+#: plugin_video_max/provider.py:328
 msgid "Short preview"
 msgstr "Krátký náhled"
 
-#: plugin_video_max/provider.py:330
+#: plugin_video_max/provider.py:331
 msgid "Remove from watchlist"
 msgstr "Vymazat z watchlistu"
 
-#: plugin_video_max/provider.py:332
+#: plugin_video_max/provider.py:333
 msgid "Add to watchlist"
 msgstr "Přidat do watchlistu"
 
-#: plugin_video_max/provider.py:361
+#: plugin_video_max/provider.py:367
 msgid "Go to series"
 msgstr "Jít na seriál"
 
-#: plugin_video_max/provider.py:430
+#: plugin_video_max/provider.py:436
 msgid "Season"
 msgstr "Sezona"
 
-#: plugin_video_max/provider.py:435
+#: plugin_video_max/provider.py:441
 msgid "Profiles"
 msgstr "Profily"
 
-#: plugin_video_max/provider.py:436
+#: plugin_video_max/provider.py:442
 msgid "Devices"
 msgstr "Zařízení"
 
-#: plugin_video_max/provider.py:437
+#: plugin_video_max/provider.py:443
 msgid "Logout"
 msgstr "Odhlásit se"
 
-#: plugin_video_max/provider.py:455
+#: plugin_video_max/provider.py:461
 msgid "Unknown"
 msgstr "Neznámy"
 
-#: plugin_video_max/provider.py:458
+#: plugin_video_max/provider.py:464
 msgid "Created"
 msgstr "Vytvořeno"
 
-#: plugin_video_max/provider.py:459
+#: plugin_video_max/provider.py:465
 msgid "Make"
 msgstr "Značka"
 
-#: plugin_video_max/provider.py:460
+#: plugin_video_max/provider.py:466
 msgid "Model"
 msgstr "Model"
 
-#: plugin_video_max/provider.py:461
+#: plugin_video_max/provider.py:467
 msgid "OS"
 msgstr "OS"
 
-#: plugin_video_max/provider.py:475
+#: plugin_video_max/provider.py:481
 msgid "Do you realy want to delete this device?"
 msgstr "Opravdu chcete smazat toto zařízení?"
 
-#: plugin_video_max/provider.py:487
+#: plugin_video_max/provider.py:493
 msgid "Active profile"
 msgstr "Aktivní profil"
 
-#: plugin_video_max/provider.py:490
+#: plugin_video_max/provider.py:496
 msgid "Pin protected"
 msgstr "Chráněno PIN-em"
 
-#: plugin_video_max/provider.py:493
+#: plugin_video_max/provider.py:499
 msgid "Kids profile"
 msgstr "Dětský profil"
 
-#: plugin_video_max/provider.py:508
+#: plugin_video_max/provider.py:514
 msgid "Do you realy want to switch profile?"
 msgstr "Opravdu chcete přepnut profil?"
+
+#: plugin_video_max/provider.py:617
+msgid "Full stream quality is available only for ArchivCZSK product supporters. Quality of the playback will be limited to SD resolution."
+msgstr "Plná kvalita streamu je k dispozici pouze pro podporovatele produktu ArchivCZSK. Kvalita přehrávání bude omezena na rozlišení SD."
+
+#: plugin_video_max/provider.py:619
+msgid "Playback of stream with quality >=1080p failed. Switching back to 720p quality."
+msgstr "Přehrávání streamu v kvalitě >=1080p selhalo. Přepínám zpět na kvalitu 720p."
+
+#: plugin_video_max/provider.py:621
+msgid "You have enabled 1080p and 4k streams support in addon settings. This option works only in distributions based on python 3.8+ like OpenATV 7.x, OpenPLi > 9.x etc. Update software in you receiver to get better quality streams."
+msgstr "V nastavení doplňku jste povolili podporu streamů v rozlišení 1080p a 4k. Tato možnost funguje pouze v distribucích založených na Pythonu 3.8+, jako jsou OpenATV 7.x, OpenPLi > 9.x atd. Aktualizujte software ve svém přijímači, abyste získali streamy v lepší kvalitě."
 
 msgid "Select profile on startup"
 msgstr "Volba profilu při startu"
 
-msgid "Prefered video codec"
-msgstr "Preferovaný video codec"
+msgid "Enable and prefer multichannel audio"
+msgstr "Povolit a preferovat vícekanálový zvuk"
+
+msgid "Enable 1080p and 4k streams (experimental)"
+msgstr "Povolit streamování v rozlišení 1080p a 4k (experimentální)"
+
+msgid "Prefered video codec for >= 1080p streams"
+msgstr "Preferovaný video kodek pro  >= 1080p streamy"
 
 msgid "h264"
 msgstr ""
 
 msgid "h265"
 msgstr ""
-
-msgid "Enable and prefer multichannel audio"
-msgstr "Povolit a preferovat vícekanálový zvuk"
 
 msgid "Sync playback"
 msgstr "Synchronizovat pozici přehrávanání"
@@ -223,6 +234,12 @@ msgstr "Jazykové kódy povolených titulků"
 
 msgid "Enable login using provider"
 msgstr "Povolit přihlášení pomocí poskytovatele"
+
+#~ msgid "Full functionality of this addon is only available for ArchivCZSK product supporters. You can login and list content, but you won't be able to start playback."
+#~ msgstr "Plná funkčnost tohoto doplňku je k dispozici pouze pro podporovatele produktu ArchivCZSK. Můžete se přihlásit a zobrazit obsah, ale nebudete moci spustit přehrávání."
+
+#~ msgid "Prefered video codec"
+#~ msgstr "Preferovaný video codec"
 
 #~ msgid "Full functionality of this addon is only available for ArchivCZSK product supporters."
 #~ msgstr "Plná funkčnost tohto doplňku je k dispozici jen pro podporovatele produktu ArchivCZSK."

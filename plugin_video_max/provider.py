@@ -9,6 +9,9 @@ from tools_archivczsk.date_utils import iso8601_to_timestamp
 from time import time
 from .wbdmax import WBDMax
 import re
+import sys
+
+is_py2 = (sys.version_info[0] == 2)
 
 class WBDMaxContentProvider(CommonContentProvider):
 
@@ -17,6 +20,7 @@ class WBDMaxContentProvider(CommonContentProvider):
 		self.http_endpoint = http_endpoint
 		self.wbdmax = WBDMax(self)
 		self.scache = SimpleAutokeyExpiringCache()
+		self.drm_failed = False
 
 	# ##################################################################################################################
 
@@ -120,10 +124,7 @@ class WBDMaxContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def root(self):
-		if self.is_supporter():
-			PlayerFeatures.check_latest_exteplayer3(self)
-		else:
-			self.show_info(self._("Full functionality of this addon is only available for ArchivCZSK product supporters. You can login and list content, but you won't be able to start playback."), noexit=True)
+		PlayerFeatures.check_latest_exteplayer3(self)
 
 		self.build_lang_lists()
 
@@ -570,10 +571,21 @@ class WBDMaxContentProvider(CommonContentProvider):
 			'url': data['url'],
 		}
 
-		if drm_info['licence_url']:
+		if drm_info['wv_license_url']:
 			ret_data.update({
-				'drm' : {
-					'licence_url': drm_info['licence_url'],
+				'drm': {
+					'wv' : {
+						'license_url': drm_info['wv_license_url'],
+					}
+				}
+			})
+
+		if drm_info['pr_license_url']:
+			ret_data.update({
+				'drm': {
+					'pr' : {
+						'license_url': drm_info['pr_license_url'],
+					}
 				}
 			})
 
@@ -601,7 +613,13 @@ class WBDMaxContentProvider(CommonContentProvider):
 		if item_id == None and edit_id == None:
 			return
 
-		self.ensure_supporter()
+		if not self.is_supporter():
+			self.show_info(self._("Full stream quality is available only for ArchivCZSK product supporters. Quality of the playback will be limited to SD resolution."), noexit=True)
+		elif self.drm_failed and self.get_setting('drm_playready'):
+			self.show_info(self._("Playback of stream with quality >=1080p failed. Switching back to 720p quality."), noexit=True)
+		elif self.get_setting('drm_playready') and is_py2:
+			self.show_info(self._("You have enabled 1080p and 4k streams support in addon settings. This option works only in distributions based on python 3.8+ like OpenATV 7.x, OpenPLi > 9.x etc. Update software in you receiver to get better quality streams."), noexit=True)
+
 		self.build_lang_lists()
 		data_item = None
 		resume_from = None
@@ -613,13 +631,14 @@ class WBDMaxContentProvider(CommonContentProvider):
 			data_item = src_data[0]
 			resume_from = src_data[1]
 
-		data = self.wbdmax.play(edit_id)
+		data = self.wbdmax.play(edit_id, force_wv=self.drm_failed)
 
 		if data_item:
 			data_item["playableStatus"] = data['manifest']['streamMode'].upper()
 
 		drm_info = {
-			'licence_url': data.get('drm',{}).get('schemes',{}).get('widevine',{}).get('licenseUrl')
+			'wv_license_url': data.get('drm',{}).get('schemes',{}).get('widevine',{}).get('licenseUrl'),
+			'pr_license_url': data.get('drm',{}).get('schemes',{}).get('playready',{}).get('licenseUrl')
 		}
 
 		player_settings = {}

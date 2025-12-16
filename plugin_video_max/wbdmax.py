@@ -4,6 +4,9 @@ from tools_archivczsk.debug.http import dump_json_request
 import uuid
 from time import time
 import json
+import sys
+
+is_py2 = (sys.version_info[0] == 2)
 
 class Status204(Exception):
 	pass
@@ -444,10 +447,20 @@ class WBDMax(object):
 
 	# ##################################################################################################################
 
-	def play(self, edit_id, data_item=None):
-
+	def play(self, edit_id, data_item=None, force_wv=False):
 		playback_session_id = str(uuid.uuid4())
 		app_session_id = str(uuid.uuid1())
+
+		if (not self.cp.is_supporter()) or is_py2 or force_wv or (not self.cp.get_setting('drm_playready')):
+			drm_info = {
+				'drmKeySystem': 'widevine',
+				'maxSecurityLevel': 'L3'
+			}
+		else:
+			drm_info = {
+				'drmKeySystem': 'playready',
+				'maxSecurityLevel': 'sl3000'
+			}
 
 		if data_item:
 			data_item.update({
@@ -511,10 +524,9 @@ class WBDMax(object):
 					}
 				},
 				'contentProtection': {
-					'contentDecryptionModules': [{
-						'drmKeySystem': 'widevine',
-						'maxSecurityLevel': 'L3'
-					}]
+					'contentDecryptionModules': [
+						drm_info
+					]
 				},
 				'manifests': {
 					'formats': {

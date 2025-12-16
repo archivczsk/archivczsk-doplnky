@@ -1,3 +1,8 @@
+1.10 - 16.12.2025
+    - pridaná experimentálna podpora pre streamy v kvalite viac ako 720p
+    - lepšie streamy je nutné povoliť v nastaveniach doplnku
+    - povolenie prehrávania obsahu v SD rozlíšení pre nepodporovateľov ArchivCZSK
+
 1.9 - 21.11.2025
     - oprava radenia sezón
     - oprava pádov pri nekompletných dátach vrátených zo servera
