@@ -832,8 +832,8 @@ class Oneplay(object):
 						'url': asset['src'],
 						'type': 'dash',
 						'drm': {
-							'licence_url': asset['drm'][0]['licenseAcquisitionURL'],
-							'licence_key': asset['drm'][0]['drmAuthorization']['value']
+							'license_url': asset['drm'][0]['licenseAcquisitionURL'],
+							'license_key': asset['drm'][0]['drmAuthorization']['value']
 						}
 					}
 				else:

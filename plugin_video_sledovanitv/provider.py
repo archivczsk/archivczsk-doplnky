@@ -600,7 +600,11 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 			self.log_debug("License URL: %s" % lic_url)
 
 			if lic_url:
-				resp['drm'] = { 'licence_url': lic_url }
+				resp['drm'] = {
+					'wv': {
+						'license_url': lic_url
+					}
+				}
 
 		return resp
 

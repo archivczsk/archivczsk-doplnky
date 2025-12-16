@@ -230,12 +230,14 @@ class VoyoContentProvider(CommonContentProvider):
 			'bandwidth': stream_key['bandwidth'],
 		}
 
-		if drm_info['licence_url'] and drm_info['licence_key']:
+		if drm_info['license_url'] and drm_info['license_key']:
 			ret_data.update({
 				'drm' : {
-					'licence_url': drm_info['licence_url'],
-					'headers': {
-						'X-AxDRM-Message': drm_info['licence_key']
+					'wv': {
+						'license_url': drm_info['license_url'],
+						'headers': {
+							'X-AxDRM-Message': drm_info['license_key']
+						}
 					}
 				}
 			})
@@ -303,8 +305,8 @@ class VoyoContentProvider(CommonContentProvider):
 		content = self.voyo.get_content_info(item_id)
 
 		drm_info = {
-			'licence_url': content.get('licenseUrl'),
-			'licence_key': content.get('licenseKey')
+			'license_url': content.get('licenseUrl'),
+			'license_key': content.get('licenseKey')
 		}
 
 		if content['videoType'] == 'hls':

@@ -1,3 +1,6 @@
+2.5 - 16.12.2025
+    - úprava po zmenách DRM API v závislostiach doplnku
+
 2.4 - 02.12.2025
     - oprava pádu pri vyhľadávaní obrázkov
 

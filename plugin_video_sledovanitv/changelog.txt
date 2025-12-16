@@ -1,3 +1,6 @@
+2.21 - 16.12.2025
+- úprava po zmenách DRM API v závislostiach doplnku
+
 2.20 - 11.12.2025
 - pridanie podpory pre fast kanály (SledovanieTV Family, Comedy, CZ/SK)
 - pridanie podpory pre obsah chránený DRM ochranou

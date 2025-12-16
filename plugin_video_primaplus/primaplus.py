@@ -460,8 +460,8 @@ class PrimaPlus(object):
 			for drminfo in stream.get('drmInfo',{}).get('modularDrmInfos',[]):
 				if drminfo['keySystem'] == 'com.widevine.alpha':
 					drm_info = {
-						'licence_url': drminfo['licenseServerUrl'],
-						'licence_key': drminfo['token']
+						'license_url': drminfo['licenseServerUrl'],
+						'license_key': drminfo['token']
 					}
 
 			ret.append({

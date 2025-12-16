@@ -635,12 +635,14 @@ class OneplayTVContentProvider(ModuleContentProvider):
 		}
 
 		drm_info = cache_data.get('drm', {})
-		if drm_info.get('licence_url') and drm_info.get('licence_key'):
+		if drm_info.get('license_url') and drm_info.get('license_key'):
 			ret_data.update({
 				'drm' : {
-					'licence_url': drm_info['licence_url'],
-					'headers': {
-						'X-AxDRM-Message': drm_info['licence_key']
+					'wv': {
+						'license_url': drm_info['license_url'],
+						'headers': {
+							'X-AxDRM-Message': drm_info['license_key']
+						}
 					}
 				}
 			})

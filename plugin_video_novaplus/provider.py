@@ -344,9 +344,11 @@ class TVNovaContentProvider(CommonContentProvider):
 		if drm:
 			ret.update({
 				'drm' : {
-					'licence_url': drm["license_url"],
-					'headers': {
-						'X-AxDRM-Message': drm['token']
+					'wv': {
+						'license_url': drm["license_url"],
+						'headers': {
+							'X-AxDRM-Message': drm['token']
+						}
 					}
 				}
 			})
