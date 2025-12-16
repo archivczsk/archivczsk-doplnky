@@ -4,6 +4,7 @@ from datetime import datetime, date, timedelta
 import time
 import json
 from hashlib import md5
+from functools import partial
 
 from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPModuleLiveTV, CPModuleArchive, CPModuleTemplate, CPModuleSearch
 from tools_archivczsk.contentprovider.exception import LoginException
@@ -393,6 +394,79 @@ class SledovaniTVModuleRecordings(CPModuleTemplate):
 
 # #################################################################################################
 
+class SledovaniTVModuleVOD(CPModuleTemplate):
+
+	def __init__(self, content_provider):
+		CPModuleTemplate.__init__(self, content_provider, content_provider._("Video library"))
+
+	# #################################################################################################
+
+	def root(self):
+		self.cp.ensure_supporter()
+		for item in self.cp.sledovanitv.get_vod_categories():
+			self.cp.add_dir(item['title'], cmd=self.list_vod_category, category_id=item['id'])
+
+	# #################################################################################################
+
+	def list_vod_category(self, category_id):
+		for item in self.cp.sledovanitv.get_vod_category(category_id):
+			if item['type'] == 'vodEntry':
+				vod_id=item['id'].split(':')[1]
+				self.cp.add_video(item['title'], item.get('poster',{}).get('url'), info_labels=partial(self.load_info_labels, vod_id=vod_id, duration=item['stream']['duration']), cmd=self.get_vod_stream, video_title=item['title'], vod_id=vod_id)
+			elif item['type'] == 'vodSeries':
+				self.cp.add_dir(item['title'], item.get('poster',{}).get('url'), info_labels=partial(self.load_info_labels, series_id=item['id']), cmd=self.list_vod_serie, item_id=item['id'])
+			else:
+				self.cp.log_error("Unsupported VOD type: %s" % item['type'])
+
+
+	# #################################################################################################
+
+	def load_info_labels(self, vod_id=None, series_id=None, duration=None):
+		if series_id:
+			item_info = self.cp.sledovanitv.get_vod_item_detail(series_id)
+		else:
+			item_info = self.cp.sledovanitv.get_vod_info(vod_id)
+
+		genres = item_info.get('genres',[]) or item_info.get('showMeta',{}).get('genres',{}).get('nodes',[])
+
+		return {
+			'plot': item_info.get('description'),
+			'year': item_info.get('year') or item_info.get('showMeta',{}).get('year'),
+			'duration': duration or item_info.get('showMeta',{}).get('duration'),
+			'genre': [g.get('name', g.get('title')) for g in genres or []]
+		}
+
+	# #################################################################################################
+
+	def get_vod_stream(self, video_title, vod_id):
+		url, need_drm = self.cp.sledovanitv.get_vod_stream(vod_id=vod_id)
+		if need_drm:
+			self.ensure_supporter(self._("Playing of DRM protected content is not available for you."))
+
+		return self.cp.resolve_hls_streams(video_title, url, need_drm=need_drm)
+
+	# #################################################################################################
+
+	def list_vod_serie(self, item_id):
+		data = self.cp.sledovanitv.get_vod_item_detail(item_id)['subItems']['nodes']
+		if data and len(data) == 1:
+			return self.list_vod_season(data[0]['id'])
+
+		for item in data:
+			self.cp.add_dir(item['showMeta']['shortTitle'], cmd=self.list_vod_season, item_id=item['id'])
+
+	# #################################################################################################
+
+	def list_vod_season(self, item_id):
+		for item in self.cp.sledovanitv.get_vod_season_item(item_id)['subItems']['nodes']:
+			info_labels = {
+				'plot': item.get('description'),
+				'duration': item['stream'].get('duration')
+			}
+			vod_id=item['id'].split(':')[1]
+			self.cp.add_video(item['title'], item.get('poster',{}).get('url'), info_labels=info_labels, cmd=self.get_vod_stream, video_title=item['title'], vod_id=vod_id)
+
+# #################################################################################################
 class SledovaniTVModuleExtra(CPModuleTemplate):
 
 	def __init__(self, content_provider):
@@ -466,12 +540,13 @@ class SledovaniTVContentProvider(ModuleContentProvider):
 		self.bxeg = SledovaniTVBouquetXmlEpgGenerator(self, http_endpoint, None)
 
 		self.modules = [
-			CPModuleSearch(self, 'Vyhledat'),
+			CPModuleSearch(self),
 			SledovaniTVModuleHome(self),
 			SledovaniTVModuleLiveTV(self),
 			SledovaniTVModuleRadio(self),
 			SledovaniTVModuleArchive(self),
 			SledovaniTVModuleRecordings(self),
+			SledovaniTVModuleVOD(self),
 			SledovaniTVModuleExtra(self)
 		]
 

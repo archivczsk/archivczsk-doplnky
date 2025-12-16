@@ -7,7 +7,7 @@ import traceback
 from hashlib import md5
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
 from tools_archivczsk.debug.http import dump_json_request
-from tools_archivczsk.compat import quote
+from tools_archivczsk.compat import quote, urljoin
 from base64 import b64encode
 
 ############### init ################
@@ -105,11 +105,11 @@ class SledovaniTV:
 		err_msg = None
 
 		if not url.startswith('http'):
-			url = 'https://sledovanitv.cz/api/' + url
+			url = urljoin('https://sledovanitv.cz/api/', url)
 
 		try:
 			if data:
-				resp = self.req_session.post(url, data=data, params=params, headers=self.headers)
+				resp = self.req_session.post(url, json=data, params=params, headers=self.headers)
 			else:
 				resp = self.req_session.get(url, params=params, headers=self.headers)
 
@@ -118,7 +118,7 @@ class SledovaniTV:
 			if resp.status_code == 200:
 				ret = resp.json()
 
-				if "status" not in ret or ret['status'] == 0:
+				if ret.get('data') == None and ("status" not in ret or ret['status'] == 0):
 					if ret['error'] == 'not logged' and enable_retry:
 						self.pair_device()
 						self.pin_unlock()
@@ -141,6 +141,22 @@ class SledovaniTV:
 		if err_msg:
 			self.log_function("Sledovani.tv error for URL %s:\n%s" % (url, traceback.format_exc()))
 			self.showError(err_msg)
+
+	# #################################################################################################
+
+	def call_graphql(self, operation_name, query, variables={}):
+		data = {
+			'operationName': operation_name,
+			'query': query.replace('\t', '').replace('\n', ' '),
+			'variables': variables,
+		}
+
+		data = self.call_api('graphql', params = { 'PHPSESSID': self.sessionid }, data=data)
+
+		for result in data.get('data',{}).values():
+			return result
+		else:
+			return None
 
 	# #################################################################################################
 
@@ -551,5 +567,542 @@ class SledovaniTV:
 			return None
 
 		return data['url']
+
+	# #################################################################################################
+
+	def get_vod_categories(self):
+		query = '''query VodCategories
+		{
+			content(id: "vod")
+			{
+				subItems
+				{
+					__typename
+					...VodCategoryContentList
+				}
+			}
+		}
+		fragment VodCategoryContentList on ContentList
+		{
+			nodes
+			{
+				id
+				title
+			}
+		}'''
+
+		result = self.call_graphql("VodCategories", query)
+		return result['subItems']['nodes']
+
+	# #################################################################################################
+
+	def get_vod_category(self, category_id):
+		variables = {
+			"categoryId": category_id,
+			"timeFrom": int(time.time()),
+			"timeTo": int(time.time()),
+			"posterSize": 512,
+			"backdropSize":1280,
+			"quality":40,
+			"capabilities": self.PLAYER_CAPABILITIES,
+			"format":"m3u8",
+			"drmType":"widevine",
+			"overrun":True
+		}
+
+		query = '''query Category($categoryId: ID!, $timeFrom: Float!, $timeTo: Float!, $posterSize: Int!, $backdropSize: Int!, $quality: Int!, $capabilities: String!, $format: String!, $drmType: String!, $overrun: Boolean!)
+		{
+			content(id: $categoryId)
+			{
+				id
+				title
+				subItems
+				{
+					__typename
+					...CategoryContentList
+				}
+				type
+			}
+		}
+		fragment CategoryContentList on ContentList
+		{
+			pageInfo
+			{
+				offset
+				hasNextPage
+			}
+			nodes
+			{
+				__typename
+				id
+				type
+				view
+				title
+				poster(format: { size: $posterSize } )
+				{
+					url
+				}
+				backdrop(format: { size: $backdropSize } )
+				{
+					url
+				}
+				availability
+				{
+					accessFrom
+					accessTo
+					accessProblem
+				}
+				adultRating
+				{
+					obsolete_forAdult
+				}
+				actions
+				{
+					id
+					type
+				}
+				... on PvrRecording
+				{
+					epgTitle
+				}
+				... on IRecording
+				{
+					recordingMeta
+					{
+						channel
+						{
+							id
+							title
+							adultRating
+							{
+								obsolete_forAdult
+							}
+						}
+						obsolete_event
+						{
+							id
+							type
+						}
+					}
+				}
+				... on ChannelEvent
+				{
+					epgTitle
+					start
+					end
+					channel
+					{
+						id
+						type
+						title
+						poster(format: { size: $posterSize } )
+						{
+							url
+						}
+						adultRating
+						{
+							obsolete_forAdult
+						}
+					}
+				}
+				... on Channel
+				{
+					events(from: $timeFrom, to: $timeTo)
+					{
+						nodes
+						{
+							__typename
+							... on ChannelEvent
+							{
+								title
+								start
+								end
+							}
+						}
+					}
+				}
+				... on IPlayable
+				{
+					stream(ops: { quality: $quality format: $format capabilities: $capabilities drmType: $drmType overrun: $overrun } )
+					{
+						__typename
+						... on StorageStream
+						{
+							position
+							timeFrom
+							timeTo
+							duration
+						}
+					}
+					watched
+					{
+						position
+					}
+				}
+				... on IShow
+				{
+					showMeta
+					{
+						mdbTitleID
+					}
+				}
+			}
+		}'''
+
+		response = self.call_graphql("Category", query, variables)
+		return response['subItems']['nodes']
+
+	# #################################################################################################
+
+	def get_vod_item_detail(self, vod_id):
+		variables = {
+			"id": vod_id,
+			"posterSize":512,
+			"backdropSize":1280,
+			"quality":40,
+			"format":"m3u8",
+			"capabilities": self.PLAYER_CAPABILITIES,
+			"drmType":"widevine",
+			"overrun":True,
+			"includeMoreInfo":True
+		}
+
+		query = '''query DetailItemBasic($id: ID!, $posterSize: Int!, $backdropSize: Int!, $quality: Int!, $format: String!, $capabilities: String!, $drmType: String!, $overrun: Boolean!, $includeMoreInfo: Boolean!)
+		{
+			content(id: $id)
+			{
+				__typename
+				id
+				type
+				view
+				title
+				description
+				poster(format: { size: $posterSize } )
+				{
+					url
+				}
+				backdrop(format: { size: $backdropSize } )
+				{
+					url
+				}
+				availability
+				{
+					accessProblem
+					accessFrom
+					accessTo
+				}
+				... on IPlayable
+				{
+					stream(ops: { quality: $quality format: $format capabilities: $capabilities drmType: $drmType overrun: $overrun } )
+					{
+						__typename
+						... on StorageStream
+						{
+							position
+							timeFrom
+							timeTo
+							duration
+							audioLangs
+							{
+								title
+							}
+							subtitleLangs
+							{
+								title
+							}
+						}
+					}
+					watched
+					{
+						position
+					}
+				}
+				... on ChannelEvent
+				{
+					epgTitle
+					channel
+					{
+						id
+						title
+						poster(format: { size: $posterSize } )
+						{
+							url
+						}
+						adultRating
+						{
+							obsolete_forAdult
+						}
+						type
+					}
+					start
+					end
+				}
+				... on PvrRecording
+				{
+					epgTitle
+				}
+				... on IRecording
+				{
+					recordingMeta
+					{
+						channel
+						{
+							id
+							title
+							adultRating
+							{
+								obsolete_forAdult
+							}
+						}
+						start
+						end
+						obsolete_event
+						{
+							id
+						}
+					}
+				}
+				... on IShow
+				{
+					showMeta
+					{
+						year
+						ratingStars
+						duration
+						shortTitle
+						genres
+						{
+							nodes
+							{
+								title
+							}
+						}
+						mdbTitleID
+						origins @include(if: $includeMoreInfo)
+						{
+							nodes
+							{
+								title
+							}
+						}
+						actors @include(if: $includeMoreInfo)
+						{
+							nodes
+							{
+								title
+							}
+						}
+						directors @include(if: $includeMoreInfo)
+						{
+							nodes
+							{
+								title
+							}
+						}
+					}
+				}
+				subItems
+				{
+					nodes
+					{
+						__typename
+						id
+						... on IShow
+						{
+							showMeta
+							{
+								shortTitle
+							}
+						}
+					}
+				}
+				actions
+				{
+					id
+					title
+					type
+					arguments
+					{
+						name
+						value
+					}
+				}
+			}
+		}'''
+
+		return self.call_graphql("DetailItemBasic", query, variables)
+
+	# #################################################################################################
+
+	def get_vod_info(self, vod_id):
+		params = {
+			'entryId': vod_id,
+			'detail': "events,creators,order,related,comments,categories",
+			'PHPSESSID': self.sessionid,
+		}
+
+		return self.call_api('/vod-api/get-entry', params=params)['entry']
+
+	# #################################################################################################
+
+	def get_vod_stream(self, event_id=None, vod_id=None):
+		if event_id == None:
+			params = {
+				'entryId': vod_id,
+				'detail': "events",
+				'PHPSESSID': self.sessionid,
+			}
+
+			for event in self.call_api('/vod-api/get-entry', params=params)['events']:
+				event_id = event['id']
+				break
+
+		params = {
+			'eventId': event_id,
+			'format': 'm3u8',
+			'drm': 1,
+			'capabilities': self.PLAYER_CAPABILITIES,
+			'quality': 40,
+			'PHPSESSID': self.sessionid,
+		}
+
+		data = self.call_api('/vod-api/get-event-stream', params=params)['stream']
+		return data['url'], data['drm'] == 1
+
+	# #################################################################################################
+
+	def get_vod_season_item(self, vod_id):
+		variables = {
+			"id": vod_id,
+			"posterSize":512,
+			"backdropSize":1280,
+			"quality":40,
+			"format":"m3u8",
+			"capabilities":self.PLAYER_CAPABILITIES,
+			"drmType":"widevine",
+			"overrun":True
+		}
+		query = '''query SeasonItem($id: ID!, $posterSize: Int!, $backdropSize: Int!, $quality: Int!, $format: String!, $capabilities: String!, $drmType: String!, $overrun: Boolean!)
+		{
+			content(id: $id)
+			{
+				__typename id
+				... on IShow
+				{
+					showMeta
+					{
+						shortTitle
+					}
+				}
+				subItems
+				{
+					__typename
+					...EpisodeContentListDetail
+				}
+			}
+		}
+		fragment EpisodeContentListDetail on ContentList
+		{
+			nodes
+			{
+				__typename
+				id
+				type
+				view
+				title
+				description
+				poster(format: { size: $posterSize } )
+				{
+					url
+				}
+				backdrop(format: { size: $backdropSize } )
+				{
+					url
+				}
+				availability
+				{
+					accessFrom
+					accessTo
+					accessProblem
+				}
+				... on ChannelEvent
+				{
+					epgTitle
+					channel
+					{
+						id
+						title
+						adultRating
+						{
+							obsolete_forAdult
+						}
+					}
+					start
+					end
+				}
+				... on PvrRecording
+				{
+					epgTitle
+				}
+				... on IRecording
+				{
+					recordingMeta
+					{
+						channel
+						{
+							id
+							title
+							adultRating
+							{
+								obsolete_forAdult
+							}
+						}
+						start
+						end
+						obsolete_event
+						{
+							id
+						}
+					}
+				}
+				... on IShow
+				{
+					showMeta
+					{
+						duration
+						shortTitle
+						episodeNo
+						seasonNo
+						mdbTitleID
+					}
+				}
+				... on IPlayable
+				{
+					stream(ops: { quality: $quality format: $format capabilities: $capabilities drmType: $drmType overrun: $overrun } )
+					{
+						__typename
+						... on StorageStream
+						{
+							position
+							timeFrom
+							duration
+						}
+					}
+				}
+				shortActions
+				{
+					id
+					title
+					type
+					arguments
+					{
+						name
+						value
+					}
+				}
+			}
+		}'''
+
+		return self.call_graphql("SeasonItem", query, variables)
 
 	# #################################################################################################
