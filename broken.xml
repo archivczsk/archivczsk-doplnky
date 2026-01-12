@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <addons>
-<addon id="plugin.video.eurosport" name="Eurosport player" version="1.11" broken="Prevádzka služby eurosport player bola ukončená." />
-<addon id="plugin.video.hbomax" name="HBO Max (old)" version="1.1" broken="Toto je doplnok pre starú verziu služby HBO Max. Ak ju chcete používať, tak použite nový doplnok." />
-<addon id="plugin.video.joj.sk" name="TV Joj" version="1.7.0" broken="Videoportál TV JOJ bol ukončený. Prejdite na doplnok JOJ Play." />
-<addon id="plugin.video.mall.tv" name="Fameplay and Mall.tv" version="1.10" broken="Doplnok už nie je viac udržiavaný." />
-<addon id="plugin.video.sc2" name="Stream Cinema Community" version="3.25" broken="Služba Stream Cinema Community ukončila prevádzku." />
-<addon id="plugin.video.iprima" name="iPrima" version="1.14" broken="Prevádzka služby iPrima bola prevádzkovateľom ukončená. Prejdite na doplnok Prima+." />
-<addon id="plugin.video.archivo2tv" name="Archív O2TV" version="1.11.0" broken="Prevádzka služby O2TV bola ukončená. Pokračovaním je služba Oneplay." />
-<addon id="plugin.video.o2tv" name="O2TV" version="1.33" broken="Prevádzka služby O2TV bola ukončená. Pokračovaním je služba Oneplay." />
+<addon id="plugin.video.eurosport" name="Eurosport player" version="1.0" broken="Prevádzka služby eurosport player bola ukončená." />
+<addon id="plugin.video.hbomax" name="HBO Max (old)" version="1.0" broken="Toto je doplnok pre starú verziu služby HBO Max. Ak ju chcete používať, tak použite nový doplnok." />
+<addon id="plugin.video.joj.sk" name="TV Joj" version="1.0.0" broken="Videoportál TV JOJ bol ukončený. Prejdite na doplnok JOJ Play." />
+<addon id="plugin.video.mall.tv" name="Fameplay and Mall.tv" version="1.0" broken="Doplnok už nie je viac udržiavaný." />
+<addon id="plugin.video.sc2" name="Stream Cinema Community" version="1.0" broken="Služba Stream Cinema Community ukončila prevádzku." />
+<addon id="plugin.video.iprima" name="iPrima" version="1.0" broken="Prevádzka služby iPrima bola prevádzkovateľom ukončená. Prejdite na doplnok Prima+." />
+<addon id="plugin.video.archivo2tv" name="Archív O2TV" version="1.0.0" broken="Prevádzka služby O2TV bola ukončená. Pokračovaním je služba Oneplay." />
+<addon id="plugin.video.o2tv" name="O2TV" version="1.0" broken="Prevádzka služby O2TV bola ukončená. Pokračovaním je služba Oneplay." />
 </addons>
