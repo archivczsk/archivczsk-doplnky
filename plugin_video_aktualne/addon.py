@@ -53,36 +53,39 @@ class VideoAktualneContentProvider(ContentProvider):
 
 	def search(self,keyword):
 		result = []
-		html = util.request(self.base_url+"hledani/?query="+keyword+"&time=time&section=b:site:video", headers=HEADERS)
-		items = re.compile('data-ga4-type="article".*?data-ga4-section="(.*?)".*?data-ga4-title="(.*?)".*?class="timeline__label">(.*?)<.*?href="(.*?)".*?img src="(.*?)".*? fa-play.*?</span>(.*?)<', re.DOTALL).findall(html)
-		for (msection, mtitle, mpublished, murl, mimg, mtime) in items:
+		html = util.request(BASE + "/vyhledavani?q="+keyword+"&sort=revised_and_published_at_desc&tab=Video+%C4%8Dl%C3%A1nky", headers=HEADERS)
+		items = re.findall('<article .*?<img .*?src="(.*?)".*?e-web-aktualne-articles-badge__content">(.*?)<.*?<a .*?href="(.*?)".*?>(.*?)</a>.*?e-web-aktualne-articles-card-horizontal__perex.*?>(.*?)<.*?</article>', html)
+		for (mimg, mtime, murl, mtitle, mperex) in items:
 			itm = self.video_item()
 			if not murl.startswith('http'): murl = BASE + murl
 			if mimg.startswith('//'): mimg = 'https:' + mimg
 			itm['url'] = murl
 			itm['img'] = mimg
-			itm['title'] = mtitle
-			itm['plot'] = mpublished.strip() + " [" + msection + "] (" + mtime.strip() + ") - " + mtitle
+			itm['title'] = re.sub('<[^<]+?>', '', mtitle).strip()
+			itm['plot'] = "(" + mtime + ") - " + mperex
 			result.append(itm)
+		mnext = re.search(r'<a(?=[^>]*aria-label\s*=\s*"next")(?=[^>]*href\s*=\s*"([^"]+)")[^>]*>', html)
+		if mnext:
+			result.append(self.dir_item('další', BASE + mnext.group(1)))
 		return result
 
 	def categories(self, url=None):
 		result = []
-		if not url: url = self.base_url+"?offset=1"
+		if not url: url = BASE + "/?page=1"
 		html = util.request(url, headers=HEADERS)
-		items = re.compile('class="third-box">.*?<.*?__section.*?>(.*?)</.*?>.*?<a href="(.*?)".*?<img src="(.*?)".*? fa-play.*?</span>(.*?)<.*?<h3 .*?>(.*?)<', re.DOTALL).findall(html)
-		for (msection, murl, mimg, mtime, mtitle) in items:
+		items = re.findall('<article .*?<img .*?src="(.*?)".*?<a .*?href="(.*?)".*?>(.*?)</a>.*?&quot;type&quot;:&quot;(.*?)&quot;.*?&quot;section&quot;:&quot;(.*?)&quot;.*?&quot;published&quot;:&quot;(.*?)&quot;.*?</article>', html)
+		for (mimg, murl, mtitle, mtype, msection, mpub) in items:
 			itm = self.video_item()
 			if not murl.startswith('http'): murl = BASE + murl
 			if mimg.startswith('//'): mimg = 'https:' + mimg
 			itm['url'] = murl
 			itm['img'] = mimg
-			itm['title'] = mtitle.strip()
-			itm['plot'] = " [" + msection.strip() + "] (" + mtime.strip() + ") - " + mtitle.strip()
+			itm['title'] = re.sub('<[^<]+?>', '', mtitle).strip()
+			itm['plot'] = " [" + msection.strip() + "] (" + mpub.strip() + ") - " + re.sub('<[^<]+?>', '', mtitle).strip()
 			result.append(itm)
-		mnext = re.search('btn--right.*?href="/\?offset=([0-9]+)', html, re.DOTALL)
+		mnext = re.search(r'<a(?=[^>]*aria-label\s*=\s*"next")(?=[^>]*href\s*=\s*"([^"]+)")[^>]*>', html)
 		if mnext:
-			result.append(self.dir_item('další', re.sub(r'offset=\d+', 'offset=%s' % (int(mnext.group(1))), self.base_url + "?offset=1")))
+			result.append(self.dir_item('další', BASE + mnext.group(1)))
 		return result
 
 	def list(self, url):
@@ -90,33 +93,24 @@ class VideoAktualneContentProvider(ContentProvider):
 
 	def resolve(self, item, captcha_cb=None, select_cb=None):
 		result = []
-
 		self.info("URL: %s" % item['url'] )
-
-		item['url'] = "https://video.aktualne.cz/embed_iframe/%s" % item['url'].split('/', 3)[3]
-
 		html = util.request(item['url'], headers=HEADERS)
-
-		# title = re.search('<meta property="og:title" content="(.*?)"', html, re.S).group(1) or ""
-		# image = re.search('<meta property="og:image" content="(.*?)"', html, re.S).group(1) or None
-		# descr = re.search('<meta property="og:description" content="(.*?)"', html, re.S).group(1) or None
-
-		bbx = re.search('setup: Object.assign\((.*?)autoplay: BBX', html, re.S)
-		# bbx = re.search('BBXPlayer.setup\((.*?)\);', html, re.S)
-		bbxg = bbx.group(1)
-		bbxg = bbxg.rsplit(',', 1)[0];
-		bbxj = json.loads(re.sub('\s+',' ',bbxg).strip())
-		title = bbxj['title']
-
-		if bbxj['tracks']['MP4']:
-			for version in bbxj['tracks']['MP4']:
-				itm = self.video_item()
-				itm['title'] = title
-				itm['surl'] = title
-				itm['quality'] = version['label']
-				itm['url'] = version['src']
-				itm['headers'] = HEADERS
-				result.append(itm)
+		mp4 = re.search('"MP4":\[\{"src":"(.*?)","type":"video/mp4","label":"1080p"\}', html)
+		if not mp4:
+			mp4 = re.search('"contentUrl":"(.*?)"', html)
+		if not mp4:
+			iframe = re.search('iframe_url: "(.*?)"', html)
+			if iframe:
+				html = util.request("https:" + iframe.group(1), headers=HEADERS)
+				mp4 = re.search('"MP4":\[\{"src":"(.*?)","type":"video/mp4","label":"1080p"\}', html)
+		if mp4:
+			self.info("MP4: %s" % mp4.group(1) )
+			itm = self.video_item()
+			itm['title'] = item['title']
+			itm['surl'] = item['title']
+			itm['url'] = mp4.group(1)
+			itm['headers'] = HEADERS
+			result.append(itm)
 		if len(result) > 0 and select_cb:
 			return select_cb(result)
 		return result
