@@ -6,14 +6,7 @@ from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.string_utils import _I, _C, _B, decode_html
 from tools_archivczsk.cache import SimpleAutokeyExpiringCache
 from tools_archivczsk.parser.js import get_js_data
-import sys
 import re, json
-
-try:
-	from bs4 import BeautifulSoup
-	bs4_available = True
-except:
-	bs4_available = False
 
 COMMON_HEADERS = {
 	'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36',
@@ -51,6 +44,7 @@ class TVNovaContentProvider(CommonContentProvider):
 		self.req_session.headers.update(COMMON_HEADERS)
 		self.scache = SimpleAutokeyExpiringCache()
 		self.login_ok = False
+		self.beautifulsoup = self.get_beautifulsoup()
 
 	# ##################################################################################################################
 
@@ -145,17 +139,13 @@ class TVNovaContentProvider(CommonContentProvider):
 			return response
 
 		if response.status_code == 200:
-			return BeautifulSoup(response.content, "html.parser")
+			return self.beautifulsoup(response.content, "html.parser")
 		else:
 			raise AddonErrorException(self._('HTTP response code') + ': %d' % response.status_code)
 
 	# ##################################################################################################################
 
 	def root(self):
-		if not bs4_available:
-			self.show_info(self._("In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\npython{0}-beautifulsoup4 or python{0}-bs4)").format('3' if sys.version_info[0] == 3 else ''))
-			return
-
 		if self.login_ok:
 			self.add_video('Nova', cmd=self.resolve_video, video_title="Nova", url="sledujte-zive/1-nova", download=False)
 			self.add_video('Nova Cinema', cmd=self.resolve_video, video_title="Nova Cinema", url="sledujte-zive/2-nova-cinema", download=False)

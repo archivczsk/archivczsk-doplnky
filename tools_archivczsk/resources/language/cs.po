@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tools_archivczsk\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-28 10:14+0100\n"
+"POT-Creation-Date: 2026-01-14 15:33+0100\n"
 "PO-Revision-Date: 2025-03-28 10:15+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,44 +16,53 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.5\n"
 
-#: tools_archivczsk/contentprovider/provider.py:516
+#: tools_archivczsk/contentprovider/provider.py:549
 msgid "You are not logged in! Check login credentials in addon settings."
 msgstr "Nejste přihlášen! Zkontrolujte přihlačovací údaje v nastaveních doplňku."
 
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:79
+#: tools_archivczsk/contentprovider/provider.py:842
+#, python-brace-format
+msgid ""
+"In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\n"
+"python{0}-beautifulsoup4 or python{0}-bs4"
+msgstr ""
+"K fungování doplňku si musíte pomocí svého správce balíků doinstalovat BeautifulSoup4. Hledejte balík se jménem:\n"
+"python{0}-beautifulsoup4 nebo python{0}-bs4"
+
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:82
 #, python-brace-format
 msgid "There is no space left in directory {dir}."
 msgstr "V adresáři {dir} není dostatek volného místa."
 
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:243
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:407
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:294
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:458
 msgid "Login failed"
 msgstr "Přihlášení selhalo"
 
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:249
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:300
 msgid "Login ended with error"
 msgstr "Přihlášeni skončilo chybou"
 
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:454
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:505
 msgid "New search"
 msgstr "Nové hledání"
 
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:463
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:514
 msgid "Remove"
 msgstr "Odstranit"
 
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:464
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:515
 msgid "Edit"
 msgstr "Upravit"
 
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:477
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:487
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:547
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:528
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:538
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:598
 #: tools_archivczsk/contentprovider/extended.py:299
 msgid "Search"
 msgstr "Vyhledat"
 
-#: tools_archivczsk/contentprovider/archivczsk_provider.py:552
+#: tools_archivczsk/contentprovider/archivczsk_provider.py:603
 msgid "Next"
 msgstr "Další"
 

@@ -5,15 +5,8 @@ from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.cache import SimpleAutokeyExpiringCache, ExpiringLRUCache
 from tools_archivczsk.compat import urlparse
 from functools import partial
-import sys
 import re
 from .video_resolver import get_resolver_by_url
-
-try:
-	from bs4 import BeautifulSoup
-	bs4_available = True
-except:
-	bs4_available = False
 
 COMMON_HEADERS = {
 	'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36',
@@ -30,6 +23,7 @@ class DokumentyTvContentProvider(CommonContentProvider):
 		self.req_session.headers.update(COMMON_HEADERS)
 		self.img_cache = SimpleAutokeyExpiringCache(120)
 		self.req_cache = ExpiringLRUCache(30, 600)
+		self.beautifulsoup = self.get_beautifulsoup()
 
 	# ##################################################################################################################
 
@@ -58,7 +52,7 @@ class DokumentyTvContentProvider(CommonContentProvider):
 			if json:
 				soup = response.json()
 			else:
-				soup = BeautifulSoup(response.content, "html.parser")
+				soup = self.beautifulsoup(response.content, "html.parser")
 
 			if use_cache and params == None:
 				self.req_cache.put(url, soup)
@@ -70,10 +64,6 @@ class DokumentyTvContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def root(self):
-		if not bs4_available:
-			self.show_info(self._("In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\npython{0}-beautifulsoup4 or python{0}-bs4)").format('3' if sys.version_info[0] == 3 else ''))
-			return
-
 		self.add_search_dir()
 		self.add_dir(self._("Home"), cmd=self.list_category)
 		self.add_dir(self._("Geography and traveling"), cmd=self.list_category, name='geografie-a-cestovani')

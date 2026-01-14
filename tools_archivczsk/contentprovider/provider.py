@@ -828,3 +828,15 @@ class CommonContentProvider(object):
 
 	def get_http_handler(self):
 		raise Exception("HTTP handler is not registered!")
+
+	def get_beautifulsoup(self):
+		try:
+			from bs4 import BeautifulSoup
+			return BeautifulSoup
+		except:
+			try:
+				from .archivczsk_provider import _
+			except:
+				_ = lambda x: x
+
+			return lambda *args, **kwargs: self.get_nologin_helper(_("In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\npython{0}-beautifulsoup4 or python{0}-bs4").format('3' if sys.version_info[0] == 3 else ''))

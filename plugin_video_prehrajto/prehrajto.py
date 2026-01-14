@@ -7,12 +7,6 @@ from tools_archivczsk.parser.js import get_js_data
 from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.compat import urlparse, parse_qs
 
-
-try:
-	from bs4 import BeautifulSoup
-except:
-	BeautifulSoup = None
-
 try:
 	from urllib import quote
 except:
@@ -28,6 +22,7 @@ class PrehrajTo(object):
 		self.password = None
 		self.is_premium = False
 		self.req_session = self.cp.get_requests_session()
+		self.beautifulsoup = self.cp.get_beautifulsoup()
 
 	# ##################################################################################################################
 
@@ -48,7 +43,7 @@ class PrehrajTo(object):
 		if response.status_code != 200:
 			raise AddonErrorException(self.cp._("Unexpected return code from server") + ": %d" % response.status_code)
 
-		return BeautifulSoup(response.content, 'html.parser')
+		return self.beautifulsoup(response.content, 'html.parser')
 
 	# ##################################################################################################################
 
@@ -110,7 +105,7 @@ class PrehrajTo(object):
 			# wrong login
 			return False
 
-		soup = BeautifulSoup(response.content, 'html.parser')
+		soup = self.beautifulsoup(response.content, 'html.parser')
 		for div in soup.find_all('div', {'class': 'section__content section__content--border'}):
 			p = div.find('p', {'class': 'text-medium margin-bottom-0'})
 			if p != None and 'PREMIUM' in p.get_text():
@@ -124,9 +119,6 @@ class PrehrajTo(object):
 	# ##################################################################################################################
 
 	def search(self, keyword, limit=100, page=1):
-		if BeautifulSoup == None:
-			return [], None
-
 		if not keyword:
 			return [], None
 

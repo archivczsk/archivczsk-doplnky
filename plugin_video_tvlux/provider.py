@@ -7,19 +7,6 @@ from tools_archivczsk.string_utils import _I, _C, _B, decode_html
 from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.compat import quote
 from datetime import date, timedelta, datetime
-import sys
-
-# ##################################################################################################################
-
-try:
-	from bs4 import BeautifulSoup
-	bs4_available = True
-except:
-	bs4_available = False
-
-COMMON_HEADERS = {
-	'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36',
-}
 
 # ##################################################################################################################
 
@@ -30,8 +17,8 @@ class TVLuxContentProvider(CommonContentProvider):
 	def __init__(self):
 		CommonContentProvider.__init__(self, 'TVLux')
 		self.req_session = self.get_requests_session()
-		self.req_session.headers.update(COMMON_HEADERS)
 		self.days_of_week = (self._('Monday'), self._('Tuesday'), self._('Wednesday'), self._('Thursday'), self._('Friday'), self._('Saturday'), self._('Sunday'))
+		self.beautifulsoup = self.get_beautifulsoup()
 
 	# ##################################################################################################################
 
@@ -61,17 +48,13 @@ class TVLuxContentProvider(CommonContentProvider):
 			return response
 
 		if response.status_code == 200:
-			return BeautifulSoup(response.content, "html.parser")
+			return self.beautifulsoup(response.content, "html.parser")
 		else:
 			raise AddonErrorException(self._('HTTP response code') + ': %d' % response.status_code)
 
 	# ##################################################################################################################
 
 	def root(self):
-		if not bs4_available:
-			self.show_info(self._("In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\npython{0}-beautifulsoup4 or python{0}-bs4)").format('3' if sys.version_info[0] == 3 else ''))
-			return
-
 		self.add_search_dir()
 		self.add_video(self._('TV Lux live'), cmd=self.resolve_streams, video_title="TV Lux", url="https://stream.tvlux.sk/luxtv/luxtv-livestream/playlist.m3u8")
 		self.add_dir(self._("All shows"), cmd=self.list_shows)

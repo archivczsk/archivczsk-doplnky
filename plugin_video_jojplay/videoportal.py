@@ -1,14 +1,7 @@
 # -*- coding: utf-8 -*-
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
 from tools_archivczsk.compat import urlparse, parse_qsl
-import sys
 from tools_archivczsk.cache import ExpiringLRUCache
-
-try:
-	from bs4 import BeautifulSoup
-	bs4_available = True
-except:
-	bs4_available = False
 
 class JojPlayRedirect(Exception):
 	pass
@@ -20,6 +13,7 @@ class JojVideoportal(object):
 		self.cp = content_provider
 		self.req_session = self.cp.get_requests_session()
 		self.req_cache = ExpiringLRUCache(30, 600)
+		self.beautifulsoup = self.cp.get_beautifulsoup()
 
 	# ##################################################################################################################
 
@@ -55,7 +49,7 @@ class JojVideoportal(object):
 			raise JojPlayRedirect(response.url)
 
 		if response.status_code == 200:
-			soup = BeautifulSoup(response.content, "html.parser")
+			soup = self.beautifulsoup(response.content, "html.parser")
 
 			if use_cache and params == None:
 				self.req_cache.put(url, soup)
@@ -67,10 +61,6 @@ class JojVideoportal(object):
 	# ##################################################################################################################
 
 	def root(self):
-		if not bs4_available:
-			self.cp.show_info(self._("In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\npython{0}-beautifulsoup4 or python{0}-bs4)").format('3' if sys.version_info[0] == 3 else ''))
-			return
-
 		soup = self.call_api('relacie')
 
 		for a in soup.find_all('a'):

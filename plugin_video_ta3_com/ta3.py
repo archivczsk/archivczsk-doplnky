@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import requests
-from bs4 import BeautifulSoup
 import json
 import re
 
@@ -17,6 +16,7 @@ class TA3(object):
 		self.req_session = self.cp.get_requests_session() if self.cp != None else requests.Session()
 		self.req_session.headers.update(COMMON_HEADERS)
 		self.base_url = 'https://www.ta3.com'
+		self.beautifulsoup = self.cp.get_beautifulsoup()
 
 	# ##################################################################################################################
 
@@ -27,7 +27,7 @@ class TA3(object):
 		response = self.req_session.get(url, params=params)
 
 		if response.status_code == 200:
-			return BeautifulSoup(response.content, "html.parser")
+			return self.beautifulsoup(response.content, "html.parser")
 		else:
 			raise Exception('HTTP response code: %d for page %s' % (response.status_code, url))
 

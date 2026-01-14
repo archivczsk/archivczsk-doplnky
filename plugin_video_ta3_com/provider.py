@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
 from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from tools_archivczsk.contentprovider.exception import AddonErrorException
-import sys
-
-try:
-	from bs4 import BeautifulSoup
-	bs4_available = True
-except:
-	bs4_available = False
 
 class Ta3ContentProvider(CommonContentProvider):
 
@@ -18,10 +11,6 @@ class Ta3ContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def root(self):
-		if not bs4_available:
-			self.show_info(self._("In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\npython{0}-beautifulsoup4 or python{0}-bs4)").format('3' if sys.version_info[0] == 3 else ''))
-			return
-
 		if self.ta3 == None:
 			from .ta3 import TA3
 			self.ta3 = TA3(self)
@@ -46,6 +35,8 @@ class Ta3ContentProvider(CommonContentProvider):
 	def safe_call(self, cmd, *args, **kwargs):
 		try:
 			ret = cmd(*args, **kwargs)
+		except AddonErrorException:
+			raise
 		except:
 			self.log_exception()
 			self.show_error(self._("Error extracting data from ta3.com. Format of the site is probably changed and addon needs to be modified in order to work again. Please report this problem to addon authors."))

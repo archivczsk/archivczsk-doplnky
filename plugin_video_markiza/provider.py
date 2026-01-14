@@ -5,14 +5,7 @@ from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.string_utils import _I, _C, _B, decode_html
 from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.parser.js import get_js_data
-import sys
 import re
-
-try:
-	from bs4 import BeautifulSoup
-	bs4_available = True
-except:
-	bs4_available = False
 
 COMMON_HEADERS = {
 	'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36',
@@ -50,6 +43,7 @@ class MarkizaContentProvider(CommonContentProvider):
 		self.req_session = self.get_requests_session()
 		self.req_session.headers.update(COMMON_HEADERS)
 		self.login_ok = False
+		self.beautifulsoup = self.get_beautifulsoup()
 
 	# ##################################################################################################################
 
@@ -144,17 +138,13 @@ class MarkizaContentProvider(CommonContentProvider):
 			return response
 
 		if response.status_code == 200:
-			return BeautifulSoup(response.content, "html.parser")
+			return self.beautifulsoup(response.content, "html.parser")
 		else:
 			raise AddonErrorException(self._('HTTP response code') + ': %d' % response.status_code)
 
 	# ##################################################################################################################
 
 	def root(self):
-		if not bs4_available:
-			self.show_info(self._("In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\npython{0}-beautifulsoup4 or python{0}-bs4)").format('3' if sys.version_info[0] == 3 else ''))
-			return
-
 		if self.login_ok:
 			self.add_video('Markíza Live', cmd=self.resolve_video, video_title="Markíza Live", url="live/1-markiza", download=False)
 
