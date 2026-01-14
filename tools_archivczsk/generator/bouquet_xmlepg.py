@@ -117,13 +117,13 @@ class BouquetXmlEpgGenerator(object):
 	automaticaly run the generation of bouquet and xml epg or delete it. It will also run periodic check and refresh when
 	something changes. Check will be run every 4 hour by default and xml epg data are refreshed every 20 hours.
 	'''
-	def __init__(self, content_provider, http_endpoint, login_settings_names=('username', 'password'), user_agent=None, channel_types=('tv',)):
+	def __init__(self, content_provider, http_endpoint=None, login_settings_names=('username', 'password'), user_agent=None, channel_types=('tv',)):
 		''' content_provider shoould be based on CommonContentProvider '''
 		self.prefix = content_provider.get_addon_id(short=True)
 		self.name = content_provider.name
 		self.cp = content_provider
 		self.user_agent = user_agent
-		self.http_endpoint = http_endpoint
+		self.http_endpoint = http_endpoint or self.cp.http_endpoint
 
 		profile_info = self.get_profile_info()
 
@@ -132,8 +132,11 @@ class BouquetXmlEpgGenerator(object):
 
 		if profile_info is not None:
 			self.tid = 0x1 + crc32((self.prefix + profile_info[0]).encode('utf-8')) % 0xFFFE
+			self.cp.log_debug("Bouquet generator initialised for profile %s; TID: 0x%x" % (profile_info[1], self.tid))
 		else:
 			self.tid = 0x1 + crc32(self.prefix.encode('utf-8')) % 0xFFFE
+			self.cp.log_debug("Bouquet generator initialised; TID: 0x%x" % self.tid)
+
 		self.onid = SERVICEREF_ONID
 
 		if not hasattr(self, 'bouquet_settings_names'):

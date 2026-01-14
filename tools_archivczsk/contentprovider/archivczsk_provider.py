@@ -5,9 +5,11 @@ from Plugins.Extensions.archivCZSK.engine import client
 from Plugins.Extensions.archivCZSK.engine.tools import task
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.version import version as archivczsk_version
+from Plugins.Extensions.archivCZSK.engine.httpserver import archivCZSKHttpServer
 from .exception import LoginException, AddonErrorException, AddonInfoException, AddonWarningException, AddonSilentExitException
 from ..string_utils import _B
 from collections import OrderedDict
+import inspect
 
 try:
 	basestring
@@ -124,51 +126,37 @@ class ArchivCZSKContentProvider(object):
 
 	__playlist = []
 
-	def __init__(self, provider, addon):
-		self.provider = provider
+	def __init__(self, provider, addon, http_cls=None, *args, **kwargs):
 		self.addon = addon
 		self.addon_id = addon.id
 		self.session = None
+		self.http_handler = None
 
-		if not self.provider.name:
-			self.provider.name = addon.name
+		# check if provider is class - if yes, then instantiate it
+		if inspect.isclass(provider):
+			# initialise provider instance and set interface functions
+			orig_new = getattr(provider, "__new__")
+			provider.__new__ = staticmethod(lambda c, *args, **kwargs: self.__new__provider(provider, c))
+			self.provider = provider(*args, **kwargs)
+			setattr(provider, "__new__", orig_new)
+		else:
+			# old - deprecated method - in this case provider interface is set after __init__() function (no full functionality is available in providers __init__ method)
+			# if not, the use provided instance directly
+			self.provider = provider
+
+			if not self.provider.name:
+				self.provider.name = addon.name
+
+			# set/overwrite interface methods for provider
+			self.set_provider_interface(self.provider)
+			self.log_error("WARNING: Addon %s uses deprecated initialisation. You should pass provider class to ArchivCZSKContentProvider, not instance!" % addon.id)
 
 		self.searches = SearchProvider(addon, self.provider.name)
 		self.login_refresh_running = False
 
-		# set/overwrite interface methods for provider
-		self.provider.add_dir = self.add_dir
-		self.provider.add_search_dir = self.add_search_dir
-		self.provider.add_next = self.add_next
-		self.provider.add_video = self.add_video
-		self.provider.add_play = self.add_play
-		self.provider.add_playlist = self.add_playlist
-		self.provider.sort_content_items = client.sort_items
-		self.provider.create_ctx_menu = self.create_ctx_menu
-		self.provider.add_menu_item = self.add_menu_item
-		self.provider.add_media_menu_item = self.add_media_menu_item
-		self.provider.show_info = self.show_info
-		self.provider.show_error = self.show_error
-		self.provider.show_warning = self.show_warning
-		self.provider.get_yes_no_input = self.get_yes_no_input
-		self.provider.get_list_input = self.get_list_input
-		self.provider.get_text_input = self.get_text_input
-		self.provider.refresh_screen = self.refresh_screen
-		self.provider._ = addon.get_localized_string
-		self.provider.get_lang_code = addon.language.get_language
-		self.provider.get_profile_info = self.get_profile_info
-		self.provider.get_addon_version = lambda: addon.version
-		self.provider.get_engine_version = lambda: archivczsk_version
-		self.provider.get_parental_settings = client.parental_pin.get_settings
-		self.provider.call_another_addon = self.call_another_addon
-		self.provider.get_addon_id = self.get_addon_id
-		self.provider.update_last_command = self.update_last_command
-		self.provider.open_simple_config = self.open_simple_config
-		self.provider.exit_screen = self.exit_screen
-		self.provider.reload_screen = self.reload_screen
-		self.provider.ensure_supporter = self.ensure_supporter
-		self.provider.is_supporter = self.is_supporter
-		self.provider.open_donate_dialog = self.open_donate_dialog
+		if http_cls is not None:
+			self.http_handler = http_cls(self.provider, addon)
+			archivCZSKHttpServer.registerRequestHandler(self.http_handler)
 
 		self.initialised_cbk_called = False
 		self.login_tries = 0
@@ -190,6 +178,68 @@ class ArchivCZSKContentProvider(object):
 			# plan login refresh in background
 			self.log_info("Login status is unknown - planing delayed login in background")
 			self.login_delayed()
+
+	# #################################################################################################
+
+	def __new__provider(self, p, cls, *args, **kwargs):
+		instance = super(p, cls).__new__(cls, *args, **kwargs)
+		self.set_provider_interface(instance)
+		return instance
+
+	# #################################################################################################
+
+	def set_provider_interface(self, provider):
+		# set/override interface methods in provider instance
+		provider.name = self.addon.name
+
+		provider.add_dir = self.add_dir
+		provider.add_search_dir = self.add_search_dir
+		provider.add_next = self.add_next
+		provider.add_video = self.add_video
+		provider.add_play = self.add_play
+		provider.add_playlist = self.add_playlist
+		provider.sort_content_items = client.sort_items
+		provider.create_ctx_menu = self.create_ctx_menu
+		provider.add_menu_item = self.add_menu_item
+		provider.add_media_menu_item = self.add_media_menu_item
+		provider.show_info = self.show_info
+		provider.show_error = self.show_error
+		provider.show_warning = self.show_warning
+		provider.get_yes_no_input = self.get_yes_no_input
+		provider.get_list_input = self.get_list_input
+		provider.get_text_input = self.get_text_input
+		provider.refresh_screen = self.refresh_screen
+		provider._ = self.addon.get_localized_string
+		provider.get_lang_code = self.addon.language.get_language
+		provider.get_profile_info = self.get_profile_info
+		provider.get_addon_version = lambda: self.addon.version
+		provider.get_engine_version = lambda: archivczsk_version
+		provider.get_parental_settings = client.parental_pin.get_settings
+		provider.call_another_addon = self.call_another_addon
+		provider.get_addon_id = self.get_addon_id
+		provider.update_last_command = self.update_last_command
+		provider.open_simple_config = self.open_simple_config
+		provider.exit_screen = self.exit_screen
+		provider.reload_screen = self.reload_screen
+		provider.ensure_supporter = self.ensure_supporter
+		provider.is_supporter = self.is_supporter
+		provider.open_donate_dialog = self.open_donate_dialog
+		provider.get_http_handler = self.get_http_handler
+
+		if not hasattr(provider, 'settings'):
+			provider.settings = self.addon.settings
+
+		if not hasattr(provider, 'data_dir'):
+			provider.data_dir = self.addon.get_info('data_path')
+
+		if not hasattr(provider, 'bgservice'):
+			provider.bgservice = self.addon.bgservice
+
+		if not hasattr(provider, 'http_endpoint'):
+			provider.http_endpoint=archivCZSKHttpServer.getAddonEndpoint(self.addon.id)
+
+		if not hasattr(provider, 'http_endpoint_rel'):
+			provider.http_endpoint_rel=archivCZSKHttpServer.getAddonEndpoint(self.addon.id, relative=True)
 
 	# #################################################################################################
 
@@ -770,5 +820,13 @@ class ArchivCZSKContentProvider(object):
 
 	def open_donate_dialog(self):
 		return client.open_donate_dialog(self.session)
+
+	# #################################################################################################
+
+	def get_http_handler(self):
+		if self.http_handler is None:
+			raise Exception("HTTP handler is not registered using ArchivCZSKContentProvider or you call this method during __init__ when when it is not yet available!")
+
+		return self.http_handler
 
 	# #################################################################################################

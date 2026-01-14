@@ -323,7 +323,7 @@ class ModuleContentProvider(CommonContentProvider):
 	Each used module should be child of CPModuleTemplate
 	'''
 
-	def __init__(self, name='dummy', settings=None, data_dir=None, bgservice=None, modules=[]):
+	def __init__(self, name='', settings=None, data_dir=None, bgservice=None, modules=[]):
 		CommonContentProvider.__init__(self, name, settings, data_dir, bgservice)
 		self.modules = modules
 		self.registered_shortcuts = {}

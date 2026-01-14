@@ -121,10 +121,26 @@ class CommonContentProvider(object):
 	"""
 
 	def __init__(self, name='', settings=None, data_dir=None, bgservice=None):
-		self.name = name
-		self.settings = settings
-		self.bgservice = bgservice if bgservice != None else DummyAddonBackgroundService()
-		self.data_dir = data_dir if data_dir else '/tmp'
+		if name or not hasattr(self, 'name'):
+			self.name = name or "Dummy"
+
+		if not hasattr(self, 'settings'):
+			self.settings = settings
+
+		if data_dir or not hasattr(self, 'data_dir'):
+			self.data_dir = data_dir or '/tmp'
+
+		if bgservice != None or not hasattr(self, 'bgservice'):
+			self.bgservice = bgservice if bgservice != None else DummyAddonBackgroundService()
+
+		if not hasattr(self, 'http_endpoint_rel'):
+			# just dummy http endpoint for testing - normaly it will be set by ArchivCZSKProvider
+			self.http_endpoint_rel = '/%s' % self.name.lower().replace('.', '-').replace('_', '-').replace(' ', '')
+
+		if not hasattr(self, 'http_endpoint'):
+			# just dummy http endpoint for testing - normaly it will be set by ArchivCZSKProvider
+			self.http_endpoint = 'http://127.0.0.1:18888%s' % self.http_endpoint_rel
+
 		self.__initialised_cbks = []
 
 		# if silent_mode is set to True, then addon should not perform any user interaction and should do all work silently
@@ -809,3 +825,6 @@ class CommonContentProvider(object):
 
 	def open_donate_dialog(self):
 		return
+
+	def get_http_handler(self):
+		raise Exception("HTTP handler is not registered!")
