@@ -6,5 +6,4 @@ from .provider import SosacContentProvider
 # #################################################################################################
 
 def main(addon):
-	cp = SosacContentProvider(addon.settings, data_dir=addon.get_info('data_path'), icons_dir=os.path.join(addon.get_info('path'), 'resources', 'icons'))
-	return ArchivCZSKContentProvider(cp, addon)
+	return ArchivCZSKContentProvider(SosacContentProvider, addon, icons_dir=os.path.join(addon.get_info('path'), 'resources', 'icons'))

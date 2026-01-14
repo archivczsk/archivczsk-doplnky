@@ -222,8 +222,8 @@ class OrangeTVModuleExtra(CPModuleTemplate):
 
 class OrangeTVContentProvider(ModuleContentProvider):
 
-	def __init__(self, settings, http_endpoint, http_endpoint_rel, data_dir=None, bgservice=None):
-		ModuleContentProvider.__init__(self, name='OrangeTV', settings=settings, data_dir=data_dir, bgservice=bgservice)
+	def __init__(self):
+		ModuleContentProvider.__init__(self)
 
 		# list of settings used for login - used to auto call login when they change
 		self.login_settings_names = ('username', 'password', 'deviceid')
@@ -234,13 +234,11 @@ class OrangeTVContentProvider(ModuleContentProvider):
 		self.channels_by_key = {}
 		self.channels_by_norm_name = {}
 		self.checksum = None
-		self.http_endpoint = http_endpoint
-		self.http_endpoint_rel = http_endpoint_rel
 
 		if not self.get_setting('deviceid'):
 			self.set_setting('deviceid', OrangeTV.create_device_id())
 
-		self.bxeg = OrangeTVBouquetXmlEpgGenerator(self, http_endpoint, None)
+		self.bxeg = OrangeTVBouquetXmlEpgGenerator(self)
 
 		self.modules = [
 			OrangeTVModuleLiveTV(self),

@@ -259,8 +259,8 @@ class SweetTVModuleExtra(CPModuleTemplate):
 
 class SweetTVContentProvider(ModuleContentProvider):
 
-	def __init__(self, settings, http_endpoint, data_dir=None, bgservice=None):
-		ModuleContentProvider.__init__(self, name='SweetTV', settings=settings, data_dir=data_dir, bgservice=bgservice)
+	def __init__(self):
+		ModuleContentProvider.__init__(self, 'SweetTV')
 
 		# list of settings used for login - used to auto call login when they change
 		self.sweettv = self.get_nologin_helper()
@@ -269,10 +269,9 @@ class SweetTVContentProvider(ModuleContentProvider):
 		self.channels_by_key = {}
 		self.channels_by_norm_name = {}
 		self.checksum = None
-		self.http_endpoint = http_endpoint
 		self.last_stream_id = None
 
-		self.bxeg = SweetTVBouquetXmlEpgGenerator(self, http_endpoint, SweetTV.get_user_agent())
+		self.bxeg = SweetTVBouquetXmlEpgGenerator(self, SweetTV.get_user_agent())
 
 		self.modules = [
 			CPModuleSearch(self),

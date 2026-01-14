@@ -1,3 +1,6 @@
+1.5: 14.01.2026
+- úprava inicializácie po zmenách v závislostiach doplnku
+
 1.4: 25.04.2025
 - pridaná možnosť vymazať položku z posledných sledovaných cez kontextové menu
 

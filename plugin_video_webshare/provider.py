@@ -7,10 +7,10 @@ from time import time
 
 class WebshareContentProvider(CommonContentProvider):
 
-	def __init__(self, settings=None, data_dir=None, bgservice=None):
-		CommonContentProvider.__init__(self, 'Webshare.cz', settings=settings, data_dir=data_dir)
+	def __init__(self):
+		CommonContentProvider.__init__(self, 'Webshare.cz')
 		self.login_optional_settings_names = ('username', 'password')
-		self.webshare = Webshare(self, bgservice)
+		self.webshare = Webshare(self)
 		self.watched = self.load_cached_data('watched')
 
 	# ##################################################################################################################

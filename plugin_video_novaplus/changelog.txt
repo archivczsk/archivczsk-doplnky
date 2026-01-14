@@ -1,3 +1,6 @@
+2026-01-14 (verze 3.15)
+* úprava inicializácie po zmenách v závislostiach doplnku
+
 2025-12-16 (verze 3.14)
 * úprava po zmenách DRM API v závislostiach doplnku
 

@@ -23,12 +23,11 @@ class WebshareApiError(AddonErrorException):
 class Webshare():
 	BASE_URL = 'https://webshare.cz'
 
-	def __init__(self, content_provider, bgservice=None):
+	def __init__(self, content_provider):
 		self.cp = content_provider
 		self.page_limit = 100
 		self.device_id = "123456"
 		self.login_data = {}
-		self.bgservice = bgservice
 		self.bg_task_id = None
 		self.cleanup_idents = {}
 		self.req_session = self.cp.get_requests_session()
@@ -239,11 +238,11 @@ class Webshare():
 			self.login_data = {}
 			raise ResolveException(self.cp._("Failed to resolve file") + ": %s" % xml.find('message').text)
 
-		if self.cp.get_setting('cleanup_history') and self.bgservice is not None:
+		if self.cp.get_setting('cleanup_history'):
 			self.cleanup_idents[ident] = True
 
 			if self.bg_task_id == None:
-				self.bg_task_id = self.bgservice.run_in_loop('CleanupWsHistory', 900, self.cleanup_ws_history)
+				self.bg_task_id = self.cp.bgservice.run_in_loop('CleanupWsHistory', 900, self.cleanup_ws_history)
 
 		return xml.find('link').text
 
@@ -253,7 +252,7 @@ class Webshare():
 		if not self.cleanup_idents:
 			if self.bg_task_id != None:
 				# no idents to remove - stop task from being run
-				self.bgservice.run_in_loop_stop(self.bg_task_id)
+				self.cp.bgservice.run_in_loop_stop(self.bg_task_id)
 				self.bg_task_id = None
 
 			return

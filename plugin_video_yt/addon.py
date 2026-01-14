@@ -5,5 +5,4 @@ from .provider import YoutubeContentProvider
 # #################################################################################################
 
 def main(addon):
-	cp = YoutubeContentProvider(addon.settings, data_dir=addon.get_info('data_path'))
-	return ArchivCZSKContentProvider(cp, addon)
+	return ArchivCZSKContentProvider(YoutubeContentProvider, addon)

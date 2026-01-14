@@ -457,15 +457,13 @@ class AntikTVModuleExtra(CPModuleTemplate):
 
 class AntikTVContentProvider(ModuleContentProvider):
 
-	def __init__(self, settings, http_endpoint, data_dir=None, bgservice=None):
-		ModuleContentProvider.__init__(self, name='AntikTV', settings=settings, data_dir=data_dir, bgservice=bgservice)
+	def __init__(self):
+		ModuleContentProvider.__init__(self)
 
 		# list of settings used for login - used to auto call login when they change
 		self.login_settings_names = ('username', 'password')
 
 		self.atk = None
-
-		self.http_endpoint = http_endpoint
 
 		# sometimes it's better to init modules at the end because variables the use are already initialised
 		self.modules = [
@@ -487,7 +485,7 @@ class AntikTVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def post_init(self):
-		self.bxeg = AntikTVBouquetXmlEpgGenerator(self, self.http_endpoint)
+		self.bxeg = AntikTVBouquetXmlEpgGenerator(self)
 		self.bgservice.run_in_loop("loop(ping)", (int(time.time()) % 900) + 1800, self.do_ping)
 
 	# #################################################################################################

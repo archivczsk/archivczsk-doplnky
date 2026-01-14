@@ -1,2 +1,5 @@
+1.1: 14.01.2026
+- úprava inicializácie po zmenách v závislostiach doplnku
+
 1.0: 07.01.2026
 - úvodná verzia - inšpirované kodi doplnkom od VincoNafta (https://github.com/VincoNafta/plugin.video.tvlux.sk)

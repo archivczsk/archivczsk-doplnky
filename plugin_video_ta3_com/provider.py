@@ -11,8 +11,8 @@ except:
 
 class Ta3ContentProvider(CommonContentProvider):
 
-	def __init__(self, settings=None, data_dir=None):
-		CommonContentProvider.__init__(self, 'TA3', settings=settings, data_dir=data_dir)
+	def __init__(self):
+		CommonContentProvider.__init__(self)
 		self.ta3 = None
 
 	# ##################################################################################################################

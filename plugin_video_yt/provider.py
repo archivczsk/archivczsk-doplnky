@@ -47,8 +47,8 @@ def parse_iso8601(s):
 
 class YoutubeContentProvider(CommonContentProvider):
 
-	def __init__(self, settings=None, data_dir=None):
-		CommonContentProvider.__init__(self, 'Youtube', settings=settings, data_dir=data_dir)
+	def __init__(self):
+		CommonContentProvider.__init__(self, 'Youtube')
 		self.watched = self.load_cached_data('watched')
 		self.req_session = self.get_requests_session()
 		self.max_results = 50

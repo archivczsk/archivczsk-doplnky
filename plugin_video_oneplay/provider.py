@@ -456,8 +456,8 @@ class OneplayTVModuleExtra(CPModuleTemplate):
 # #################################################################################################
 
 class OneplayTVContentProvider(ModuleContentProvider):
-	def __init__(self, settings, http_endpoint, data_dir=None, bgservice=None):
-		ModuleContentProvider.__init__(self, name='Oneplay', settings=settings, data_dir=data_dir, bgservice=bgservice)
+	def __init__(self):
+		ModuleContentProvider.__init__(self, 'Oneplay')
 
 		# list of settings used for login - used to auto call login when they change
 		self.login_settings_names = ('username', 'password')
@@ -467,13 +467,12 @@ class OneplayTVContentProvider(ModuleContentProvider):
 		self.channels_by_key = {}
 		self.channels_next_load_time = 0
 		self.checksum = None
-		self.http_endpoint = http_endpoint
 		self.favourites = None
 		self.scache = SimpleAutokeyExpiringCache()
 		self.day_name_short = (self._("Mo"), self._("Tu"), self._("We"), self._("Th"), self._("Fr"), self._("Sa"), self._("Su"))
 		self.register_shortcut('oneplay-md', self.shortcut_oneplay_md)
 
-		self.bxeg = OneplayTVBouquetXmlEpgGenerator(self, http_endpoint, None)
+		self.bxeg = OneplayTVBouquetXmlEpgGenerator(self)
 
 		self.modules = [
 			CPModuleSearch(self),

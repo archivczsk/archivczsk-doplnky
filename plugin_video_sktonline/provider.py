@@ -4,24 +4,19 @@ from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.string_utils import _I, _C, _B, decode_html, strip_accents
 from tools_archivczsk.debug.http import dump_json_request
+from tools_archivczsk.compat import quote
 import re
-
-try:
-	from urllib import quote
-except:
-	from urllib.parse import quote
 
 COMMON_HEADERS = {
 	'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36',
 	'Referer': 'https://online.sktorrent.eu/',
 }
 
-
 class SkTContentProvider(CommonContentProvider):
 	LOGIN_INFO_URL='https://t.ly/S3hh8'
 
-	def __init__(self, settings=None, data_dir=None):
-		CommonContentProvider.__init__(self, 'SkTonline', settings=settings, data_dir=data_dir)
+	def __init__(self):
+		CommonContentProvider.__init__(self, 'SkTonline')
 		self.req_session = self.get_requests_session()
 		self.req_session.headers.update(COMMON_HEADERS)
 		self.avs = None

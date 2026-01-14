@@ -11,9 +11,8 @@ import time
 
 class PrimaPlusContentProvider(CommonContentProvider):
 
-	def __init__(self, settings=None, data_dir=None, http_endpoint=None):
-		CommonContentProvider.__init__(self, 'Prima+', settings=settings, data_dir=data_dir)
-		self.http_endpoint = http_endpoint
+	def __init__(self):
+		CommonContentProvider.__init__(self, 'Prima+')
 		self.primaplus = None
 		self.login_optional_settings_names = ('username', 'password')
 		self.scache = SimpleAutokeyExpiringCache()

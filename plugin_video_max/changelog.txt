@@ -1,3 +1,6 @@
+1.11 - 14.01.2026
+    - úprava inicializácie po zmenách v závislostiach doplnku
+
 1.10 - 16.12.2025
     - pridaná experimentálna podpora pre streamy v kvalite viac ako 720p
     - lepšie streamy je nutné povoliť v nastaveniach doplnku

@@ -174,8 +174,8 @@ class SosacContentProvider(CommonContentProvider):
 	WATCHED_TRESHOLD = 0.8
 	MAX_LOCAL_WATCHED_HISTORY=100
 
-	def __init__(self, settings=None, data_dir=None, icons_dir=None):
-		CommonContentProvider.__init__(self, 'sosac', settings=settings, data_dir=data_dir)
+	def __init__(self, icons_dir=None):
+		CommonContentProvider.__init__(self, 'sosac')
 		self.days_of_week = (_('Monday'), _('Tuesday'), _('Wednesday'), _('Thursday'), 	_('Friday'), _('Saturday'), _('Sunday'))
 		self.icons_dir = icons_dir
 		self.login_optional_settings_names = ('streamujtv_user', 'streamujtv_pass', 'sosac_user', 'sosac_pass')

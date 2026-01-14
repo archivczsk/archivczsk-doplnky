@@ -58,8 +58,8 @@ _KODI_SORT_METHODS = {
 
 class StreamCinemaContentProvider(CommonContentProvider):
 
-	def __init__(self, settings=None, data_dir=None):
-		CommonContentProvider.__init__(self, 'stream-cinema', settings=settings, data_dir=data_dir)
+	def __init__(self):
+		CommonContentProvider.__init__(self, 'stream-cinema')
 		self.login_settings_names = ('kruser', 'krpass')
 		self.tapi = trakttv
 		self.dubbed_lang_list = ['en']

@@ -1,3 +1,6 @@
+2.29: 14.01.2026
+- úprava inicializácie po zmenách v závislostiach doplnku
+
 2.28:
 - oprava nekorektného spracovávania požiadaviek u niektorých programov ako napr. kviff.tv a DVTV
 

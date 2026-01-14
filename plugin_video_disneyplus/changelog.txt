@@ -1,3 +1,6 @@
+2.6 - 14.01.2026
+    - úprava inicializácie po zmenách v závislostiach doplnku
+
 2.5 - 16.12.2025
     - úprava po zmenách DRM API v závislostiach doplnku
 

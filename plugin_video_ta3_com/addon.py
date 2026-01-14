@@ -5,5 +5,4 @@ from .provider import Ta3ContentProvider
 # #################################################################################################
 
 def main(addon):
-	cp = Ta3ContentProvider(addon.settings, data_dir=addon.get_info('data_path'))
-	return ArchivCZSKContentProvider(cp, addon)
+	return ArchivCZSKContentProvider(Ta3ContentProvider, addon)

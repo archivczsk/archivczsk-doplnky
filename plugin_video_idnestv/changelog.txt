@@ -1,4 +1,7 @@
-v1.7 (0ž.12.2025)
+v1.8 (14.01.2026)
+- updated initialisation due changes in dependencies
+
+v1.7 (06.12.2025)
 - new version of addon (rewrite)
 
 v1.6 (03.12.2025)

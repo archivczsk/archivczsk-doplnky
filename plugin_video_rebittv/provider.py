@@ -208,8 +208,8 @@ class RebitTVModuleExtra(CPModuleTemplate):
 
 class RebitTVContentProvider(ModuleContentProvider):
 
-	def __init__(self, settings, http_endpoint, data_dir=None, bgservice=None):
-		ModuleContentProvider.__init__(self, name='RebitTV', settings=settings, data_dir=data_dir, bgservice=bgservice)
+	def __init__(self):
+		ModuleContentProvider.__init__(self)
 
 		# list of settings used for login - used to auto call login when they change
 		self.login_settings_names = ('username', 'password', 'device_name')
@@ -220,9 +220,8 @@ class RebitTVContentProvider(ModuleContentProvider):
 		self.channels_by_norm_name = {}
 		self.channels_next_load_time = 0
 		self.checksum = None
-		self.http_endpoint = http_endpoint
 
-		self.bxeg = RebitTVBouquetXmlEpgGenerator(self, http_endpoint, None)
+		self.bxeg = RebitTVBouquetXmlEpgGenerator(self)
 
 		self.modules = [
 			RebitTVModuleLiveTV(self),

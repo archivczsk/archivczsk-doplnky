@@ -194,8 +194,8 @@ class TellyModuleExtra(CPModuleTemplate):
 
 class TellyContentProvider(ModuleContentProvider):
 
-	def __init__(self, settings, http_endpoint, data_dir=None, bgservice=None):
-		ModuleContentProvider.__init__(self, name='Telly', settings=settings, data_dir=data_dir, bgservice=bgservice)
+	def __init__(self):
+		ModuleContentProvider.__init__(self)
 
 		self.telly = self.get_nologin_helper()
 		self.channels = []
@@ -203,9 +203,8 @@ class TellyContentProvider(ModuleContentProvider):
 		self.channels_by_id = {}
 		self.channels_by_norm_name = {}
 		self.checksum = None
-		self.http_endpoint = http_endpoint
 
-		self.bxeg = TellyBouquetXmlEpgGenerator(self, http_endpoint, None)
+		self.bxeg = TellyBouquetXmlEpgGenerator(self)
 
 		self.modules = [
 			TellyModuleLiveTV(self),

@@ -5,5 +5,4 @@ from .provider import PrehrajtoContentProvider
 # #################################################################################################
 
 def main(addon):
-	cp = PrehrajtoContentProvider(addon.settings, data_dir=addon.get_info('data_path'))
-	return ArchivCZSKContentProvider(cp, addon)
+	return ArchivCZSKContentProvider(PrehrajtoContentProvider, addon)

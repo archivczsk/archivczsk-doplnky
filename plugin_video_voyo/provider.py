@@ -11,9 +11,8 @@ from functools import partial
 
 class VoyoContentProvider(CommonContentProvider):
 
-	def __init__(self, settings=None, data_dir=None, http_endpoint=None):
-		CommonContentProvider.__init__(self, 'Voyo', settings=settings, data_dir=data_dir)
-		self.http_endpoint = http_endpoint
+	def __init__(self):
+		CommonContentProvider.__init__(self, 'Voyo')
 		self.voyo = None
 		self.login_optional_settings_names = ('login_type', 'username', 'password')
 		self.scache = SimpleAutokeyExpiringCache()

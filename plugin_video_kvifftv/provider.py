@@ -8,8 +8,8 @@ from functools import partial
 
 class KviffTvContentProvider(CommonContentProvider):
 
-	def __init__(self, settings=None, data_dir=None):
-		CommonContentProvider.__init__(self, 'Kviff.tv', settings=settings, data_dir=data_dir)
+	def __init__(self):
+		CommonContentProvider.__init__(self, 'Kviff.tv')
 		self.req_session = self.get_requests_session()
 		self.kvifftv = KviffTv(self)
 		self.watched = self.load_cached_data('watched')

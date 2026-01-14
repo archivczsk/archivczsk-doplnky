@@ -7,8 +7,8 @@ import time
 
 class MagioGOBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
-	def __init__(self, content_provider, http_endpoint, user_agent):
-		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=('region', 'username', 'password', 'deviceid', 'devicetype'), user_agent=user_agent)
+	def __init__(self, content_provider):
+		BouquetXmlEpgGenerator.__init__(self, content_provider, login_settings_names=('region', 'username', 'password', 'deviceid', 'devicetype'))
 
 	def logged_in(self):
 		return self.cp.magiogo != None

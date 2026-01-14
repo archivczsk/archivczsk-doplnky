@@ -27,9 +27,8 @@ class TVLuxContentProvider(CommonContentProvider):
 	PAGE_SIZE = 50
 	ARCHIVE_PAGE_SIZE = 365
 
-	def __init__(self, settings=None, data_dir=None, http_endpoint=None):
-		CommonContentProvider.__init__(self, 'TVLux', settings=settings, data_dir=data_dir)
-		self.http_endpoint = http_endpoint
+	def __init__(self):
+		CommonContentProvider.__init__(self, 'TVLux')
 		self.req_session = self.get_requests_session()
 		self.req_session.headers.update(COMMON_HEADERS)
 		self.days_of_week = (self._('Monday'), self._('Tuesday'), self._('Wednesday'), self._('Thursday'), self._('Friday'), self._('Saturday'), self._('Sunday'))

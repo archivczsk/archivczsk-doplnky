@@ -12,9 +12,8 @@ class OneplayTVBouquetGenerator(BouquetGenerator):
 # #################################################################################################
 
 class OneplayTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
-	def __init__(self, content_provider, http_endpoint, user_agent):
-		self.bouquet_settings_names = ('enable_userbouquet', 'enable_adult', 'enable_xmlepg', 'enable_picons', 'player_name')
-		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=('username', 'password'), user_agent=user_agent)
+	def __init__(self, content_provider):
+		BouquetXmlEpgGenerator.__init__(self, content_provider)
 		self.bouquet_generator = OneplayTVBouquetGenerator
 
 	def refresh_bouquet(self):

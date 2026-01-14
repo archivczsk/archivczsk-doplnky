@@ -269,8 +269,8 @@ class MagioGOModuleExtra(CPModuleTemplate):
 
 class MagioGOContentProvider(ModuleContentProvider):
 
-	def __init__(self, settings, http_endpoint, data_dir=None, bgservice=None):
-		ModuleContentProvider.__init__(self, name='MagioGO', settings=settings, data_dir=data_dir, bgservice=bgservice)
+	def __init__(self):
+		ModuleContentProvider.__init__(self)
 
 		# list of settings used for login - used to auto call login when they change
 		self.login_settings_names = ('region', 'username', 'password', 'deviceid', 'devicetype')
@@ -282,12 +282,11 @@ class MagioGOContentProvider(ModuleContentProvider):
 		self.channels_by_norm_name = {}
 		self.epg_next_load_time = 0
 		self.checksum = None
-		self.http_endpoint = http_endpoint
 
 		if not self.get_setting('deviceid'):
 			self.set_setting('deviceid', MagioGO.create_device_id())
 
-		self.bxeg = MagioGOBouquetXmlEpgGenerator(self, http_endpoint, None)
+		self.bxeg = MagioGOBouquetXmlEpgGenerator(self)
 
 		self.modules = [
 			MagioGOModuleLiveTV(self, channel_type='TV'),

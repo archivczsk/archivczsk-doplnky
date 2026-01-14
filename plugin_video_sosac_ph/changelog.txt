@@ -1,3 +1,6 @@
+2.12: 14.01.2026
+- úprava inicializácie po zmenách v závislostiach doplnku
+
 2.11: 02.12.2025
 - pridané Československo do zoznamu krajín v pokročilom vyhľadávaní
 

@@ -1,3 +1,6 @@
+v2.4
+- úprava inicializácie po zmenách v závislostiach doplnku
+
 v2.3
 - rozšírenie podporovaných video formátov z ok.ru
 

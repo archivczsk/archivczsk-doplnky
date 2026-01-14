@@ -268,10 +268,9 @@ class iVysilaniModuleFavourites(CPModuleTemplate):
 
 class iVysilaniContentProvider(ModuleContentProvider):
 
-	def __init__(self, settings=None, data_dir=None, resources_dir=None, http_endpoint=None):
-		ModuleContentProvider.__init__(self, 'iVysilani', settings=settings, data_dir=data_dir)
+	def __init__(self, resources_dir=None):
+		ModuleContentProvider.__init__(self, 'iVysilani')
 		self.resources_dir = resources_dir
-		self.http_endpoint = http_endpoint
 		self.favourites = {}
 		self.ivysilani = iVysilani(self)
 		self.load_favourites()

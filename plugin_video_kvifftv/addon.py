@@ -5,5 +5,4 @@ from .provider import KviffTvContentProvider
 # #################################################################################################
 
 def main(addon):
-	cp = KviffTvContentProvider(addon.settings, data_dir=addon.get_info('data_path'))
-	return ArchivCZSKContentProvider(cp, addon)
+	return ArchivCZSKContentProvider(KviffTvContentProvider, addon)

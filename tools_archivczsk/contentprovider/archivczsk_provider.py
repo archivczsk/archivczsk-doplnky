@@ -36,16 +36,38 @@ class SearchProvider(object):
 	def __init__(self, addon, name):
 		self.data_dir = addon.get_info('data_path')
 		self.name = name
+		self.migrated = {}
+
+	# #################################################################################################
+
+	def _migrate_searches(self, server):
+		# migrate searches from old, deprecated files
+		if server == None:
+			server = ''
+
+		if self.migrated.get(server):
+			return
+
+		old_name = os.path.join(self.data_dir, self.name + server)
+		if os.path.isfile(old_name):
+			new_name = self._get_searches_file(server)
+			if not os.path.exists(new_name):
+				try:
+					os.rename(old_name, new_name)
+					client.log.info("Searches migrated from %s to %s" % (old_name, new_name))
+				except:
+					client.log.error("Failed to migrate searches from %s to %s" % (old_name, new_name))
+					client.log.error(traceback.format_exc())
+
+		self.migrated[server] = True
 
 	# #################################################################################################
 
 	def _get_searches(self, server):
-		if server == None:
-			server = ''
-		local = os.path.join(self.data_dir, self.name + server)
+		self._migrate_searches(server)
 
 		try:
-			with open(local, 'r') as f:
+			with open(self._get_searches_file(server), 'r') as f:
 				searches = json.load(f)
 		except:
 			searches = []
@@ -67,14 +89,19 @@ class SearchProvider(object):
 
 	# #################################################################################################
 
-	def _save_searches(self, searches, server):
-		if server == None:
+	def _get_searches_file(self, server):
+		if server:
+			server = "_" + server.replace(' ', '_')
+		else:
 			server = ''
 
-		local = os.path.join(self.data_dir, self.name + server)
+		return os.path.join(self.data_dir, 'searches' + server + '.json')
 
+	# #################################################################################################
+
+	def _save_searches(self, searches, server):
 		try:
-			with open(local, 'w') as f:
+			with open(self._get_searches_file(server), 'w') as f:
 				json.dump(searches, f)
 		except IOError as e:
 			client.log.error(traceback.format_exc())

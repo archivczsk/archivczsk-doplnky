@@ -44,9 +44,8 @@ def img_res(url):
 
 class TVNovaContentProvider(CommonContentProvider):
 
-	def __init__(self, settings=None, data_dir=None, http_endpoint=None):
-		CommonContentProvider.__init__(self, 'TV Nova', settings=settings, data_dir=data_dir)
-		self.http_endpoint = http_endpoint
+	def __init__(self):
+		CommonContentProvider.__init__(self)
 		self.login_optional_settings_names = ('username', 'password')
 		self.req_session = self.get_requests_session()
 		self.req_session.headers.update(COMMON_HEADERS)

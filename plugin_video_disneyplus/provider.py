@@ -18,18 +18,11 @@ EXTRAS_ID = '83f33e19-3e08-490d-a59a-6ef5cb93f030'
 
 class DisneyPlusContentProvider(CommonContentProvider):
 
-	def __init__(self, settings=None, data_dir=None, http_endpoint=None):
-		CommonContentProvider.__init__(self, 'Disney+', settings=settings, data_dir=data_dir)
-		self.http_endpoint = http_endpoint
-		self.http_handler = None
+	def __init__(self):
+		CommonContentProvider.__init__(self, 'Disney+')
 		self.disneyplus = None
 		self.login_optional_settings_names = ('username', 'password')
 		self.scache = SimpleAutokeyExpiringCache()
-
-	# ##################################################################################################################
-
-	def set_http_handler(self, http_handler):
-		self.http_handler = http_handler
 
 	# ##################################################################################################################
 
@@ -825,7 +818,7 @@ class DisneyPlusContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def prepare_playback_urls(self, media_stream, lic_key):
-		cache_key = self.http_handler.calc_cache_key(media_stream)
+		cache_key = self.get_http_handler().calc_cache_key(media_stream)
 		response = self.disneyplus.req_session.get(media_stream)
 		response.raise_for_status()
 

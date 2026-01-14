@@ -9,11 +9,6 @@ import sys
 import re
 
 try:
-	from urllib import quote
-except:
-	from urllib.parse import quote
-
-try:
 	from bs4 import BeautifulSoup
 	bs4_available = True
 except:
@@ -48,9 +43,8 @@ def img_res(url):
 
 class MarkizaContentProvider(CommonContentProvider):
 
-	def __init__(self, settings=None, data_dir=None, http_endpoint=None):
-		CommonContentProvider.__init__(self, 'Markiza', settings=settings, data_dir=data_dir)
-		self.http_endpoint = http_endpoint
+	def __init__(self):
+		CommonContentProvider.__init__(self)
 		self.last_hls = None
 		self.login_optional_settings_names = ('username', 'password')
 		self.req_session = self.get_requests_session()

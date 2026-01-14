@@ -16,8 +16,8 @@ class TellyEnigmaEpgGenerator(EnigmaEpgGenerator):
 
 class TellyBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
-	def __init__(self, content_provider, http_endpoint, user_agent):
-		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=(), user_agent=user_agent)
+	def __init__(self, content_provider):
+		BouquetXmlEpgGenerator.__init__(self, content_provider, login_settings_names=())
 		self.xmlepg_generator = TellyXmlEpgGenerator
 		self.enigmaepg_generator = TellyEnigmaEpgGenerator
 

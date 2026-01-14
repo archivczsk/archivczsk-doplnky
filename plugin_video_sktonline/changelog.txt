@@ -1,3 +1,6 @@
+2.9: 14.01.2026
+- updated initialisation due changes in dependencies
+
 2.8: 15.09.2024
 - updated addon dependency
 

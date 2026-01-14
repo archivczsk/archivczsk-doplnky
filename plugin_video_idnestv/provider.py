@@ -6,8 +6,8 @@ __baseurl__ = 'https://tv.idnes.cz/'
 
 class IdnesTvContentProvider(CommonContentProvider):
 
-	def __init__(self, settings=None, data_dir=None, icons_dir=None):
-		CommonContentProvider.__init__(self, 'idnestv', settings=settings, data_dir=data_dir)
+	def __init__(self):
+		CommonContentProvider.__init__(self)
 		self.req_session = self.get_requests_session()
 
 	def root(self):

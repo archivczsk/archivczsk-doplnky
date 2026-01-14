@@ -14,10 +14,8 @@ import sys
 is_py2 = (sys.version_info[0] == 2)
 
 class WBDMaxContentProvider(CommonContentProvider):
-
-	def __init__(self, settings=None, data_dir=None, http_endpoint=None):
-		CommonContentProvider.__init__(self, 'Max', settings=settings, data_dir=data_dir)
-		self.http_endpoint = http_endpoint
+	def __init__(self):
+		CommonContentProvider.__init__(self, 'Max')
 		self.wbdmax = WBDMax(self)
 		self.scache = SimpleAutokeyExpiringCache()
 		self.drm_failed = False

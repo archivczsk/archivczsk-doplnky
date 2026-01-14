@@ -13,8 +13,8 @@ except:
 
 class PrehrajtoContentProvider(CommonContentProvider):
 
-	def __init__(self, settings=None, data_dir=None):
-		CommonContentProvider.__init__(self, 'Prehraj.to', settings=settings, data_dir=data_dir)
+	def __init__(self):
+		CommonContentProvider.__init__(self, 'Prehraj.to')
 		self.login_optional_settings_names = ('username', 'password')
 		self.req_session = self.get_requests_session()
 		self.prehrajto = PrehrajTo(self)

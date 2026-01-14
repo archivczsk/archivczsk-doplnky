@@ -15,8 +15,8 @@ class OrangeTVEnigmaEpgGenerator(EnigmaEpgGenerator):
 		self.bxeg.cp.orangetv.saveEpgCache()
 
 class OrangeTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
-	def __init__(self, content_provider, http_endpoint, user_agent):
-		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=('username', 'password', 'deviceid'), user_agent=user_agent)
+	def __init__(self, content_provider):
+		BouquetXmlEpgGenerator.__init__(self, content_provider, login_settings_names=('username', 'password', 'deviceid'))
 		self.xmlepg_generator = OrangeTVXmlEpgGenerator
 		self.enigmaepg_generator = OrangeTVEnigmaEpgGenerator
 

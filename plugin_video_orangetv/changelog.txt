@@ -1,3 +1,6 @@
+2026-01-14 - 2.26
+- úprava inicializácie po zmenách v závislostiach doplnku
+
 2024-03-29 - 2.25
 * oprava funkčnosti po zmenách na strane Orange
 

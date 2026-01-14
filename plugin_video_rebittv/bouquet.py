@@ -32,8 +32,8 @@ class RebitTVEnigmaEpgGenerator(RebitTVEpgGenerator, EnigmaEpgGenerator):
 
 class RebitTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
-	def __init__(self, content_provider, http_endpoint, user_agent):
-		BouquetXmlEpgGenerator.__init__(self, content_provider, http_endpoint, login_settings_names=('username', 'password', 'device_name'), user_agent=user_agent)
+	def __init__(self, content_provider):
+		BouquetXmlEpgGenerator.__init__(self, content_provider, login_settings_names=('username', 'password', 'device_name'))
 		self.xmlepg_generator = RebitTVXmlEpgGenerator
 		self.enigmaepg_generator = RebitTVEnigmaEpgGenerator
 
