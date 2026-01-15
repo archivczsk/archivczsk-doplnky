@@ -1,5 +1,6 @@
 2026-01-14 3.26
     - úprava inicializácie po zmenách v závislostiach doplnku
+    - lepšie ošetrenie stavu, keď server vráti nesprávny formát odpovede
 
 2025-11-20 3.25
     - synchronizácia prihlásenia s doplnkom pre kodi

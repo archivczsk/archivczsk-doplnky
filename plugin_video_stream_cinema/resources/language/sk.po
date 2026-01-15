@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_stream_cinema\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-21 15:49+0200\n"
-"PO-Revision-Date: 2025-10-21 15:50+0200\n"
+"POT-Creation-Date: 2026-01-15 11:11+0100\n"
+"PO-Revision-Date: 2026-01-15 11:12+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -33,7 +33,7 @@ msgid "Wrong response status code"
 msgstr "Nesprávny návratový kód"
 
 #: plugin_video_stream_cinema/kraska.py:162
-#: plugin_video_stream_cinema/kraska.py:201
+#: plugin_video_stream_cinema/kraska.py:213
 msgid "Wrong kra.sk login data"
 msgstr "Nesprávne prihlasovacie údaje pre kra.sk"
 
@@ -45,9 +45,9 @@ msgstr "Predplatné vypršalo"
 msgid "Failed to resolve file address"
 msgstr "Nepodarilo sa získať adresu súboru"
 
-#: plugin_video_stream_cinema/kraska.py:215
-#: plugin_video_stream_cinema/kraska.py:221
-#: plugin_video_stream_cinema/kraska.py:238
+#: plugin_video_stream_cinema/kraska.py:223
+#: plugin_video_stream_cinema/kraska.py:229
+#: plugin_video_stream_cinema/kraska.py:246
 msgid "Failed to upload file"
 msgstr "Nepodarilo sa nahrať súbor"
 
@@ -72,7 +72,7 @@ msgid "Name"
 msgstr "Meno"
 
 #: plugin_video_stream_cinema/provider.py:53
-#: plugin_video_stream_cinema/provider.py:935
+#: plugin_video_stream_cinema/provider.py:927
 msgid "Year"
 msgstr "Rok"
 
@@ -80,217 +80,217 @@ msgstr "Rok"
 msgid "Date added"
 msgstr "Dátum pridania"
 
-#: plugin_video_stream_cinema/provider.py:104
+#: plugin_video_stream_cinema/provider.py:101
 msgid "Wrong username/password provided or subscription for kra.sk expired"
 msgstr "Zadané nesprávne používateľské meno/heslo alebo platnosť predplatného pre kra.sk vypršala"
 
-#: plugin_video_stream_cinema/provider.py:109
-msgid "No kra.sk username and password provided"
-msgstr "Nezadané prihlasovacie meno a heslo pre kra.sk"
-
-#: plugin_video_stream_cinema/provider.py:123
+#: plugin_video_stream_cinema/provider.py:115
 msgid "Subscription for kra.sk expired"
 msgstr "Predplatné pre kra.sk vypršalo"
 
-#: plugin_video_stream_cinema/provider.py:127
+#: plugin_video_stream_cinema/provider.py:119
 #, python-brace-format
 msgid "Subscription for kra.sk will expire in {days} days"
 msgstr "Predplatné pre kra.sk vyprší za {days} dní"
 
-#: plugin_video_stream_cinema/provider.py:194
-#: plugin_video_stream_cinema/provider.py:197
-#: plugin_video_stream_cinema/provider.py:199
-#: plugin_video_stream_cinema/provider.py:201
+#: plugin_video_stream_cinema/provider.py:186
+#: plugin_video_stream_cinema/provider.py:189
+#: plugin_video_stream_cinema/provider.py:191
+#: plugin_video_stream_cinema/provider.py:193
 msgid "Search by name"
 msgstr "Hľadať podľa názvu"
 
-#: plugin_video_stream_cinema/provider.py:195
-#: plugin_video_stream_cinema/provider.py:532
-#: plugin_video_stream_cinema/provider.py:646
+#: plugin_video_stream_cinema/provider.py:187
+#: plugin_video_stream_cinema/provider.py:524
+#: plugin_video_stream_cinema/provider.py:638
 msgid "Search by actor name"
 msgstr "Hľadať podľa mena herca"
 
-#: plugin_video_stream_cinema/provider.py:217
+#: plugin_video_stream_cinema/provider.py:209
 msgid "Play trailer"
 msgstr "Prehrať trailer"
 
-#: plugin_video_stream_cinema/provider.py:251
+#: plugin_video_stream_cinema/provider.py:243
 msgid "Remove from seen"
 msgstr "Odstrániť z videných"
 
-#: plugin_video_stream_cinema/provider.py:379
-#: plugin_video_stream_cinema/provider.py:409
-#: plugin_video_stream_cinema/provider.py:445
-#: plugin_video_stream_cinema/provider.py:454
+#: plugin_video_stream_cinema/provider.py:371
+#: plugin_video_stream_cinema/provider.py:401
+#: plugin_video_stream_cinema/provider.py:437
+#: plugin_video_stream_cinema/provider.py:446
 msgid "Failed to get list from Trakt.tv. If problem persists, unpair and newly pair your device to Trakt.tv."
 msgstr "Nepodarilo sa získať zoznam z Trakt.tv. Ak problém pretrváva, zrušte párovanie a znovu spárujte zariadenie s Trakt.tv."
 
-#: plugin_video_stream_cinema/provider.py:427
+#: plugin_video_stream_cinema/provider.py:419
 msgid "Trakt.tv"
 msgstr "Trakt.tv"
 
-#: plugin_video_stream_cinema/provider.py:429
+#: plugin_video_stream_cinema/provider.py:421
 msgid "My lists"
 msgstr "Moje zoznamy"
 
-#: plugin_video_stream_cinema/provider.py:430
+#: plugin_video_stream_cinema/provider.py:422
 msgid "History"
 msgstr "História"
 
-#: plugin_video_stream_cinema/provider.py:431
+#: plugin_video_stream_cinema/provider.py:423
 msgid "Trending"
 msgstr "Trendy"
 
-#: plugin_video_stream_cinema/provider.py:432
+#: plugin_video_stream_cinema/provider.py:424
 msgid "Popular"
 msgstr "Populárne"
 
-#: plugin_video_stream_cinema/provider.py:434
+#: plugin_video_stream_cinema/provider.py:426
 msgid "Movies"
 msgstr "Filmy"
 
-#: plugin_video_stream_cinema/provider.py:435
+#: plugin_video_stream_cinema/provider.py:427
 msgid "Series"
 msgstr "Seriály"
 
+#: plugin_video_stream_cinema/provider.py:541
 #: plugin_video_stream_cinema/provider.py:549
-#: plugin_video_stream_cinema/provider.py:557
-#: plugin_video_stream_cinema/provider.py:563
-#: plugin_video_stream_cinema/provider.py:651
+#: plugin_video_stream_cinema/provider.py:555
+#: plugin_video_stream_cinema/provider.py:643
 msgid "Search on prehraj.to"
 msgstr "Vyhľadať na prehraj.to"
 
-#: plugin_video_stream_cinema/provider.py:566
-#: plugin_video_stream_cinema/provider.py:639
+#: plugin_video_stream_cinema/provider.py:558
+#: plugin_video_stream_cinema/provider.py:631
 msgid "Show related"
 msgstr "Zobraziť súvisiace"
 
-#: plugin_video_stream_cinema/provider.py:573
+#: plugin_video_stream_cinema/provider.py:565
 msgid "Select actor"
 msgstr "Vyberte herca"
 
-#: plugin_video_stream_cinema/provider.py:705
-#: plugin_video_stream_cinema/provider.py:951
+#: plugin_video_stream_cinema/provider.py:697
+#: plugin_video_stream_cinema/provider.py:943
 msgid "Advanced filtering"
 msgstr "Rozšírené filtrovanie"
 
-#: plugin_video_stream_cinema/provider.py:711
+#: plugin_video_stream_cinema/provider.py:703
 msgid "Order descending (Z-A)"
 msgstr "Zoradiť zostupne (Z-A)"
 
-#: plugin_video_stream_cinema/provider.py:714
+#: plugin_video_stream_cinema/provider.py:706
 msgid "Order ascending (A-Z)"
 msgstr "Zoradiť vzostupne (A-Z)"
 
-#: plugin_video_stream_cinema/provider.py:717
+#: plugin_video_stream_cinema/provider.py:709
 msgid "Sort"
 msgstr "Triedenie"
 
-#: plugin_video_stream_cinema/provider.py:720
+#: plugin_video_stream_cinema/provider.py:712
 msgid "Filter by year"
 msgstr "Filtrovať podľa roku"
 
-#: plugin_video_stream_cinema/provider.py:743
-#: plugin_video_stream_cinema/provider.py:842
+#: plugin_video_stream_cinema/provider.py:735
+#: plugin_video_stream_cinema/provider.py:834
 msgid "Random"
 msgstr "Náhodne"
 
-#: plugin_video_stream_cinema/provider.py:745
+#: plugin_video_stream_cinema/provider.py:737
 msgid "Sort by"
 msgstr "Triediť podľa"
 
-#: plugin_video_stream_cinema/provider.py:754
+#: plugin_video_stream_cinema/provider.py:746
 msgid "Older than"
 msgstr "Staršie ako"
 
-#: plugin_video_stream_cinema/provider.py:754
+#: plugin_video_stream_cinema/provider.py:746
 msgid "Younger than"
 msgstr "Mladšie ako"
 
-#: plugin_video_stream_cinema/provider.py:754
+#: plugin_video_stream_cinema/provider.py:746
 msgid "Exact in year"
 msgstr "Presne v roku"
 
-#: plugin_video_stream_cinema/provider.py:754
-#: plugin_video_stream_cinema/provider.py:757
+#: plugin_video_stream_cinema/provider.py:746
+#: plugin_video_stream_cinema/provider.py:749
 msgid "Choose by year"
 msgstr "Voľba podľa roku"
 
-#: plugin_video_stream_cinema/provider.py:849
+#: plugin_video_stream_cinema/provider.py:841
 msgid "None"
 msgstr "Žiadne"
 
-#: plugin_video_stream_cinema/provider.py:909
+#: plugin_video_stream_cinema/provider.py:901
 msgid "Any"
 msgstr "Akákoľvek"
 
-#: plugin_video_stream_cinema/provider.py:936
+#: plugin_video_stream_cinema/provider.py:928
 msgid "Year sign"
 msgstr "Znamienko pre rok"
 
-#: plugin_video_stream_cinema/provider.py:937
+#: plugin_video_stream_cinema/provider.py:929
 msgid "Show only dubbed"
 msgstr "Zobrazovať len dabovaný obsah"
 
-#: plugin_video_stream_cinema/provider.py:938
+#: plugin_video_stream_cinema/provider.py:930
 msgid "Show only content with subtitles"
 msgstr "Zobrazovať len obsah s titulkami"
 
-#: plugin_video_stream_cinema/provider.py:939
+#: plugin_video_stream_cinema/provider.py:931
 msgid "Show only genre"
 msgstr "Zobraziť len žáner"
 
-#: plugin_video_stream_cinema/provider.py:940
+#: plugin_video_stream_cinema/provider.py:932
 msgid "Don't show genre"
 msgstr "Nezobrazovať žáner"
 
-#: plugin_video_stream_cinema/provider.py:941
+#: plugin_video_stream_cinema/provider.py:933
 msgid "Countries of origin"
 msgstr "Krajiny pôvodu"
 
-#: plugin_video_stream_cinema/provider.py:942
+#: plugin_video_stream_cinema/provider.py:934
 msgid "Exclude countries of origin"
 msgstr "Vynechať krajiny pôvodu"
 
-#: plugin_video_stream_cinema/provider.py:943
+#: plugin_video_stream_cinema/provider.py:935
 msgid "Ranking greater than"
 msgstr "Hodnotenie väčšie ako"
 
-#: plugin_video_stream_cinema/provider.py:944
+#: plugin_video_stream_cinema/provider.py:936
 msgid "Maturity rating"
 msgstr "Vekové obmedzenie"
 
-#: plugin_video_stream_cinema/provider.py:945
+#: plugin_video_stream_cinema/provider.py:937
 msgid "Stream quality"
 msgstr "Kvalita streamu"
 
-#: plugin_video_stream_cinema/provider.py:946
+#: plugin_video_stream_cinema/provider.py:938
 msgid "Show only HDR content"
 msgstr "Zobrazenie iba HDR obsahu"
 
-#: plugin_video_stream_cinema/provider.py:947
+#: plugin_video_stream_cinema/provider.py:939
 msgid "Order by"
 msgstr "Zoradiť podľa"
 
-#: plugin_video_stream_cinema/provider.py:948
+#: plugin_video_stream_cinema/provider.py:940
 msgid "Order descending"
 msgstr "Zoradiť zostupne"
 
-#: plugin_video_stream_cinema/provider.py:1214
+#: plugin_video_stream_cinema/provider.py:1206
 msgid "Please select a stream"
 msgstr "Prosím zvoľte stream"
 
-#: plugin_video_stream_cinema/provider.py:1264
-#: plugin_video_stream_cinema/provider.py:1321
+#: plugin_video_stream_cinema/provider.py:1256
+#: plugin_video_stream_cinema/provider.py:1313
 msgid "Video file not found. It was probably deleted or there is an error in data."
 msgstr "Video súbor nebol nájdený. Pravdepodobne bol vymazaný alebo je chyba v údajoch."
 
-#: plugin_video_stream_cinema/sc_api.py:91
+#: plugin_video_stream_cinema/sc_api.py:93
 msgid "You are not authorized to access Stream Cinema service"
 msgstr "Nemáte oprávnenie na prístup k službe Stream Cinema"
 
-#: plugin_video_stream_cinema/sc_api.py:180
-#: plugin_video_stream_cinema/sc_api.py:182
+#: plugin_video_stream_cinema/sc_api.py:175
+msgid "Stream Cinema server returned in response unexpected data type. Try again later."
+msgstr "Server Stream Cinema vrátil v odpovedi neočakávaný typ údajov. Skúste to neskôr."
+
+#: plugin_video_stream_cinema/sc_api.py:186
+#: plugin_video_stream_cinema/sc_api.py:188
 #, python-brace-format
 msgid ""
 "Stream Cinema service is not available or you don't have access to it.\n"
@@ -436,3 +436,6 @@ msgstr "Povoliť h265/hevc  kodek"
 
 msgid "Maximum size of stream (in GB)"
 msgstr "Maximálna veľkosť streamu (v GB)"
+
+#~ msgid "No kra.sk username and password provided"
+#~ msgstr "Nezadané prihlasovacie meno a heslo pre kra.sk"

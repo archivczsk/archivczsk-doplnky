@@ -168,7 +168,11 @@ class SC_API(object):
 #		dump_json_request(resp)
 
 		if resp.status_code == 200:
-			resp = resp.json()
+			try:
+				resp = resp.json()
+			except:
+				self.cp.log_error("Failed to decode response as json:\n%s" % resp.content)
+				raise AddonErrorException(self.cp._("Stream Cinema server returned in response unexpected data type. Try again later."))
 
 			if data == None:
 				ttl = 3600
