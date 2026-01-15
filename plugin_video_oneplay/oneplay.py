@@ -147,6 +147,7 @@ class Oneplay(object):
 		try:
 			ws_data = json.loads(ws.recv())
 		except WebSocketException as e:
+			ws.close()
 			raise AddonErrorException('{}:\n{}'.format(self._("Failed to read data from server"), str(e)))
 
 		data = {
@@ -193,7 +194,12 @@ class Oneplay(object):
 			self.showError(self._("Received wrong response from server"))
 
 		while True:
-			json_response = json.loads(ws.recv())
+			try:
+				json_response = json.loads(ws.recv())
+			except WebSocketException as e:
+				ws.close()
+				raise AddonErrorException('{}:\n{}'.format(self._("Failed to read data from server"), str(e)))
+
 			if json_response.get('schema') != 'Ping':
 				break
 
