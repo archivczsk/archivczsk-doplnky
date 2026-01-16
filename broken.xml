@@ -8,4 +8,5 @@
 <addon id="plugin.video.iprima" name="iPrima" version="1.0" broken="Prevádzka služby iPrima bola prevádzkovateľom ukončená. Prejdite na doplnok Prima+." />
 <addon id="plugin.video.archivo2tv" name="Archív O2TV" version="1.0.0" broken="Prevádzka služby O2TV bola ukončená. Pokračovaním je služba Oneplay." />
 <addon id="plugin.video.o2tv" name="O2TV" version="1.0" broken="Prevádzka služby O2TV bola ukončená. Pokračovaním je služba Oneplay." />
+<addon id="plugin.video.tv.sme.sk" name="TV SME.sk" version="1.0" broken="Stránka sme.sk bola zmenená a zaviedla ochranu proti prístupu mimo internetového prehliadača. Doplnok viac nie je funkčný a môžete ho v vymazať." />
 </addons>
