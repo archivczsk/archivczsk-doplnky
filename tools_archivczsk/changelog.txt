@@ -1,6 +1,7 @@
-3.0 - 14.01.2026
+3.0 - 16.01.2026
     - rewrite and simplify provider init
     - CommonContentProvider is now fully "glued" with ArchivCZSKContentProvider also during __init__ call
+    - use only global instances of WV and PR CDMs to reduce memory usage
 
 2.22 - 16.12.2025
     - added support for playready protected hls and dash streams

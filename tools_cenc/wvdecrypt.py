@@ -10,6 +10,15 @@ except:
 
 	# just dummy implementation when real one is not available
 	class WvDecrypt(object):
+		__instance = None
+
+		@staticmethod
+		def get_instance():
+			if WvDecrypt.__instance == None:
+				WvDecrypt.__instance = WvDecrypt()
+
+			return WvDecrypt.__instance
+
 		def __init__(self, *args, **kwargs):
 			pass
 

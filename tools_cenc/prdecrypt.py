@@ -10,6 +10,15 @@ except:
 
 	# just dummy implementation when real one is not available
 	class PrDecrypt(object):
+		__instance = None
+
+		@staticmethod
+		def get_instance():
+			if PrDecrypt.__instance == None:
+				PrDecrypt.__instance = PrDecrypt()
+
+			return PrDecrypt.__instance
+
 		def __init__(self, *args, **kwargs):
 			pass
 

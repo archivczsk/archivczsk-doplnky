@@ -1,3 +1,6 @@
+1.10 - 16.01.2026
+- add methods to provide one global instance if WV and PR CMDs
+
 1.9 - 16.12.2025
 - added support for playready (for python 3.8+)
 

@@ -2,6 +2,7 @@
 
 import base64
 import struct
+import os
 from .cdm import cdm, deviceconfig
 from Plugins.Extensions.archivCZSK.engine import client
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
@@ -22,6 +23,15 @@ class DummyLogger(object):
 
 class WvDecrypt(object):
 	WV_SYSTEM_ID = b"\xed\xef\x8b\xa9y\xd6J\xce\xa3\xc8'\xdc\xd5\x1d!\xed"
+
+	__instance = None
+
+	@staticmethod
+	def get_instance():
+		if WvDecrypt.__instance == None:
+			WvDecrypt.__instance = WvDecrypt(os.path.isfile('/tmp/archivczsk_enable_devel_logs'))
+
+		return WvDecrypt.__instance
 
 	def __init__(self, enable_logging=False):
 		if enable_logging:

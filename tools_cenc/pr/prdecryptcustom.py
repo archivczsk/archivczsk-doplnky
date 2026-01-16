@@ -25,6 +25,15 @@ class DummyLogger(object):
 		pass
 
 class PrDecrypt(object):
+	__instance = None
+
+	@staticmethod
+	def get_instance():
+		if PrDecrypt.__instance == None:
+			PrDecrypt.__instance = PrDecrypt()
+
+		return PrDecrypt.__instance
+
 	def __init__(self, enable_logging=False):
 		if os.path.isfile(PR_DEVICE):
 			client.log.info("[PR] Loaded custom CDM device")

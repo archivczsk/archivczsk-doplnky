@@ -87,8 +87,8 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler, object):
 		self.cookie_agent = RedirectAgent(self.cookie_agent)
 
 		self.enable_devel_logs = os.path.isfile('/tmp/archivczsk_enable_devel_logs')
-		self.wvdecrypt = WvDecrypt(enable_logging=self.enable_devel_logs)
-		self.prdecrypt = PrDecrypt(enable_logging=self.enable_devel_logs)
+		self.wvdecrypt = WvDecrypt.get_instance()
+		self.prdecrypt = PrDecrypt.get_instance()
 		self.pssh = {}
 
 	# #################################################################################################
@@ -251,12 +251,18 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler, object):
 								k = self.wvdecrypt.get_content_keys(p, lambda lic_request: self.get_drm_license(wv_drm_info, lic_request), lambda cert_request: self.get_drm_license(wv_drm_info, cert_request))
 							else:
 								k = self.wvdecrypt.get_content_keys(p, lambda lic_request: self.get_drm_license(wv_drm_info, lic_request))
+
+							if not k:
+								self.cp.log_error("Failed to get DRM keys for WV pssh %s" % p)
 						else:
 							self.cp.log_debug("No widevine license URL provided")
 
 					elif drm_type == 'pr':
 						if pr_drm_info:
 							k = self.prdecrypt.get_content_keys(p, lambda lic_request: self.get_drm_license(pr_drm_info, lic_request))
+
+							if not k:
+								self.cp.log_error("Failed to get DRM keys for PR pssh %s" % p)
 						else:
 							self.cp.log_debug("No playready license URL provided")
 
@@ -264,8 +270,6 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler, object):
 					if k:
 						keys.extend(k)
 						self.cp.log_debug("Received %d keys for pssh %s" % (len(k), p))
-					else:
-						self.cp.log_error("Failed to get DRM keys for pssh %s" % p)
 				else:
 					self.cp.log_debug("Keys for pssh %s found in cache" % p)
 					keys.extend(k)
