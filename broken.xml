@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <addons>
-<addon id="plugin.video.eurosport" name="Eurosport player" version="1.0" broken="Prevádzka služby eurosport player bola ukončená." />
-<addon id="plugin.video.hbomax" name="HBO Max (old)" version="1.0" broken="Toto je doplnok pre starú verziu služby HBO Max. Ak ju chcete používať, tak použite nový doplnok." />
-<addon id="plugin.video.joj.sk" name="TV Joj" version="1.0.0" broken="Videoportál TV JOJ bol ukončený. Prejdite na doplnok JOJ Play." />
-<addon id="plugin.video.mall.tv" name="Fameplay and Mall.tv" version="1.0" broken="Doplnok už nie je viac udržiavaný." />
-<addon id="plugin.video.sc2" name="Stream Cinema Community" version="1.0" broken="Služba Stream Cinema Community ukončila prevádzku." />
-<addon id="plugin.video.iprima" name="iPrima" version="1.0" broken="Prevádzka služby iPrima bola prevádzkovateľom ukončená. Prejdite na doplnok Prima+." />
-<addon id="plugin.video.archivo2tv" name="Archív O2TV" version="1.0.0" broken="Prevádzka služby O2TV bola ukončená. Pokračovaním je služba Oneplay." />
-<addon id="plugin.video.o2tv" name="O2TV" version="1.0" broken="Prevádzka služby O2TV bola ukončená. Pokračovaním je služba Oneplay." />
-<addon id="plugin.video.tv.sme.sk" name="TV SME.sk" version="1.0" broken="Stránka sme.sk bola zmenená a zaviedla ochranu proti prístupu mimo internetového prehliadača. Doplnok viac nie je funkčný a môžete ho v vymazať." />
+<addon id="plugin.video.eurosport" name="Eurosport player" broken="Prevádzka služby eurosport player bola ukončená." />
+<addon id="plugin.video.hbomax" name="HBO Max (old)" broken="Toto je doplnok pre starú verziu služby HBO Max. Ak ju chcete používať, tak použite nový doplnok." />
+<addon id="plugin.video.joj.sk" name="TV Joj" broken="Videoportál TV JOJ bol ukončený. Prejdite na doplnok JOJ Play." />
+<addon id="plugin.video.mall.tv" name="Fameplay and Mall.tv" broken="Doplnok už nie je viac udržiavaný." />
+<addon id="plugin.video.sc2" name="Stream Cinema Community" broken="Služba Stream Cinema Community ukončila prevádzku." />
+<addon id="plugin.video.iprima" name="iPrima" broken="Prevádzka služby iPrima bola prevádzkovateľom ukončená. Prejdite na doplnok Prima+." />
+<addon id="plugin.video.archivo2tv" name="Archív O2TV" broken="Prevádzka služby O2TV bola ukončená. Pokračovaním je služba Oneplay." />
+<addon id="plugin.video.o2tv" name="O2TV" broken="Prevádzka služby O2TV bola ukončená. Pokračovaním je služba Oneplay." />
+<addon id="plugin.video.tv.sme.sk" name="TV SME.sk" broken="Stránka sme.sk bola zmenená a zaviedla ochranu proti prístupu mimo internetového prehliadača. Doplnok viac nie je funkčný a môžete ho v vymazať." />
 </addons>

@@ -30,7 +30,7 @@ def log_debug(s):
 # ###########################################################################################################
 
 class XmlOnlyAddon(object):
-	def __init__(self, xml_root):
+	def __init__(self, xml_root, allow_empty_ver=False):
 		self.xml_root = xml_root
 		self.hash = self.xml_root.attrib.get('hash','')
 		self.rhash = self.xml_root.attrib.get('rhash','')
@@ -38,11 +38,17 @@ class XmlOnlyAddon(object):
 		self.name = self.xml_root.attrib.get('name')
 		self.version = self.xml_root.attrib.get('version')
 		self.broken_msg = self.xml_root.attrib.get('broken')
+		self.supported = self.xml_root.attrib.get('supported')
 		self.can_be_removed = True
+		self.force_release_version = None
 
 		for e in self.xml_root.findall('extension'):
 			if e.attrib.get('point') == 'archivczsk.addon.metadata':
 				self.broken_msg = e.findtext('broken', self.broken_msg)
+
+		if allow_empty_ver and self.version == None:
+			self.version = "0"
+			self.supported = "no"
 
 		if self.addon_id == None or self.name == None or self.version == None:
 			raise Exception('Some of mandatory attributes (id, name, version) in file %s missing' % self.addon_xml_file)
@@ -68,8 +74,11 @@ class XmlOnlyAddon(object):
 		e = ET.Element('addon', {
 			'id': self.addon_id,
 			'name': self.name,
-			'version': self.version
+			'version': self.force_release_version or self.version
 		})
+
+		if self.supported:
+			e.set('supported', self.supported)
 
 		if self.hash:
 			e.set('hash', self.hash)
@@ -316,7 +325,8 @@ class ArchivczskAddonsReleaser(object):
 			addons = released_addons.copy()
 			# remove deleted addons from list of released
 			for addon in del_addons:
-				del addons[addon.addon_id]
+				if not addon.force_release_version:
+					del addons[addon.addon_id]
 
 			# update data from updated addons
 			for addon in updated_addons:
@@ -484,8 +494,13 @@ class ArchivczskAddonsReleaser(object):
 
 		for element in xml_root:
 			addon = XmlOnlyAddon(element)
-			log_debug("Readed addon: %s (%s) version %s" % (addon.name, addon.addon_id, addon.version))
-			addons[addon.addon_id] = addon
+
+			if addon.supported != 'no':
+				log_debug("Readed addon: %s (%s) version %s" % (addon.name, addon.addon_id, addon.version))
+				addons[addon.addon_id] = addon
+			else:
+				# not supprted addons don't have release zip file - there acts like virtual addons, so don't add it to the list
+				log_debug("Readed addon marked as not supported: %s (%s) version %s" % (addon.name, addon.addon_id, addon.version))
 
 		return addons
 
@@ -499,15 +514,26 @@ class ArchivczskAddonsReleaser(object):
 			return
 
 		for element in xml_root:
-			addon = XmlOnlyAddon(element)
-			addon.can_be_removed = False
+			addon = XmlOnlyAddon(element, True)
+
 			log_debug("Readed broken addon: %s (%s) version %s" % (addon.name, addon.addon_id, addon.version))
 			if addon.addon_id in addons:
+				log_debug("Addon found on disk")
+
 				if self.check_version(addon.version, addons[addon.addon_id].version):
 					log_warning("Addon %s (%s) version %s is marked as broken, but repository contains newer version. Ignoring entry from broken.xml file." % (addon.name, addon.addon_id, addon.version))
 				else:
 					addons[addon.addon_id].broken_msg = addon.broken_msg
 			else:
+				if addon.addon_id in released_addons:
+					log_debug("Addon found in released")
+					# addon is marked as broken, is already released, but was removed from repository
+					addon.force_release_version = addon.version
+					addon.version = released_addons[addon.addon_id].version
+				else:
+					log_debug("Addon not found in released")
+					addon.can_be_removed = False
+
 				released_addons[addon.addon_id] = addon
 
 	# ###########################################################################################################
@@ -516,7 +542,7 @@ class ArchivczskAddonsReleaser(object):
 		root = ET.Element('addons')
 		root.tail = '\n'
 		root.text = '\n'
-		for addon in sorted(addons, key=lambda a: (not a.can_be_removed, a.addon_id)):
+		for addon in sorted(addons, key=lambda a: (not a.can_be_removed or a.force_release_version != None, a.addon_id)):
 			root.append(addon.get_simple_xml_root())
 
 		ET.ElementTree(element=root).write('addons.xml', encoding='UTF-8', xml_declaration=True)
