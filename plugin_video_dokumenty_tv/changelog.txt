@@ -1,5 +1,7 @@
 v2.4
 - úprava inicializácie po zmenách v závislostiach doplnku
+- premenovanie na dokufilmy.cz
+- oprava funkcionality po zmenách na stránke
 
 v2.3
 - rozšírenie podporovaných video formátov z ok.ru

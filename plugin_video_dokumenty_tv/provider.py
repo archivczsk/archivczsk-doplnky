@@ -31,7 +31,7 @@ class DokumentyTvContentProvider(CommonContentProvider):
 		if endpoint.startswith('http'):
 			url = endpoint
 		else:
-			url = 'https://www.dokumenty.tv/' + endpoint
+			url = 'https://dokufilmy.cz/' + endpoint
 
 		if use_cache and params == None:
 			soup = self.req_cache.get(url)
@@ -112,7 +112,10 @@ class DokumentyTvContentProvider(CommonContentProvider):
 		soup = self.call_api(name, params=params)
 
 		for video_div in soup.find_all("div", { "id": re.compile( 'post-([0-9]+)' ) }):
-			url = video_div.find('a', {'class': "thumbnail-link" })['href']
+			url = (video_div.find('a', {'class': "thumbnail-link" }) or {}).get('href')
+			if not url:
+				continue
+
 			img = video_div.find('img')['src']
 			title = video_div.find('h2', {'class': 'entry-title'}).find('a').get_text()
 
