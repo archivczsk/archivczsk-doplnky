@@ -4,12 +4,7 @@ from time import time
 import uuid
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
 from tools_archivczsk.debug.http import dump_json_request
-
-try:
-	from urlparse import urlparse, urlunparse, parse_qsl
-
-except:
-	from urllib.parse import urlparse, urlunparse, parse_qsl
+from tools_archivczsk.compat import urlparse, urlunparse, parse_qsl, urlencode
 
 _COMMON_HEADERS = {
 	'Accept': 'application/json, text/plain, */*',
@@ -61,8 +56,6 @@ class Telly:
 
 	def __init__(self, content_provider):
 		self.cp = content_provider
-		self.device_token = None
-		self.log_function = self.cp.log_info
 		self._ = self.cp._
 		self.settings = None
 		self.data_dir = self.cp.data_dir
@@ -71,30 +64,18 @@ class Telly:
 		self.cache_mtime = 0
 		self.req_session = self.cp.get_requests_session()
 
-		if self.data_dir:
-			try:
-				# load access token
-				with open(self.data_dir + '/login.json', "r") as f:
-					login_data = json.load(f)
-					self.device_token = login_data['token']
-
-					self.log_function("Login data loaded from cache")
-			except:
-				pass
+		self.device_token = self.cp.load_cached_data('login').get('token')
+		if self.device_token:
+			self.cp.log_info("Login data loaded from cache")
 
 	# #################################################################################################
 
 	def save_login_data(self):
-		if self.data_dir:
-			try:
-				if self.device_token:
-					# save access token
-					with open(self.data_dir + '/login.json', "w") as f:
-						json.dump( {'token': self.device_token }, f )
-				else:
-					os.remove(self.data_dir + '/login.json')
-			except:
-				pass
+		if self.device_token:
+			self.cp.save_cached_data('login', {'token': self.device_token })
+		else:
+			self.cp.save_cached_data('login', {})
+
 	# #################################################################################################
 
 	def load_epg_cache(self):
@@ -107,7 +88,7 @@ class Telly:
 			if cache_file_mtime > self.cache_mtime:
 				with open(self.data_dir + '/epg_cache.json', "r") as file:
 					self.epg_cache = json.load(file)
-					self.log_function("EPG loaded from cache")
+					self.cp.log_info("EPG loaded from cache")
 
 				self.cache_mtime = cache_file_mtime
 				self.cache_need_save = False
@@ -122,7 +103,7 @@ class Telly:
 		if self.data_dir and self.cache_need_save:
 			with open(self.data_dir + '/epg_cache.json', 'w') as f:
 				json.dump( self.epg_cache, f)
-				self.log_function("EPG saved to cache")
+				self.cp.log_info("EPG saved to cache")
 				self.cache_need_save = False
 
 	# #################################################################################################
@@ -147,12 +128,12 @@ class Telly:
 			else:
 				self._("Unexpected return code from server") + ": %d" % resp.status_code
 		except Exception as e:
-			self.log_function("TELLY ERROR:\n"+traceback.format_exc())
+			self.cp.log_error("TELLY ERROR:\n"+traceback.format_exc())
 			err_msg = str(e)
 
 		if err_msg:
-			self.log_function( "Telly error for URL %s: %s" % (url, traceback.format_exc()))
-			self.log_function( "Telly: %s" % err_msg )
+			self.cp.log_error( "Telly error for URL %s: %s" % (url, traceback.format_exc()))
+			self.cp.log_error( "Telly: %s" % err_msg )
 			raise AddonErrorException(err_msg)
 
 		return None
@@ -169,7 +150,7 @@ class Telly:
 
 		self.device_token = None
 		self.save_login_data()
-		self.log_function("Telly device token is invalid: %s" % str(ret))
+		self.cp.log_error("Telly device token is invalid: %s" % str(ret))
 		return False
 
 	# #################################################################################################
@@ -188,7 +169,7 @@ class Telly:
 		if ret and ret.get('success') and ret.get('token'):
 			self.device_token = ret['token']
 		else:
-			self.log_function("Failed to pair device by pairing code: %s" % str(ret))
+			self.cp.log_error("Failed to pair device by pairing code: %s" % str(ret))
 			return False
 
 		# complete device pairing
@@ -204,7 +185,7 @@ class Telly:
 			self.save_login_data()
 			return True
 
-		self.log_function("Failed to complete device pairing: %s" % str(ret))
+		self.cp.log_error("Failed to complete device pairing: %s" % str(ret))
 		return False
 
 	# #################################################################################################
@@ -274,20 +255,22 @@ class Telly:
 
 	def fill_epg_cache(self, epg_ids, cache_hours=0, epg_data=None ):
 		if not self.device_token or cache_hours == 0:
+			self.cp.log_debug("EPG cache filling is disabled")
 			return
 
 		fromts = int(time())
 		tots = (int(time()) + (cache_hours * 3600) + 60)
 
 		if not epg_data:
-			if self.cache_mtime and self.cache_mtime < tots - 3600:
+			if self.cache_mtime and (fromts - self.cache_mtime) < (cache_hours * 1800):
 				# no need to refill epg cache
+				self.cp.log_debug("No need to fill EPG cache")
 				return
 
 			epg_data = self.get_channels_epg( epg_ids, fromts, tots )
 
 		if not epg_data:
-			self.log_function("Failed to get EPG for channels from Telly server")
+			self.cp.log_error("Failed to get EPG for channels from Telly server")
 			return
 
 		for epg_id in epg_ids:
@@ -338,7 +321,7 @@ class Telly:
 		if del_count:
 			# save some memory - remove old events from cache
 			del self.epg_cache[epg_id][:del_count]
-			self.log_function("Deleted %d old events from EPG cache for channell %s" % (del_count, epg_id))
+			self.cp.log_debug("Deleted %d old events from EPG cache for channel %s" % (del_count, epg_id))
 
 		if title == "":
 			return None
@@ -371,10 +354,6 @@ class Telly:
 		# extract params from url, to set our own request profiles
 		u = urlparse( url )
 		params = dict(parse_qsl( u.query ))
-		url = urlunparse( (u.scheme, u.netloc, u.path, '', '', '') )
-
-		if force_http:
-			url = url.replace('https://', 'http://')
 
 		if enable_h265:
 			profiles_h265 = [
@@ -388,39 +367,25 @@ class Telly:
 			# prepend h265 profiles
 			params['stream_profiles'] = ','.join(profiles_h265) + ',' + params['stream_profiles']
 
-		# get master playlist
-		resp = self.req_session.get(url, params=params, headers={'User-Agent': 'tv.fournetwork.android.box.digi/2.0.9 (Linux;Android 6.0) ExoPlayerLib/2.11.7'})
-
-		if resp.status_code != 200:
-			return []
-
-		if max_bitrate and int(max_bitrate) > 0:
-			max_bitrate = int(max_bitrate) * 1000000
-		else:
-			max_bitrate = 100000000
+		url = urlunparse( ('http' if force_http else u.scheme, u.netloc, u.path, '', urlencode(params), '') )
 
 		video_urls = []
-		for m in re.finditer('#EXT-X-STREAM-INF:PROGRAM-ID=\d+,BANDWIDTH=(?P<bandwidth>\d+),RESOLUTION=(?P<resolution>[\dx]+)\s(?P<chunklist>[^\s]+)', resp.text, re.DOTALL):
-			bandwidth = int(m.group('bandwidth'))
-
-			if bandwidth > max_bitrate:
-				continue
-
-			video_url = m.group('chunklist')
+		for one in self.cp.get_hls_streams(url, requests_session=self.req_session, headers={'User-Agent': 'tv.fournetwork.android.box.digi/2.0.9 (Linux;Android 6.0) ExoPlayerLib/2.11.7'}, max_bitrate=max_bitrate):
+			video_url = one['url']
 			if force_http:
 				video_url = video_url.replace('https://', 'http://')
 
 			video_codec = 'h265' if '=profile3' in video_url or '=profile4' in video_url else 'h264'
-			quality = m.group('resolution').split('x')[1] + 'p'
+			quality = one.get('resolution', 'x720').split('x')[1] + 'p'
 
 			video_urls.append({
 				'url': video_url,
 				'quality': quality,
-				'bitrate': bandwidth,
+				'bitrate': int(one['bandwidth']),
 				'vcodec': video_codec
 			})
 
-		return sorted(video_urls, key=lambda u: u['bitrate'], reverse=True)
+		return sorted(video_urls, key=lambda u: (enable_h265 and u['vcodec'] == 'h265', u['bitrate']), reverse=True)
 
 	# #################################################################################################
 

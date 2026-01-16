@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-	<setting label="Enable H.265 video codec" id="enable_h265" type="bool" default="false" />
+	<setting label="Enable and prefer H.265 video codec" id="enable_h265" type="bool" default="false" />
 	<setting label="Force http protocol for streaming" id="use_http_for_stream" type="bool" default="true" />
 	<setting label="Maximum bandwidth of the offered stream" id="max_bitrate" type="keyenum" values="0;Unlimited|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
 	<setting label="Enable adult channels" id="enable_adult" type="bool" default="true" />
