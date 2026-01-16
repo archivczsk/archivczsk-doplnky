@@ -505,7 +505,7 @@ class ArchivCZSKContentProvider(object):
 
 	def run_shortcut(self, session, action, params):
 		self.log_debug("Run shortcut called: %s" % action)
-		self.run(session, { 'CP_action': action, 'CP_args': params })
+		self.run_silent(session, { 'CP_action': action, 'CP_args': params })
 
 	# #################################################################################################
 
