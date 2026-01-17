@@ -124,7 +124,7 @@ class JojPlayClient(object):
 		password = self.cp.get_setting('password')
 
 		if not username or not password:
-			raise LoginException(self._("No username or password provided"))
+			raise LoginException(self.cp._("No username or password provided"))
 
 		params = {
 			'key': self.APP_KEY
