@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import os, base64
-import threading, requests, traceback
+import threading, requests, traceback, time
+import json
+from hashlib import md5
+from base64 import b64encode
 from Plugins.Extensions.archivCZSK.engine import client
+from Plugins.Extensions.archivCZSK.engine.tools.stbinfo import stbinfo
 from .lamedb import lameDB
 
 try:
@@ -49,18 +53,50 @@ class BouquetGeneratorTemplate(object):
 	def download_picons(picons):
 		s = requests.Session()
 
+		def calc_data_checksum(req_data):
+			req_data = json.dumps(req_data, sort_keys=True, ensure_ascii=True, separators=('','')).encode('ascii')
+			return md5(b'svg2png' + req_data).hexdigest()
+
+		def convert_to_png(original_data=None, data_type='svg'):
+			req_data = {
+				'version': 1,
+				'id': stbinfo.installation_id,
+				data_type: b64encode(original_data).decode('ascii')
+			}
+			req_data['checksum'] = calc_data_checksum(req_data)
+			r = s.post('http://archivczsk.webredirect.org/topng/' + data_type, json=req_data, timeout=5)
+			if r.status_code == 200:
+				return r.content
+			else:
+				client.log.error("Conversion to PNG failed with status code: %d" % r.status_code)
+				return None
+
 		def download_picon(fileout, url):
 			if not os.path.exists(fileout):
 				try:
 					r = s.get( url, timeout=5 )
 
 					if r.status_code == 200:
-						if r.headers.get('content-type','').lower() != 'image/png':
-							client.log.error("Unsupported content type %s of picon URL %s downloaded to %s" % (r.headers.get('content-type'), url, fileout))
+						ct = r.headers.get('content-type','').lower()
+
+						if ct == 'image/png':
+							png_data = r.content
+						elif ct == 'image/svg+xml':
+							t = time.time()
+							png_data = convert_to_png(r.content)
+							client.log.debug("SVG picon from %s converted to PNG in %.2f seconds" % (url, time.time() - t))
+						elif ct == 'image/jpeg':
+							t = time.time()
+							png_data = convert_to_png(r.content, 'jpeg')
+							client.log.debug("JPEG picon from %s converted to PNG in %.2f seconds" % (url, time.time() - t))
 						else:
+							client.log.error("Unsupported content type %s of picon URL %s downloaded to %s" % (r.headers.get('content-type'), url, fileout))
+							png_data = None
+
+						if png_data:
 							client.log.debug("Writing picon from URL %s to %s" % (url, fileout))
 							with open(fileout, 'wb') as f:
-								f.write( r.content )
+								f.write( png_data )
 				except:
 					client.log.error(traceback.format_exc())
 					pass
@@ -136,8 +172,16 @@ class BouquetGeneratorTemplate(object):
 		os.rename("/etc/enigma2/bouquets.tv.temporary", "/etc/enigma2/bouquets.tv")
 
 		os.remove( "/etc/enigma2/" + self.userbouquet_file_name )
+		self.picons_remove()
 		self.reload_bouquets()
 		return True
+
+	# #################################################################################################
+
+	def picons_remove(self):
+		picons_ref = "*_0_1_*_%X_%X_%X_0_0_0.png" % (self.tid, self.onid, self.namespace)
+		os.system('rm /usr/share/enigma2/picon/' + picons_ref)
+
 
 	# #################################################################################################
 
