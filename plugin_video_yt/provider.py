@@ -5,12 +5,45 @@ from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.player.features import PlayerFeatures
 from time import time
-from datetime import timedelta
-from datetime import datetime
-from dateutil import parser as duparser
+from datetime import timedelta, datetime, tzinfo
 from base64 import b64decode
 import re, os, json, requests
 from .youtube import resolve as yt_resolve
+
+class FixedOffset(tzinfo):
+    def __init__(self, offset_minutes):
+        self._offset = timedelta(minutes=offset_minutes)
+
+    def utcoffset(self, dt):
+        return self._offset
+
+    def dst(self, dt):
+        return timedelta(0)
+
+    def tzname(self, dt):
+        total_minutes = int(self._offset.total_seconds() // 60)
+        sign = "+" if total_minutes >= 0 else "-"
+        total_minutes = abs(total_minutes)
+        return "%s%02d:%02d" % (sign, total_minutes // 60, total_minutes % 60)
+
+def parse_iso8601(s):
+    # UTC Z
+    if s.endswith("Z"):
+        dt = datetime.strptime(s[:-1], "%Y-%m-%dT%H:%M:%S")
+        return dt.replace(tzinfo=FixedOffset(0))
+
+    # ±HH:MM
+    base = s[:-6]
+    tz = s[-6:]
+
+    dt = datetime.strptime(base, "%Y-%m-%dT%H:%M:%S")
+
+    sign = 1 if tz[0] == "+" else -1
+    hours = int(tz[1:3])
+    minutes = int(tz[4:6])
+
+    offset_minutes = sign * (hours * 60 + minutes)
+    return dt.replace(tzinfo=FixedOffset(offset_minutes))
 
 class YoutubeContentProvider(CommonContentProvider):
 
@@ -123,7 +156,7 @@ class YoutubeContentProvider(CommonContentProvider):
 					channel_title = data.get("microformat", {}).get("playerMicroformatRenderer", {}).get("ownerChannelName", "N/A")
 					published = data.get("microformat", {}).get("playerMicroformatRenderer", {}).get("publishDate", "N/A")
 					plot = '{} [{}] {} ({}x)\n{}'.format(
-						duparser.isoparse(published).strftime("%-d.%-m.%Y %H:%M"),
+						parse_iso8601(published).strftime("%-d.%-m.%Y %H:%M"),
 						channel_title,
 						self.format_time(int(length)),
 						views,
