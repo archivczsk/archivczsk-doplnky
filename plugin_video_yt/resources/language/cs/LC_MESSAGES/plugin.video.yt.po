@@ -1,0 +1,63 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_yt\n"
+"PO-Revision-Date: 2026-01-19 19:17+0200\n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Check exteplayer3 version on startup"
+msgstr "Při startu kontrolovat verzi exteplayer3 přehrávače"
+
+msgid "Failed to get playable video stream address"
+msgstr "Nepodařilo se získat adresu přehratelného video streamu"
+
+msgid "Last watched"
+msgstr "Poslední sledované"
+
+msgid "Max watched items"
+msgstr "Maximální počet sledovaných položek"
+
+msgid "Number of channels on main page"
+msgstr "Počet kanálů na úvodní obrazovce"
+
+msgid "Number of remembered searches"
+msgstr "Počet zapamatovaných vyhledávnání"
+
+msgid "Preferred stream resolution"
+msgstr "Preferované rozlišení streamu"
+
+msgid "Remove from watched"
+msgstr "Vymazat ze sledovaných"
+
+msgid "Save channel"
+msgstr "Uložit kanál"
+
+msgid ""
+"This addon reached available limit of requests to youtube API. Try again "
+"later."
+msgstr ""
+"Tento doplněk dosáhl limit dostupného počtu požadavek na youtube API. Zkuste "
+"to znovu později."
+
+msgid "View channel videos"
+msgstr "Zobrazit videa kanálu"
+
+msgid "Youtube API key"
+msgstr "Youtube API klíč"
+
+msgid "Videos"
+msgstr "Videa"
+
+msgid "Shorts"
+msgstr "Shorts"
+
+msgid "Live"
+msgstr "Živě"
+
+msgid "Popular"
+msgstr "Oblíbené"
+
+msgid "Oldest"
+msgstr "Nejstarší"

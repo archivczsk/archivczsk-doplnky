@@ -6,8 +6,10 @@ from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.player.features import PlayerFeatures
 from time import time
 from datetime import timedelta
+from datetime import datetime
+from dateutil import parser as duparser
 from base64 import b64decode
-import re, os, json
+import re, os, json, requests
 from .youtube import resolve as yt_resolve
 
 class YoutubeContentProvider(CommonContentProvider):
@@ -68,14 +70,10 @@ class YoutubeContentProvider(CommonContentProvider):
 			if not api_key:
 				raise AddonErrorException(self._("This addon reached available limit of requests to youtube API. Try again later."))
 
-			params.update({
-				'key': api_key
-			})
-
 			try:
-				response = self.req_session.get("https://www.googleapis.com/youtube/v3/" + endpoint, params=params)
+				response = requests.post("https://www.youtube.com/youtubei/v1/" + endpoint + "?key=" + api_key, json=params)
 				if response.status_code >= 400:
-					# quata exceeded or wrong/revoked api key
+					# quota exceeded or wrong/revoked api key
 					self.log_error("Request using API KEY %s FAILED - blacklisting" % api_key[-8:])
 					self.blacklist_api_key(api_key)
 					continue
@@ -85,130 +83,219 @@ class YoutubeContentProvider(CommonContentProvider):
 				self.log_exception()
 				raise AddonErrorException(str(e))
 
-	#		dump_json_request(response)
+#			with open("/tmp/yt.txt", "w") as f:
+#				f.write(response.text)
+
 			return response.json()
 
 	# ##################################################################################################################
 
-	def yt_time(self, duration="P1W2DT6H21M32S", in_sec=False):
-		ISO_8601 = re.compile(
-			'P'
-			'(?:(?P<years>\d+)Y)?'
-			'(?:(?P<months>\d+)M)?'
-			'(?:(?P<weeks>\d+)W)?'
-			'(?:(?P<days>\d+)D)?'
-			'(?:T'
-			'(?:(?P<hours>\d+)H)?'
-			'(?:(?P<minutes>\d+)M)?'
-			'(?:(?P<seconds>\d+)S)?'
-			')?')
+	def to_seconds(self, time_str):
+		parts = map(int, time_str.split(":"))
+		total = 0
+		for p in parts:
+			total = total * 60 + p
+		return total
 
-		if duration:
-			m = ISO_8601.match(duration)
-		else:
-			m = None
+	# ##################################################################################################################
 
-		if m == None:
-			return None if in_sec else ''
-
-		units = list(m.groups()[-3:])
-		units = list(reversed([int(x) if x != None else 0 for x in units]))
-
-		seconds=sum([x*60**units.index(x) for x in units])
-
-		if in_sec:
-			return seconds
-		else:
-			return str(timedelta(seconds=seconds))
+	def format_time(self, seconds):
+		h, rem = divmod(seconds, 3600)
+		m, s = divmod(rem, 60)
+		return "{}:{:02d}:{:02d}".format(h, m, s) if h > 0 else "{}:{:02d}".format(m, s)
 
 	# ##################################################################################################################
 
 	def list_videos(self, endpoint, params, ids=None):
-		watched = False
-
-		if ids is not None:
-			data = {}
-			watched = True
+		cont = None
+		contItems = []
+		if ids is not None:   ###### WATCHED
+			params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"videoId":""}
+			for video_id in ids:
+				params['videoId'] = video_id
+				data = self.call_api("player", params)
+				if "videoDetails" in data:
+					title = data.get("videoDetails").get("title", "N/A")
+					length = data.get("videoDetails").get("lengthSeconds", 0)
+					channel_id = data.get("videoDetails").get("channelId", "")
+					desc = data.get("videoDetails").get("shortDescription", "")
+					views = data.get("videoDetails").get("viewCount", "0")
+					channel_title = data.get("microformat", {}).get("playerMicroformatRenderer", {}).get("ownerChannelName", "N/A")
+					published = data.get("microformat", {}).get("playerMicroformatRenderer", {}).get("publishDate", "N/A")
+					plot = '{} [{}] {} ({}x)\n{}'.format(
+						duparser.isoparse(published).strftime("%-d.%-m.%Y %H:%M"),
+						channel_title,
+						self.format_time(int(length)),
+						views,
+						decode_html(desc)
+					)
+					info_labels = {
+						'plot': plot,
+						'duration': int(length)
+					}
+					menu = self.create_ctx_menu()
+					menu.add_menu_item(self._('Remove from watched'), cmd=self.remove_watched_item, video_id=video_id)
+					menu.add_menu_item(self._('Save channel'), cmd=self.save_channel, channel_name=channel_title, channel_id=channel_id)
+					self.add_video(title, "https://i.ytimg.com/vi/" + video_id + "/maxresdefault.jpg", info_labels, menu=menu, cmd=self.resolve_video, video_title=title, video_id=video_id)
 		else:
-			ids = []
+			popular = None
+			latest = None
+			oldest = None
 			data = self.call_api(endpoint, params)
-			for item in (data.get('items') or []):
-				video_id = item.get("id", {}).get("videoId")
-				if video_id:
-					ids.append(video_id)
+			if "continuation" not in params:
+				tabs = data.get("contents", {}).get("twoColumnBrowseResultsRenderer", {}).get("tabs", [])
+				for idx, tab in enumerate(tabs):
+					if len(tabs[idx].get("tabRenderer", {}).get("content", {}).get("richGridRenderer", {}).get("contents", [])) > 0:
+						break
+				if len(tabs) > 0:
+					contents = (
+						tabs[idx]
+						.get("tabRenderer", {})
+						.get("content", {})
+						.get("richGridRenderer", {})
+						.get("header", {})
+						.get("feedFilterChipBarRenderer", {})
+						.get("contents", [])
+					)
+					for block in contents:
+						if block.get("chipCloudChipRenderer", {}).get("text", {}).get("simpleText", "") == "Latest":
+							latest = block.get("chipCloudChipRenderer", {}).get("navigationEndpoint", {}).get("continuationCommand", {}).get("token", "")
+						if block.get("chipCloudChipRenderer", {}).get("text", {}).get("simpleText", "") == "Popular":
+							popular = block.get("chipCloudChipRenderer", {}).get("navigationEndpoint", {}).get("continuationCommand", {}).get("token", "")
+						if block.get("chipCloudChipRenderer", {}).get("text", {}).get("simpleText", "") == "Oldest":
+							oldest = block.get("chipCloudChipRenderer", {}).get("navigationEndpoint", {}).get("continuationCommand", {}).get("token", "")
 
-		# API has limit to look for max 50 ids at once
-		ids_chunks = [ids[i:i + self.max_results] for i in range(0, len(ids), self.max_results)]
-
-		for ids_chunk in ids_chunks:
-			detail_params = {
-				'id': ','.join(ids_chunk),
-				'part': 'snippet,statistics,contentDetails'
-			}
-
-			detail = {i.get('id'): i for i in (self.call_api('videos', detail_params).get('items') or [])}
-
-			for video_id in ids_chunk:
-				video_detail = detail.get(video_id,{})
-				video_detail_snippet = video_detail.get('snippet', {})
-
-				title = decode_html(video_detail_snippet.get("title", ""))
-
-				if not title:
-					# no title - video is not available anymore
-					self.log_debug("Video %s is not available anymore" % video_id)
-					continue
-
-				is_live = video_detail_snippet.get("liveBroadcastContent")
-				if is_live == "upcoming":
-					title = _C('red', title)
-				elif is_live == "live":
-					title = _C('green', title)
-
-				img = video_detail_snippet.get("thumbnails", {}).get("standard", {}).get("url")
-				duration = video_detail.get("contentDetails", {}).get("duration")
-
-				pt = video_detail_snippet.get("publishedAt", "") #2020-12-19T19:58:27Z
-				pts = re.search("([\d]{4})-([\d]{2})-([\d]{2})T([\d]{2}):([\d]{2})",pt)
-				publish = pts.group(3)+"."+pts.group(2)+"."+pts.group(1)+" "+pts.group(4)+":"+pts.group(5) if pts else ""
-
-				channel_title = video_detail_snippet.get("channelTitle") or ''
-				channel_id = video_detail_snippet.get("channelId", "")
-				views = video_detail.get("statistics", {}).get("viewCount", "")
-
-				plot = '{} [{}] {} ({}x)\n{}'.format(
-					publish,
-					channel_title,
-					self.yt_time(duration),
-					views,
-					decode_html(video_detail_snippet.get("description") or '')
+			if "onResponseReceivedActions" in data and len(data["onResponseReceivedActions"]) > 1:
+				contents = (
+					data
+					.get("onResponseReceivedActions")[1]
+					.get("reloadContinuationItemsCommand", {})
+					.get("continuationItems", [])
 				)
+				contItems = data.get("onResponseReceivedActions")[1].get("reloadContinuationItemsCommand", {}).get("continuationItems", [])
+			elif "onResponseReceivedActions" in data and len(data["onResponseReceivedActions"]) > 0:
+				contents = (
+					data
+					.get("onResponseReceivedActions")[0]
+					.get("appendContinuationItemsAction", {})
+					.get("continuationItems", [])
+				)
+			elif "onResponseReceivedCommands" in data and len(data["onResponseReceivedCommands"]) > 0:
+				contents = (
+					data
+					.get("onResponseReceivedCommands")[0]
+					.get("appendContinuationItemsAction", {})
+					.get("continuationItems", [{}])[0]
+					.get("itemSectionRenderer", {})
+					.get("contents", [])
+				)
+				contItems = data.get("onResponseReceivedCommands")[0].get("appendContinuationItemsAction", {}).get("continuationItems", [])
+			elif endpoint == "browse":
+				tabs = data.get("contents", {}).get("twoColumnBrowseResultsRenderer", {}).get("tabs", [])
+				for idx, tab in enumerate(tabs):
+					if len(tabs[idx].get("tabRenderer", {}).get("content", {}).get("richGridRenderer", {}).get("contents", [])) > 0:
+						break
+				contents = (
+					tabs[idx]
+					.get("tabRenderer", {})
+					.get("content", {})
+					.get("richGridRenderer", {})
+					.get("contents", [])
+				)
+				if params.get("params", "") != "EgZ2aWRlb3PyBgQKAjoA":
+					channel_params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"browseId":params["browseId"],"params":"EgZ2aWRlb3PyBgQKAjoA"}
+					self.add_dir(self._("Videos"), cmd=self.list_videos, endpoint='browse', params=channel_params)
+				if params.get("params", "") != "EgZzaG9ydHPyBgUKA5oBAA%3D%3D":
+					channel_params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"browseId":params["browseId"],"params":"EgZzaG9ydHPyBgUKA5oBAA%3D%3D"}
+					self.add_dir(self._("Shorts"), cmd=self.list_videos, endpoint='browse', params=channel_params)
+				if params.get("params", "") != "EgdzdHJlYW1z8gYECgJ6AA%3D%3D":
+					channel_params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"browseId":params["browseId"],"params":"EgdzdHJlYW1z8gYECgJ6AA%3D%3D"}
+					self.add_dir(self._("Live"), cmd=self.list_videos, endpoint='browse', params=channel_params)
+				if popular:
+					channel_params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"continuation":popular}
+					self.add_dir(self._("Popular"), cmd=self.list_videos, endpoint='browse', params=channel_params)
+				if oldest:
+					channel_params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"continuation":oldest}
+					self.add_dir(self._("Oldest"), cmd=self.list_videos, endpoint='browse', params=channel_params)
+			elif endpoint == "search":
+				contents = (
+					data
+					.get("contents", {})
+					.get("twoColumnSearchResultsRenderer", {})
+					.get("primaryContents", {})
+					.get("sectionListRenderer", {})
+					.get("contents", [])[0]
+					.get("itemSectionRenderer", {})
+					.get("contents", [])
+				)
+			else:
+				return None
 
+			for block in contents:
+				### special for Shorts
+				if "richItemRenderer" in block and "content" in block["richItemRenderer"] and "shortsLockupViewModel" in block["richItemRenderer"]["content"]:
+					title = block["richItemRenderer"]["content"]["shortsLockupViewModel"].get("accessibilityText", "")
+					video_id = block["richItemRenderer"]["content"]["shortsLockupViewModel"].get("onTap", {}).get("innertubeCommand", {}).get("reelWatchEndpoint", {}).get("videoId", "N/A")
+					channel_title = data.get("metadata", {}).get("channelMetadataRenderer", {}).get("title", "N/A")
+					channel_id = data.get("metadata", {}).get("channelMetadataRenderer", {}).get("externalId", "")
+					info_labels = {}
+					menu = self.create_ctx_menu()
+					channel_params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"browseId":channel_id,"params":"EgZ2aWRlb3PyBgQKAjoA"}
+					menu.add_menu_item(self._('View channel videos'), cmd=self.list_videos, endpoint='browse', params=channel_params)
+					menu.add_menu_item(self._('Save channel'), cmd=self.save_channel, channel_name=channel_title, channel_id=channel_id)
+					self.add_video(title, "https://i.ytimg.com/vi/" + video_id + "/maxresdefault.jpg", info_labels, menu=menu, cmd=self.resolve_video, video_title=title, video_id=video_id)
+					continue
+				elif "richItemRenderer" in block and "content" in block["richItemRenderer"] and "videoRenderer" in block["richItemRenderer"]["content"]:
+					one = block["richItemRenderer"]["content"]["videoRenderer"]
+				elif "videoRenderer" in block:
+					one = block["videoRenderer"]
+				elif "continuationItemRenderer" in block:
+					cont = block.get("continuationItemRenderer").get("continuationEndpoint", {}).get("continuationCommand", {}).get("token", None)
+					continue
+				else:
+					continue
+				video_id = one.get("videoId", "N/A")
+				title = one.get("title", {}).get("runs",[{}])[0].get("text","N/A")
+				channel_title = data.get("header", {}).get("pageHeaderRenderer", {}).get("pageTitle", one.get("longBylineText", {}).get("runs", [{}])[0].get("text", "N/A"))
+				channel_id = data.get("metadata", {}).get("channelMetadataRenderer", {}).get("externalId", one.get("longBylineText", {}).get("runs", [{}])[0].get("navigationEndpoint", {}).get("browseEndpoint", {}).get("browseId", ""))
+				published = one.get("publishedTimeText", {}).get("simpleText", "")
+				is_live = 1 if one.get("thumbnailOverlays", [{}])[0].get("thumbnailOverlayTimeStatusRenderer", {}).get("style", None) == "LIVE" else 0
+				upcoming = int(one.get("upcomingEventData", {}).get("startTime", 0))
+				if is_live == 0: # special for Search
+					is_live = 1 if one.get("badges", [{}])[0].get("metadataBadgeRenderer", {}).get("label", None) == "LIVE" else 0
+				if upcoming > 0:
+					published = datetime.fromtimestamp(upcoming).strftime("%d.%m.%Y %H:%M:%S")
+					title = _C('red', "- " + title)
+				elif is_live == 1:
+					title = _C('green', "* " + title)
+				plot = '{} [{}] {} ({}x)\n{}'.format(
+					published,
+					channel_title,
+					one.get("lengthText", {}).get("simpleText", ""),
+					re.sub(r"\D", "", one.get("viewCountText", {}).get("simpleText", "N/A")),
+					decode_html(one.get("descriptionSnippet", {}).get("runs",[{}])[0].get("text",""))
+				)
 				info_labels = {
 					'plot': plot,
-					'duration': self.yt_time(duration, True)
+					'duration': self.to_seconds(one.get("lengthText", {}).get("simpleText", "0"))
 				}
-
 				menu = self.create_ctx_menu()
-
-				if watched:
-					menu.add_menu_item(self._('Remove from watched'), cmd=self.remove_watched_item, video_id=video_id)
-
-				channel_params = {
-					'channelId': channel_id,
-					'maxResults': self.max_results,
-					'part': 'id',
-					'order': 'date',
-				}
-				menu.add_menu_item(self._('View channel videos'), cmd=self.list_videos, endpoint='search', params=channel_params)
+				channel_params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"browseId":channel_id,"params":"EgZ2aWRlb3PyBgQKAjoA"}
+				menu.add_menu_item(self._('View channel videos'), cmd=self.list_videos, endpoint='browse', params=channel_params)
 				menu.add_menu_item(self._('Save channel'), cmd=self.save_channel, channel_name=channel_title, channel_id=channel_id)
-				self.add_video(title, img, info_labels, menu=menu, cmd=self.resolve_video, video_title=title, video_id=video_id)
+				self.add_video(title, "https://i.ytimg.com/vi/" + video_id + "/maxresdefault.jpg", info_labels, menu=menu, cmd=self.resolve_video, video_title=title, video_id=video_id)
 
-		if "nextPageToken" in data:
-			params = params.copy()
-			params['pageToken'] = data["nextPageToken"]
+			if not cont:
+				tabs = data.get("contents", {}).get("twoColumnSearchResultsRenderer", {}).get("primaryContents", {}).get("sectionListRenderer", {}).get("contents", [])
+				if len(tabs) > 1:
+					cont = tabs[1].get("continuationItemRenderer", {}).get("continuationEndpoint", {}).get("continuationCommand", {}).get("token", None)
 
-			self.add_next(cmd=self.list_videos, endpoint=endpoint, params=params)
+			if not cont and len(contItems) > 1:
+				cont = contItems[1].get("continuationItemRenderer", {}).get("continuationEndpoint", {}).get("continuationCommand", {}).get("token", None)
+
+			if cont:
+				params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"continuation":cont}
+				self.add_next(cmd=self.list_videos, endpoint=endpoint, params=params)
 
 	# ##################################################################################################################
 
@@ -246,14 +333,8 @@ class YoutubeContentProvider(CommonContentProvider):
 			with open(filename, "r") as file:
 				for line in file:
 					item = line[:-1].split(";")
-					channel_params = {
-						'channelId': item[1],
-						'maxResults': self.max_results,
-						'part': 'id',
-						'order': 'date',
-					}
-
-					self.add_dir(item[0], cmd=self.list_videos, endpoint='search', params=channel_params)
+					channel_params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"browseId":item[1],"params":"EgZ2aWRlb3PyBgQKAjoA"}
+					self.add_dir(item[0], cmd=self.list_videos, endpoint='browse', params=channel_params)
 		except IOError:
 			self.log_exception()
 
@@ -293,12 +374,7 @@ class YoutubeContentProvider(CommonContentProvider):
 				playlist.add_play(title, url, settings=s)
 		else:
 			# standard search
-			params = {
-				'q': keyword,
-				'maxResults': self.max_results,
-	#			'part': 'snippet,id'
-				'part': 'id'
-			}
+			params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"query":keyword}
 			self.list_videos('search', params)
 
 	# ##################################################################################################################
