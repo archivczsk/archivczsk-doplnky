@@ -1,0 +1,88 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_yt\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-01-20 19:25+0100\n"
+"PO-Revision-Date: 2026-01-19 19:17+0200\n"
+"Language: sk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: plugin_video_yt/provider.py:65
+msgid "Last watched"
+msgstr "Posledné sledované"
+
+#: plugin_video_yt/provider.py:104
+msgid "This addon reached available limit of requests to youtube API. Try again later."
+msgstr "Tento doplnok dosiahol limit počtu dostupných požiadaviek na yotube API. Skúste to neskôr."
+
+#: plugin_video_yt/provider.py:170
+msgid "Remove from watched"
+msgstr "Odstrániť zo sledovaných"
+
+#: plugin_video_yt/provider.py:171 plugin_video_yt/provider.py:278
+#: plugin_video_yt/provider.py:318
+msgid "Save channel"
+msgstr "Uložiť kanál"
+
+#: plugin_video_yt/provider.py:240
+msgid "Videos"
+msgstr "Videá"
+
+#: plugin_video_yt/provider.py:243
+msgid "Shorts"
+msgstr "Shorts"
+
+#: plugin_video_yt/provider.py:246
+msgid "Live"
+msgstr "Naživo"
+
+#: plugin_video_yt/provider.py:249
+msgid "Popular"
+msgstr "Populárne"
+
+#: plugin_video_yt/provider.py:252
+msgid "Oldest"
+msgstr "Najstarší"
+
+#: plugin_video_yt/provider.py:277 plugin_video_yt/provider.py:317
+msgid "View channel videos"
+msgstr "Zobraziť videá kanála"
+
+#: plugin_video_yt/provider.py:420
+msgid "Failed to get playable video stream address"
+msgstr "Nepodarilo sa získať prehrateľnú adresu video  streamu"
+
+msgid "Number of remembered searches"
+msgstr "Počet zapamätaných vyhľadávaní"
+
+msgid "Number of channels on main page"
+msgstr "Počet kanálov na úvodnej obrazovke"
+
+msgid "Max watched items"
+msgstr "Maximálny počet videných položiek"
+
+msgid "Preferred stream resolution"
+msgstr "Preferované rozlíšenie streamu"
+
+msgid "4k"
+msgstr ""
+
+msgid "1080p"
+msgstr ""
+
+msgid "720p"
+msgstr ""
+
+msgid "480p"
+msgstr ""
+
+msgid "360p"
+msgstr ""
+
+msgid "Check exteplayer3 version on startup"
+msgstr "Pri štarte skontrolovať verziu exteplayer3 prehrávača"
+
+msgid "Youtube API key"
+msgstr "Youtube API kľúč"
