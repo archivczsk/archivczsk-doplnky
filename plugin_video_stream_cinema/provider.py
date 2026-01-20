@@ -11,18 +11,11 @@ from tools_archivczsk.contentprovider.exception import AddonErrorException, Addo
 from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman
 from tools_archivczsk.cache import lru_cache
 from tools_archivczsk.simple_config import SimpleConfigSelection, SimpleConfigInteger, SimpleConfigYesNo, SimpleConfigMultiSelection
+from tools_archivczsk.compat import urlparse, urlunparse, parse_qs, urlencode
 
 from .kraska import Kraska, KraskaLoginFail, KraskaResolveException
 from .sc_api import SC_API, SCAuthException
 from .watched import SCWatched
-
-######################
-
-try:
-	from urlparse import urlparse, urlunparse, parse_qs
-	from urllib import urlencode
-except:
-	from urllib.parse import urlparse, urlunparse, urlencode, parse_qs
 
 # #################################################################################################
 
@@ -64,6 +57,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		self.tapi = trakttv
 		self.dubbed_lang_list = ['en']
 		self.lang_list = ['en']
+		self.trakt_page_size = 100
 
 		if not self.get_setting('deviceid'):
 			self.set_setting('deviceid', SC_API.create_device_id())
@@ -361,18 +355,19 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 	# #################################################################################################
 
-	def show_trakt_list(self, user, list_id):
+	def show_trakt_list(self, user, list_id, page=1):
 		@lru_cache(30, timeout=1800)
-		def get_list_items(list_id, user):
+		def get_list_items(list_id, user, p):
 			try:
-				return self.tapi.get_list_items(list_id, user)
+				return self.tapi.get_list_items(list_id, user, p, self.trakt_page_size)
 			except Exception as e:
 				self.log_exception()
 				raise AddonErrorException(self._("Failed to get list from Trakt.tv. If problem persists, unpair and newly pair your device to Trakt.tv."))
 
 		track_ids = []
 		# get list from Trakt.tv and extract trakt ID + type
-		for titem in get_list_items(list_id, user):
+		titems = get_list_items(list_id, user, page)
+		for titem in titems:
 			titem_type = titem.get('type')
 
 			if titem_type not in ['movie', 'tvshow', 'show']:
@@ -385,6 +380,9 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 		if len(track_ids) > 0:
 			self.render_menu('/Search/getTrakt', data={ 'ids': json.dumps(track_ids)})
+
+		if len(titems) >= self.trakt_page_size:
+			self.add_next(cmd=self.show_trakt_list, user=user, list_id=list_id, page=page+1)
 
 	# #################################################################################################
 
