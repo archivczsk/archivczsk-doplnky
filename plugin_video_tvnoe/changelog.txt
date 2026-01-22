@@ -1,0 +1,2 @@
+1.0: 21.01.2026
+- úvodná verzia - inšpirované kodi doplnkom od VincoNafta (https://github.com/VincoNafta/plugin.video.tvnoe.cz)

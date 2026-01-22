@@ -1,3 +1,6 @@
+3.1 - 23.01.2026
+    - better compatiblity with python 2.7
+
 3.0 - 16.01.2026
     - rewrite and simplify provider init
     - CommonContentProvider is now fully "glued" with ArchivCZSKContentProvider also during __init__ call

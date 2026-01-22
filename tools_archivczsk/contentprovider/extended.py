@@ -15,7 +15,7 @@ except:
 
 # #################################################################################################
 
-class CPModuleTemplate():
+class CPModuleTemplate(object):
 	'''
 	Base content provider module used as template for other modules
 	'''
