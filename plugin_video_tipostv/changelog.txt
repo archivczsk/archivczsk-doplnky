@@ -1,0 +1,4 @@
+1.0: 23.01.2026
+- úvodná verzia
+- umožňuje sledovať živé vysielanie a archív zo služby Tipos TV
+- podporované kategórie sú Basketbal a Futbal
