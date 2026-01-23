@@ -601,7 +601,7 @@ class Oneplay(object):
 		logo = None
 		if isinstance(data, dict) and 'image' in data:
 			if isinstance( data['image'], dict):
-				logo = data['image'].get('small')
+				logo = data['image'].get('image') or data['image'].get('small')
 			else:
 				logo = data['image']
 		else:

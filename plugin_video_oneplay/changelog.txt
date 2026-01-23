@@ -1,3 +1,6 @@
+1.15 - 23.01.2026
+- oprava zobrazovania posterov
+
 1.14 - 14.01.2026
 - úprava inicializácie po zmenách v závislostiach doplnku
 - lepšie ošetrenie chybových stavov pri čítaní odpovede zo servera
