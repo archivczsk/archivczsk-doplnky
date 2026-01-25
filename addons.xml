@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <addons>
-<addon id="plugin.video.aktualne" name="Aktuálně (video)" version="1.7" hash="a2fdb676a361a52d756ad8777b921063" rhash="a2fdb676a361a52d756ad8777b921063" />
+<addon id="plugin.video.aktualne" name="Aktuálně (video)" version="1.8" hash="73a61f12609e704164f094bcabfaae03" rhash="73a61f12609e704164f094bcabfaae03" />
 <addon id="plugin.video.antiktv" name="Antik TV" version="2.29" hash="036f1046b1d03c75542493fbd3e8a769" rhash="27ddf7d02667cd6ec552f62371894689" />
 <addon id="plugin.video.autosalontv" name="Autosalon" version="1.9" hash="e1836431641d28c728f02e2b0a0037e4" rhash="e1836431641d28c728f02e2b0a0037e4" />
 <addon id="plugin.video.disneyplus" name="Disney+" version="2.6" hash="212b69f75cd5f1c568e8b694beb1e52a" rhash="e15916e3982c255d7865e8c29dc73709" />
@@ -29,10 +29,10 @@
 <addon id="plugin.video.sweettv" name="Sweet.tv" version="1.24" hash="e38fa7b3d58663ac6f5d357fb29a8f8e" rhash="9185d577706d44df7e506d84b354d3f6" />
 <addon id="plugin.video.ta3.com" name="TA3.com" version="2.3" hash="e9e4ca73c961afa78477fc369612146b" rhash="a9a40d85f4a8afde8d197f5cab07cfb2" />
 <addon id="plugin.video.telly" name="Telly" version="1.8.0" hash="dd76949af539db7665894a99cc152ca1" rhash="9f95c077b2ce70e0f6c6fdbb886b6afc" />
-<addon id="plugin.video.tipostv" name="Tipos TV" version="1.0" hash="ab94dab1bbc51835e9b6d5dc58dc6812" rhash="daeea94851a80ad68852883461152c8c" />
+<addon id="plugin.video.tipostv" name="Tipos TV" version="1.1" hash="7b1a06d422a09f407cfa15fce6bbe39b" rhash="a35daca01c7dc8959c506b73f5be4d7f" />
 <addon id="plugin.video.tvcom.cz" name="tvcom.cz" version="1.6" hash="ccf4617244add2159db9a82bdae810c5" rhash="ccf4617244add2159db9a82bdae810c5" />
 <addon id="plugin.video.tvlux" name="TV Lux" version="1.1" hash="645da0301ef29f55b4e4686bf82139a2" rhash="65e6a480e3c73af0d3a7b515b554e51e" />
-<addon id="plugin.video.tvnoe" name="TV Noe" version="1.0" hash="57ebfbabaa30d9611d4d9c7216c4d36f" rhash="bdc6b4930a79b7ca31a5178508828a7f" />
+<addon id="plugin.video.tvnoe" name="TV Noe" version="1.1" hash="569ae4fe72ae953f49da90fa22d9ca4a" rhash="c44ee161a8dfc1e367061b7f6eac0e69" />
 <addon id="plugin.video.tvseznam" name="Televize Seznam" version="1.10" hash="d8afda7516c7dfa3a802f6d26a20ea2f" rhash="d8afda7516c7dfa3a802f6d26a20ea2f" />
 <addon id="plugin.video.videacesky.cz" name="videacesky.cz" version="1.4.1" hash="ae83c44add5083d698582b9f6210e1b3" rhash="ae83c44add5083d698582b9f6210e1b3" />
 <addon id="plugin.video.voyo" name="VOYO" version="1.9" hash="f75f67f9d769d9403004d7c12219dd90" rhash="21f9cf5a1198f3e49052339a4dfcdadd" />
