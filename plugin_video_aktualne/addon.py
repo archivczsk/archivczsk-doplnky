@@ -28,10 +28,12 @@ from tools_xbmc.compat import XBMCCompatInterface
 try:
 	import cookielib
 	from urllib2 import HTTPCookieProcessor, HTTPError, build_opener, install_opener
+	from urllib import quote
 except:
 	from urllib.request import HTTPCookieProcessor, build_opener, install_opener
 	from urllib.error import HTTPError
 	import http.cookiejar as cookielib
+	from urllib.parse import quote
 
 BASE = 'https://video.aktualne.cz'
 HEADERS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36', 'Referer': BASE}
@@ -53,7 +55,7 @@ class VideoAktualneContentProvider(ContentProvider):
 
 	def search(self,keyword):
 		result = []
-		html = util.request(BASE + "/vyhledavani?q="+keyword+"&sort=revised_and_published_at_desc&tab=Video+%C4%8Dl%C3%A1nky", headers=HEADERS)
+		html = util.request(BASE + "/vyhledavani?q="+quote(keyword)+"&sort=revised_and_published_at_desc&tab=Video+%C4%8Dl%C3%A1nky", headers=HEADERS)
 		items = re.findall('<article .*?<img .*?src="(.*?)".*?e-web-aktualne-articles-badge__content">(.*?)<.*?<a .*?href="(.*?)".*?>(.*?)</a>.*?e-web-aktualne-articles-card-horizontal__perex.*?>(.*?)<.*?</article>', html)
 		for (mimg, mtime, murl, mtitle, mperex) in items:
 			itm = self.video_item()
