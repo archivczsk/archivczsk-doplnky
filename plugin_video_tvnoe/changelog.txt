@@ -1,2 +1,5 @@
+1.1: 25.01.2026
+- oprava pádu ak nie je k dispozícii EPG
+
 1.0: 21.01.2026
 - úvodná verzia - inšpirované kodi doplnkom od VincoNafta (https://github.com/VincoNafta/plugin.video.tvnoe.cz)

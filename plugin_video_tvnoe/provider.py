@@ -65,7 +65,7 @@ class TvNoeModuleLiveTV(CPModuleLiveTV):
 				epg_str = ' ' + _I(epg['title'])
 			else:
 				epg_str = ""
-				info_labels = None
+				info_labels = {}
 
 			self.cp.add_video(name + epg_str, epg.get('img') or logo_data.get(name), info_labels, cmd=self.get_livetv_stream, channel_name=name, url=url)
 
