@@ -233,6 +233,8 @@ class TiposTVContentProvider(CommonContentProvider):
 				url = highlight
 			else:
 				return
+		else:
+			url = archive
 
 		soup = self.beautifulsoup(self.req_session.get(url).content)
 		video_url = None

@@ -1,3 +1,6 @@
+1.1: 25.01.2026
+- oprava pádu pri pokuse od spustenie live vysielania
+
 1.0: 23.01.2026
 - úvodná verzia
 - umožňuje sledovať živé vysielanie a archív zo služby Tipos TV
