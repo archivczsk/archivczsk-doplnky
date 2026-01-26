@@ -1,3 +1,6 @@
+1.9.0: 26.01.2026
+- nastavenie sťahovania streamu do formátu TS
+
 1.8.0: 16.01.2026
 - úprava inicializácie po zmenách v závislostiach doplnku
 - oprava zobrazenia EPG v doplnku ak nie je povolený export EPG

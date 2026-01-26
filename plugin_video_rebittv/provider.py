@@ -207,6 +207,7 @@ class RebitTVModuleExtra(CPModuleTemplate):
 # #################################################################################################
 
 class RebitTVContentProvider(ModuleContentProvider):
+	DOWNLOAD_FORMAT='ts'
 
 	def __init__(self):
 		ModuleContentProvider.__init__(self)

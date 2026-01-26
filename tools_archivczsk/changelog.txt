@@ -1,3 +1,6 @@
+3.2 - 26.01.2026
+    - allow choosing download format by DOWNLOAD_FORMAT attribute in CommonContentProvider
+
 3.1 - 23.01.2026
     - better compatiblity with python 2.7
 

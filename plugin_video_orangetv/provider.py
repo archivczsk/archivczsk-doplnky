@@ -221,6 +221,7 @@ class OrangeTVModuleExtra(CPModuleTemplate):
 # #################################################################################################
 
 class OrangeTVContentProvider(ModuleContentProvider):
+	DOWNLOAD_FORMAT='ts'
 
 	def __init__(self):
 		ModuleContentProvider.__init__(self)

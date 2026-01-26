@@ -16,7 +16,7 @@ _HEADERS = {
 	"User-Agent": "okhttp/4.12.0"
 }
 
-class SledovaniTV:
+class SledovaniTV(object):
 	APP_VERSION = '2.133.0'
 	PLAYER_CAPABILITIES = 'vast,clientvast,alerts,people,normalize_id,category,webvtt,adaptive2'
 

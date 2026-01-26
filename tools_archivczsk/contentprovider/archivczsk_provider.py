@@ -692,6 +692,9 @@ class ArchivCZSKContentProvider(object):
 		if is_string(info_labels):
 			info_labels = {'plot': info_labels}
 
+		if isinstance(download, bool) and download == True:
+			download = getattr(self.provider, 'DOWNLOAD_FORMAT', download)
+
 		return client.create_video_it(name=title, url=url, subs=subs, infoLabels=info_labels, live=live, settings=settings, dataItem=data_item, traktItem=trakt_item, download=download, filename=info_labels.get('filename'))
 
 	def add_play(self, title, url, info_labels={}, data_item=None, trakt_item=None, subs=None, settings=None, live=False, download=True, playlist_autogen=True):

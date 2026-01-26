@@ -516,6 +516,8 @@ class SledovaniTVModuleExtra(CPModuleTemplate):
 # #################################################################################################
 
 class SledovaniTVContentProvider(ModuleContentProvider):
+	DOWNLOAD_FORMAT='ts'
+
 	def __init__(self):
 		ModuleContentProvider.__init__(self, 'SledovaniTV')
 

@@ -1,3 +1,6 @@
+2.30: 26.01.2026
+- nastavenie sťahovania streamu do formátu TS
+
 2.29: 14.01.2026
 - úprava inicializácie po zmenách v závislostiach doplnku
 

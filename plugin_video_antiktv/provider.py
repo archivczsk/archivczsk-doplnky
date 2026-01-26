@@ -456,6 +456,7 @@ class AntikTVModuleExtra(CPModuleTemplate):
 	# #################################################################################################
 
 class AntikTVContentProvider(ModuleContentProvider):
+	DOWNLOAD_FORMAT='ts'
 
 	def __init__(self):
 		ModuleContentProvider.__init__(self)

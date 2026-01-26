@@ -456,6 +456,8 @@ class OneplayTVModuleExtra(CPModuleTemplate):
 # #################################################################################################
 
 class OneplayTVContentProvider(ModuleContentProvider):
+	DOWNLOAD_FORMAT='mp4'
+
 	def __init__(self):
 		ModuleContentProvider.__init__(self, 'Oneplay')
 
