@@ -14,7 +14,7 @@
 <addon id="plugin.video.max" name="HBO Max" version="1.12" hash="23b265e1d20b1dd944a0015be61d289c" rhash="12704300970d8948f3e9dcb54f497e34" />
 <addon id="plugin.video.mtr.sk" name="Mestská TV Ružomberok" version="1.4.0" hash="3448d87e3a93b98bd90cf2ddcca421f5" rhash="3448d87e3a93b98bd90cf2ddcca421f5" />
 <addon id="plugin.video.novaplus" name="TV Nova" version="3.15" hash="6da47cff7d7e74f5db53daaebb517d6a" rhash="85e605ada1ae75070f01d34e2fdb5c45" />
-<addon id="plugin.video.oneplay" name="Oneplay" version="1.16" hash="c9f604a363eda7ea638a6401964be8e0" rhash="2a3438c7990c25cac484e98103ee1d2a" />
+<addon id="plugin.video.oneplay" name="Oneplay" version="1.17" hash="b913b0c87a35dc4ea43ed455c97c426a" rhash="a3be9b39a09e767ea7437d5b52d8f714" />
 <addon id="plugin.video.orangetv" name="OrangeTV" version="2.27" hash="16bd5fca8ff16effc1f309c940e026e4" rhash="36aeaa840bbd3196b381ac385b64ffe8" />
 <addon id="plugin.video.pohadkar.cz" name="Pohádkář.cz" version="1.5.0" hash="2f30d87101b495adc0afb4cb95736753" rhash="2f30d87101b495adc0afb4cb95736753" />
 <addon id="plugin.video.prehrajto" name="Prehraj.to" version="1.5" hash="12250c192b3e34ad16783a12b86b0a6b" rhash="259aac6a25faea775531e5ed2f0e96e0" />
