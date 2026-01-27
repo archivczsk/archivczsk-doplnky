@@ -1,3 +1,6 @@
+1.12 - 27.01.2026
+    - oprava prehrávania živého vysielania v športovej sekcii
+
 1.11 - 14.01.2026
     - úprava inicializácie po zmenách v závislostiach doplnku
 
