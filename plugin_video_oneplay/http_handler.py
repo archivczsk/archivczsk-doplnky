@@ -257,4 +257,17 @@ class OneplayHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler):
 		elif fix == 'startover':
 			self.fix_startover(root)
 
+		# remove STPP TTML subtitles - they are not supported and they cause problems by playback
+		ns = root.tag[1:root.tag.index('}')]
+		ns = '{%s}' % ns
+		for e_period in root.findall('{}Period'.format(ns)):
+			e_adaptation_list = []
+			for e_adaptation_set in e_period.findall('{}AdaptationSet'.format(ns)):
+				if e_adaptation_set.get('contentType','') == 'text' and e_adaptation_set.get('mimeType', '') == 'application/mp4':
+					e_adaptation_list.append(e_adaptation_set)
+
+			for e in e_adaptation_list:
+				e_period.remove(e)
+
+
 	# #################################################################################################

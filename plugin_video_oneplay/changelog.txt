@@ -1,3 +1,6 @@
+1.17 - 27.01.2026
+- ignorovanie STPP TTML titulkov v streamoch, nakoľko obsahujú chybné údaje a nie sú podporované v prehrávačoch
+
 1.16 - 26.01.2026
 - nastavenie sťahovania streamu do formátu MP4
 
