@@ -1,3 +1,6 @@
+3.3 - 27.01.2026
+    - fixed setting decryption keys in hls
+
 3.2 - 26.01.2026
     - allow choosing download format by DOWNLOAD_FORMAT attribute in CommonContentProvider
 

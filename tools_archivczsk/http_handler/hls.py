@@ -173,7 +173,7 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				pssh = pssh[24:-1]
 				segment_cache_data['pssh']['wv'].append(pssh)
 				keys = self.get_drm_keys({'wv': [pssh]}, drm_info)
-				if hls_internal_decrypt:
+				if hls_internal_decrypt or len(keys) == 0:
 					# when doing internal decrypt, then remove #EXT-X-KEY: line to not confuse player
 					line = ''
 				else:
@@ -198,7 +198,7 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 				segment_cache_data['pssh']['pr'].append(pssh)
 				keys = self.get_drm_keys({'pr': [pssh]}, drm_info)
-				if hls_internal_decrypt:
+				if hls_internal_decrypt or len(keys) == 0:
 					# when doing internal decrypt, then remove #EXT-X-KEY: line to not confuse player
 					line = ''
 				else:
