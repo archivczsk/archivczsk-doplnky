@@ -38,7 +38,7 @@
 <addon id="plugin.video.voyo" name="VOYO" version="1.9" hash="f75f67f9d769d9403004d7c12219dd90" rhash="21f9cf5a1198f3e49052339a4dfcdadd" />
 <addon id="plugin.video.webshare" name="Webshare.cz" version="1.5" hash="f5bab99a64256c82ddab83a6c7dae41c" rhash="27a62efdf5e34bd0b1f82f1eb2504ee2" />
 <addon id="plugin.video.yt" name="YouTube" version="2.8" hash="82af8af9148686b8d33e8d8c2d63f3ac" rhash="5d4560f88295137cfee8557ca8b08fcf" />
-<addon id="tools.archivczsk" name="Addons base" version="3.2" hash="e7d9dbc9bc3f69f715db68e39db96237" rhash="bce65169d0e3044d72cbfc7020083e58" />
+<addon id="tools.archivczsk" name="Addons base" version="3.3" hash="64950cf671b156180c3d037501e3b88e" rhash="2840c167a43421054e0a315c7bfb7948" />
 <addon id="tools.cenc" name="Content encryption support" version="1.10" hash="0a07fb7a4da64058c0c66ad417235656" rhash="0a07fb7a4da64058c0c66ad417235656" />
 <addon id="tools.xbmc" name="xbmc addons helper" version="1.5" hash="3c13f673a3cb346c95846cbe7444f300" rhash="3c13f673a3cb346c95846cbe7444f300" />
 <addon id="plugin.video.archivo2tv" name="Archív O2TV" version="0" supported="no"><extension point="archivczsk.addon.metadata"><broken>Prevádzka služby O2TV bola ukončená. Pokračovaním je služba Oneplay.</broken></extension></addon>
