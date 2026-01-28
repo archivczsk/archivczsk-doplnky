@@ -858,7 +858,7 @@ class Oneplay(object):
 		if self.cp.get_setting('stream_type') == 'HLS' and start_mode:
 			ret = hls or dash or dash_drm
 		else:
-			ret = dash or hls or dash_drm
+			ret = dash or dash_drm or hls
 
 		if is_md == False and md_items:
 			ret['md'] = md_items
