@@ -77,38 +77,29 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		Handles request to hls master playlist. Address is created using stream_key_to_hls_url()
 		'''
 
-		def hls_continue(data):
-			if data:
-				request.setResponseCode(200)
-				request.setHeader('content-type', "application/vnd.apple.mpegurl")
-				request.write(data.encode('utf-8'))
-			else:
-				request.setResponseCode(401)
-			request.finish()
+		stream_key = self.decode_stream_key(path)
 
+		hls_info = self.get_hls_info(stream_key)
 
-		try:
-			stream_key = self.decode_stream_key(path)
+		if not hls_info:
+			return self.reply_error404(request)
 
-			hls_info = self.get_hls_info(stream_key)
+		if not isinstance(hls_info, type({})):
+			hls_info = { 'url': hls_info }
 
-			if not hls_info:
-				self.reply_error404(request)
+		if int(request.get_header('X-DRM-Api-Level') or '0') >= 1 and hls_info.get('ext_drm_decrypt', True):
+			# player supports DRM, so don't do internal decryption and let player handle DRM
+			hls_info['hls_internal_decrypt'] = False
 
-			if not isinstance(hls_info, type({})):
-				hls_info = { 'url': hls_info }
+		# resolve HLS playlist and get only best stream
+		data = self.get_hls_playlist_data(hls_info)
 
-			if int(request.getHeader('X-DRM-Api-Level') or '0') >= 1 and hls_info.get('ext_drm_decrypt', True):
-				# player supports DRM, so don't do internal decryption and let player handle DRM
-				hls_info['hls_internal_decrypt'] = False
-
-			# resolve HLS playlist and get only best stream
-			self.get_hls_playlist_data_async(hls_info, cbk=hls_continue)
-			return self.NOT_DONE_YET
-
-		except:
-			self.cp.log_exception()
-			return self.reply_error500(request)
+		if data:
+			request.send_response(200)
+			request.send_header('content-type', "application/vnd.apple.mpegurl")
+			return data
+		else:
+			request.send_response(401)
 
 	# #################################################################################################
 
@@ -252,27 +243,28 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		self.cp.log_debug('Requesting HLS %s segment: %s' % ('init' if segment_type == 'i' else 'media', segment_url))
 		cache_data = self.scache.get(segment_cache_key)
 
-		def hsp_continue(response):
-			if response['status_code'] >= 400:
-				self.cp.log_error("Response code for HLS segment: %d" % response['status_code'])
-				request.setResponseCode(403)
-			else:
-				data = self.hls_process_drm_protected_segment(segment_type, response['content'], cache_data)
+		headers = {}
+		r = request.get_header('Range')
+		if r:
+			headers['Range'] = r
 
-				if not data:
-					self.cp.log_error('Failed to decrypt segment for stream key: %s' % segment_cache_key)
-					request.setResponseCode(501)
-				else:
-					request.setResponseCode(response['status_code'])
-					for k,v in response['headers'].items():
-						request.setHeader(k, v)
+		try:
+			response = self.req_session.get(segment_url)
+			response.raise_for_status()
+		except:
+			self.cp.log_error('Failed to HLS segment data from %s\n%s' % (segment_url, str(response)))
+			request.send_response(403)
+			return
 
-					request.write(data)
+		data = self.hls_process_drm_protected_segment(segment_type, response.content, cache_data)
 
-			request.finish()
-
-		self.request_http_data_async_simple(segment_url, cbk=hsp_continue, range=request.getHeader(b'Range'))
-		return self.NOT_DONE_YET
+		if not data:
+			self.cp.log_error('Failed to decrypt segment for stream key: %s' % segment_cache_key)
+			request.send_response(501)
+		else:
+			request.send_response(response.status_code)
+			self.forward_http_headers(request, response)
+			return data
 
 	# #################################################################################################
 
@@ -280,28 +272,7 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		segment_url = unquote(path)
 
 		self.cp.log_debug('Requesting HLS segment: %s' % segment_url)
-		flags = {
-			'finished': False
-		}
-		def http_code_write( code, rurl ):
-			request.setResponseCode(code)
-
-		def http_header_write( k, v ):
-			request.setHeader(k, v)
-
-		def http_data_write( data ):
-			if data != None:
-				request.write(data)
-			else:
-				if flags['finished'] == False:
-					request.finish()
-
-		def request_finished(reason):
-			flags['finished'] = True
-
-		self.request_http_data_async(segment_url, http_code_write, http_header_write, http_data_write, range=request.getHeader(b'Range'))
-		request.notifyFinish().addBoth(request_finished)
-		return self.NOT_DONE_YET
+		self.forward_http_data(request, segment_url)
 
 	# #################################################################################################
 
@@ -372,24 +343,18 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 		self.cp.log_debug('Requesting HLS variant playlist: %s' % url)
 
-		def p_continue(response):
-#			self.cp.log_debug('Received HLS variant response: %s' % response)
-			if response['status_code'] != 200:
-				self.cp.log_error("Status code response for HLS variant playlist: %d" % response['status_code'])
-				request.setResponseCode(401)
-				request.finish()
-				return
+		try:
+			response = self.req_session.get(url)
+			response.raise_for_status()
+		except:
+			self.cp.log_error('Failed to retrieve HLS variant playlist data from %s\n%s' % (url, str(response)))
+			request.send_response(401)
+			return None
 
-			resp_data = self.process_variant_playlist(response['url'], response['content'].decode('utf-8'), stream_data['hls_info'])
-
-			request.setResponseCode(200)
-			request.setHeader('content-type', "application/vnd.apple.mpegurl")
-			request.write(resp_data.encode('utf-8'))
-			request.finish()
-			return
-
-		self.request_http_data_async_simple(url, cbk=p_continue)
-		return self.NOT_DONE_YET
+		resp_data = self.process_variant_playlist(response.url, response.text, stream_data['hls_info'])
+		request.send_response(200)
+		request.send_header('content-type', "application/vnd.apple.mpegurl")
+		return resp_data
 
 	# #################################################################################################
 
@@ -398,22 +363,18 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 	# #################################################################################################
 
-	def get_hls_playlist_data_async(self, hls_info, cbk=None):
+	def get_hls_playlist_data(self, hls_info):
 		'''
 		Processes HLS master playlist from given url and returns new one with only one variant playlist specified by bandwidth (or with best bandwidth if no bandwidth is given)
 		'''
+		try:
+			response = self.req_session.get(hls_info['url'], headers=hls_info.get('headers'))
+			response.raise_for_status()
+		except:
+			self.cp.log_error('Failed to retrieve HLS playlist data from %s\n%s' % (hls_info['url'], str(response)))
+			return None
 
-		def p_continue(response):
-#			self.cp.log_error("HLS response received: %s" % response)
 
-			if response['status_code'] != 200:
-				self.cp.log_error("Status code response for HLS master playlist: %d" % response['status_code'])
-				return cbk(None)
-
-			resp_data = self.process_master_playlist(response['url'], response['content'].decode('utf-8'), hls_info)
-			cbk(resp_data)
-			return
-
-		self.request_http_data_async_simple(hls_info['url'], cbk=p_continue, headers=hls_info.get('headers'))
+		return self.process_master_playlist(response.url, response.text, hls_info)
 
 	# #################################################################################################

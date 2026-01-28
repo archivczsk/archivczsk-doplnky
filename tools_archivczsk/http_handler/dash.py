@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 from .template import HTTPRequestHandlerTemplate
-
+from ..compat import urljoin
 import xml.etree.ElementTree as ET
-
-try:
-	from urlparse import urljoin
-except:
-	from urllib.parse import urljoin
 
 from tools_cenc.mp4decrypt import mp4decrypt, mp4_cenc_info_remove
 
@@ -56,41 +51,31 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 		self.log_devel("Request for MPD manifest for: %s" % path)
 
-		def dash_continue(data):
-			if data:
-				self.log_devel("Processed MPD:\n%s" % data.decode('utf-8'))
-				request.setResponseCode(200)
-				request.setHeader('content-type', "application/dash+xml")
-				request.write(data)
-			else:
-				request.setResponseCode(401)
-			request.finish()
+		stream_key = self.decode_stream_key(path)
 
+		dash_info = self.get_dash_info(stream_key)
 
-		try:
-			stream_key = self.decode_stream_key(path)
+		if not dash_info:
+			return self.reply_error404(request)
 
-			dash_info = self.get_dash_info(stream_key)
+		if not isinstance(dash_info, type({})):
+			dash_info = { 'url': dash_info }
 
-			if not dash_info:
-				self.reply_error404(request)
+		if int(request.get_header('X-DRM-Api-Level') or '0') >= 1 and dash_info.get('ext_drm_decrypt', True):
+			# player supports DRM, so don't do internal decryption and let player handle DRM
+			dash_info['dash_internal_decrypt'] = False
 
-			if not isinstance(dash_info, type({})):
-				dash_info = { 'url': dash_info }
+		self.log_devel("Dash info: %s" % str(dash_info))
 
-			if int(request.getHeader('X-DRM-Api-Level') or '0') >= 1 and dash_info.get('ext_drm_decrypt', True):
-				# player supports DRM, so don't do internal decryption and let player handle DRM
-				dash_info['dash_internal_decrypt'] = False
+		# resolve and process DASH playlist
+		data = self.get_dash_playlist_data(dash_info)
 
-			self.log_devel("Dash info: %s" % str(dash_info))
-
-			# resolve and process DASH playlist
-			self.get_dash_playlist_data_async(dash_info, cbk=dash_continue)
-			return self.NOT_DONE_YET
-
-		except:
-			self.cp.log_exception()
-			return self.reply_error500(request)
+		if data:
+			request.send_response(200)
+			request.send_header('content-type', "application/dash+xml")
+			return data
+		else:
+			request.send_response(401)
 
 
 	# #################################################################################################
@@ -137,7 +122,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 		if not cache_data:
 			self.log_error("No cached data found for key: %s" % url_parts[0])
-			self.reply_error500(request)
+			return self.reply_error500(request)
 
 		base_url = cache_data['url']
 
@@ -147,28 +132,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		url = urljoin(base_url, url.replace('dot-dot-slash', '../'))
 
 		self.log_devel('Requesting DASH segment: %s' % url)
-		flags = {
-			'finished': False
-		}
-		def http_code_write( code, rurl ):
-			request.setResponseCode(code)
-
-		def http_header_write( k, v ):
-			request.setHeader(k, v)
-
-		def http_data_write( data ):
-			if data != None:
-				request.write(data)
-			else:
-				if flags['finished'] == False:
-					request.finish()
-
-		def request_finished(reason):
-			flags['finished'] = True
-
-		self.request_http_data_async(url, http_code_write, http_header_write, http_data_write, range=request.getHeader(b'Range'))
-		request.notifyFinish().addBoth(request_finished)
-		return self.NOT_DONE_YET
+		self.forward_http_data(request, url)
 
 	# #################################################################################################
 
@@ -218,7 +182,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 		if not cache_data:
 			self.log_error("No cached data found for key: %s" % url_parts[0])
-			self.reply_error500(request)
+			return self.reply_error500(request)
 
 		segment_type = url_parts[1]
 		base_url = cache_data['url']
@@ -230,28 +194,33 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		self.log_devel("Segment type: %s" % segment_type)
 #		self.log_devel("cache_data: %s" % str(cache_data))
 
-		def dsp_continue(response):
-			if response['status_code'] >= 400:
-				self.cp.log_error("Response code for DASH segment: %d" % response['status_code'])
-				request.setResponseCode(403)
-			else:
-				data = self.process_drm_protected_segment(segment_type, response['content'], cache_data)
-
-				if not data:
-					self.cp.log_error('Failed to decrypt segment for stream key: %s' % url_parts[0])
-					request.setResponseCode(501)
-				else:
-					request.setResponseCode(response['status_code'])
-					for k,v in response['headers'].items():
-						request.setHeader(k, v)
-
-					request.write(data)
-
-			request.finish()
+		headers = {}
+		r = request.get_header('Range')
+		if r:
+			headers['Range'] = r
 
 		self.log_devel('Requesting DASH segment: %s' % url)
-		self.request_http_data_async_simple(url, cbk=dsp_continue, range=request.getHeader(b'Range'))
-		return self.NOT_DONE_YET
+		try:
+
+			response = self.req_session.get(url, headers=headers)
+		except:
+			self.cp.log_error('Failed to retrieve segment data from %s\n%s' % (url, str(response)))
+			request.send_response(500)
+			return
+
+		if response.status_code >= 400:
+			self.cp.log_error("Response code for DASH segment: %d" % response['status_code'])
+			request.send_response(403)
+
+		data = self.process_drm_protected_segment(segment_type, response.content, cache_data)
+
+		if not data:
+			self.cp.log_error('Failed to decrypt segment for stream key: %s' % url_parts[0])
+			request.send_response(501)
+		else:
+			request.send_response(response.status_code)
+			self.forward_http_headers(request, response)
+			return data
 
 	# #################################################################################################
 
@@ -487,38 +456,37 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 	# #################################################################################################
 
-	def get_dash_playlist_data_async(self, dash_info, cbk=None):
+	def get_dash_playlist_data(self, dash_info):
 		'''
 		Processes DASH playlist from given url and returns new one with only one video adaptive specified by bandwidth (or with best bandwidth if no bandwidth is given)
 		'''
-		def p_continue(response):
-#			self.log_devel("MPD response received: %s" % response)
+		try:
+			response = self.req_session.get(dash_info['url'], headers=dash_info.get('headers'))
+			response.raise_for_status()
+		except:
+			self.cp.log_error('Failed to retrieve DASH playlist data from %s\n%s' % (dash_info['url'], str(response)))
+			return None
 
-			if response['status_code'] != 200:
-				self.cp.log_error("Status code response for MPD playlist: %d" % response['status_code'])
-				return cbk(None)
+#		self.log_devel("MPD response received: %s" % response)
 
-			bandwidth = dash_info.get('bandwidth')
-			if bandwidth == None:
-				bandwidth = 1000000000
-			else:
-				bandwidth = int(bandwidth)
+		bandwidth = dash_info.get('bandwidth')
+		if bandwidth == None:
+			bandwidth = 1000000000
+		else:
+			bandwidth = int(bandwidth)
 
-			redirect_url = response['url']
-			self.log_devel("Playlist URL after redirect: %s" % redirect_url)
-			cache_key = self.calc_cache_key(redirect_url)
-			self.log_devel("Cache key: %s" % cache_key)
-			redirect_url = redirect_url[:redirect_url.rfind('/')] + '/'
+		redirect_url = response.url
+#		self.log_devel("Playlist URL after redirect: %s" % redirect_url)
+		cache_key = self.calc_cache_key(redirect_url)
 
-			response_data = response['content'].decode('utf-8')
-			self.log_devel("Received MPD:\n%s" % response_data)
+#		self.log_devel("Cache key: %s" % cache_key)
+		redirect_url = urljoin(redirect_url, 'X')[:-1]
 
-			root = ET.fromstring(response_data)
-			self.handle_mpd_manifest(redirect_url, root, bandwidth, dash_info, cache_key)
-			cbk( ET.tostring(root, encoding='utf8', method='xml'))
-			return
+		response_data = response.text
+#		self.log_devel("Received MPD:\n%s" % response_data)
 
-
-		self.request_http_data_async_simple(dash_info['url'], cbk=p_continue, headers=dash_info.get('headers'))
+		root = ET.fromstring(response_data)
+		self.handle_mpd_manifest(redirect_url, root, bandwidth, dash_info, cache_key)
+		return ET.tostring(root, encoding='utf8', method='xml')
 
 	# #################################################################################################

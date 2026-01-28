@@ -36,25 +36,21 @@ class PlayliveTVHTTPRequestHandler(HTTPRequestHandlerTemplate):
 	# #################################################################################################
 
 	def P_playlive(self, request, path):
-		try:
-			channel_key = self.decode_channel_key(path)
+		channel_key = self.decode_channel_key(path)
 
-			if self.cache_life > 0 and channel_key in self.live_cache and self.live_cache[channel_key]['life'] > int(time()):
-				result = self.live_cache[channel_key]['result']
-			else:
-				result = self.get_url_by_channel_key(channel_key)
+		if self.cache_life > 0 and channel_key in self.live_cache and self.live_cache[channel_key]['life'] > int(time()):
+			result = self.live_cache[channel_key]['result']
+		else:
+			result = self.get_url_by_channel_key(channel_key)
 
-				if not result:
-					self.reply_error404(request)
+			if not result:
+				return self.reply_error404(request)
 
-				if self.cache_life > 0:
-					self.live_cache[channel_key] = {
-						'life': int(time()) + self.cache_life,
-						'result': result
-					}
-		except:
-			self.cp.log_exception()
-			return self.reply_error500(request)
+			if self.cache_life > 0:
+				self.live_cache[channel_key] = {
+					'life': int(time()) + self.cache_life,
+					'result': result
+				}
 
 		return self.reply_redirect(request, result)
 

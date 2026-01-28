@@ -2,89 +2,25 @@
 
 import os, base64
 from Plugins.Extensions.archivCZSK.engine.httpserver import AddonHttpRequestHandler
-from Plugins.Extensions.archivCZSK.settings import USER_AGENT
 from ..cache import SimpleAutokeyExpiringCache
 import json
-
-from twisted.web.client import CookieAgent, RedirectAgent, Agent, HTTPConnectionPool
-from twisted.web.http_headers import Headers
-from twisted.internet.protocol import Protocol
-from twisted.internet import reactor
-
-try:
-	from cookielib import CookieJar
-except:
-	from http.cookiejar import CookieJar
 
 from tools_cenc.wvdecrypt import WvDecrypt
 from tools_cenc.prdecrypt import PrDecrypt
 from tools_cenc.mp4decrypt import mp4_pssh_get
-from binascii import crc32, unhexlify
+from binascii import crc32
 
 # #################################################################################################
 
-try:
-	from twisted.web.iweb import IPolicyForHTTPS
-	from twisted.internet.ssl import CertificateOptions
-	from twisted.internet import _sslverify
-	from zope.interface import implementer
+class HTTPRequestHandlerTemplate(AddonHttpRequestHandler):
+	CHUNK_SIZE = 40960
 
-	@implementer(IPolicyForHTTPS)
-	class SSLNoVerifyContextFactory(object):
-		def creatorForNetloc(self, hostname, port):
-			return _sslverify.ClientTLSOptions(hostname.decode('utf-8'), CertificateOptions(verify=False).getContext())
-except:
-	SSLNoVerifyContextFactory = None
-
-# #################################################################################################
-
-class SegmentDataWriter(Protocol):
-	def __init__(self, cp, d, cbk_data, timeout_call ):
-		self.cp = cp
-		self.d = d # reference to defered object - needed to ensure, that it is not destroyed during operation
-		self.cbk_data = cbk_data
-		self.timeout_call = timeout_call
-
-	def dataReceived(self, data):
-		try:
-			self.cbk_data(data)
-		except:
-			self.cp.log_exception()
-
-	def connectionLost(self, reason):
-		try:
-			self.cbk_data(None)
-		except:
-			self.cp.log_exception()
-
-		if self.timeout_call.active():
-			self.timeout_call.cancel()
-
-# #################################################################################################
-
-class HTTPRequestHandlerTemplate(AddonHttpRequestHandler, object):
 	def __init__(self, content_provider, addon):
 		super(HTTPRequestHandlerTemplate, self).__init__(addon)
 
 		self.cp = content_provider
 		self.scache = SimpleAutokeyExpiringCache()
-		timeout = int(self.cp.get_setting('loading_timeout'))
-		if timeout == 0:
-			timeout = 5 # it will be very silly to disable timeout, so set 5s here as default
-
-		self._cookies = CookieJar()
-		self._pool = HTTPConnectionPool(reactor)
-
-		if SSLNoVerifyContextFactory == None:
-			self.cp.log_error("Old/not compatible version of twisted library detected - unable to disable SSL verification")
-			self.cookie_agent = Agent(reactor, connectTimeout=timeout/2, pool=self._pool)
-		elif self.cp.get_setting('verify_ssl'):
-			self.cookie_agent = Agent(reactor, connectTimeout=timeout/2, pool=self._pool)
-		else:
-			self.cookie_agent = Agent(reactor, connectTimeout=timeout/2, pool=self._pool, contextFactory=SSLNoVerifyContextFactory())
-
-		self.cookie_agent = CookieAgent(self.cookie_agent, self._cookies)
-		self.cookie_agent = RedirectAgent(self.cookie_agent)
+		self.req_session = self.cp.get_requests_session()
 
 		self.enable_devel_logs = os.path.isfile('/tmp/archivczsk_enable_devel_logs')
 		self.wvdecrypt = WvDecrypt.get_instance()
@@ -137,78 +73,46 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler, object):
 
 	# #################################################################################################
 
-	def request_http_data_async(self, url, cbk_response_code, cbk_header, cbk_data, headers=None, range=None):
-		timeout = int(self.cp.get_setting('loading_timeout'))
-		if timeout == 0:
-			timeout = 5 # it will be very silly to disable timeout, so set 5s here as default
+	def forward_http_data(self, request, url, headers=None):
+		h = {}
+		h.update(headers or {})
 
-		request_headers = Headers()
+		r = request.get_header('Range')
+		if r:
+			h['Range'] = r
 
-		if headers:
-			for k, v in headers.items():
-				request_headers.addRawHeader(k.encode('utf-8'), v.encode('utf-8'))
-
-		if range != None:
-			request_headers.addRawHeader(b'Range', range)
-
-		if not request_headers.hasHeader('User-Agent'):
-			# empty user agent is not what we want, so use something common
-			request_headers.addRawHeader(b'User-Agent', USER_AGENT.encode('utf-8'))
-
-		d = self.cookie_agent.request( b'GET', url.encode('utf-8'), request_headers, None)
-		timeout_call = reactor.callLater(timeout, d.cancel)
-
-		def request_created(response):
-			cbk_response_code(response.code, response.request.absoluteURI)
-
-#			self.log_devel("Response headers: %d" % response.code)
-#			for k,v in response.headers.getAllRawHeaders():
-#				self.log_devel("%s: %s" % (k.decode('utf-8'), v[0].decode('utf-8')))
-
-			for k,v in response.headers.getAllRawHeaders():
-				if k in (b'Accept-Ranges', b'Content-Type', b'Accept', b'Content-Range'):
-					cbk_header(k,v[0])
-
-			response.deliverBody(SegmentDataWriter(self.cp, d, cbk_data, timeout_call))
-
-		def request_failed(response):
+		try:
+			response = self.req_session.get(url, headers=headers, stream=True)
+		except:
 			self.cp.log_error('Request for url %s failed: %s' % (url, str(response)))
+			request.send_response(500)
+			return
 
-			cbk_response_code(500, '')
-			cbk_data(None)
-			if timeout_call.active():
-				timeout_call.cancel()
+		request.send_response(response.status_code)
+		self.forward_http_headers(request, response)
 
-		d.addCallback(request_created)
-		d.addErrback(request_failed)
+		for chunk in response.iter_content(self.CHUNK_SIZE):
+			request.write(chunk)
 
 	# #################################################################################################
 
-	def request_http_data_async_simple(self, url, cbk, headers=None, range=None, **kwargs):
-		response = {
-			'status_code': None,
-			'url': None,
-			'headers': {},
-			'content': b''
-		}
+	def request_http_data(self, url, headers=None):
+		try:
+			response = self.req_session.get(url, headers=headers)
+		except:
+			self.cp.log_error('Request for url %s failed: %s' % (url, str(response)))
+			return 500, None
 
-		def cbk_response_code(rcode, rurl):
-			response['status_code'] = rcode
-			response['url'] = rurl.decode('utf-8')
+		return response.status_code, response.content
 
-		def cbk_header(k, v):
-			response['headers'][k] = v
+	# #################################################################################################
 
-		def cbk_data(data):
-			if data == None:
-				try:
-					cbk(response, **kwargs)
-				except:
-					self.cp.log_exception()
-			else:
-				response['content'] += data
+	def forward_http_headers(self, request, response, headers=None):
+		headers = headers or ('Accept-Ranges', 'Content-Type', 'Accept', 'Content-Range')
 
-		return self.request_http_data_async( url, cbk_response_code, cbk_header, cbk_data, headers=headers, range=range)
+		for k,v in response.headers.items():
+			if k in headers:
+				request.send_header(k, v)
 
 	# #################################################################################################
 

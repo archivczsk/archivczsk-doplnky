@@ -1,3 +1,6 @@
+3.4 - 28.01.2026
+    - update HTTP handlers to support threaded HTTP server from ArchivCZSK 3.5.0
+
 3.3 - 27.01.2026
     - fixed setting decryption keys in hls
 
