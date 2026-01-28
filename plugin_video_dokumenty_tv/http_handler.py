@@ -24,21 +24,11 @@ class DokumentyTVHTTPRequestHandler(HlsHTTPRequestHandler):
 		if not img_path:
 			return self.reply_error500(request)
 
-		def reply_img_data(response):
-			if response['status_code'] != 200:
-				request.setResponseCode(401)
-				request.finish()
-				return
+		response = self.req_session.get(img_path)
+		response.raise_for_status()
 
-			request.setResponseCode(200)
-			if 'content-type' in response['headers']:
-				request.setHeader('content-type', response['headers']['content-type'])
-
-			request.write(response['content'])
-			request.finish()
-			return
-
-		self.request_http_data_async_simple(img_path, cbk=reply_img_data)
-		return self.NOT_DONE_YET
+		request.send_response(200)
+		request.send_header(response.headers.get('Content-Type'))
+		return response.content
 
 	# #################################################################################################

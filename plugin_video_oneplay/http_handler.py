@@ -171,7 +171,7 @@ class OneplayHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler):
 
 		# if channels broatcasts MD, then show menu to select MD stream
 		if 'md' in stream_index_info and self.last_played_channel != channel_id and self.cp.get_setting('show_md_choice'):
-			self.show_md_menu(stream_index_info)
+			self.run_in_reactor(self.show_md_menu, stream_index_info)
 
 		self.last_played_channel = channel_id
 

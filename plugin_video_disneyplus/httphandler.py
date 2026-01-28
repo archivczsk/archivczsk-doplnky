@@ -67,23 +67,19 @@ class DisneyPlusHTTPRequestHandler(HlsHTTPRequestHandler):
 		'''
 		Handles request to hls master playlist. Address is created using stream_key_to_hls_url()
 		'''
-		try:
-			stream_key = self.decode_stream_key(path)
-			hls_info = self.get_hls_info(stream_key)
+		stream_key = self.decode_stream_key(path)
+		hls_info = self.get_hls_info(stream_key)
 
-			if not hls_info:
-				self.reply_error404(request)
+		if not hls_info:
+			return self.reply_error404(request)
 
-			pls = hls_info['master_playlist']
+		pls = hls_info['master_playlist']
 
-			if int(request.getHeader('X-DRM-Api-Level') or '0') >= 1 and hls_info.get('ext_drm_decrypt', True):
-				# player supports DRM, so don't do internal decryption and let player handle DRM
-				hls_info['hls_internal_decrypt'] = False
+		if int(request.get_header('X-DRM-Api-Level') or '0') >= 1 and hls_info.get('ext_drm_decrypt', True):
+			# player supports DRM, so don't do internal decryption and let player handle DRM
+			hls_info['hls_internal_decrypt'] = False
 
-			mp_data = self.process_master_playlist(pls.mp_url, pls.to_string(audio_idx=stream_key['aid']), hls_info)
-			return self.reply_ok(request, mp_data, "application/vnd.apple.mpegurl")
-		except:
-			self.cp.log_exception()
-			return self.reply_error500(request)
+		mp_data = self.process_master_playlist(pls.mp_url, pls.to_string(audio_idx=stream_key['aid']), hls_info)
+		return self.reply_ok(request, mp_data, "application/vnd.apple.mpegurl")
 
 	# #################################################################################################

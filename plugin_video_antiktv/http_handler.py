@@ -42,10 +42,6 @@ class AntikTVHTTPRequestHandler( AddonHttpRequestHandler ):
 				return self.reply_error500( request )
 
 			return self.reply_redirect(request, self.get_endpoint(request, True) + self.playlive_redirect_uri + base64.b64encode(str(new_url).encode('utf-8')).decode("utf-8") + '~' + path)
-		except:
-			self.cp.log_error("Failed for path: %s" % path)
-			self.cp.log_exception()
-			return self.reply_error500( request )
 
 		return self.reply_ok(request, data, "application/x-mpegURL; charset=UTF-8")
 
@@ -69,53 +65,26 @@ class AntikTVHTTPRequestHandler( AddonHttpRequestHandler ):
 				return self.reply_error500( request )
 
 			return self.reply_redirect(request, self.get_endpoint(request, True) + self.playarchive_redirect_uri + base64.b64encode(str(new_url).encode('utf-8')).decode("utf-8") + '~' + path)
-		except:
-			self.cp.log_error("Failed for path: %s" % path)
-			self.cp.log_exception()
-			return self.reply_error500(request)
 
 		return self.reply_ok(request, data, "application/x-mpegURL; charset=UTF-8")
 
 	# #################################################################################################
 
 	def P_getkey(self, request, path):
-		try:
-			key = self.cp.atk.get_content_key(path)
-			key = binascii.a2b_hex(key)
-		except:
-			self.cp.log_exception()
-			return self.reply_error500(request)
+		key = self.cp.atk.get_content_key(path)
+		key = binascii.a2b_hex(key)
 
 		return self.reply_ok( request, key, "application/octet-stream", raw=True)
 
 	# #################################################################################################
 
 	def P_getslive(self, request, path, live=True):
-		try:
-			if path.endswith('.ts'):
-				path = path[:-3]
+		if path.endswith('.ts'):
+			path = path[:-3]
 
-			segment_url = base64.b64decode(path.encode('utf-8')).decode("utf-8")
-
-			def http_data_write( code, header, data ):
-				if code != None:
-					request.setResponseCode(code)
-
-				if header != None:
-					request.setHeader(header[0], header[1])
-
-				if data != None:
-					request.write(data)
-
-				if code == None and header == None and data == None:
-					request.finish()
-
-			self.cp.atk.get_segment_data_async(segment_url, http_data_write, live, request.getHeader(b'Range'))
-			return self.NOT_DONE_YET
-
-		except:
-			self.cp.log_exception()
-			return self.reply_error500(request)
+		segment_url = base64.b64decode(path.encode('utf-8')).decode("utf-8")
+		request.send_response(200)
+		self.cp.atk.get_segment_data(segment_url, live, request.get_header('Range'), request.send_header, request.write)
 
 	# #################################################################################################
 

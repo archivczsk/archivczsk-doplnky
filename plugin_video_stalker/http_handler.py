@@ -35,46 +35,42 @@ class StalkerHTTPRequestHandler( AddonHttpRequestHandler ):
 		else:
 			is_m3u8 = False
 
-		try:
-			path = base64.b64decode(path.encode('utf-8')).decode("utf-8")
-			link_info = json.loads(path)
+		path = base64.b64decode(path.encode('utf-8')).decode("utf-8")
+		link_info = json.loads(path)
 
-			if len( link_info ) == 3:
-				ck, cmd, use_tmp_link = link_info
-				name = 'Unknown'
-				link_type = 'itv'
-				series = None
+		if len( link_info ) == 3:
+			ck, cmd, use_tmp_link = link_info
+			name = 'Unknown'
+			link_type = 'itv'
+			series = None
+		else:
+			ck, cmd, use_tmp_link, link_type, name, series = link_info
+
+		if is_m3u8:
+			ret = '#EXTM3U\n#EXTVLCOPT:http-user-agent=%s\n%s/playlive/%s\n' % (self.user_agent, self.get_endpoint(request), path_orig[:-5])
+			request.send_header('Content-Disposition', 'attachment; filename="%s.m3u8"' % self.file_name_sanitize(name))
+
+			return self.reply_ok(request, ret, "application/x-mpegURL; charset=UTF-8")
+
+		if path in self.live_cache and self.live_cache[path]['life'] > int(time()):
+			log.debug("Returning result from cache" )
+			url = self.live_cache[path]['result']
+		else:
+			s = StalkerCache.get_by_key( ck )
+
+			if use_tmp_link:
+				if series == -1:
+					series = None
+				url = s.create_video_link( cmd, link_type, series=series )
 			else:
-				ck, cmd, use_tmp_link, link_type, name, series = link_info
-
-			if is_m3u8:
-				ret = '#EXTM3U\n#EXTVLCOPT:http-user-agent=%s\n%s/playlive/%s\n' % (self.user_agent, self.get_endpoint(request), path_orig[:-5])
-				request.setHeader('Content-Disposition', 'attachment; filename="%s.m3u8"' % self.file_name_sanitize(name))
-
-				return self.reply_ok(request, ret, "application/x-mpegURL; charset=UTF-8")
-
-			if path in self.live_cache and self.live_cache[path]['life'] > int(time()):
-				log.debug("Returning result from cache" )
-				url = self.live_cache[path]['result']
-			else:
-				s = StalkerCache.get_by_key( ck )
-
-				if use_tmp_link:
-					if series == -1:
-						series = None
-					url = s.create_video_link( cmd, link_type, series=series )
-				else:
-					url = s.cmd_to_url( cmd )
+				url = s.cmd_to_url( cmd )
 
 #				if url:
 #					self.live_cache[path] = { 'life': int(time())+300, 'result': url }
 
-			location = url
-			log.debug("Resolved stream address: %s" % location )
+		location = url
+		log.debug("Resolved stream address: %s" % location )
 
-		except:
-			log.error(traceback.format_exc())
-			return self.reply_error500( request )
 
 		if location:
 			return self.reply_redirect(request, location)
@@ -101,7 +97,7 @@ class StalkerHTTPRequestHandler( AddonHttpRequestHandler ):
 					else:
 						data += ret
 
-					request.setHeader('Content-Disposition', 'attachment; filename="%s.m3u8"' % self.file_name_sanitize(file_name))
+					request.send_header('Content-Disposition', 'attachment; filename="%s.m3u8"' % self.file_name_sanitize(file_name))
 				else:
 					content_encoding = "text/html; charset=UTF-8"
 					ret = stalkerHttpProvider(endpoint, data_dir).handle_html(path_full)

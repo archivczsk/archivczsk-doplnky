@@ -1,3 +1,6 @@
+1.10 - 28.01.2026
+    - podpora nového HTTP servera v ArchivCZSK 3.5.0
+
 1.9 - 28.03.2025
     - oprava pádov pri nesprávnych dátach zo servera
 
