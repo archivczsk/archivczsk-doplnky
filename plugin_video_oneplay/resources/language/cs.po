@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_oneplay\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-30 14:37+0200\n"
-"PO-Revision-Date: 2025-04-01 19:21+0200\n"
+"POT-Creation-Date: 2026-01-31 20:27+0100\n"
+"PO-Revision-Date: 2026-01-31 20:28+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -17,39 +17,39 @@ msgstr ""
 "X-Generator: Poedit 3.5\n"
 
 #: plugin_video_oneplay/http_handler.py:131
-#: plugin_video_oneplay/provider.py:761
+#: plugin_video_oneplay/provider.py:771
 msgid "Multidimension - select stream"
 msgstr "Multidimenze - vyberte stream"
 
-#: plugin_video_oneplay/oneplay.py:145
+#: plugin_video_oneplay/oneplay.py:151
 msgid "Failed to create new connection to server"
 msgstr "Nepodařilo se vytvořit nové připojení k serveru"
 
-#: plugin_video_oneplay/oneplay.py:150
+#: plugin_video_oneplay/oneplay.py:157 plugin_video_oneplay/oneplay.py:207
 msgid "Failed to read data from server"
 msgstr "Nepodařilo se přečíst data ze serveru"
 
-#: plugin_video_oneplay/oneplay.py:193
+#: plugin_video_oneplay/oneplay.py:200
 msgid "Received wrong response from server"
 msgstr "Přijatá chybná odpověď ze serveru"
 
-#: plugin_video_oneplay/oneplay.py:206
+#: plugin_video_oneplay/oneplay.py:224
 msgid "This content is not available"
 msgstr "Tento obsah není k dispozici"
 
-#: plugin_video_oneplay/oneplay.py:211
+#: plugin_video_oneplay/oneplay.py:229
 msgid "Server returned error response"
 msgstr "Server vrátil chybovou odpověď"
 
-#: plugin_video_oneplay/oneplay.py:221
+#: plugin_video_oneplay/oneplay.py:239
 msgid "Received wrong websocket response from server"
 msgstr "Přijatá chybná websocket odpověď ze serveru"
 
-#: plugin_video_oneplay/oneplay.py:322
+#: plugin_video_oneplay/oneplay.py:340
 msgid "Login failed - no access token in response data received"
 msgstr "Přihlášení selhalo - odpověď ze serveru neobsahuje přístupovej token"
 
-#: plugin_video_oneplay/oneplay.py:1266
+#: plugin_video_oneplay/oneplay.py:1331
 msgid "Available from"
 msgstr "Dostupné od"
 
@@ -146,52 +146,56 @@ msgstr "V menu můžete aktivovat službu pomocí \"Aktivovat\""
 msgid "Make active"
 msgstr "Aktivovat"
 
-#: plugin_video_oneplay/provider.py:452
+#: plugin_video_oneplay/provider.py:443
+msgid "Enter profile pin"
+msgstr "Zadejte PIN profilu"
+
+#: plugin_video_oneplay/provider.py:459
 #, python-brace-format
 msgid "New login session using device ID {device_id} was created!"
 msgstr "Bylo vytvořeno nové přihlašovací sezení pomocí identifikace {device_id}!"
 
-#: plugin_video_oneplay/provider.py:454
+#: plugin_video_oneplay/provider.py:461
 msgid "Failed to create new login session!"
 msgstr "Nepodařilo se vytvořit novou přihlašovací session!"
 
-#: plugin_video_oneplay/provider.py:473
+#: plugin_video_oneplay/provider.py:481
 msgid "Mo"
 msgstr "Po"
 
-#: plugin_video_oneplay/provider.py:473
+#: plugin_video_oneplay/provider.py:481
 msgid "Tu"
 msgstr "Út"
 
-#: plugin_video_oneplay/provider.py:473
+#: plugin_video_oneplay/provider.py:481
 msgid "We"
 msgstr "St"
 
-#: plugin_video_oneplay/provider.py:473
+#: plugin_video_oneplay/provider.py:481
 msgid "Th"
 msgstr "Čt"
 
-#: plugin_video_oneplay/provider.py:473
+#: plugin_video_oneplay/provider.py:481
 msgid "Fr"
 msgstr "Pá"
 
-#: plugin_video_oneplay/provider.py:473
+#: plugin_video_oneplay/provider.py:481
 msgid "Sa"
 msgstr "So"
 
-#: plugin_video_oneplay/provider.py:473
+#: plugin_video_oneplay/provider.py:481
 msgid "Su"
 msgstr "Ne"
 
-#: plugin_video_oneplay/provider.py:494
+#: plugin_video_oneplay/provider.py:502
 msgid "Select account"
 msgstr "Zvolte konto"
 
-#: plugin_video_oneplay/provider.py:561 plugin_video_oneplay/provider.py:576
+#: plugin_video_oneplay/provider.py:569 plugin_video_oneplay/provider.py:584
 msgid "Item was added to my list"
 msgstr "Položka byla přidána do mého seznamu"
 
-#: plugin_video_oneplay/provider.py:567 plugin_video_oneplay/provider.py:579
+#: plugin_video_oneplay/provider.py:575 plugin_video_oneplay/provider.py:587
 msgid "Item was removed from my list"
 msgstr "Položka byla odstraněna z mého seznamu"
 

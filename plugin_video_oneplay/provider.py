@@ -430,14 +430,21 @@ class OneplayTVModuleExtra(CPModuleTemplate):
 				info_labels = {}
 			else:
 				info_labels = { 'plot': self._('In menu you can activate service using "Make activate"')}
-				menu.add_menu_item(self._('Make active'), self.activate_profile, profile_id=profile['id'])
+				menu.add_menu_item(self._('Make active'), self.activate_profile, profile_id=profile['id'], pin_needed=profile['pin_needed'])
 
 			self.cp.add_video(name, profile['img'], info_labels=info_labels, menu=menu, download=False)
 
 	# #################################################################################################
 
-	def activate_profile(self, profile_id):
-		self.cp.oneplay.select_profile(profile_id)
+	def activate_profile(self, profile_id, pin_needed=False):
+		pin=None
+
+		if pin_needed:
+			pin = self.cp.get_text_input(self._("Enter profile pin"), input_type='pin')
+			if not pin:
+				return
+
+		self.cp.oneplay.select_profile(profile_id, pin)
 		self.cp.load_channel_list(True)
 		self.cp.bxeg.bouquet_settings_changed("", "")
 		self.cp.refresh_screen()

@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_oneplay\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-30 14:37+0200\n"
-"PO-Revision-Date: 2025-04-01 19:21+0200\n"
+"POT-Creation-Date: 2026-01-31 20:27+0100\n"
+"PO-Revision-Date: 2026-01-31 20:28+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -17,39 +17,39 @@ msgstr ""
 "X-Generator: Poedit 3.5\n"
 
 #: plugin_video_oneplay/http_handler.py:131
-#: plugin_video_oneplay/provider.py:761
+#: plugin_video_oneplay/provider.py:771
 msgid "Multidimension - select stream"
 msgstr "Multidimenzia - vyberte stream"
 
-#: plugin_video_oneplay/oneplay.py:145
+#: plugin_video_oneplay/oneplay.py:151
 msgid "Failed to create new connection to server"
 msgstr "Nepodarilo sa vytvoriť nové pripojenie k serveru"
 
-#: plugin_video_oneplay/oneplay.py:150
+#: plugin_video_oneplay/oneplay.py:157 plugin_video_oneplay/oneplay.py:207
 msgid "Failed to read data from server"
 msgstr "Čítanie údajov zo servera zlyhalo"
 
-#: plugin_video_oneplay/oneplay.py:193
+#: plugin_video_oneplay/oneplay.py:200
 msgid "Received wrong response from server"
 msgstr "Zo serveru bola prijatá chybná odpoveď"
 
-#: plugin_video_oneplay/oneplay.py:206
+#: plugin_video_oneplay/oneplay.py:224
 msgid "This content is not available"
 msgstr "Tento obsah nie je k dispozícii"
 
-#: plugin_video_oneplay/oneplay.py:211
+#: plugin_video_oneplay/oneplay.py:229
 msgid "Server returned error response"
 msgstr "Server vrátil chybovú odpoveď"
 
-#: plugin_video_oneplay/oneplay.py:221
+#: plugin_video_oneplay/oneplay.py:239
 msgid "Received wrong websocket response from server"
 msgstr "Zo serveru bola prijatá nesprávna websocket odpoveď"
 
-#: plugin_video_oneplay/oneplay.py:322
+#: plugin_video_oneplay/oneplay.py:340
 msgid "Login failed - no access token in response data received"
 msgstr "Prihlásenie zlyhalo - odpoveď zo serveru neobsahuje prístupový token"
 
-#: plugin_video_oneplay/oneplay.py:1266
+#: plugin_video_oneplay/oneplay.py:1331
 msgid "Available from"
 msgstr "Dostupné od"
 
@@ -146,52 +146,56 @@ msgstr "V menu môžete aktivovať službu pomocou \"Aktivovať\""
 msgid "Make active"
 msgstr "Aktivovať"
 
-#: plugin_video_oneplay/provider.py:452
+#: plugin_video_oneplay/provider.py:443
+msgid "Enter profile pin"
+msgstr "Zadajte PIN profilu"
+
+#: plugin_video_oneplay/provider.py:459
 #, python-brace-format
 msgid "New login session using device ID {device_id} was created!"
 msgstr "Bolo vytvorené nové prihlasovacie sedenie pomocou identifikátoru {device_id}"
 
-#: plugin_video_oneplay/provider.py:454
+#: plugin_video_oneplay/provider.py:461
 msgid "Failed to create new login session!"
 msgstr "Nepodarilo sa vytvoriť novú prihlasovaciu session!"
 
-#: plugin_video_oneplay/provider.py:473
+#: plugin_video_oneplay/provider.py:481
 msgid "Mo"
 msgstr "Po"
 
-#: plugin_video_oneplay/provider.py:473
+#: plugin_video_oneplay/provider.py:481
 msgid "Tu"
 msgstr "Ut"
 
-#: plugin_video_oneplay/provider.py:473
+#: plugin_video_oneplay/provider.py:481
 msgid "We"
 msgstr "St"
 
-#: plugin_video_oneplay/provider.py:473
+#: plugin_video_oneplay/provider.py:481
 msgid "Th"
 msgstr "Št"
 
-#: plugin_video_oneplay/provider.py:473
+#: plugin_video_oneplay/provider.py:481
 msgid "Fr"
 msgstr "Pi"
 
-#: plugin_video_oneplay/provider.py:473
+#: plugin_video_oneplay/provider.py:481
 msgid "Sa"
 msgstr "So"
 
-#: plugin_video_oneplay/provider.py:473
+#: plugin_video_oneplay/provider.py:481
 msgid "Su"
 msgstr "Ne"
 
-#: plugin_video_oneplay/provider.py:494
+#: plugin_video_oneplay/provider.py:502
 msgid "Select account"
 msgstr "Zvoľte konto"
 
-#: plugin_video_oneplay/provider.py:561 plugin_video_oneplay/provider.py:576
+#: plugin_video_oneplay/provider.py:569 plugin_video_oneplay/provider.py:584
 msgid "Item was added to my list"
 msgstr "Položka bola pridaná do môjho zoznamu"
 
-#: plugin_video_oneplay/provider.py:567 plugin_video_oneplay/provider.py:579
+#: plugin_video_oneplay/provider.py:575 plugin_video_oneplay/provider.py:587
 msgid "Item was removed from my list"
 msgstr "Položka bola odstránená z môjho zoznamu"
 

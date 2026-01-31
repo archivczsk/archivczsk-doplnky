@@ -1,6 +1,8 @@
-1.18 - 28.01.2026
+1.18 - 31.01.2026
 - podpora nového HTTP servera v ArchivCZSK 3.5.0
 - preferovanie DASH streamov v archíve pre HLS
+- pridanie podpory pre profil s nastaveným profilovým PINom
+- ošetrenie stavu keď sever pri prehrávaní žiada výber aktívneho profilu
 
 1.17 - 27.01.2026
 - ignorovanie STPP TTML titulkov v streamoch, nakoľko obsahujú chybné údaje a nie sú podporované v prehrávačoch

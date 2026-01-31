@@ -34,6 +34,7 @@ class Oneplay(object):
 
 		self.profiles = []
 		self.profile_id = None
+		self.profile_pin = None
 		self.access_token = None
 		self.device_id = None
 
@@ -53,11 +54,13 @@ class Oneplay(object):
 		if self.get_chsum() == login_data.get('checksum'):
 			self.account_id = login_data.get('account_id')
 			self.profile_id = login_data.get('profile_id')
+			self.profile_pin = login_data.get('profile_pin')
 			self.access_token = login_data.get('access_token')
 			self.cp.log_info("Login data loaded from cache")
 		else:
 			self.account_id = None
 			self.profile_id = None
+			self.profile_pin = None
 			self.access_token = None
 			self.cp.log_info("Not using cached login data - wrong checksum")
 
@@ -73,9 +76,11 @@ class Oneplay(object):
 			data.update({
 				'account_id': self.account_id,
 				'profile_id': self.profile_id,
+				'profile_pin': self.profile_pin,
 				'access_token': self.access_token,
 				'checksum': self.get_chsum()
 			})
+
 		self.cp.save_cached_data('login', data)
 
 	# #################################################################################################
@@ -84,6 +89,7 @@ class Oneplay(object):
 		self.device_id = self.create_device_id()
 		self.account_id = None
 		self.profile_id = None
+		self.profile_pin = None
 		self.access_token = None
 		self.need_interactive_login = False
 		self.save_login_data()
@@ -212,6 +218,8 @@ class Oneplay(object):
 			result = json_response.get('response',{}).get('result',{})
 
 			if result.get('status') == 'Error':
+				self.cp.log_error("Error response received:\n%s" % json.dumps(result))
+
 				if result.get('code') == '5029':
 					msg = self._("This content is not available")
 				else:
@@ -359,19 +367,37 @@ class Oneplay(object):
 
 	# #################################################################################################
 
-	def select_profile(self, profile_id=None):
+	def select_profile(self, profile_id=None, pin=None):
 		if not profile_id:
 			self.cp.log_debug("Filling available profiles")
 			self.fill_profiles()
+
+			if not self.profile_id:
+				self.cp.log_error("Failed to select profile - all profiles are PIN protected")
+				return
+
 			profile_id = self.profile_id
+			pin = self.profile_pin
 
 		payload = {
 			"profileId": profile_id
 		}
+		extra_data = {}
+
+		if pin:
+			extra_data['authorization'] = [
+				{
+					"schema":"PinRequestAuthorization",
+					"pin": str(pin),
+					"type":"profile"
+				}
+			]
 
 		self.cp.log_debug("Selecting user profile %s" % profile_id)
-		response = self.call_api('user.profile.select', payload)
+		response = self.call_api('user.profile.select', payload, extra_data)
 		self.access_token = response['bearerToken']
+		self.profile_id = profile_id
+		self.pin = pin
 		self.save_login_data()
 
 	# #################################################################################################
@@ -386,6 +412,7 @@ class Oneplay(object):
 				'id': profile['profile']['id'],
 				'name': profile['profile']['name'],
 				'img': profile['profile']['avatarUrl'],
+				'pin_needed': profile['setting'].get('protection',{}).get('schema') == 'UserProfilePinProtection'
 			})
 
 		for p in profiles:
@@ -393,8 +420,11 @@ class Oneplay(object):
 				break
 		else:
 			for p in profiles:
-				self.profile_id = p['id']
-				break
+				if not p['pin_needed']:
+					self.profile_id = p['id']
+					break
+			else:
+				self.profile_id = None
 
 		self.profiles = profiles
 
@@ -629,6 +659,9 @@ class Oneplay(object):
 	def add_fav_channel(self, channel_id):
 		payload = self.get_active_profile_data()
 
+		if payload == None:
+			return
+
 		if not payload['setting']['favoriteChannels'].get('channels'):
 			payload['setting']['favoriteChannels']['channels'] = []
 
@@ -640,6 +673,9 @@ class Oneplay(object):
 
 	def remove_fav_channel(self, channel_id):
 		payload = self.get_active_profile_data()
+
+		if payload == None:
+			return
 
 		if not payload['setting']['favoriteChannels'].get('channels'):
 			payload['setting']['favoriteChannels']['channels'] = []
@@ -708,6 +744,10 @@ class Oneplay(object):
 	# #################################################################################################
 
 	def get_channels(self):
+		if not self.profile_id:
+			self.cp.log_error("Can't load channel list - no active profile is selected")
+			return []
+
 		payload = {
 			'profileId': self.profile_id
 		}
@@ -816,7 +856,14 @@ class Oneplay(object):
 				}
 			]
 
-		response = self.call_api('content.play', payload, extra_data)
+		try:
+			response = self.call_api('content.play', payload, extra_data)
+		except Exception as e:
+			if str(e) == 'Kdo se dívá?':
+				self.select_profile()
+				response = self.call_api('content.play', payload, extra_data)
+			else:
+				raise
 
 		# handle multidimension
 		md_items = []
