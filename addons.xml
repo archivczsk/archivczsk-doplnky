@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <addons>
 <addon id="plugin.video.aktualne" name="Aktuálně (video)" version="1.8" hash="73a61f12609e704164f094bcabfaae03" rhash="73a61f12609e704164f094bcabfaae03" />
-<addon id="plugin.video.antiktv" name="Antik TV" version="2.30" hash="369e7aa13972c21cf05cf70f0cefe916" rhash="7a7c0704f581c180a134ccac32320ffc" />
+<addon id="plugin.video.antiktv" name="Antik TV" version="2.31" hash="9f17340d2bb4494e3a96c5c1416c8ed6" rhash="bae9d29d1b58a061fee314f6ce19ab78" />
 <addon id="plugin.video.autosalontv" name="Autosalon" version="1.9" hash="e1836431641d28c728f02e2b0a0037e4" rhash="e1836431641d28c728f02e2b0a0037e4" />
-<addon id="plugin.video.disneyplus" name="Disney+" version="2.6" hash="212b69f75cd5f1c568e8b694beb1e52a" rhash="e15916e3982c255d7865e8c29dc73709" />
-<addon id="plugin.video.dokumenty.tv" name="dokufilmy.cz" version="2.4" hash="5456504c1f4150364f2b04c0c567a5fc" rhash="5bf4c223935fadaea8d24495f740530b" />
+<addon id="plugin.video.disneyplus" name="Disney+" version="2.7" hash="9b4f337a451cca43d23e75f20a0f30a3" rhash="a99e06ffbb749b1277f64bb218645ebc" />
+<addon id="plugin.video.dokumenty.tv" name="dokufilmy.cz" version="2.5" hash="042bf580097c2c53f3b13ab910cb187d" rhash="828e6a0fc166556af50cfaac43391fe5" />
 <addon id="plugin.video.idnestv" name="iDNES.tv" version="1.8" hash="fc03240f747f08c9e8dbe5737e94002b" rhash="fc03240f747f08c9e8dbe5737e94002b" />
 <addon id="plugin.video.ivysilani" name="iVysílání - Česká televize" version="3.9" hash="23012a1fc5a63992419ca21b2efea159" rhash="b041ec278dc9b02bbb361af9b15b2893" />
 <addon id="plugin.video.jojplay" name="JOJ Play" version="1.7" hash="eb9c59307c555d639a4fa714c9e8831e" rhash="e79988be35bc014685e8dd4b1f034801" />
@@ -14,7 +14,7 @@
 <addon id="plugin.video.max" name="HBO Max" version="1.12" hash="23b265e1d20b1dd944a0015be61d289c" rhash="12704300970d8948f3e9dcb54f497e34" />
 <addon id="plugin.video.mtr.sk" name="Mestská TV Ružomberok" version="1.4.0" hash="3448d87e3a93b98bd90cf2ddcca421f5" rhash="3448d87e3a93b98bd90cf2ddcca421f5" />
 <addon id="plugin.video.novaplus" name="TV Nova" version="3.15" hash="6da47cff7d7e74f5db53daaebb517d6a" rhash="85e605ada1ae75070f01d34e2fdb5c45" />
-<addon id="plugin.video.oneplay" name="Oneplay" version="1.17" hash="b913b0c87a35dc4ea43ed455c97c426a" rhash="a3be9b39a09e767ea7437d5b52d8f714" />
+<addon id="plugin.video.oneplay" name="Oneplay" version="1.18" hash="a4c7975edec6db5be7c42767f14bcffb" rhash="4b6358fc4579d6f9554ca42b78a47fc6" />
 <addon id="plugin.video.orangetv" name="OrangeTV" version="2.27" hash="16bd5fca8ff16effc1f309c940e026e4" rhash="36aeaa840bbd3196b381ac385b64ffe8" />
 <addon id="plugin.video.pohadkar.cz" name="Pohádkář.cz" version="1.5.0" hash="2f30d87101b495adc0afb4cb95736753" rhash="2f30d87101b495adc0afb4cb95736753" />
 <addon id="plugin.video.prehrajto" name="Prehraj.to" version="1.5" hash="12250c192b3e34ad16783a12b86b0a6b" rhash="259aac6a25faea775531e5ed2f0e96e0" />
@@ -24,7 +24,7 @@
 <addon id="plugin.video.sktonline" name="SkTonline" version="2.9" hash="34117de0faebbdcd40e76c9ad6126b3a" rhash="00718193d6809e4bfd3d29201782c655" />
 <addon id="plugin.video.sledovanitv" name="Sledovani.tv" version="2.23" hash="8be3023bbbf37773231ae3ed30f62fcf" rhash="9ceb4f4eb5711a217bac20673c99d3a9" />
 <addon id="plugin.video.sosac.ph" name="Sosáč" version="2.12" hash="afcc179b2f1c2770c9ca33e19b25f39f" rhash="3dad6a97846538930af8e8d347807677" />
-<addon id="plugin.video.stalker" name="Stalker" version="1.9" hash="2bf2ab3f3c07dccc2e4bc83b61179cee" rhash="2bf2ab3f3c07dccc2e4bc83b61179cee" />
+<addon id="plugin.video.stalker" name="Stalker" version="1.10" hash="2cbc3ff62137ae282b96802c72dd28bd" rhash="2cbc3ff62137ae282b96802c72dd28bd" />
 <addon id="plugin.video.stream-cinema" name="Stream Cinema" version="3.26" hash="c73c2f955efa594e76790c81e01e99e2" rhash="38d79ae089fd094ddf8673988573304e" />
 <addon id="plugin.video.sweettv" name="Sweet.tv" version="1.24" hash="e38fa7b3d58663ac6f5d357fb29a8f8e" rhash="9185d577706d44df7e506d84b354d3f6" />
 <addon id="plugin.video.ta3.com" name="TA3.com" version="2.3" hash="e9e4ca73c961afa78477fc369612146b" rhash="a9a40d85f4a8afde8d197f5cab07cfb2" />
@@ -38,7 +38,7 @@
 <addon id="plugin.video.voyo" name="VOYO" version="1.9" hash="f75f67f9d769d9403004d7c12219dd90" rhash="21f9cf5a1198f3e49052339a4dfcdadd" />
 <addon id="plugin.video.webshare" name="Webshare.cz" version="1.5" hash="f5bab99a64256c82ddab83a6c7dae41c" rhash="27a62efdf5e34bd0b1f82f1eb2504ee2" />
 <addon id="plugin.video.yt" name="YouTube" version="2.8" hash="82af8af9148686b8d33e8d8c2d63f3ac" rhash="5d4560f88295137cfee8557ca8b08fcf" />
-<addon id="tools.archivczsk" name="Addons base" version="3.3" hash="64950cf671b156180c3d037501e3b88e" rhash="2840c167a43421054e0a315c7bfb7948" />
+<addon id="tools.archivczsk" name="Addons base" version="3.4" hash="29df4ba2948bd51c46038fe79d4b0123" rhash="2a24bcc4751119681c0352b8530a2c5d" />
 <addon id="tools.cenc" name="Content encryption support" version="1.10" hash="0a07fb7a4da64058c0c66ad417235656" rhash="0a07fb7a4da64058c0c66ad417235656" />
 <addon id="tools.xbmc" name="xbmc addons helper" version="1.5" hash="3c13f673a3cb346c95846cbe7444f300" rhash="3c13f673a3cb346c95846cbe7444f300" />
 <addon id="plugin.video.archivo2tv" name="Archív O2TV" version="0" supported="no"><extension point="archivczsk.addon.metadata"><broken>Prevádzka služby O2TV bola ukončená. Pokračovaním je služba Oneplay.</broken></extension></addon>
