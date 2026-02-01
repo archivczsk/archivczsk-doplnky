@@ -35,7 +35,7 @@
 <addon id="plugin.video.tvnoe" name="TV Noe" version="1.1" hash="569ae4fe72ae953f49da90fa22d9ca4a" rhash="c44ee161a8dfc1e367061b7f6eac0e69" />
 <addon id="plugin.video.tvseznam" name="Televize Seznam" version="1.10" hash="d8afda7516c7dfa3a802f6d26a20ea2f" rhash="d8afda7516c7dfa3a802f6d26a20ea2f" />
 <addon id="plugin.video.videacesky.cz" name="videacesky.cz" version="1.4.1" hash="ae83c44add5083d698582b9f6210e1b3" rhash="ae83c44add5083d698582b9f6210e1b3" />
-<addon id="plugin.video.voyo" name="VOYO" version="1.9" hash="f75f67f9d769d9403004d7c12219dd90" rhash="21f9cf5a1198f3e49052339a4dfcdadd" />
+<addon id="plugin.video.voyo" name="VOYO" version="1.10" hash="6dccd3eef4dbd13c6f63944259b1d7e4" rhash="44dce05e752d9059dc077f1486ac517e" />
 <addon id="plugin.video.webshare" name="Webshare.cz" version="1.5" hash="f5bab99a64256c82ddab83a6c7dae41c" rhash="27a62efdf5e34bd0b1f82f1eb2504ee2" />
 <addon id="plugin.video.yt" name="YouTube" version="2.8" hash="82af8af9148686b8d33e8d8c2d63f3ac" rhash="5d4560f88295137cfee8557ca8b08fcf" />
 <addon id="tools.archivczsk" name="Addons base" version="3.4" hash="29df4ba2948bd51c46038fe79d4b0123" rhash="2a24bcc4751119681c0352b8530a2c5d" />
