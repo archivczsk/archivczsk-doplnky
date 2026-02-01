@@ -7,6 +7,7 @@ from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman
 from tools_archivczsk.cache import SimpleAutokeyExpiringCache
 from tools_archivczsk.player.features import PlayerFeatures
 from .voyo import Voyo
+from .bouquet import VoyoBouquetXmlEpgGenerator
 from functools import partial
 
 class VoyoContentProvider(CommonContentProvider):
@@ -16,19 +17,24 @@ class VoyoContentProvider(CommonContentProvider):
 		self.voyo = None
 		self.login_optional_settings_names = ('login_type', 'username', 'password')
 		self.scache = SimpleAutokeyExpiringCache()
+		self.bxeg = VoyoBouquetXmlEpgGenerator(self)
 		self.favorites = {}
 
 	# ##################################################################################################################
 
 	def login(self, silent):
+		self.voyo = None
+
 		if not self.get_setting('username') or not self.get_setting('password'):
 			if not silent:
 				self.show_info(self._("To display the content, you must enter a login name and password in the addon settings"), noexit=True)
 			return False
 
-		self.voyo = Voyo(self)
-		if self.voyo.check_access_token() == False:
-			self.voyo.login()
+		voyo = Voyo(self)
+		if voyo.check_access_token() == False:
+			voyo.login()
+
+		self.voyo = voyo
 
 		return True
 
@@ -43,6 +49,12 @@ class VoyoContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def root(self):
+		if self.get_setting('enable_userbouquet'):
+			try:
+				self.ensure_supporter(self._("Exporting live channels as userbouquet is not available for you."))
+			except:
+				pass
+
 		PlayerFeatures.request_ffmpeg_mpd_support(self)
 		self.load_favorites()
 
@@ -312,5 +324,43 @@ class VoyoContentProvider(CommonContentProvider):
 			self.resolve_hls_streams(content['videoUrl'], play_title, drm_info)
 		else:
 			self.resolve_dash_streams(content['videoUrl'], play_title, drm_info)
+
+	# ##################################################################################################################
+
+	def get_url_by_channel_key(self, channel_key):
+		if not self.is_supporter():
+			return None
+
+		content = self.voyo.get_content_info(channel_key)
+
+		drm_info = {
+			'license_url': content.get('licenseUrl'),
+			'license_key': content.get('licenseKey')
+		}
+
+		if content['videoType'] == 'hls':
+			streams = self.get_hls_streams(content['videoUrl'], self.voyo.req_session, max_bitrate=self.get_setting('max_bitrate'))
+		else:
+			streams = self.get_dash_streams(content['videoUrl'], self.voyo.req_session, max_bitrate=self.get_setting('max_bitrate'))
+
+		if not streams:
+			return None
+
+		one = streams[0]
+
+		data = {
+			'url': one['playlist_url'],
+			'drm_info': drm_info
+		}
+
+		key = {
+			'key': self.scache.put(data),
+			'bandwidth': one['bandwidth']
+		}
+
+		if content['videoType'] == 'hls':
+			return stream_key_to_hls_url(self.http_endpoint, key)
+		else:
+			return stream_key_to_dash_url(self.http_endpoint, key)
 
 	# ##################################################################################################################

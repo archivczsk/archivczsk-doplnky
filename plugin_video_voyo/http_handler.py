@@ -2,10 +2,11 @@
 
 from tools_archivczsk.http_handler.hls import HlsHTTPRequestHandler, HlsMasterProcessor
 from tools_archivczsk.http_handler.dash import DashHTTPRequestHandler
+from tools_archivczsk.http_handler.playlive import PlayliveTVHTTPRequestHandler
 
 # #################################################################################################
 
-class VoyoHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler):
+class VoyoHTTPRequestHandler(PlayliveTVHTTPRequestHandler, HlsHTTPRequestHandler, DashHTTPRequestHandler):
 	def __init__(self, content_provider, addon ):
 		super(VoyoHTTPRequestHandler, self).__init__(content_provider, addon)
 		self.hls_proxy_variants = False

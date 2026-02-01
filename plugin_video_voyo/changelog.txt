@@ -1,3 +1,6 @@
+1.10: 01.02.2026
+    - pridanie možnosti exportovať živé kanály ako userbouquet vrátane exportu EPG
+
 1.9: 14.01.2026
     - úprava inicializácie po zmenách v závislostiach doplnku
 

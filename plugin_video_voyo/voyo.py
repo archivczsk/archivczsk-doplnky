@@ -4,8 +4,11 @@
 #
 from tools_archivczsk.contentprovider.exception import LoginException, AddonErrorException
 from tools_archivczsk.debug.http import dump_json_request
+from tools_archivczsk.date_utils import iso8601_to_timestamp
+from datetime import date, timedelta
 from uuid import uuid4
 from hashlib import sha256
+from binascii import crc32
 import base64
 import time
 
@@ -43,7 +46,7 @@ class Voyo(object):
 	def __init__(self, content_provider):
 		self.cp = content_provider
 		self.req_session = self.cp.get_requests_session()
-		# disable cookie handling - when cookies are enabled, then it make problems and some thinks doesn't work as expected
+		# disable cookie handling - when cookies are enabled, then it make problems and some things doesn't work as expected
 		# and native android app doesn't handle cookies too
 		self.req_session.cookies.set_policy(DefaultCookiePolicy(allowed_domains=[]))
 
@@ -322,6 +325,12 @@ class Voyo(object):
 
 	# ##################################################################################################################
 
+	@staticmethod
+	def get_picon_url(url):
+		return url.replace('{WIDTH}', '220').replace('{HEIGHT}', '160') if url else None
+
+	# ##################################################################################################################
+
 	def get_home(self):
 		resp = self.call_api('overview')
 		categories = []
@@ -475,11 +484,19 @@ class Voyo(object):
 	def list_live_channels(self):
 		items = []
 		for jitem in self.call_api('epg/onscreen')['channels']:
+			if jitem['id'].startswith('channel-'):
+				id_num = int(jitem['id'][8:])
+			else:
+				# fallback
+				id_num = crc32(jitem['id']) & 0xFFFF
+
 			items.append({
 				'id': jitem['id'],
+				'id_num': id_num,
 				'title': jitem['name'],
 				'type': 'livetv',
 				'image': self.get_image_url(jitem['logo']),
+				'picon': self.get_picon_url(jitem['logo']),
 				'epg':{
 					'title': jitem['current']['title'],
 					'plot': jitem['current']['description'],
@@ -487,6 +504,36 @@ class Voyo(object):
 				}
 			})
 		return items
+
+	# ##################################################################################################################
+
+	def get_epg(self, days=0):
+		epg_all = {}
+
+		for d in range(int(days)):
+			params = {
+				'date': str(date.today()+timedelta(days=d)),
+				'previous': 0,
+				'next': 0
+			}
+
+			for day_program in self.call_api('epg/program', params=params).get('program',[]):
+				for ch in day_program.get('channels', []):
+					if ch['id'] not in epg_all:
+						epg_all[ch['id']] = []
+
+					epg_channel = epg_all[ch['id']]
+
+					for segment in ch.get('segments',[]):
+						for item in segment.get('items',[]):
+							epg_channel.append({
+								'start': iso8601_to_timestamp(item['startAt']),
+								'end': iso8601_to_timestamp(item['endAt']),
+								'title': item['title'],
+								'desc': item.get('description') or item.get('shortDescription') or ' '
+							})
+
+		return epg_all
 
 	# ##################################################################################################################
 

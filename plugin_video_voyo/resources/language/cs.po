@@ -6,107 +6,111 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_voyo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-27 19:43+0100\n"
-"PO-Revision-Date: 2024-02-27 19:48+0100\n"
+"POT-Creation-Date: 2026-02-01 19:48+0100\n"
+"PO-Revision-Date: 2026-02-01 19:52+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.5\n"
 
-#: plugin_video_voyo/provider.py:25
-msgid "To display the content, you must enter a login name and password in the addon settings"
-msgstr "Pro zobrazení obsahu je nutné zadat přihlašovací jméno a heslo v nastaveních doplňku"
-
-#: plugin_video_voyo/provider.py:57
-msgid "Favorites"
-msgstr "Oblíbené"
-
-#: plugin_video_voyo/provider.py:58
-msgid "Informations and settings"
-msgstr "Informace a nastavení"
-
-#: plugin_video_voyo/provider.py:69
-msgid "Profiles"
-msgstr "Profily"
-
-#: plugin_video_voyo/provider.py:70
-msgid "Devices"
-msgstr "Zařízení"
-
-#: plugin_video_voyo/provider.py:71
-msgid "Account informations"
-msgstr "Informace o účtu"
-
-#: plugin_video_voyo/provider.py:79
-msgid "Name"
-msgstr "Jméno"
-
-#: plugin_video_voyo/provider.py:80
-msgid "Customer ID"
-msgstr "Zákaznické ID"
-
-#: plugin_video_voyo/provider.py:81
-msgid "Login from partner"
-msgstr "Přihlášení přes partnera"
-
-#: plugin_video_voyo/provider.py:81
-msgid "Yes"
-msgstr "Ano"
-
-#: plugin_video_voyo/provider.py:81
-msgid "No"
-msgstr "Ne"
-
-#: plugin_video_voyo/provider.py:83
-msgid "Active subscription"
-msgstr "Aktivní předplatné"
-
-#: plugin_video_voyo/provider.py:85
-msgid "Number of registered devices"
-msgstr "Počet zaregistrovaných zařízení"
-
-#: plugin_video_voyo/provider.py:93
-msgid "Last used profile"
-msgstr "Poslední použitý profil"
-
-#: plugin_video_voyo/provider.py:105
-msgid "Do you realy want to delete this device?"
-msgstr "Opravdu chcete smazat toto zařízení?"
-
-#: plugin_video_voyo/provider.py:115
-msgid "Main profile"
-msgstr "Hlavní profil"
-
-#: plugin_video_voyo/provider.py:117
-msgid "Kids profile"
-msgstr "Dětský profil"
-
-#: plugin_video_voyo/provider.py:132
-msgid "Do you realy want to switch profile?"
-msgstr "Opravdu chcete přepnut profil?"
-
-#: plugin_video_voyo/provider.py:157
-msgid "Remove from favorites"
-msgstr "Odstranit z oblíbených"
-
-#: plugin_video_voyo/provider.py:159
-msgid "Add to favorites"
-msgstr "Přidat do oblíbených"
-
-#: plugin_video_voyo/voyo.py:131
+#: plugin_video_voyo/voyo.py:134
 msgid "Unexpected return code from server"
 msgstr "Neočekávaný návratový kód ze serveru"
 
-#: plugin_video_voyo/voyo.py:167
+#: plugin_video_voyo/voyo.py:170
 msgid "Failed to find informations for login partner"
 msgstr "Nepodařilo se získat informace pro přihlášení přes partnera"
 
-#: plugin_video_voyo/voyo.py:170
+#: plugin_video_voyo/voyo.py:173
 msgid "Unsupported oauth2 challenge method"
 msgstr "Nepodporována oauth2 challenge metóda"
+
+#: plugin_video_voyo/provider.py:30
+msgid "To display the content, you must enter a login name and password in the addon settings"
+msgstr "Pro zobrazení obsahu je nutné zadat přihlašovací jméno a heslo v nastaveních doplňku"
+
+#: plugin_video_voyo/provider.py:54
+msgid "Exporting live channels as userbouquet is not available for you."
+msgstr "Export živých kanálů jako userbouquet není pro vás k dispozici."
+
+#: plugin_video_voyo/provider.py:71
+msgid "Favorites"
+msgstr "Oblíbené"
+
+#: plugin_video_voyo/provider.py:72
+msgid "Informations and settings"
+msgstr "Informace a nastavení"
+
+#: plugin_video_voyo/provider.py:83
+msgid "Profiles"
+msgstr "Profily"
+
+#: plugin_video_voyo/provider.py:84
+msgid "Devices"
+msgstr "Zařízení"
+
+#: plugin_video_voyo/provider.py:85
+msgid "Account informations"
+msgstr "Informace o účtu"
+
+#: plugin_video_voyo/provider.py:93
+msgid "Name"
+msgstr "Jméno"
+
+#: plugin_video_voyo/provider.py:94
+msgid "Customer ID"
+msgstr "Zákaznické ID"
+
+#: plugin_video_voyo/provider.py:95
+msgid "Login from partner"
+msgstr "Přihlášení přes partnera"
+
+#: plugin_video_voyo/provider.py:95
+msgid "Yes"
+msgstr "Ano"
+
+#: plugin_video_voyo/provider.py:95
+msgid "No"
+msgstr "Ne"
+
+#: plugin_video_voyo/provider.py:97
+msgid "Active subscription"
+msgstr "Aktivní předplatné"
+
+#: plugin_video_voyo/provider.py:99
+msgid "Number of registered devices"
+msgstr "Počet zaregistrovaných zařízení"
+
+#: plugin_video_voyo/provider.py:107
+msgid "Last used profile"
+msgstr "Poslední použitý profil"
+
+#: plugin_video_voyo/provider.py:119
+msgid "Do you realy want to delete this device?"
+msgstr "Opravdu chcete smazat toto zařízení?"
+
+#: plugin_video_voyo/provider.py:129
+msgid "Main profile"
+msgstr "Hlavní profil"
+
+#: plugin_video_voyo/provider.py:131
+msgid "Kids profile"
+msgstr "Dětský profil"
+
+#: plugin_video_voyo/provider.py:146
+msgid "Do you realy want to switch profile?"
+msgstr "Opravdu chcete přepnut profil?"
+
+#: plugin_video_voyo/provider.py:171
+msgid "Remove from favorites"
+msgstr "Odstranit z oblíbených"
+
+#: plugin_video_voyo/provider.py:173
+msgid "Add to favorites"
+msgstr "Přidat do oblíbených"
 
 msgid "Login type"
 msgstr "Typ přihlášení"
@@ -145,4 +149,40 @@ msgid "3 Mbit/s"
 msgstr ""
 
 msgid "2 Mbit/s"
+msgstr ""
+
+msgid "Userbouquet"
+msgstr "Userbouquet"
+
+msgid "Automatically export channel list as userbouquet"
+msgstr "Automaticky exportovat seznam stanic jako userbouquet"
+
+msgid "Generate XML EPG for epgimport plugin (if installed)"
+msgstr "Generovat XML EPG pro epgimport plugin (pokud je nainstalován)"
+
+msgid "Directory for XML EPG data (need at least 20MB of free space)"
+msgstr "Adresář pro XML EPG data (potřebujete alespoň 20MB volného místa)"
+
+msgid "For how many days to generate XML EPG"
+msgstr "Pro kolik dni dopředu generovat XML EPG"
+
+msgid "Automatically download picons when exporting userbouquet"
+msgstr "Při exportování userbouquetu automaticky stáhnout picony"
+
+msgid "Player used for userbouquet"
+msgstr "Přehrávač použitý pro userbouquet"
+
+msgid "Default"
+msgstr "Předvolený"
+
+msgid "gstplayer"
+msgstr ""
+
+msgid "exteplayer3"
+msgstr ""
+
+msgid "DMM"
+msgstr ""
+
+msgid "DVB (OE>=2.5)"
 msgstr ""
