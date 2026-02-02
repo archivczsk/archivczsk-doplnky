@@ -1,3 +1,6 @@
+1.11: 01.02.2026
+    - pridanie možnosti ručne spustiť export EPG do sekcie "Informácie a nastavenia"
+
 1.10: 01.02.2026
     - pridanie možnosti exportovať živé kanály ako userbouquet vrátane exportu EPG
 

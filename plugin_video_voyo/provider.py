@@ -83,6 +83,14 @@ class VoyoContentProvider(CommonContentProvider):
 		self.add_dir(self._("Profiles"), cmd=self.list_profiles)
 		self.add_dir(self._("Devices"), cmd=self.list_devices)
 		self.add_video(self._("Account informations"), cmd=self.account_info)
+		if self.is_supporter() and self.get_setting('enable_userbouquet'):
+			self.add_video(self._("Run EPG export to enigma or XML files"), cmd=self.export_epg)
+
+	# #################################################################################################
+
+	def export_epg(self):
+		self.bxeg.refresh_xmlepg_start(True)
+		self.show_info(self._("EPG export started"), noexit=True)
 
 	# ##################################################################################################################
 

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_voyo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-01 19:48+0100\n"
+"POT-Creation-Date: 2026-02-02 08:19+0100\n"
 "PO-Revision-Date: 2026-02-01 19:52+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -56,59 +56,67 @@ msgstr "Zariadenia"
 msgid "Account informations"
 msgstr "Informácie o účte"
 
+#: plugin_video_voyo/provider.py:87
+msgid "Run EPG export to enigma or XML files"
+msgstr "Spustiť EPG export do enigmy alebo do XML súborov"
+
 #: plugin_video_voyo/provider.py:93
+msgid "EPG export started"
+msgstr "EPG export bol spustený"
+
+#: plugin_video_voyo/provider.py:101
 msgid "Name"
 msgstr "Meno"
 
-#: plugin_video_voyo/provider.py:94
+#: plugin_video_voyo/provider.py:102
 msgid "Customer ID"
 msgstr "Zákaznícke ID"
 
-#: plugin_video_voyo/provider.py:95
+#: plugin_video_voyo/provider.py:103
 msgid "Login from partner"
 msgstr "Prihlásenie cez partnera"
 
-#: plugin_video_voyo/provider.py:95
+#: plugin_video_voyo/provider.py:103
 msgid "Yes"
 msgstr "Áno"
 
-#: plugin_video_voyo/provider.py:95
+#: plugin_video_voyo/provider.py:103
 msgid "No"
 msgstr "Nie"
 
-#: plugin_video_voyo/provider.py:97
+#: plugin_video_voyo/provider.py:105
 msgid "Active subscription"
 msgstr "Aktívne predplatné"
 
-#: plugin_video_voyo/provider.py:99
+#: plugin_video_voyo/provider.py:107
 msgid "Number of registered devices"
 msgstr "Počet zaregistrovaných zariadení"
 
-#: plugin_video_voyo/provider.py:107
+#: plugin_video_voyo/provider.py:115
 msgid "Last used profile"
 msgstr "Posledný použitý profil"
 
-#: plugin_video_voyo/provider.py:119
+#: plugin_video_voyo/provider.py:127
 msgid "Do you realy want to delete this device?"
 msgstr "Naozaj chcete odstrániť toto zariadenie?"
 
-#: plugin_video_voyo/provider.py:129
+#: plugin_video_voyo/provider.py:137
 msgid "Main profile"
 msgstr "Hlavný profil"
 
-#: plugin_video_voyo/provider.py:131
+#: plugin_video_voyo/provider.py:139
 msgid "Kids profile"
 msgstr "Detský profil"
 
-#: plugin_video_voyo/provider.py:146
+#: plugin_video_voyo/provider.py:154
 msgid "Do you realy want to switch profile?"
 msgstr "Naozaj chcete prepnúť profil?"
 
-#: plugin_video_voyo/provider.py:171
+#: plugin_video_voyo/provider.py:179
 msgid "Remove from favorites"
 msgstr "Odstrániť z obľúbených"
 
-#: plugin_video_voyo/provider.py:173
+#: plugin_video_voyo/provider.py:181
 msgid "Add to favorites"
 msgstr "Pridať do obľúbených"
 
