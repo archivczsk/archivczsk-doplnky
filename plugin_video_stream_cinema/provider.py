@@ -11,7 +11,7 @@ from tools_archivczsk.contentprovider.exception import AddonErrorException, Addo
 from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman
 from tools_archivczsk.cache import lru_cache
 from tools_archivczsk.simple_config import SimpleConfigSelection, SimpleConfigInteger, SimpleConfigYesNo, SimpleConfigMultiSelection
-from tools_archivczsk.compat import urlparse, urlunparse, parse_qs, urlencode
+from tools_archivczsk.compat import urlparse, urlunparse, parse_qs, urlencode, urljoin
 
 from .kraska import Kraska, KraskaLoginFail, KraskaResolveException
 from .sc_api import SC_API, SCAuthException
@@ -170,12 +170,46 @@ class StreamCinemaContentProvider(CommonContentProvider):
 
 	# #################################################################################################
 
+	def fix_menu(self, url_path, menu):
+		def _add_entry(url, en, cs, sk):
+			return {
+				"type": "dir",
+				"url": urljoin(url_path + '/', url),
+				"i18n_info" : {
+					"en": {
+						"title": en
+					},
+					"cs": {
+						"title": cs
+					},
+					"sk": {
+						"title": sk
+					}
+				}
+			}
+
+		if url_path in ('/FMovies', '/FSeries'):
+			l = menu.pop()
+			item_type = 0 if url_path == '/FMovies' else 1
+			menu.append(_add_entry('/Recommended?type={}'.format(item_type), "Today's tips", 'Tipy na dnes', 'Tipy na dnes'))
+			menu.append(_add_entry('watching', 'Just watched', 'Právě sledované', 'Práve sledované'))
+			menu.append(_add_entry('popular', 'Popular', 'Populární', 'Populárne'))
+			menu.append(_add_entry('trending', 'Trending', 'Trendy', 'Trendy'))
+			menu.append(l)
+
+	# #################################################################################################
+
 	def render_menu(self, url, params=None, data=None, menu_item_patch_cbk=None):
 		result = []
 
 		resp = self.api.call_api(url, data=data, params=params)
 
 		url_path = urlparse(url).path
+
+		if self.get_setting('old-menu') == False:
+			# whe new menu struct is enabled, then some items are missing - try to restore them
+			self.fix_menu(url_path, resp.get('menu', []))
+
 		if url_path.endswith('Search/menu'):
 			self.add_search_dir(self._("Search by name"), '')
 			self.add_search_dir(self._("Search by actor name"), 'search-people')
