@@ -1,3 +1,7 @@
+2026-02-02 3.27
+    - odstránenie funkcionality, ktorá už viac nie je podporovaná serverom
+    - oprava chyby pri získavaní nového prihlasovacieho tokenu
+
 2026-01-14 3.26
     - úprava inicializácie po zmenách v závislostiach doplnku
     - lepšie ošetrenie stavu, keď server vráti nesprávny formát odpovede

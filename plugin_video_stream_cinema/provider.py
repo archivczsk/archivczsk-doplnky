@@ -552,8 +552,9 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			if info.get('mediatype') == 'tvshow':
 				ctx_menu.add_menu_item(self._('Search on prehraj.to'), cmd=self.prehrajto_search, keyword=otitle)
 
-				if trakt_id:
-					ctx_menu.add_menu_item(self._('Show related'), cmd=self.list_related, trakt_id=trakt_id, is_movie=False)
+#				list related items doesn't work - API for request items by trakt ID is not available anymore
+#				if trakt_id:
+#					ctx_menu.add_menu_item(self._('Show related'), cmd=self.list_related, trakt_id=trakt_id, is_movie=False)
 
 		self.add_dir(title, img or self.get_poster_url(None), info_labels, menu=ctx_menu, data_item=data_item, trakt_item=trakt_item, cmd=self.render_menu, url=url)
 
@@ -625,8 +626,9 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			if info_labels['year']:
 				info_labels['title'] += ' (%s)' % info_labels['year']
 
-			if trakt_id:
-				ctx_menu.add_menu_item(self._('Show related'), cmd=self.list_related, trakt_id=trakt_id, is_movie=True)
+#			list related items doesn't work - API for request items by trakt ID is not available anymore
+#			if trakt_id:
+#				ctx_menu.add_menu_item(self._('Show related'), cmd=self.list_related, trakt_id=trakt_id, is_movie=True)
 
 
 		search_query = otitle + ep_code2 + ' ' + str(info.get('year', ""))

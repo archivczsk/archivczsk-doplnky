@@ -3,15 +3,9 @@
 from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.cache import ExpiringLRUCache
-from time import time
-
+from tools_archivczsk.compat import urlparse, urlunparse, parse_qs, urlencode
+import time
 import json
-
-try:
-	from urlparse import urlparse, urlunparse, parse_qs
-	from urllib import urlencode
-except:
-	from urllib.parse import urlparse, urlunparse, urlencode, parse_qs
 
 class SCAuthException(AddonErrorException):
 	pass
@@ -229,6 +223,10 @@ class SC_API(object):
 					if len(found.get('data', [])) == 1:
 						for f in found.get('data', []):
 							url = kr.resolve(f.get('ident'))
+							if not url:
+								self.cp.log_error("Failed to download backup token %s - failed to resolve data:\n%s" % (name, f))
+								continue
+
 							data = self.req_session.get(url)
 							if len(data.text) == 32:
 								# raw token file

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os, json, time
-from Plugins.Extensions.archivCZSK.engine.client import log
-
 
 class SCWatched(object):
 
