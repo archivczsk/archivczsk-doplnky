@@ -25,7 +25,7 @@
 <addon id="plugin.video.sledovanitv" name="Sledovani.tv" version="2.23" hash="8be3023bbbf37773231ae3ed30f62fcf" rhash="9ceb4f4eb5711a217bac20673c99d3a9" />
 <addon id="plugin.video.sosac.ph" name="Sosáč" version="2.12" hash="afcc179b2f1c2770c9ca33e19b25f39f" rhash="3dad6a97846538930af8e8d347807677" />
 <addon id="plugin.video.stalker" name="Stalker" version="1.10" hash="2cbc3ff62137ae282b96802c72dd28bd" rhash="2cbc3ff62137ae282b96802c72dd28bd" />
-<addon id="plugin.video.stream-cinema" name="Stream Cinema" version="3.26" hash="c73c2f955efa594e76790c81e01e99e2" rhash="38d79ae089fd094ddf8673988573304e" />
+<addon id="plugin.video.stream-cinema" name="Stream Cinema" version="3.27" hash="5d6faa57ce48a95adf49e2e23cbdd66c" rhash="e46f9163a88e004a0de23e0c249b26f0" />
 <addon id="plugin.video.sweettv" name="Sweet.tv" version="1.24" hash="e38fa7b3d58663ac6f5d357fb29a8f8e" rhash="9185d577706d44df7e506d84b354d3f6" />
 <addon id="plugin.video.ta3.com" name="TA3.com" version="2.3" hash="e9e4ca73c961afa78477fc369612146b" rhash="a9a40d85f4a8afde8d197f5cab07cfb2" />
 <addon id="plugin.video.telly" name="Telly" version="1.9.0" hash="aae23747c70b0c3d6eac87563610d62c" rhash="468d71083682e63a0b456d54794e5f16" />
@@ -35,7 +35,7 @@
 <addon id="plugin.video.tvnoe" name="TV Noe" version="1.1" hash="569ae4fe72ae953f49da90fa22d9ca4a" rhash="c44ee161a8dfc1e367061b7f6eac0e69" />
 <addon id="plugin.video.tvseznam" name="Televize Seznam" version="1.10" hash="d8afda7516c7dfa3a802f6d26a20ea2f" rhash="d8afda7516c7dfa3a802f6d26a20ea2f" />
 <addon id="plugin.video.videacesky.cz" name="videacesky.cz" version="1.4.1" hash="ae83c44add5083d698582b9f6210e1b3" rhash="ae83c44add5083d698582b9f6210e1b3" />
-<addon id="plugin.video.voyo" name="VOYO" version="1.10" hash="6dccd3eef4dbd13c6f63944259b1d7e4" rhash="44dce05e752d9059dc077f1486ac517e" />
+<addon id="plugin.video.voyo" name="VOYO" version="1.11" hash="c95c3178540683c920cd4db36791bbdc" rhash="f6bb2a32ecafed563e1ebb7689614df4" />
 <addon id="plugin.video.webshare" name="Webshare.cz" version="1.5" hash="f5bab99a64256c82ddab83a6c7dae41c" rhash="27a62efdf5e34bd0b1f82f1eb2504ee2" />
 <addon id="plugin.video.yt" name="YouTube" version="2.8" hash="82af8af9148686b8d33e8d8c2d63f3ac" rhash="5d4560f88295137cfee8557ca8b08fcf" />
 <addon id="tools.archivczsk" name="Addons base" version="3.4" hash="29df4ba2948bd51c46038fe79d4b0123" rhash="2a24bcc4751119681c0352b8530a2c5d" />
