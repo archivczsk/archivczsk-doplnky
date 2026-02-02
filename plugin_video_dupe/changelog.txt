@@ -1,0 +1,4 @@
+1.0: 08.02.2026
+- úvodná verejná verzia
+- pre spustenie prehrávania je nutná bezplatná registrácia na stránke
+- vyhľadávanie a prehrávanie bez obmedzení je dostupné len pre podporovateľov ArchivCZSK

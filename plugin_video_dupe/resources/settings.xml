@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+  <setting label="Login name" id="username" type="text" default=""/>
+  <setting label="Login password" id="password" type="password" default=""/>
+<!--  <setting label="Player for multiaudio HLS streams" id="player_hls_multiaudio" type="keyenum" values="4097;Default|5001;gstplayer|5002;exteplayer3" default="4097" /> -->
+  <setting label="Max watched items" id="max_watched" type="number" default="10"/>
+  <setting label="Enable subtitles support" id="enable_subtitles" type="bool" default="true"/>
+</settings>
