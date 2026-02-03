@@ -24,6 +24,13 @@ class SC_API(object):
 
 	# ##################################################################################################################
 
+	def save_old_token(self, token):
+		old_tokens = self.cp.load_cached_data('old_tokens') or []
+		old_tokens.append(token)
+		self.cp.save_cached_data('old_tokens', old_tokens)
+
+	# ##################################################################################################################
+
 	def load_token(self):
 		login_data = self.cp.load_cached_data('sc')
 
@@ -33,12 +40,19 @@ class SC_API(object):
 			kr_checksum = login_data.get('kr_checksum')
 
 			if kr_checksum and (self.cp.kraska.login_data.get('checksum') != kr_checksum):
-				self.cp.log_info("SC auth token was created for another Kraska account - ignoring")
-				token = None
+				self.cp.log_info("SC auth token was created for another Kraska account")
+				# ignore checksum error, because we don't know how server is managing tokens and we don't want to block user
+				# token = None
 			else:
 				if login_data.get('addon_ver') != self.cp.get_addon_version():
-					self.update_token(token)
-					self.cp.update_cached_data('sc', {'addon_ver': self.cp.get_addon_version()})
+					token2 = self.update_token(token)
+
+					if token2 and token != token2:
+						self.cp.log_info("SC auth token changed from %s to %s" % (token, token2))
+						self.save_old_token(token)
+						token = token2
+
+					self.cp.update_cached_data('sc', {'token': token, 'addon_ver': self.cp.get_addon_version()})
 		else:
 			token = None
 			self.cp.log_info("No cached auth token found")
@@ -48,14 +62,20 @@ class SC_API(object):
 	# ##################################################################################################################
 
 	def update_token(self, token):
-		try:
-			krt = self.cp.kraska.get_token()
+		token2 = None
 
-			ret = self.call_api('/auth/token/update', data='', params={'krt': krt, 'token': token})
-			self.cp.log_debug("Token update response: %s" % ret)
-		except:
-			self.cp.log_exception()
+		# ignore all this token update code - it looks like it can block valid tokens and we don't know why
+		# try:
+		# 	if self.cp.kraska.refresh_login_data() > 0:
+		# 		krt = self.cp.kraska.get_token()
 
+		# 		ret = self.call_api('/auth/token/update', data='', params={'krt': krt, 'token': token})
+		# 		self.cp.log_debug("Token update response: %s" % ret)
+		# 		token2 = ret.get('token')
+		# except:
+		# 	self.cp.log_exception()
+
+		return token2 or token
 
 	# ##################################################################################################################
 
