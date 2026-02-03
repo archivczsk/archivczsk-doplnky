@@ -6,6 +6,7 @@
 	<setting label="Number of last seen entries" id="keep-last-seen" type="labelenum" values="0|5|10|15|20|25|30|35|40|45|50" default="20"/>
 	<setting label="Store play position of last seen entries" id="save-last-play-pos" type="bool" default="false"/>
 	<setting label="Don't store if play position is more then (in %)" id="last-play-pos-limit" type="labelenum" values="80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100" default="95"/>
+	<setting label="Show watched history only from current device" id="local-history" type="bool" default="false" />
 	<setting label="Allow integration with Trakt.tv" id="trakt_enabled" type="bool" default="false"/>
 	<setting label="Start subtitles automatically" id="subs-autostart" type="keyenum" values="always;Always|undubbed;When undubbed|never;Never" default="undubbed" />
 	<setting label="Start forced subtitles automatically" id="forced-subs-autostart" type="bool" default="true" />

@@ -200,6 +200,7 @@ class StreamCinemaContentProvider(CommonContentProvider):
 	# #################################################################################################
 
 	def render_menu(self, url, params=None, data=None, menu_item_patch_cbk=None):
+		local_history = self.get_setting("local-history")
 		result = []
 
 		resp = self.api.call_api(url, data=data, params=params)
@@ -267,8 +268,15 @@ class StreamCinemaContentProvider(CommonContentProvider):
 					# this is needed for trakt
 					trakt_item = self.fill_trakt_info(menu_item, is_watched)
 
-			if '/Last' in url and lid and mid:
-				ctx_menu.add_menu_item(self._('Remove from seen'), cmd=self.remove_last_seen, lid=lid, mid=mid)
+			if lid and mid:
+				if url_path.endswith('/Last'):
+					ctx_menu.add_menu_item(self._('Remove from seen'), cmd=self.remove_last_seen, lid=lid, mid=mid)
+				elif url_path.endswith('/lastWatched'):
+					if local_history:
+						if mid not in self.watched.get(lid):
+							continue
+
+						ctx_menu.add_menu_item(self._('Remove from seen'), cmd=self.remove_last_seen, lid=lid, mid=mid)
 
 			if menu_item['type'] == 'dir':
 				self.add_sc_dir_item(menu_item, ctx_menu, data_item, trakt_item, (is_watched, is_fully_watched,), trakt_id)
