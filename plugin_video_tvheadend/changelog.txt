@@ -1,4 +1,4 @@
-1.0
+0.10
 - Prvé vydanie doplnku Tvheadend pre ArchivCZSK
 - Prehrávanie živej TV a rádia zo servera Tvheadend
 - Kanály rozdelené do kategórií podľa tagov z Tvheadendu
