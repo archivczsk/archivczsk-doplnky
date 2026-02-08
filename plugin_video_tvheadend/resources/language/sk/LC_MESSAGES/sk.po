@@ -1,26 +1,48 @@
+# Tvheadend plugin – Slovak translation
+# This file is put in the public domain.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: tvheadend\n"
+"Project-Id-Version: plugin_video_tvheadend\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-08 19:15+0100\n"
+"PO-Revision-Date: 2026-02-08 19:15+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: sk\n"
+"MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: sk\n"
+"X-Generator: Poedit 3.5\n"
 
+# ---------------------------------------------------------
+# Errors / runtime messages
+# ---------------------------------------------------------
+
+#: plugin_video_tvheadend/provider.py
 msgid "Missing Tvheadend server address in settings."
 msgstr "Chýba adresa servera Tvheadend v nastaveniach."
 
+#: plugin_video_tvheadend/provider.py
 msgid "Tvheadend API request failed."
 msgstr "Volanie Tvheadend API zlyhalo."
 
+#: plugin_video_tvheadend/provider.py
 msgid "Tvheadend returned invalid JSON."
 msgstr "Tvheadend vrátil neplatný JSON."
 
+#: plugin_video_tvheadend/provider.py
 msgid "Missing channel/service identifier for streaming."
 msgstr "Chýba identifikátor kanála/služby pre stream."
 
+#: plugin_video_tvheadend/provider.py
 msgid "Prihlásenie do Tvheadend zlyhalo. Skontroluj meno/heslo a práva účtu."
 msgstr "Prihlásenie do Tvheadend zlyhalo. Skontroluj meno/heslo a práva účtu."
 
-# --- settings.xml labels ---
+# ---------------------------------------------------------
+# settings.xml labels
+# ---------------------------------------------------------
+
 msgid "Tvheadend"
 msgstr "Tvheadend"
 
@@ -96,7 +118,10 @@ msgstr "Archív: max. položiek z DVR"
 msgid "Archive: max number of days (0=no limit)"
 msgstr "Archív: max. počet dní (0=bez limitu)"
 
-# --- optional: enum captions (ak ich engine prekladá) ---
+# ---------------------------------------------------------
+# Enum captions
+# ---------------------------------------------------------
+
 msgid "Auto"
 msgstr "Auto"
 
@@ -112,13 +137,20 @@ msgstr "Žiadne"
 msgid "Default"
 msgstr "Predvolené"
 
+# ---------------------------------------------------------
+# Custom bouquet names
+# ---------------------------------------------------------
+
 msgid "Custom bouquet display name (TV)"
 msgstr "Vlastný názov prehľadu (TV)"
 
 msgid "Custom bouquet display name (Radio)"
 msgstr "Vlastný názov prehľadu (Rádio)"
 
-# --- provider.py UI labels (EN source) ---
+# ---------------------------------------------------------
+# Provider UI
+# ---------------------------------------------------------
+
 msgid "Please fill in the addon settings first: host, username and password."
 msgstr "Najprv vyplň v Nastaveniach doplnku: host, meno a heslo."
 
