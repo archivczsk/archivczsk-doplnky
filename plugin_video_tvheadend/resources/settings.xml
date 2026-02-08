@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+
+	<category label="Tvheadend">
+		<setting label="Server (IP/domain or URL)" type="text" id="host" default="127.0.0.1"/>
+		<setting label="Port" type="text" id="port" default="9981"/>
+		<setting label="Use HTTPS" type="bool" id="use_https" default="false"/>
+
+		<setting label="Username" type="text" id="username" default=""/>
+		<setting label="Password" type="password" id="password" default=""/>
+
+		<setting label="HTTP authentication" type="keyenum" id="http_auth_mode"
+				 values="auto;Auto|digest;Digest|basic;Basic|none;None" default="auto"/>
+		<setting label="Use ticket URL (recommended for Digest)" type="bool" id="use_ticket_url" default="true"/>
+
+		<setting label="TVH profile (e.g. matroska)" type="text" id="profile" default="matroska"/>
+		<setting label="Timeout (seconds)" type="text" id="loading_timeout" default="15"/>
+	</category>
+
+	<category label="Userbouquet">
+		<setting label="Automatically export channel list as userbouquet"
+				 id="enable_userbouquet" type="bool" default="false" />
+
+		<setting label="Allow creating userbouquet for radios"
+				 id="enable_userbouquet_radio" type="bool" default="false" />
+
+		<setting label="Add category names to userbouquet"
+				 id="userbouquet_categories" type="bool" default="false" />
+
+		<!-- ✅ NEW: custom bouquet display names -->
+		<setting label="Custom bouquet display name (TV)"
+				 id="userbouquet_custom_name_tv" type="text" default="Tvheadend TV" />
+
+		<setting label="Custom bouquet display name (Radio)"
+				 id="userbouquet_custom_name_radio" type="text" default="Tvheadend Radio" />
+
+		<setting label="Generate XML EPG for epgimport plugin (if installed)"
+				 id="enable_xmlepg" type="bool" default="false" />
+
+		<setting label="Directory for XML EPG data (need at least 20MB of free space)"
+				 id="xmlepg_dir" type="text" default="/media/hdd" />
+
+		<setting label="For how many days to generate XML EPG"
+				 id="xmlepg_days" type="enum" lvalues="1|2|3|4|5|6|7" default="4"/>
+
+		<setting label="Automatically download picons when exporting userbouquet"
+				 id="enable_picons" type="bool" default="false" />
+
+		<setting label="For how many days to keep Enigma2 EPG history"
+				 id="enigmaepg_days" type="enum" lvalues="1|2|3|4|5|6|7|14" default="7"/>
+
+		<setting label="Player used for userbouquet"
+				 id="player_name" type="enum"
+				 lvalues="Default|gstplayer|exteplayer3" default="0"/>
+	</category>
+
+	<category label="Archive">
+		<setting label="Archive: max items from DVR" type="text" id="dvr_limit" default="0"/>
+		<setting label="Archive: max number of days (0=no limit)" type="text" id="archive_days_limit" default="0"/>
+	</category>
+
+</settings>

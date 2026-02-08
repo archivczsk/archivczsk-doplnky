@@ -1,0 +1,144 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: tvheadend\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: cs\n"
+
+msgid "Missing Tvheadend server address in settings."
+msgstr "Chybí adresa serveru Tvheadend v nastavení."
+
+msgid "Tvheadend API request failed."
+msgstr "Volání Tvheadend API selhalo."
+
+msgid "Tvheadend returned invalid JSON."
+msgstr "Tvheadend vrátil neplatný JSON."
+
+msgid "Missing channel/service identifier for streaming."
+msgstr "Chybí identifikátor kanálu/služby pro stream."
+
+msgid "Prihlásenie do Tvheadend zlyhalo. Skontroluj meno/heslo a práva účtu."
+msgstr "Přihlášení do Tvheadend selhalo. Zkontroluj jméno/heslo a práva účtu."
+
+# --- settings.xml labels ---
+msgid "Tvheadend"
+msgstr "Tvheadend"
+
+msgid "Userbouquet"
+msgstr "Userbouquet"
+
+msgid "Server (IP/domain or URL)"
+msgstr "Server (IP/doména nebo URL)"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Use HTTPS"
+msgstr "Použít HTTPS"
+
+msgid "Username"
+msgstr "Uživatelské jméno"
+
+msgid "Password"
+msgstr "Heslo"
+
+msgid "HTTP authentication"
+msgstr "HTTP autentizace"
+
+msgid "Use ticket URL (recommended for Digest)"
+msgstr "Použít ticket URL (doporučeno pro Digest)"
+
+msgid "TVH profile (e.g. matroska)"
+msgstr "TVH profil (např. matroska)"
+
+msgid "Timeout (seconds)"
+msgstr "Timeout (sekundy)"
+
+msgid "Automatically export channel list as userbouquet"
+msgstr "Automaticky exportovat seznam kanálů jako userbouquet"
+
+msgid "Allow creating userbouquet for radios"
+msgstr "Povolit vytváření userbouquet pro rádia"
+
+msgid "Allow creating userbouquet for cameras"
+msgstr "Povolit vytváření userbouquet pro kamery"
+
+msgid "Add category names to userbouquet"
+msgstr "Přidat názvy kategorií do userbouquet"
+
+msgid "Enable adult filter"
+msgstr "Povolit adult filtr"
+
+msgid "Generate XML EPG for epgimport plugin (if installed)"
+msgstr "Generovat XML EPG pro epgimport plugin (pokud je nainstalovaný)"
+
+msgid "Directory for XML EPG data (need at least 20MB of free space)"
+msgstr "Adresář pro XML EPG data (potřebuje alespoň 20 MB volného místa)"
+
+msgid "For how many days to generate XML EPG"
+msgstr "Na kolik dní generovat XML EPG"
+
+msgid "Automatically download picons when exporting userbouquet"
+msgstr "Automaticky stahovat picony při exportu userbouquet"
+
+msgid "Enable Enigma2 EPG injection (integrate ArchivCZSK into system EPG)"
+msgstr "Povolit Enigma2 EPG injection (integrovat ArchivCZSK do systémového EPG)"
+
+msgid "For how many days to keep Enigma2 EPG history"
+msgstr "Na kolik dní ponechat historii EPG v Enigma2"
+
+msgid "Player used for userbouquet"
+msgstr "Přehrávač použitý pro userbouquet"
+
+msgid "Archive: max items from DVR"
+msgstr "Archiv: max. položek z DVR"
+
+msgid "Archive: max number of days (0=no limit)"
+msgstr "Archiv: max. počet dní (0=bez limitu)"
+
+# --- optional: enum captions (ak ich engine prekladá) ---
+msgid "Auto"
+msgstr "Auto"
+
+msgid "Digest"
+msgstr "Digest"
+
+msgid "Basic"
+msgstr "Basic"
+
+msgid "None"
+msgstr "Žádné"
+
+msgid "Default"
+msgstr "Výchozí"
+
+msgid "Custom bouquet display name (TV)"
+msgstr "Vlastní název přehledu (TV)"
+
+msgid "Custom bouquet display name (Radio)"
+msgstr "Vlastní název přehledu (Rádio)"
+
+# --- provider.py UI labels (EN source) ---
+msgid "Please fill in the addon settings first: host, username and password."
+msgstr "Nejprve vyplň v Nastavení doplňku: host, uživatelské jméno a heslo."
+
+msgid "Tvheadend login failed. Check username/password and account permissions."
+msgstr "Přihlášení do Tvheadend selhalo. Zkontroluj jméno/heslo a práva účtu."
+
+msgid "Live TV"
+msgstr "Živé vysílání"
+
+msgid "All"
+msgstr "Všechny"
+
+msgid "Archive"
+msgstr "Archiv"
+
+msgid "Live stream"
+msgstr "Živý stream"
+
+msgid "days"
+msgstr "dní"
+
+msgid "Recording"
+msgstr "Nahrávka"

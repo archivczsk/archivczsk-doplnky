@@ -1,0 +1,13 @@
+1.0
+- Prvé vydanie doplnku Tvheadend pre ArchivCZSK
+- Prehrávanie živej TV a rádia zo servera Tvheadend
+- Kanály rozdelené do kategórií podľa tagov z Tvheadendu
+- Prehliadanie a prehrávanie archívu z nahrávok (DVR)
+- Nastavenia pripojenia: adresa/IP/URL, port, HTTPS, profil, timeout
+- Podpora API prihlásenia (meno/heslo, HTTP autentizácia, ticket URL)
+- Automatické generovanie userbouquetov pre TV a Rádio
+- Možnosť vlastného názvu bouquetov (TV / Rádio)
+- Export XML EPG pre EPGImport (adresár a počet dní)
+- Voliteľné automatické sťahovanie piconov
+- Výber prehrávača pre userbouquet
+- Nastavenie limitov archívu (počet položiek a dní)
