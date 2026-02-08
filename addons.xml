@@ -5,7 +5,7 @@
 <addon id="plugin.video.autosalontv" name="Autosalon" version="1.9" hash="e1836431641d28c728f02e2b0a0037e4" rhash="e1836431641d28c728f02e2b0a0037e4" />
 <addon id="plugin.video.disneyplus" name="Disney+" version="2.7" hash="9b4f337a451cca43d23e75f20a0f30a3" rhash="a99e06ffbb749b1277f64bb218645ebc" />
 <addon id="plugin.video.dokumenty.tv" name="dokufilmy.cz" version="2.5" hash="042bf580097c2c53f3b13ab910cb187d" rhash="828e6a0fc166556af50cfaac43391fe5" />
-<addon id="plugin.video.dupe" name="Dupe" version="1.0" hash="f15c3f3b7f2ad4eeebacdaba00424781" rhash="f506be6519094f3e57465e8a31cb5d8d" />
+<addon id="plugin.video.dupe" name="Dupe" version="1.1" hash="7c7aa93b3c1871d9f59bd10bd5eb32fb" rhash="14130e82a48b1ee8151ca0b61cc1a2c8" />
 <addon id="plugin.video.idnestv" name="iDNES.tv" version="1.8" hash="fc03240f747f08c9e8dbe5737e94002b" rhash="fc03240f747f08c9e8dbe5737e94002b" />
 <addon id="plugin.video.ivysilani" name="iVysílání - Česká televize" version="3.9" hash="23012a1fc5a63992419ca21b2efea159" rhash="b041ec278dc9b02bbb361af9b15b2893" />
 <addon id="plugin.video.jojplay" name="JOJ Play" version="1.7" hash="eb9c59307c555d639a4fa714c9e8831e" rhash="e79988be35bc014685e8dd4b1f034801" />
