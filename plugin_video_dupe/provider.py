@@ -133,6 +133,9 @@ class DupeContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def list_tvshow(self, url):
+		if not self.dupe.is_logged_in():
+			raise AddonErrorException(self._("In order to play content you need to enter login credentials in addon's setting."))
+
 		episodes = self.dupe.get_episodes(url)
 		if len(episodes) == 1:
 			return self.list_season(episodes[0]['episodes'])

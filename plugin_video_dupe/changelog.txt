@@ -1,3 +1,6 @@
+1.1: 08.02.2026
+- oprava pádu pri pokuse o zobrazenie epizód pre neregistrovaných používateľov
+
 1.0: 08.02.2026
 - úvodná verejná verzia
 - pre spustenie prehrávania je nutná bezplatná registrácia na stránke
