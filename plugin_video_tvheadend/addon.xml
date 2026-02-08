@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="tvheadend" name="Tvheadend" version="1.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="3.5.0"/>
+		<import addon="tools.archivczsk" version="3.4"/>
+	</requires>
+
+	<extension point="archivczsk.addon.video" preload="yes"/>
+	<extension point="archivczsk.addon.shortcut" name="archive"/>
+
+	<extension point="archivczsk.addon.metadata">
+		<description>Live TV and radio client for Tvheadend server with DVR archive playback, automatic userbouquet generation and channel grouping by tags.</description>
+		<description lang="sk">Klient pre Tvheadend server umožňujúci sledovanie živého TV a rádia, prehrávanie archívu z nahrávok (DVR), automatické generovanie userbouquetov a rozdelenie kanálov podľa tagov.</description>
+		<description lang="cs">Klient pro Tvheadend server umožňující sledování živé TV a rádia, přehrávání archivu z nahrávek (DVR), automatické generování userbouquetů a rozdělení kanálů podle tagů.</description>
+	</extension>
+</addon>
