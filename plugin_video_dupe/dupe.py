@@ -262,10 +262,10 @@ class Dupe(object):
 		soup = self.call_api(url)
 #		dump_html_response('season_%s' % url.split('/')[-1], soup)
 
-		def load_episodes(e):
+		def load_episodes(ep_div):
 			name = None
 			episodes = []
-			for e in e:
+			for e in (ep_div or []):
 				if e.name == 'label':
 					name = e.get_text()
 				elif e.name == 'div':
@@ -281,10 +281,13 @@ class Dupe(object):
 			if e.name == 'label':
 				name = e.get_text()
 			elif e.name == 'div':
-				ret.append({
-					'title': name,
-					'episodes': load_episodes(e.find('div', class_='tabs'))
-				})
+				ep_list = load_episodes(e.find('div', class_='tabs'))
+
+				if ep_list:
+					ret.append({
+						'title': name,
+						'episodes': ep_list
+					})
 
 		return ret
 

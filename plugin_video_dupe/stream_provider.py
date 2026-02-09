@@ -222,6 +222,7 @@ class VoeStreamProvider(BasicStreamProvider):
 
 				# Look for JSON arrays that might contain obfuscated data
 				for match in re.findall(r'\[\"[^\"]+\"\]', script.string):
+
 					result = self.deobfuscate(match)
 
 					if result and isinstance(result, dict):
@@ -247,7 +248,7 @@ class VoeStreamProvider(BasicStreamProvider):
 			video_type = 'mp4'
 			video_url = urljoin(url, config['direct_access_url'])
 		else:
-			self.log_error("Unsupported player config:\n%s" % json.dump(config))
+			self.log_error("Unsupported player config:\n%s" % json.dumps(config))
 			return {}
 
 		return {
