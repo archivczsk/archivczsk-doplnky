@@ -1,3 +1,7 @@
+1.2: 09.02.2026
+- oprava pádu ak séria neobsahuje žiadne epizódy
+- vylepšené logovanie ak zlyhá prehrávanie u VO poskytovateľa
+
 1.1: 08.02.2026
 - oprava pádu pri pokuse o zobrazenie epizód pre neregistrovaných používateľov
 

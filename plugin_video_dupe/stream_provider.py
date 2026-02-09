@@ -210,6 +210,15 @@ class VoeStreamProvider(BasicStreamProvider):
 
 	# ##################################################################################################################
 
+	def compress_and_log(self, soup):
+		try:
+			import zlib
+			self.log_debug("Problematic site data:\n%s" % base64.b64encode(zlib.compress(str(soup).encode('utf-8'))).decode('ascii'))
+		except:
+			pass
+
+	# ##################################################################################################################
+
 	def resolve(self, url):
 		soup, url = self.get_soup(url)
 		soup, url = self.check_redirect(soup, url)
@@ -222,7 +231,6 @@ class VoeStreamProvider(BasicStreamProvider):
 
 				# Look for JSON arrays that might contain obfuscated data
 				for match in re.findall(r'\[\"[^\"]+\"\]', script.string):
-
 					result = self.deobfuscate(match)
 
 					if result and isinstance(result, dict):
@@ -231,6 +239,11 @@ class VoeStreamProvider(BasicStreamProvider):
 
 		config = find_player_config()
 		self.log_debug("Deobfuscated player config:\n%s" % json.dumps(config))
+
+		if not config:
+			self.log_debug("Failed to get player config from site %s" % url)
+			self.compress_and_log(soup)
+			raise Exception("I am crashing now, because I wan't to send bug report.")
 
 		subtitles = []
 		for s in (config.get('captions') or []):
