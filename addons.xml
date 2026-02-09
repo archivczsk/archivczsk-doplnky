@@ -42,7 +42,7 @@
 <addon id="tools.archivczsk" name="Addons base" version="3.4" hash="29df4ba2948bd51c46038fe79d4b0123" rhash="2a24bcc4751119681c0352b8530a2c5d" />
 <addon id="tools.cenc" name="Content encryption support" version="1.10" hash="0a07fb7a4da64058c0c66ad417235656" rhash="0a07fb7a4da64058c0c66ad417235656" />
 <addon id="tools.xbmc" name="xbmc addons helper" version="1.5" hash="3c13f673a3cb346c95846cbe7444f300" rhash="3c13f673a3cb346c95846cbe7444f300" />
-<addon id="plugin.video.tvheadend" name="Tvheadend" version="0.10" hash="579B015DF489F37DC60D3A8175D9E0C6" rhash="579B015DF489F37DC60D3A8175D9E0C6" />
+<addon id="plugin.video.tvheadend" name="Tvheadend" version="0.10" hash="7C3817F272AAF8A3E10ABA297735C78A" rhash="7C3817F272AAF8A3E10ABA297735C78A" />
 <addon id="plugin.video.archivo2tv" name="Archív O2TV" version="0" supported="no"><extension point="archivczsk.addon.metadata"><broken>Prevádzka služby O2TV bola ukončená. Pokračovaním je služba Oneplay.</broken></extension></addon>
 <addon id="plugin.video.eurosport" name="Eurosport player" version="0" supported="no"><extension point="archivczsk.addon.metadata"><broken>Prevádzka služby eurosport player bola ukončená.</broken></extension></addon>
 <addon id="plugin.video.hbomax" name="HBO Max (old)" version="0" supported="no"><extension point="archivczsk.addon.metadata"><broken>Toto je doplnok pre starú verziu služby HBO Max. Ak ju chcete používať, tak použite nový doplnok.</broken></extension></addon>
