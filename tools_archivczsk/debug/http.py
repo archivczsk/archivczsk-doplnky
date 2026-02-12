@@ -2,17 +2,12 @@
 import os
 import json
 from collections import OrderedDict
-
-try:
-	from urlparse import urlparse, urlunparse, parse_qs
-
-except:
-	from urllib.parse import urlparse, urlunparse, parse_qs
+from ..compat import urlparse, urlunparse, parse_qs
 
 __debug_nr = 0
 
 
-def dump_json_request(response, extra=None):
+def dump_json_request(response, extra=None, dump_data_raw=False):
 	global __debug_nr
 	__debug_nr += 1
 
@@ -20,7 +15,7 @@ def dump_json_request(response, extra=None):
 
 	u = urlparse(request.url)
 
-	file_name = urlunparse( ('', u.netloc, u.path, '', '', '') )[2:].replace('/', '_')
+	file_name = urlunparse( ('', u.netloc, u.path, '', '', '') )[2:].replace('/', '_')[:240]
 
 	try:
 		json_response = response.json()
@@ -64,15 +59,17 @@ def dump_json_request(response, extra=None):
 			'params': params,
 			'headers': OrderedDict(request.headers),
 			'data': json_data,
-			'data_raw': str(request.body)
 		},
 		'response': {
 			'status_code': response.status_code,
 			'headers': OrderedDict(response.headers),
 			'body': json_response,
-			'data_raw': str(response.text)
 		}
 	}
+
+	if dump_data_raw:
+		data['request']['data_raw'] = str(request.body)
+		data['response']['data_raw'] = str(response.text)
 
 	if extra:
 		data['extra'] = extra
