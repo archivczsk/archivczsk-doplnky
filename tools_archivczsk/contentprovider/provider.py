@@ -521,7 +521,13 @@ class CommonContentProvider(object):
 						if int(e_rep.get('bandwidth', 0)) <= max_bitrate:
 							stream_info = {
 								'playlist_url': response.url,
-								'cookies': ','.join('%s=%s' % x for x in response.cookies.items())
+								'cookies': ','.join('%s=%s' % x for x in response.cookies.items()),
+								'playlist_type': root.get('type'),
+								'period': {
+									'id': e_period.get('id'),
+									'start': e_period.get('start'),
+									'duration': e_period.get('duration')
+								}
 							}
 							stream_info.update(e_rep.attrib)
 							add_drm_info(e_rep, stream_info)

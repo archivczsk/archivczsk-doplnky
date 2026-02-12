@@ -1,3 +1,7 @@
+3.5 - 12.02.2026
+    - added utility function to convert timedelta to string
+    - export more attributes from dash manifest in get_dash_streams()
+
 3.4 - 28.01.2026
     - update HTTP handlers to support threaded HTTP server from ArchivCZSK 3.5.0
 
