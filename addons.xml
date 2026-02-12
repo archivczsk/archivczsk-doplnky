@@ -12,7 +12,7 @@
 <addon id="plugin.video.kvifftv" name="Kviff.tv" version="1.4" hash="a2fa2eb91a9dccb5195c36a74d0704c4" rhash="fad69883ce04e89fba2dcbb188cee280" />
 <addon id="plugin.video.magiogo" name="Magio TV" version="1.33" hash="402bd4897ddcee61d0b3c39a0c044095" rhash="7b867c01f488f0b4749ac06b4f5e2b48" />
 <addon id="plugin.video.markiza" name="Markíza" version="2.15" hash="3b8f006e76accd22825fe5209e29d600" rhash="86d41e2a21adbaa640f5224ccda19104" />
-<addon id="plugin.video.max" name="HBO Max" version="1.12" hash="23b265e1d20b1dd944a0015be61d289c" rhash="12704300970d8948f3e9dcb54f497e34" />
+<addon id="plugin.video.max" name="HBO Max" version="1.13" hash="a031149f2f54382169be9878b57531b6" rhash="393030e996337f48e963a8f801bf10ba" />
 <addon id="plugin.video.mtr.sk" name="Mestská TV Ružomberok" version="1.4.0" hash="3448d87e3a93b98bd90cf2ddcca421f5" rhash="3448d87e3a93b98bd90cf2ddcca421f5" />
 <addon id="plugin.video.novaplus" name="TV Nova" version="3.15" hash="6da47cff7d7e74f5db53daaebb517d6a" rhash="85e605ada1ae75070f01d34e2fdb5c45" />
 <addon id="plugin.video.oneplay" name="Oneplay" version="1.18" hash="a4c7975edec6db5be7c42767f14bcffb" rhash="4b6358fc4579d6f9554ca42b78a47fc6" />
@@ -39,7 +39,7 @@
 <addon id="plugin.video.voyo" name="VOYO" version="1.11" hash="c95c3178540683c920cd4db36791bbdc" rhash="f6bb2a32ecafed563e1ebb7689614df4" />
 <addon id="plugin.video.webshare" name="Webshare.cz" version="1.5" hash="f5bab99a64256c82ddab83a6c7dae41c" rhash="27a62efdf5e34bd0b1f82f1eb2504ee2" />
 <addon id="plugin.video.yt" name="YouTube" version="2.8" hash="82af8af9148686b8d33e8d8c2d63f3ac" rhash="5d4560f88295137cfee8557ca8b08fcf" />
-<addon id="tools.archivczsk" name="Addons base" version="3.4" hash="29df4ba2948bd51c46038fe79d4b0123" rhash="2a24bcc4751119681c0352b8530a2c5d" />
+<addon id="tools.archivczsk" name="Addons base" version="3.5" hash="41467f6c7c9a31a78aa129f4cdb5a8b6" rhash="93715a710a492d3483aa4892ea7d0a40" />
 <addon id="tools.cenc" name="Content encryption support" version="1.10" hash="0a07fb7a4da64058c0c66ad417235656" rhash="0a07fb7a4da64058c0c66ad417235656" />
 <addon id="tools.xbmc" name="xbmc addons helper" version="1.5" hash="3c13f673a3cb346c95846cbe7444f300" rhash="3c13f673a3cb346c95846cbe7444f300" />
 <addon id="plugin.video.archivo2tv" name="Archív O2TV" version="0" supported="no"><extension point="archivczsk.addon.metadata"><broken>Prevádzka služby O2TV bola ukončená. Pokračovaním je služba Oneplay.</broken></extension></addon>
