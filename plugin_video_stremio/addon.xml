@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<addon id="plugin.video.stremio" name="Stremio" version="1.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="3.5.2"/>
+		<import addon="tools.archivczsk" version="3.6" />
+	</requires>
+	<extension point="archivczsk.addon.video"/>
+	<extension point="archivczsk.addon.metadata">
+        <description lang="en">Connects the world of ArchivCZSK and Stremio</description>
+        <description lang="sk">Spája svet ArchivCZSK a Stremio</description>
+        <description lang="cs">Propojuje svět ArchivCZSK a Stremio</description>
+    </extension>
+</addon>
