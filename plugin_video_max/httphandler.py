@@ -42,18 +42,12 @@ class WBDMaxHTTPRequestHandler(DashHTTPRequestHandler):
 								cenc_found = True
 								break
 
-				if remove_period or cenc_found == False:
+				if remove_period or cenc_found == False or (dash_info['period_id'] and dash_info['period_id'] != e_period.get('id')):
 					root.remove(e_period)
 				else:
 					if not dynamic:
 						# this correction is only valid for static manifests - for dynamic we need to select the last period
 						remove_period = True
-						# remove start and duration - they are wrong because all other periods are removed
-						if 'start' in e_period.attrib:
-							del e_period.attrib['start']
-
-						if 'duration' in e_period.attrib:
-							del e_period.attrib['duration']
 
 		if dynamic:
 			if root.get('suggestedPresentationDelay') != None:
@@ -62,6 +56,16 @@ class WBDMaxHTTPRequestHandler(DashHTTPRequestHandler):
 			# keep only last period - ffmpeg doesn't support multi period manifests (we will loose timeshift with this)
 			for p in list(root.findall('{}Period'.format(ns)))[:-1]:
 				root.remove(p)
+
+		# fix mediaPresentationDuration and period attributes, because maybe we have had removed some periods
+		if multiperiod_manifest:
+			for e_period in root.findall('{}Period'.format(ns)):
+				if e_period.get('start'):
+					del e_period.attrib['start']
+
+				if e_period.get('duration'):
+					root.set('mediaPresentationDuration', e_period.get('duration'))
+					del e_period.attrib['duration']
 
 		# let's do processing by default manifest handler
 		super(WBDMaxHTTPRequestHandler, self).handle_mpd_manifest(base_url, root, bandwidth, dash_info, cache_key)

@@ -5,7 +5,7 @@ from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman
 from tools_archivczsk.cache import SimpleAutokeyExpiringCache
 from tools_archivczsk.player.features import PlayerFeatures
-from tools_archivczsk.date_utils import iso8601_to_timestamp
+from tools_archivczsk.date_utils import iso8601_to_timestamp, iso8601_duration_to_timedelta, timedelta_str
 from time import time
 from .wbdmax import WBDMax
 import re
@@ -562,11 +562,12 @@ class WBDMaxContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def get_dash_info(self, stream_key):
-		data = self.scache.get(stream_key)
+		data = self.scache.get(stream_key['ck'])
 		drm_info = data['drm_info']
 
 		ret_data = {
 			'url': data['url'],
+			'period_id': stream_key.get('p')
 		}
 
 		if drm_info['wv_license_url']:
@@ -602,8 +603,36 @@ class WBDMaxContentProvider(CommonContentProvider):
 		}
 
 		cache_key = self.scache.put(data)
-		video_url = stream_key_to_dash_url(self.http_endpoint, cache_key)
-		self.add_play(video_title, video_url, settings=player_settings, data_item=data_item)
+
+		def _mykey(x):
+			try:
+				return int(x.get('id'))
+			except:
+				return x.get('id')
+
+		periods = sorted({ s['period'].get('id'): s['period'] for s in streams if s['period'].get('id') and (s.get('wv_pssh') or s.get('pr_pssh')) }.values(), key=_mykey)
+
+		if streams[0]['playlist_type'] != 'dynamic' and len(periods) > 1:
+			# this is workaround for multiperiod manifest used by some sport streams archive (mostly from Olympics)
+			# ffmpeg can't handle multiple periods - it selects only the longest one
+			# we will create a playlist here and put all periods as separate video items
+			# playlist will be played one by one and http handler will care to extract the right period by period_id attribute
+			# by this workaround it will be possible to wath watch everything
+			# switching between periods needs player restart, so it will not be smooth, but ... :-(
+			playlist = self.add_playlist(video_title)
+
+			for p in periods:
+				video_url = stream_key_to_dash_url(self.http_endpoint, {'ck': cache_key, 'p': p.get('id')})
+				if p.get('duration'):
+					s = iso8601_duration_to_timedelta(p.get('start') or 'PT0S')
+					d = iso8601_duration_to_timedelta(p.get('duration'))
+					title = '#{}: {} - {}'.format(p.get('id'), timedelta_str(s), timedelta_str(s+d))
+				else:
+					title = '#{} {}'.format(p.get('id'), video_title)
+				playlist.add_play(title, video_url, settings=player_settings, data_item=data_item)
+		else:
+			video_url = stream_key_to_dash_url(self.http_endpoint, {'ck': cache_key})
+			self.add_play(video_title, video_url, settings=player_settings, data_item=data_item)
 
 	# ##################################################################################################################
 
@@ -652,6 +681,8 @@ class WBDMaxContentProvider(CommonContentProvider):
 		player_settings['subs_forced_autostart'] = self.get_setting('forced-subs-autostart')
 		player_settings['skip_times'] = self.create_skip_times(data, data_item)
 		player_settings['stype'] = 5002
+
+		self.log_debug("Manifest URL:\n%s" % data['manifest']['url'])
 
 		self.resolve_dash_streams(data['manifest']['url'], video_title or "Video", drm_info, player_settings, data_item)
 

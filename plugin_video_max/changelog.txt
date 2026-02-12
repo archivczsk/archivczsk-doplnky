@@ -1,3 +1,6 @@
+1.13 - 12.02.2026
+    - oprava prehrávania archívu z olympiády v prípade, že je stream rozdelený na viacero častí
+
 1.12 - 27.01.2026
     - oprava prehrávania živého vysielania v športovej sekcii
 
