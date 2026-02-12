@@ -98,3 +98,22 @@ def iso8601_duration_to_seconds(iso_duration="P2DT6H21M32S"):
 		return int(t.total_seconds())
 	else:
 		return None
+
+def timedelta_str(td_object):
+	seconds = int(td_object.total_seconds())
+	if seconds < 0:
+		prefix='-'
+		seconds = abs(seconds)
+	else:
+		prefix=''
+
+	parts=[]
+	if seconds >= 3600:
+		h, seconds = divmod(seconds, 3600)
+		parts.append("%02d" % h)
+
+	m , seconds = divmod(seconds, 60)
+	parts.append("%02d" % m)
+	parts.append("%02d" % seconds)
+
+	return prefix + ":".join(parts)
