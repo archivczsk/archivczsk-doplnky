@@ -9,6 +9,7 @@ from Plugins.Extensions.archivCZSK.engine.httpserver import archivCZSKHttpServer
 from .exception import LoginException, AddonErrorException, AddonInfoException, AddonWarningException, AddonSilentExitException
 from ..string_utils import _B
 from collections import OrderedDict
+from hashlib import md5
 import inspect
 
 try:
@@ -42,6 +43,9 @@ class SearchProvider(object):
 
 	def _migrate_searches(self, server):
 		# migrate searches from old, deprecated files
+		if not is_string(server):
+			return
+
 		if server == None:
 			server = ''
 
@@ -91,6 +95,9 @@ class SearchProvider(object):
 
 	def _get_searches_file(self, server):
 		if server:
+			if not is_string(server):
+				server = md5(json.dumps(server, skipkeys=True, sort_keys=True).encode('utf-8')).hexdigest()
+
 			server = "_" + server.replace(' ', '_')
 		else:
 			server = ''
@@ -622,7 +629,7 @@ class ArchivCZSKContentProvider(object):
 	# #################################################################################################
 
 	def add_search_dir(self, title=None, search_id=None, img=None, info_labels={}, save_history=True):
-		client.add_dir(title if title else _B(_('Search')), self.action(self.search_list, search_id=search_id, save_history=save_history), image=img if img else _icon('search.png'), search_folder=True)
+		client.add_dir(title if title else _B(_('Search')), self.action(self.search_list, search_id=search_id, save_history=save_history), image=img if img else _icon('search.png'), infoLabels=info_labels, search_folder=True)
 
 	# #################################################################################################
 
