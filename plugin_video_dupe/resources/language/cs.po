@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_prehrajto\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-08 14:10+0100\n"
-"PO-Revision-Date: 2026-02-08 14:10+0100\n"
+"POT-Creation-Date: 2026-02-14 10:04+0100\n"
+"PO-Revision-Date: 2026-02-14 10:05+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -49,33 +49,37 @@ msgstr "Vše"
 msgid "By genre"
 msgstr "Podle žánru"
 
-#: plugin_video_dupe/provider.py:184
+#: plugin_video_dupe/provider.py:137 plugin_video_dupe/provider.py:187
 msgid "In order to play content you need to enter login credentials in addon's setting."
 msgstr "Abyste mohli přehrávat obsah, musíte zadat přihlašovací údaje v nastavení doplňku."
 
-#: plugin_video_dupe/provider.py:187
+#: plugin_video_dupe/provider.py:190
 msgid "You have reached the limit and playback of another item is not available for you."
 msgstr "Dosáhli jste limitu a přehrávání další položky není k dispozici."
 
-#: plugin_video_dupe/provider.py:192
+#: plugin_video_dupe/provider.py:195
 msgid "No supported stream provider found"
 msgstr "Nenalezen žádný podporovaný poskytovatel streamů"
 
-#: plugin_video_dupe/provider.py:205
+#: plugin_video_dupe/provider.py:208
 msgid "Please select a stream"
 msgstr "Vyberte prosím stream"
 
-#: plugin_video_dupe/provider.py:227
+#: plugin_video_dupe/provider.py:231
 msgid "This video stream is not available. Try to select different one."
 msgstr "Tento videostream není k dispozici. Zkuste vybrat jiný."
 
-#: plugin_video_dupe/provider.py:247
+#: plugin_video_dupe/provider.py:251
 msgid "Subtitles"
 msgstr "Titulky"
 
-#: plugin_video_dupe/provider.py:249
+#: plugin_video_dupe/provider.py:253
 msgid "Please select subtitles"
 msgstr "Vyberte prosím titulky"
+
+#: plugin_video_dupe/stream_provider.py:228
+msgid "Your internet provider is blocking access to site containing this video."
+msgstr "Váš poskytovatel internetového připojení blokuje přístup k webové stránce obsahující toto video."
 
 msgid "Login name"
 msgstr "Přihlašovací jméno"

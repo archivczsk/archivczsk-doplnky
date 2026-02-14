@@ -3,6 +3,7 @@
 import re, sys
 from tools_archivczsk.parser.js import get_js_data
 from tools_archivczsk.compat import urlparse, urljoin
+from tools_archivczsk.contentprovider.exception import AddonErrorException
 import json
 import base64
 import string
@@ -222,6 +223,9 @@ class VoeStreamProvider(BasicStreamProvider):
 	def resolve(self, url):
 		soup, url = self.get_soup(url)
 		soup, url = self.check_redirect(soup, url)
+
+		if urlparse(url).netloc.split(':')[0] == 'redirect.whalebone.io':
+			raise AddonErrorException(self.cp._("Your internet provider is blocking access to site containing this video."))
 
 		def find_player_config():
 			# Look for the new obfuscated data pattern
