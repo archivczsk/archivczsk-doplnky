@@ -1,5 +1,6 @@
 1.3: 14.02.2026
 - oprava pádu ak poskytovateľ internetu blokuje prístup k video súborom
+- oprava pádu ak sa nepodarí načítať zoznam seriálov
 
 1.2: 09.02.2026
 - oprava pádu ak séria neobsahuje žiadne epizódy

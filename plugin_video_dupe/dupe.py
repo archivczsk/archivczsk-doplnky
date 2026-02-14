@@ -233,6 +233,9 @@ class Dupe(object):
 		soup = self.call_api(url)
 		div = soup.find('div', class_='x-row-inner')
 
+		if div is None:
+			return []
+
 		ret = []
 		for a in div.find_all('a'):
 			data = [x.get_text().strip() for x in a.find_all('div', class_='x-text')]
