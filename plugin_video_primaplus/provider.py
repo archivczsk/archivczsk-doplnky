@@ -72,16 +72,18 @@ class PrimaPlusContentProvider(CommonContentProvider):
 
 		result.append(self._("Customer key") + ": " + data["uuid"])
 		result.append("")
-		result.append(self._("Active subscription") + ": " + data["primaPlay"]['userLevel'])
-		result.append("{}: {}".format(self._("Paid"), self._("Yes") if data["primaPlay"]['paidSubscription'] else self._("No")))
+
+		subscription = (data.get("subscription") or {}).get('currentSubscription') or {}
+		result.append(self._("Active subscription") + ": " + subscription.get('levelPlay', '???'))
+		result.append("{}: {}".format(self._("Paid"), self._("Yes") if subscription.get('subscriptionId') else self._("No")))
 		try:
-			d = datetime.strptime(data['subscriptionData']["currentSubscription"]['validFrom'][:19], "%Y-%m-%dT%H:%M:%S")
+			d = datetime.strptime(subscription.get('startDateTime')[:19], "%Y-%m-%dT%H:%M:%S")
 			result.append(self._("Valid from") + ": {:02}.{:02}.{:04} - {:02d}:{:02d} UTC".format(d.day, d.month, d.year, d.hour, d.minute))
 		except:
 			self.log_exception()
 
 		try:
-			d = datetime.strptime(data['subscriptionData']["currentSubscription"]['validUntil'][:19], "%Y-%m-%dT%H:%M:%S")
+			d = datetime.strptime(subscription.get('endDateTime')[:19], "%Y-%m-%dT%H:%M:%S")
 			result.append(self._("Valid until") + ": {:02}.{:02}.{:04} - {:02d}:{:02d} UTC".format(d.day, d.month, d.year, d.hour, d.minute))
 		except:
 			self.log_exception()

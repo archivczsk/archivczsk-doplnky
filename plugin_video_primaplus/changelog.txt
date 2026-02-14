@@ -1,3 +1,6 @@
+1.14 - 14.02.2026
+- oprava pádu pri zobrazení informácií o účte
+
 1.13 - 14.01.2026
 - úprava inicializácie po zmenách v závislostiach doplnku
 
