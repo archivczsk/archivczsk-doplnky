@@ -265,7 +265,13 @@ class PrimaPlus(object):
 
 	def get_subscription(self):
 		if not self.subscription:
-			self.subscription = self.get_account_info().get('primaPlay',{}).get('userLevelShort', 'free').lower()
+			level = self.get_account_info().get('subscription',{}).get('currentSubscription',{}).get('levelPlay')
+
+			# translate level to one used in item properties
+			self.subscription = {
+				'HVOD': 'light',
+				'SVOD': 'premium'
+			}.get(level, 'free')
 
 		return self.subscription
 

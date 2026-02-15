@@ -74,7 +74,7 @@ class PrimaPlusContentProvider(CommonContentProvider):
 		result.append("")
 
 		subscription = (data.get("subscription") or {}).get('currentSubscription') or {}
-		result.append(self._("Active subscription") + ": " + subscription.get('levelPlay', '???'))
+		result.append(self._("Active subscription") + ": " + self.primaplus.get_subscription())
 		result.append("{}: {}".format(self._("Paid"), self._("Yes") if subscription.get('subscriptionId') else self._("No")))
 		try:
 			d = datetime.strptime(subscription.get('startDateTime')[:19], "%Y-%m-%dT%H:%M:%S")
