@@ -1,3 +1,7 @@
+2026-02-15 3.29
+    - oprava duplicitných záznamov v menu filmov a seriálov
+    - oprava pokročilého filtrovania po zmene API na serveri (nefungovalo filtrovanie podľa žánrov a krajín)
+
 2026-02-03 3.28
     - pridanie nastavenia, ktoré umožní zobraziť v histórii sledovaných len položky z aktuálneho zariadenia
     - vypnutie aktualizácie prihlasovacieho tokenu po aktualizácii doplnku

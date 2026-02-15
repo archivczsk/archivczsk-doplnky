@@ -1176,7 +1176,6 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		max_file_size = int(self.get_setting('max-file-size')) * (2 ** 30)
 		enable_hevc = self.get_setting('enable-hevc')
 		enable_hdr = self.get_setting('show-hdr')
-		enable_dv = self.get_setting('show-dv')
 		enable_3d = self.get_setting('show-3d')
 		min_quality = int(self.get_setting('min-quality'))
 		max_quality = int(self.get_setting('max-quality'))
@@ -1205,11 +1204,6 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			# hdr filter
 			if not enable_hdr and strm.get('stream_info', {}).get('HDR', 0) == 1:
 				self.log_debug("Stream filtered due HDR")
-				continue
-
-			# dolby vision filter
-			if not enable_dv and strm.get('stream_info', {}).get('DV', 0) == 1:
-				self.log_debug("Stream filtered due dolby vision")
 				continue
 
 			strm_quality = strm.get('quality','').lower()
