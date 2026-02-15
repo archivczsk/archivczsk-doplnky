@@ -508,6 +508,10 @@ class StreamCinemaContentProvider(CommonContentProvider):
 			self.log_debug("No url for %s" % str(sc_item))
 			return
 
+		if url.startswith('cmd://'):
+			self.log_debug("Not supported URL format %s" % url)
+			return
+
 #		if url == '/huste': #hack to not show Huste TV dir
 #			return None
 
