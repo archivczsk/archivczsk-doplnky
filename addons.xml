@@ -19,14 +19,14 @@
 <addon id="plugin.video.orangetv" name="OrangeTV" version="2.27" hash="16bd5fca8ff16effc1f309c940e026e4" rhash="36aeaa840bbd3196b381ac385b64ffe8" />
 <addon id="plugin.video.pohadkar.cz" name="Pohádkář.cz" version="1.5.0" hash="2f30d87101b495adc0afb4cb95736753" rhash="2f30d87101b495adc0afb4cb95736753" />
 <addon id="plugin.video.prehrajto" name="Prehraj.to" version="1.5" hash="12250c192b3e34ad16783a12b86b0a6b" rhash="259aac6a25faea775531e5ed2f0e96e0" />
-<addon id="plugin.video.primaplus" name="Prima+" version="1.14" hash="f7d5fb7f02ee17723f16135acbaa98a4" rhash="dfcbe7ddd8d8ef2838a28db09f344b08" />
+<addon id="plugin.video.primaplus" name="Prima+" version="1.15" hash="18bdc863bd4c07cd3a4e89701c2b95fa" rhash="903f2fc610536858bc52e94854f93d1c" />
 <addon id="plugin.video.rebittv" name="Rebit.tv" version="1.15" hash="4e6e0ed825cddbffd54e6438b54cb1fb" rhash="1b215aacc57e4ab86101c036d12a01b9" />
 <addon id="plugin.video.rtvs.sk" name="rtvs.sk" version="1.15.0" hash="c31242e5850799adabc9b5900508afe8" rhash="c31242e5850799adabc9b5900508afe8" />
 <addon id="plugin.video.sktonline" name="SkTonline" version="2.9" hash="34117de0faebbdcd40e76c9ad6126b3a" rhash="00718193d6809e4bfd3d29201782c655" />
 <addon id="plugin.video.sledovanitv" name="Sledovani.tv" version="2.23" hash="8be3023bbbf37773231ae3ed30f62fcf" rhash="9ceb4f4eb5711a217bac20673c99d3a9" />
 <addon id="plugin.video.sosac.ph" name="Sosáč" version="2.12" hash="afcc179b2f1c2770c9ca33e19b25f39f" rhash="3dad6a97846538930af8e8d347807677" />
 <addon id="plugin.video.stalker" name="Stalker" version="1.10" hash="2cbc3ff62137ae282b96802c72dd28bd" rhash="2cbc3ff62137ae282b96802c72dd28bd" />
-<addon id="plugin.video.stream-cinema" name="Stream Cinema" version="3.28" hash="a450d655e656752f3a4f08f95a914d15" rhash="7eb4fba6693eba0265e635b27c0635df" />
+<addon id="plugin.video.stream-cinema" name="Stream Cinema" version="3.29" hash="cad6e56920d8da0800eb25531d3b9c0e" rhash="18f9a2943dd58590b27e19b60b3dec2a" />
 <addon id="plugin.video.sweettv" name="Sweet.tv" version="1.24" hash="e38fa7b3d58663ac6f5d357fb29a8f8e" rhash="9185d577706d44df7e506d84b354d3f6" />
 <addon id="plugin.video.ta3.com" name="TA3.com" version="2.3" hash="e9e4ca73c961afa78477fc369612146b" rhash="a9a40d85f4a8afde8d197f5cab07cfb2" />
 <addon id="plugin.video.telly" name="Telly" version="1.9.0" hash="aae23747c70b0c3d6eac87563610d62c" rhash="468d71083682e63a0b456d54794e5f16" />
