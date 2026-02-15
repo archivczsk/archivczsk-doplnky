@@ -8,7 +8,7 @@ from datetime import date, datetime
 import json
 from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from tools_archivczsk.contentprovider.exception import AddonErrorException, AddonSilentExitException
-from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman
+from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman, strip_accents
 from tools_archivczsk.cache import lru_cache
 from tools_archivczsk.simple_config import SimpleConfigSelection, SimpleConfigInteger, SimpleConfigYesNo, SimpleConfigMultiSelection
 from tools_archivczsk.compat import urlparse, urlunparse, parse_qs, urlencode, urljoin
@@ -809,64 +809,127 @@ class StreamCinemaContentProvider(CommonContentProvider):
 	# #################################################################################################
 
 	def load_genres(self):
-		if hasattr(self, 'genres'):
-			return
+		genres = {}
 
-		self.genres = {
-			'en': [],
-			'sk': [],
-			'cs': []
-		}
 		for item in (self.api.call_api('/FMovies/genre') or {}).get('menu', []):
 			if item.get('type') != 'dir':
 				continue
 
-			genre_id = item.get('url', '').split('/')[-1]
+			genre_id = item.get('i18n_info',{}).get('cs',{}).get('title')
 
-			for lng, title_data in item.get('i18n_info',{}).items():
-				if lng not in self.genres:
-					self.genres[lng] = []
+			if not genre_id:
+				continue
 
-				self.genres[lng].append( (genre_id, title_data.get('title'), ) )
+			genre_id = strip_accents(genre_id).lower()
+			genres[genre_id] = {
+				'en': item.get('i18n_info',{}).get('en',{}).get('title'),
+				'cs': item.get('i18n_info',{}).get('cs',{}).get('title'),
+				'sk': item.get('i18n_info',{}).get('sk',{}).get('title'),
+			}
 
-		self.genres['en'].append( ('70393', "Anime",) )
-		self.genres['cs'].append( ('70393', "Anime",) )
-		self.genres['sk'].append( ('70393', "Anime",) )
 
-		self.genres['en'].append( ('185109', "Sport",) )
-		self.genres['cs'].append( ('185109', "Sport",) )
-		self.genres['sk'].append( ('185109', "Šport",) )
+		genres['sport'] = {
+			'en': "Sport",
+			'cs': "Sport",
+			'sk': 'Šport'
+		}
 
-		for items in self.genres.values():
-			items.sort(key=lambda x: x[1] or '')
+		return genres
 
 	# #################################################################################################
 
 	def load_countries(self):
-		if hasattr(self, 'countries'):
-			return
+		countries = {}
 
-		self.countries = {}
 		for item in (self.api.call_api('/FMovies/country') or {}).get('menu', []):
 			if item.get('type') != 'dir':
 				continue
 
-			country_id = item.get('url', '').split('/')[-1]
+			country_id = item.get('i18n_info',{}).get('cs',{}).get('title')
 
-			for lng, title_data in item.get('i18n_info',{}).items():
-				if lng not in self.countries:
-					self.countries[lng] = []
+			if not country_id:
+				continue
 
-				self.countries[lng].append( (country_id, title_data.get('title'), ) )
+			country_id = strip_accents(country_id).lower()
+			countries[country_id] = {
+				'en': item.get('i18n_info',{}).get('en',{}).get('title'),
+				'cs': item.get('i18n_info',{}).get('cs',{}).get('title'),
+				'sk': item.get('i18n_info',{}).get('sk',{}).get('title'),
+			}
+
+		return countries
+
+	# #################################################################################################
+
+	def load_facets(self):
+		def _slug_to_name(slug):
+			if slug:
+				return ' '.join( word.capitalize() for word in slug.replace('-', ' ').replace('_', ' ').split())
+			else:
+				return slug
+
+		if hasattr(self, 'countries'):
+			return
+
+		# load info needed for translations
+		countries = self.load_countries()
+		genres = self.load_genres()
+
+		self.countries = {
+			'en': [],
+			'cs': [],
+			'sk': []
+		}
+
+		self.genres = {
+			'en': [],
+			'cs': [],
+			'sk': []
+		}
+
+		facets = self.api.call_api('/Filter/facet')
+
+		facets.append( {'i': '70393', 't': 'genre', 'u': 'anime'})
+		facets.append( {'i': '69801', 't': 'genre', 'u': 'koncert'})
+		facets.append( {'i': '185109', 't': 'genre', 'u': 'sport'})
+
+		for item in facets:
+			if not isinstance(item, dict):
+				continue
+
+			item_id = item.get('i')
+			item_type = item.get('t')
+			item_name = item.get('u')
+
+			if not item_id or not item_type or not item_name:
+				continue
+
+			if item_type == 'country':
+				c = countries.get(item_name, {})
+				name = _slug_to_name(item_name)
+
+				self.countries['en'].append( (item_id, c.get('en', name),) )
+				self.countries['cs'].append( (item_id, c.get('cs', name),) )
+				self.countries['sk'].append( (item_id, c.get('sk', name),) )
+			elif item_type == 'genre':
+				g = genres.get(item_name, {})
+				name = _slug_to_name(item_name)
+
+				self.genres['en'].append( (item_id, g.get('en', name),) )
+				self.genres['cs'].append( (item_id, g.get('cs', name),) )
+				self.genres['sk'].append( (item_id, g.get('sk', name),) )
+
+		for items in self.genres.values():
+			items.sort(key=lambda x: x[1] or '')
 
 		for items in self.countries.values():
 			items.sort(key=lambda x: x[1] or '')
 
+
 	# #################################################################################################
 
 	def advanced_filter(self, url, params, data, sort_methods, filter_data):
-		self.load_genres()
-		self.load_countries()
+		self.load_facets()
 
 		def load_sort():
 			lang_code = self.dubbed_lang_list[0]
