@@ -171,30 +171,33 @@ class StreamCinemaContentProvider(CommonContentProvider):
 	# #################################################################################################
 
 	def fix_menu(self, url_path, menu):
-		def _add_entry(url, en, cs, sk):
-			return {
-				"type": "dir",
-				"url": urljoin(url_path + '/', url),
-				"i18n_info" : {
-					"en": {
-						"title": en
-					},
-					"cs": {
-						"title": cs
-					},
-					"sk": {
-						"title": sk
+		def _add_entry(menu, url, en, cs, sk):
+			new_url = urljoin(url_path + '/', url)
+
+			if not any(filter(lambda x: x.get('url') == new_url, menu)):
+				menu.append({
+					"type": "dir",
+					"url": new_url,
+					"i18n_info" : {
+						"en": {
+							"title": en
+						},
+						"cs": {
+							"title": cs
+						},
+						"sk": {
+							"title": sk
+						}
 					}
-				}
-			}
+				})
 
 		if url_path in ('/FMovies', '/FSeries'):
 			l = menu.pop()
 			item_type = 0 if url_path == '/FMovies' else 1
-			menu.append(_add_entry('/Recommended?type={}'.format(item_type), "Today's tips", 'Tipy na dnes', 'Tipy na dnes'))
-			menu.append(_add_entry('watching', 'Just watched', 'Právě sledované', 'Práve sledované'))
-			menu.append(_add_entry('popular', 'Popular', 'Populární', 'Populárne'))
-			menu.append(_add_entry('trending', 'Trending', 'Trendy', 'Trendy'))
+			_add_entry(menu, '/Recommended?type={}'.format(item_type), "Today's tips", 'Tipy na dnes', 'Tipy na dnes')
+			_add_entry(menu, 'watching', 'Just watched', 'Právě sledované', 'Práve sledované')
+			_add_entry(menu, 'popular', 'Popular', 'Populární', 'Populárne')
+			_add_entry(menu, 'trending', 'Trending', 'Trendy', 'Trendy')
 			menu.append(l)
 
 	# #################################################################################################
