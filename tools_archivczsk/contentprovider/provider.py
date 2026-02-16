@@ -340,8 +340,14 @@ class CommonContentProvider(object):
 
 	def save_cached_data(self, name, data):
 		try:
-			with open(os.path.join(self.data_dir, name + '.json'), "w") as f:
-				json.dump(data, f)
+			file_name = os.path.join(self.data_dir, name + '.json')
+
+			if data == None:
+				if os.path.isfile(file_name):
+					os.remove(file_name)
+			else:
+				with open(file_name, "w") as f:
+					json.dump(data, f)
 		except:
 			self.log_error(traceback.format_exc())
 			pass
