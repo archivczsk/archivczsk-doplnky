@@ -1,3 +1,6 @@
+2026-02-17 3.30
+    - upravený manažment a ukladanie prihlasovacích údajov
+
 2026-02-15 3.29
     - oprava duplicitných záznamov v menu filmov a seriálov
     - oprava pokročilého filtrovania po zmene API na serveri (nefungovalo filtrovanie podľa žánrov a krajín)

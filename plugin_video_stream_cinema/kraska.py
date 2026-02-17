@@ -26,7 +26,7 @@ class KraskaNoSubsctiption(KraskaLoginFail):
 
 # #################################################################################################
 
-class Kraska:
+class Kraska(object):
 	def __init__(self, content_provider):
 		self.cp = content_provider
 		self.req_session = self.cp.get_requests_session()
@@ -36,7 +36,14 @@ class Kraska:
 	# #################################################################################################
 
 	def load_login_data(self):
-		self.login_data = self.cp.load_cached_data('kraska_login')
+		self.login_data = self.cp.load_cached_data('login').get('kraska')
+
+		if self.login_data == None:
+			# migrate data from old config file (if available)
+			self.cp.log_info("Kraska login data not found - trying to migrate from old login data format")
+			self.login_data = self.cp.load_cached_data('kraska_login')
+			self.cp.update_cached_data('login', {'kraska': self.login_data})
+			self.cp.save_cached_data('kraska_login', None)
 
 		if self.login_data:
 			self.cp.log_debug("Kraska login data loaded from cache")
@@ -46,7 +53,7 @@ class Kraska:
 	# #################################################################################################
 
 	def save_login_data(self):
-		self.cp.save_cached_data('kraska_login', self.login_data)
+		self.cp.update_cached_data('login', {'kraska': self.login_data})
 
 	# #################################################################################################
 

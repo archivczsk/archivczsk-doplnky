@@ -16,7 +16,13 @@ class SC_API(object):
 	def __init__(self, content_provider):
 		self.cp = content_provider
 
-		self.device_id = self.cp.get_setting('deviceid')
+		self.device_id = self.cp.load_cached_data('login').get('deviceid')
+
+		if not self.device_id:
+			# cached device ID not available - get one from settings or create new one
+			self.device_id = self.cp.get_setting('deviceid') or self.create_device_id()
+			self.cp.set_setting('deviceid', '')
+			self.cp.update_cached_data('login', {'deviceid': self.device_id})
 
 		self.req_session = self.cp.get_requests_session()
 		self.cache = ExpiringLRUCache(30, 1800)
@@ -32,7 +38,14 @@ class SC_API(object):
 	# ##################################################################################################################
 
 	def load_token(self):
-		login_data = self.cp.load_cached_data('sc')
+		login_data = self.cp.load_cached_data('login').get('sc')
+
+		if login_data == None:
+			# migrate from old config file
+			self.cp.log_info("SC login data not found - trying to migrate from old login data format")
+			login_data = self.cp.load_cached_data('sc')
+			self.cp.update_cached_data('login', {'sc': login_data})
+			self.cp.save_cached_data('sc', None)
 
 		if login_data.get('token'):
 			self.cp.log_info("Auth token loaded from local cache")
@@ -52,7 +65,11 @@ class SC_API(object):
 						self.save_old_token(token)
 						token = token2
 
-					self.cp.update_cached_data('sc', {'token': token, 'addon_ver': self.cp.get_addon_version()})
+					login_data.update({
+						'token': token,
+						'addon_ver': self.cp.get_addon_version()
+					})
+					self.cp.update_cached_data('login', {'sc': login_data})
 		else:
 			token = None
 			self.cp.log_info("No cached auth token found")
@@ -81,11 +98,11 @@ class SC_API(object):
 
 	def save_token(self):
 		if self.token:
-			self.cp.save_cached_data('sc', {
+			self.cp.update_cached_data('login', {'sc': {
 				'token': self.token,
 				'addon_ver': self.cp.get_addon_version(),
 				'kr_checksum': self.cp.kraska.login_data.get('checksum')
-			})
+			}})
 
 	# ##################################################################################################################
 
@@ -316,9 +333,9 @@ class SC_API(object):
 
 		self.token = None
 		krt = self.cp.kraska.get_token()
-		token_data = self.cp.load_cached_data('sc')
+		auth = self.cp.load_cached_data('login').get('auth',{})
 
-		if krt and self.cp.kraska.refresh_login_data() > 0 and (token_data.get('id') != self.device_id or token_data.get('krt') != krt):
+		if krt and self.cp.kraska.refresh_login_data() > 0 and (auth.get('id') != self.device_id or auth.get('krt') != krt):
 			# the last chance - try to get token directly from sc server
 			self.cp.log_info("Requesting auth token from SC server")
 			try:
@@ -334,7 +351,7 @@ class SC_API(object):
 			self.token = ret['token']
 			self.save_token()
 			self.save_backup_token()
-			self.cp.update_cached_data('sc', {'id': self.device_id, 'krt': krt})
+			self.cp.update_cached_data('login', {'auth': {'id': self.device_id, 'krt': krt}})
 
 			time.sleep(5)
 			if self.check_token():

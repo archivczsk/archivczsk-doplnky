@@ -59,9 +59,6 @@ class StreamCinemaContentProvider(CommonContentProvider):
 		self.lang_list = ['en']
 		self.trakt_page_size = 100
 
-		if not self.get_setting('deviceid'):
-			self.set_setting('deviceid', SC_API.create_device_id())
-
 		self.watched = SCWatched(self.data_dir, trakttv, int(self.get_setting('keep-last-seen')))
 
 		self.kraska = Kraska(self)
