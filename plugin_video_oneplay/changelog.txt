@@ -1,3 +1,6 @@
+1.19 - 23.02.2026
+- oprava pádu pri mazaní zariadenia
+
 1.18 - 31.01.2026
 - podpora nového HTTP servera v ArchivCZSK 3.5.0
 - preferovanie DASH streamov v archíve pre HLS

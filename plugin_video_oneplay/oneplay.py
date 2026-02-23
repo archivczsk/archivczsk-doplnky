@@ -463,7 +463,7 @@ class Oneplay(object):
 		response = self.call_api('setting.display', payload)
 
 		ret = []
-		for device in response['screen']['userDevices']['devices']:
+		for device in response.get('screen',{}).get('userDevices',{}).get('devices',[]):
 			ret.append({
 				'name': device['name'],
 				'type': device['deviceType'],
