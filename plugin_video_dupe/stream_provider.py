@@ -168,7 +168,7 @@ class VoeStreamProvider(BasicStreamProvider):
 			try:
 				return base64.b64decode(text).decode('utf-8', errors='replace')
 			except Exception as e:
-				self.log_error("Base64 decode error: %s" % str(e))
+#				self.log_error("Base64 decode error: %s" % str(e))
 				return None
 
 		def shift_chars(text, shift):
@@ -188,7 +188,7 @@ class VoeStreamProvider(BasicStreamProvider):
 				self.log_error("Input doesn't match expected format.")
 				return None
 		except json.JSONDecodeError:
-			self.log_error("Invalid JSON input.")
+#			self.log_error("Invalid JSON input.")
 			return None
 
 		try:
@@ -230,7 +230,7 @@ class VoeStreamProvider(BasicStreamProvider):
 		def find_player_config():
 			# Look for the new obfuscated data pattern
 			for script in soup.find_all('script'):
-				if not script.string:
+				if not script.string or script.get('type') != "application/json":
 					continue
 
 				# Look for JSON arrays that might contain obfuscated data
@@ -246,8 +246,9 @@ class VoeStreamProvider(BasicStreamProvider):
 
 		if not config:
 			self.log_debug("Failed to get player config from site %s" % url)
-			self.compress_and_log(soup)
-			raise Exception("I am crashing now, because I wan't to send bug report.")
+#			self.compress_and_log(soup)
+#			raise Exception("I am crashing now, because I wan't to send bug report.")
+			return {}
 
 		subtitles = []
 		for s in (config.get('captions') or []):
