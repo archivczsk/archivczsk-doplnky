@@ -252,8 +252,6 @@ class JojPlayClient(object):
 	# ##################################################################################################################
 
 	def refresh_login(self):
-		self.cp.log_debug("Checking login data")
-
 		if self.login_data.get('valid_to', 0) < int(time()) and self.login_data.get('refresh_token'):
 			self.cp.log_debug("Login refresh is needed")
 			try:
@@ -321,12 +319,12 @@ class JojPlayClient(object):
 		except:
 			err_msg = None
 			try:
-				err_msg = response.json()['error']['details']['reason']
+				err_msg = response.json().get('error',{}).get('details',{}).get('reason')
 
 				if err_msg == 'MONETIZATION':
 					err_msg = self.cp._("With your subscription you don't have access to this content.")
 				else:
-					err_msg = response.json()['error']['message']
+					err_msg = response.json().get('error',{}).get('message')
 			except:
 				pass
 
