@@ -13,6 +13,11 @@ from tools_archivczsk.compat import urlparse, urlunparse, parse_qs, urlencode, u
 from .stremio import StremioClient, StremioServiceClient, STREMIO_PAGE_SIZE, clean_str
 from .watched import StremioWatched
 
+try:
+	unicode
+except:
+	unicode = str
+
 # needed for translations
 def _(s):
 	return s
@@ -439,7 +444,7 @@ class StremioContentProvider(CommonContentProvider):
 			genres = [g.strip().capitalize() for g in genres]
 			plot = '[{}]\n{}'.format(' / '.join(genres), plot)
 
-		year = (item.get('releaseInfo') or item.get('released') or '').split('-')[0].split('–')[0] or None
+		year = unicode(item.get('releaseInfo') or item.get('released') or '').split('-')[0].split('–')[0] or None
 
 		info_labels={
 			'plot': plot,

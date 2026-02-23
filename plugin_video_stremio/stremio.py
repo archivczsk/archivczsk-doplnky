@@ -21,6 +21,7 @@ STREMIO_PAGE_SIZE=100
 class StremioAddon(object):
 	def __init__(self, cp, url, manifest):
 		self.cp = cp
+		self._ = self.cp._
 		self.req_session = self.cp.get_requests_session()
 		self.addon_id = manifest['id']
 		self.name = manifest['name'].strip()
