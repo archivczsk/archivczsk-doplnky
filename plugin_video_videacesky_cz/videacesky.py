@@ -222,18 +222,11 @@ class VideaceskyContentProvider(ContentProvider):
 		item = item.copy()
 		url = self._url(item['url'])
 		data = util.substr(util.request(url), 'async type', '</script>')
-		print( 'data start ----' )
-		print( data )
-		print( 'data end ----' )
 		playlist = re.search('''new mfJWPlayer.+?(?P<jsondata>playlist:.+?)events:''',
 							 data, re.MULTILINE | re.DOTALL)
-		print( 'playlist start ----' )
-		print( playlist )
-		print( 'playlist end ----' )
+		if not playlist:
+			raise ResolveException('Video nenalezeno')
 		jsondata = js2json( playlist.group('jsondata') )
-		print( 'jsondata start ----' )
-		print( jsondata )
-		print( 'jsondata end ----' )
 
 		jsondata = json.loads(jsondata)
 

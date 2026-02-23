@@ -1,3 +1,6 @@
+1.4.2: 23.02.2026
+- oprava pádu pri nedostupnosti videa
+
 1.4.1: 13.9.2024
 - oprava pádu pri nesprávnom formáte URL adresy
 
