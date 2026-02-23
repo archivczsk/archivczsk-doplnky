@@ -76,14 +76,6 @@ class DupeContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def fix_img_url(self, url):
-		if url.endswith('.webp'):
-			url = self.http_endpoint + '/img/' + b64encode(url.encode('utf-8')).decode('ascii')
-
-		return url
-
-	# ##################################################################################################################
-
 	def add_item_uni(self, item):
 		if item['type'] == 'movie':
 			info_labels = {
@@ -97,7 +89,7 @@ class DupeContentProvider(CommonContentProvider):
 			else:
 				title = item['title']
 
-			self.add_video(title, self.fix_img_url(item['img']), info_labels, cmd=self.resolve_video, video_title=item['title'], url=item['url'])
+			self.add_video(title, item['img'], info_labels, cmd=self.resolve_video, video_title=item['title'], url=item['url'])
 		elif item['type'] == 'tvshow':
 			info_labels = {
 				'plot': item['plot'],
@@ -110,7 +102,7 @@ class DupeContentProvider(CommonContentProvider):
 			else:
 				title = item['title']
 
-			self.add_dir(title, self.fix_img_url(item['img']), info_labels, cmd=self.list_tvshow, url=item['url'])
+			self.add_dir(title, item['img'], info_labels, cmd=self.list_tvshow, url=item['url'])
 
 	# ##################################################################################################################
 

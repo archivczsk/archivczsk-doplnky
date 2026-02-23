@@ -280,7 +280,7 @@ class Dupe(object):
 
 		ret = []
 		name = None
-		for e in soup.find('div', class_='tabs'):
+		for e in (soup.find('div', class_='tabs') or []):
 			if e.name == 'label':
 				name = e.get_text()
 			elif e.name == 'div':

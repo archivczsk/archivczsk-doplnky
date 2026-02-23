@@ -1,5 +1,6 @@
 1.4: 23.02.2026
 - vypnutie posielania hlásení o chybe ak sa nepodarí získať adresa streamu pre voe
+- odstránenie internej konverzie obrázkov, nakoľko to pre ArchivCZSK 3.5.3 to už nie je potrebné
 
 1.3: 14.02.2026
 - oprava pádu ak poskytovateľ internetu blokuje prístup k video súborom
