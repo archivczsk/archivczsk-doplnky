@@ -1,3 +1,6 @@
+1.2: 23.02.2026
+- vymazanie sekcie futbal, ktorá bola odstránená z webu Tipos TV
+
 1.1: 25.01.2026
 - oprava pádu pri pokuse od spustenie live vysielania
 

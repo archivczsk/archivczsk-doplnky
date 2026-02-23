@@ -44,8 +44,9 @@ class TiposTVContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def root(self):
-		self.add_dir(self._("Basketball"), cmd=self.list_basketball)
-		self.add_dir(self._("Football"), cmd=self.list_football)
+		self.list_basketball()
+#		self.add_dir(self._("Basketball"), cmd=self.list_basketball)
+#		self.add_dir(self._("Football"), cmd=self.list_football)
 
 	# ##################################################################################################################
 
