@@ -1,3 +1,6 @@
+1.25 - 23.02.2026
+- opravy pádov pri nekompletných dátach jednotlivých položiek
+
 1.24 - 14.01.2026
 - úprava inicializácie po zmenách v závislostiach doplnku
 

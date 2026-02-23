@@ -509,10 +509,10 @@ class SweetTV:
 				'owner_id': str(movie['external_id_pairs'][0]['owner_id']),
 				'title': movie['title'],
 				'plot': movie.get('description'),
-				'poster': movie['poster_url'],
+				'poster': movie.get('poster_url'),
 				'rating': movie.get('rating_imdb'),
 				'duration': movie.get('duration'),
-				'year': int(movie['year']) if 'year' in movie else None,
+				'year': int(movie['year']) if movie.get('year') else None,
 				'available': movie['available'],
 				'trailer': movie.get('trailer_url')
 			})
