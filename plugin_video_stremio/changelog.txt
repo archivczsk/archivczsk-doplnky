@@ -1,3 +1,7 @@
+1.1: 02.03.2026
+- pridaná podpora pre TV kanály
+- opravy nahlásených pádov
+
 1.0: 21.02.2026
 - úvodná verejná verzia (experimentálana)
 - umožňuje prístup k službe stremio priamo z ArchivCZSK

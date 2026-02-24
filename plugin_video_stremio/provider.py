@@ -167,7 +167,7 @@ class StremioContentProvider(CommonContentProvider):
 				menu = self.create_ctx_menu()
 				menu.add_menu_item(self._("Remove from seen"), cmd=self.remove_last_seen, item_type=item_type, item_id=item_id)
 
-				if item_type == 'movie' and not item_id.startswith(self.collection_prefixes):
+				if item_type in ('movie', 'tv') and not item_id.startswith(self.collection_prefixes):
 					self.add_video(menu=menu, cmd=self.resolve_stream, video_title=item_data['title'], item_type=item_type, item_id=item_id, **item_data)
 				else:
 					self.add_dir(menu=menu, cmd=self.list_videos, addon_id=None, item_type=item_type, item_id=item_id, **item_data)
@@ -468,7 +468,7 @@ class StremioContentProvider(CommonContentProvider):
 			'info_labels': info_labels,
 		}
 
-		if item['type'] == 'movie' and not item['id'].startswith(self.collection_prefixes):
+		if item['type'] in ('movie', 'tv') and not item['id'].startswith(self.collection_prefixes):
 			self.add_video(menu=menu, cmd=self.resolve_stream, video_title=item['name'], item_type=item['type'], item_id=item['id'], addon_id=addon_id, cached_item_data=common_item_data, streams=item.get('streams'), **common_item_data)
 		else:
 			cached_item_data = common_item_data.copy()
@@ -802,8 +802,10 @@ class StremioContentProvider(CommonContentProvider):
 				del cached_item_data['item_type']
 				del cached_item_data['item_id']
 
-			self.watched.set(item_type, item_id)
-			self.save_cached_item(item_type, item_id, cached_item_data)
+			# add to watched all items except for TV channels
+			if item_type not in ('tv',):
+				self.watched.set(item_type, item_id)
+				self.save_cached_item(item_type, item_id, cached_item_data)
 		elif action.lower() == 'watching':
 			pass
 
@@ -816,7 +818,7 @@ class StremioContentProvider(CommonContentProvider):
 					pass
 
 			if item_id and position and self.get_setting('save-last-play-pos'):
-				if not duration or position < (duration * int(self.get_setting('last-play-pos-limit'))) // 100:
+				if duration and position < (duration * int(self.get_setting('last-play-pos-limit'))) // 100:
 					self.watched.set_last_position(item_id, position)
 				else:
 					# remove saved position from database
