@@ -1,3 +1,7 @@
+1.11 - 26.02.2026
+- added support for dynamic playready PSSHs
+- improved interface with mp4modify to be more clean (no more touching of internal python buffers)
+
 1.10 - 16.01.2026
 - add methods to provide one global instance if WV and PR CMDs
 
