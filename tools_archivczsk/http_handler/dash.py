@@ -209,7 +209,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			return
 
 		if response.status_code >= 400:
-			self.cp.log_error("Response code for DASH segment: %d" % response['status_code'])
+			self.cp.log_error("Response code for DASH segment: %d" % response.status_code)
 			request.send_response(403)
 
 		data = self.process_drm_protected_segment(segment_type, response.content, cache_data)
@@ -410,7 +410,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 					patch_segment_url(e)
 					cenc_key = kid_rep_mapping[e.get('id')]['key']
 					if cenc_key and dash_internal_decrypt != True:
-						self.cp.log_debug("Setting CENC key %s for representation %s" % (cenc_key, e.get('id')))
+						self.log_devel("Setting CENC key %s for representation %s" % (cenc_key, e.get('id')))
 						e.set('cenc_decryption_key', cenc_key)
 
 			# remove all adaptation sets except audio, video and subtitles

@@ -1,3 +1,6 @@
+3.7 - 26.02.2026
+    - added support for dynamic playready PSSHs
+
 3.6 - 17.02.2026
     - improved json dump functions
     - added possibility to remove cached data

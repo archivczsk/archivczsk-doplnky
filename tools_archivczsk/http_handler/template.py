@@ -133,7 +133,6 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler):
 
 	# #################################################################################################
 
-
 	def get_drm_keys(self, pssh_list, drm_info):
 		wv_drm_info = drm_info.get('wv',{})
 		pr_drm_info = drm_info.get('pr',{})
@@ -147,10 +146,9 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler):
 
 				k = self.pssh.get(p)
 				if k == None:
-					self.cp.log_debug("Requesting keys for pssh from %s license server" % p)
-
 					if drm_type == 'wv':
 						if wv_drm_info:
+							self.cp.log_debug("Requesting keys for WV pssh %s from license server" % p)
 							if wv_drm_info.get('privacy_mode', False):
 								k = self.wvdecrypt.get_content_keys(p, lambda lic_request: self.get_drm_license(wv_drm_info, lic_request), lambda cert_request: self.get_drm_license(wv_drm_info, cert_request))
 							else:
@@ -158,16 +156,17 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler):
 
 							if not k:
 								self.cp.log_error("Failed to get DRM keys for WV pssh %s" % p)
-						else:
+						elif not pr_drm_info:
 							self.cp.log_debug("No widevine license URL provided")
 
 					elif drm_type == 'pr':
 						if pr_drm_info:
+							self.cp.log_debug("Requesting keys for PR pssh %s from license server" % p)
 							k = self.prdecrypt.get_content_keys(p, lambda lic_request: self.get_drm_license(pr_drm_info, lic_request))
 
 							if not k:
 								self.cp.log_error("Failed to get DRM keys for PR pssh %s" % p)
-						else:
+						elif not wv_drm_info:
 							self.cp.log_debug("No playready license URL provided")
 
 					self.pssh[p] = k
@@ -175,7 +174,7 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler):
 						keys.extend(k)
 						self.cp.log_debug("Received %d keys for pssh %s" % (len(k), p))
 				else:
-					self.cp.log_debug("Keys for pssh %s found in cache" % p)
+					self.log_devel("Keys for pssh %s found in cache" % p)
 					keys.extend(k)
 
 		return keys
@@ -183,14 +182,23 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler):
 	# #################################################################################################
 
 	def get_mp4_pssh(self, data, pssh_list={}):
-		pssh, kid, drm_type = mp4_pssh_get(data)
+		wv_pssh, pr_pssh, kid = mp4_pssh_get(data)
 
-		self.log_devel("Received %s PSSH from mp4: %s" % (drm_type, pssh))
+		if wv_pssh:
+			self.log_devel("Received WV PSSH from mp4: %s" % wv_pssh)
+
+			if wv_pssh not in pssh_list['wv']:
+				pssh_list['wv'].append(wv_pssh)
+				self.cp.log_debug("Adding PSSH %s from mp4 to list of available WV PSSHs" % wv_pssh)
+
+		if pr_pssh:
+			self.log_devel("Received PR PSSH from mp4: %s" % pr_pssh)
+
+			if pr_pssh not in pssh_list['pr']:
+				pssh_list['pr'].append(pr_pssh)
+				self.cp.log_debug("Adding PSSH %s from mp4 to list of available PR PSSHs" % pr_pssh)
+
 		self.log_devel("Received KID from mp4: %s" % kid)
-
-		if pssh and pssh not in pssh_list[drm_type]:
-			pssh_list.append(pssh)
-			self.cp.log_debug("Adding PSSH %s from mp4 to list of available PSSHs" % pssh)
 
 		return kid
 
