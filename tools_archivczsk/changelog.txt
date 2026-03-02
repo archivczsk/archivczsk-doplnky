@@ -1,3 +1,6 @@
+3.8 - 02.03.2026
+    - fix broken updater of ArchivCZSK in version 3.5.4
+
 3.7 - 26.02.2026
     - added support for dynamic playready PSSHs
 
