@@ -27,6 +27,7 @@ from hashlib import md5
 import xml.etree.ElementTree as ET
 from .exception import LoginException, AddonErrorException
 from ..compat import urljoin
+from ..string_utils import int_to_roman, _I, _C
 
 # this import is needed to run shortcuts with serialised OrderedDict()
 from collections import OrderedDict
@@ -109,6 +110,205 @@ class CCPRequestsSession(requests.Session):
 			kwargs['verify'] = self.cp.get_setting('verify_ssl')
 
 		return requests.Session.request(self, method, url, **kwargs)
+
+
+# #################################################################################################
+
+class InfoLabels(object):
+	# universal formating class, that helps creating unified title and info_labels for movies, series and TV channels
+
+	def __init__(self, title, auto_genres=False, lazy_load=None):
+		self.auto_genres = auto_genres  # if True, then genres are automaticaly added to short_desc
+		self.lazy_load = lazy_load      # function that will be called to fill all needed data - used to load data before displaying it (it is not called for title formatting - all data for title needs to be already provided)
+		self.title = title              # channel name, movie name or series name or anything - this is the main item title
+		self.desc = None                # long description showed when displaying item info screen (if not set, then short_desc will be used)
+		self.short_desc = None          # short description showed when listing items (if not set, then desc will be used)
+		self.genre = None               # item genre as list of strings (or string as fallback for compatibility)
+		self.year = None                # item year (as number or as string containing year range in format year_start-year_stop)
+		self.rating = None              # item rating - use set_rating() method to set this variable to proper format
+		self.duration = None            # media item duration in seconds
+		self.filename = None            # filename used for download (will be auto generated if not set)
+		self.episode_name = None        # episode name - tv show name is set in title or epg_title (when TV channel view is used)
+		self.season_num = None          # season number (if knonw)
+		self.episode_num = None         # episode number (if known) - used to generate proper series and episodes code
+		self.img = None                 # path to the item image (or list of images)
+		self.img_cache = None           # If image cache should be used (default) or False if fresh image should be loaded every time image is displayed
+		self.epg_start = None           # EPG event start time as datetime object
+		self.epg_stop = None            # EPG event end time as datetime object
+		self.epg_title = None           # main EPG title - used when title holds TV channel name
+		self.adult = None               # True if the content is for adults and parental protection should be applied
+		self.active = True              # if False, then item will be grayed out to mark it as inactive
+
+	# #################################################################################################
+
+	def set_rating(self, rating, name=None):
+		if name:
+			if not self.rating:
+				self.rating = {}
+			self.rating[name] = rating
+		else:
+			self.rating = rating
+
+	# #################################################################################################
+
+	def __call__(self):
+		# creates info_labels dictionary
+		if self.lazy_load:
+			# if lazy_load is set, then wen need to call provided function than actualy returns real InfoLabel object
+			ret = self.lazy_load(self)
+			if isinstance(ret, dict):
+				# lazy load function returned directly dictionary
+				return ret
+			else:
+				# assuming, that lazy_load filled all missing data to this instance
+				pass
+
+		return self.export()
+
+	# #################################################################################################
+
+	def format_epg_title(self):
+		#assuming it is TV channel with EPG
+		if self.episode_name:
+			return '{}  {}'.format(self.title if self.active else _C('gray', self.title), _I('{}: {}'.format(self.epg_title, self.episode_name)))
+		else:
+			return '{}  {}'.format(self.title if self.active else _C('gray', self.title), _I(self.epg_title))
+
+	# #################################################################################################
+
+	def format_episode_title(self, short):
+		if short:
+			if self.episode_num:
+				return '{:02d}. {}'.format(self.episode_num, self.episode_name if self.active else _C('gray', self.episode_name))
+			else:
+				if self.active:
+					return self.episode_name
+				else:
+					return _C('gray', self.episode_name)
+		else:
+			# series name + episode title
+			ep_code, ep_code2 = self._get_epcode()
+			ret = '{}{}: {}'.format(self.title, ep_code, self.episode_name)
+
+			if self.active:
+				return ret
+			else:
+				return _C('gray', ret)
+
+	# #################################################################################################
+
+	def format_title(self, short=True):
+		if self.epg_title:
+			#assuming it is TV channel with EPG
+			return self.format_epg_title()
+		elif self.episode_name:
+			# assuming it is a episode
+			return self.format_episode_title(short)
+		elif self.year:
+			ret = '{} ({})'.format(self.title, self._get_year())
+			return ret if self.active else _C("gray", ret)
+		else:
+			return self.title if self.active else _C("gray", self.title)
+
+	# #################################################################################################
+
+	def format_archive_title(self, short=True):
+		if short:
+			epg_prefix = "{:02}:{:02} - {:02d}:{:02d}".format(self.epg_start.hour, self.epg_start.minute, self.epg_stop.hour, self.epg_stop.minute)
+		else:
+			epg_prefix = "{:02}.{:02}.{:04} {:02}:{:02} - {:02d}:{:02d}".format(self.epg_start.day, self.epg_start.month, self.epg_start.year, self.epg_start.hour, self.epg_start.minute, self.epg_stop.hour, self.epg_stop.minute)
+
+		if self.episode_name:
+			epg_title = '{}: {}'.format(self.epg_title, self.episode_name)
+		else:
+			epg_title = self.epg_title
+
+		if short:
+			return '{} - {}'.format(epg_prefix, _I(epg_title) if self.active else _C("gray", epg_title) )
+		else:
+			return '{} - {} ({})'.format(epg_prefix, _I(epg_title) if self.active else _C("gray", epg_title), self.title )
+
+	# #################################################################################################
+
+	def _get_epcode(self):
+		if self.episode_num:
+			episode = int(self.episode_num)
+
+			if self.season_num:
+				ep_code = ' %s (%d)' % (int_to_roman(self.season_num), episode)
+				ep_code2 = ' S%02dE%02d' % (int(self.season_num), episode)
+			else:
+				ep_code = ' (%d)' % episode
+				ep_code2 = ' E%02d' % episode
+
+		else:
+			ep_code = ''
+			ep_code2 = ''
+
+		return ep_code, ep_code2
+
+	# #################################################################################################
+
+	def _get_year(self):
+		if isinstance(self.year, str) and '-' in self.year:
+			# year range - pick only first year
+			year = self.year.split('-')[0].strip()
+		else:
+			year = self.year
+
+		return year or ''
+
+	# #################################################################################################
+
+	def export(self):
+		title = self.epg_title or self.title
+		filename = self.epg_title or self.title
+
+		if self.episode_num:
+			ep_code, ep_code2 = self._get_epcode()
+			title += ep_code
+			filename += ep_code2
+		else:
+			if self.year:
+				year = self._get_year()
+				title = '{} ({})'.format(title, year)
+				filename += '{} ({})'.format(filename, year)
+
+		if self.episode_name:
+			filename = '{}: {}'.format(filename, self.episode_name)
+
+		short_desc = self.short_desc or self.desc or ''
+
+		if isinstance(short_desc, list):
+			short_desc = '\n'.join(short_desc)
+
+		if self.auto_genres and self.genre:
+			if isinstance(self.genre, (list, set,)):
+				genre_str = ' / '.join(self.genre)
+			else:
+				genre_str = self.genre
+
+			short_desc = '[{}]\n{}'.format(genre_str, short_desc)
+
+		if self.epg_start != None and self.epg_stop != None:
+			short_desc = '[{} - {}]\n{}'.format(self.epg_start.strftime('%H:%M'), self.epg_stop.strftime('%H:%M'), short_desc)
+		elif self.epg_start != None:
+			short_desc = '[{}]\n{}'.format(self.epg_start.strftime('%d.%m.%Y - %H:%M'), short_desc)
+
+		return {
+			'title': title,
+			'short_plot': short_desc,
+			'plot': self.desc or self.short_desc,
+			'year': self.year,
+			'genre': self.genre,
+			'img': self.img,
+			'img_cache': self.img_cache,
+			'duration': self.duration,
+			'rating': self.rating,
+			'filename': filename,
+			'adult': self.adult
+		}
+
 
 
 # #################################################################################################
