@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_antiktv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-04 15:54+0100\n"
-"PO-Revision-Date: 2025-03-04 15:55+0100\n"
+"POT-Creation-Date: 2026-03-02 13:16+0100\n"
+"PO-Revision-Date: 2026-03-02 13:16+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -16,68 +16,68 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.5\n"
 
-#: plugin_video_antiktv/atk_client.py:184
+#: plugin_video_antiktv/atk_client.py:183
 msgid "Others"
 msgstr "Ostaní"
 
-#: plugin_video_antiktv/atk_client.py:429
+#: plugin_video_antiktv/atk_client.py:410
 msgid "Wrong login name"
 msgstr "Chybné přihlašovací jméno"
 
-#: plugin_video_antiktv/atk_client.py:431
+#: plugin_video_antiktv/atk_client.py:412
 msgid "Wrong communication data received from server"
 msgstr "Nesprávné komunikační data přijatá ze serveru"
 
-#: plugin_video_antiktv/atk_client.py:464
+#: plugin_video_antiktv/atk_client.py:445
 msgid "Request to remote server failed"
 msgstr "Požadavek na vzdálený server selhal"
 
-#: plugin_video_antiktv/atk_client.py:466
+#: plugin_video_antiktv/atk_client.py:447
 msgid "Login failed"
 msgstr "Přihlášení selhalo"
 
-#: plugin_video_antiktv/atk_client.py:468
+#: plugin_video_antiktv/atk_client.py:449
 msgid "Request is blocked by firewall"
 msgstr "Požadavek blokován firewallem"
 
-#: plugin_video_antiktv/atk_client.py:476
+#: plugin_video_antiktv/atk_client.py:457
 msgid "Unexpected return code from server"
 msgstr "Neočekávaný návratový kód ze serveru"
 
-#: plugin_video_antiktv/atk_client.py:523
+#: plugin_video_antiktv/atk_client.py:504
 msgid "Wrong login data provided or account doesn't exists."
 msgstr "Nesprávné přihlašovací údaje nebo konto neexistuje."
 
-#: plugin_video_antiktv/atk_client.py:528
+#: plugin_video_antiktv/atk_client.py:509
 msgid "Account is not yet activated. You need to activate it using instructions in SMS or E-mail entered by registration."
 msgstr "Konto není aktivováno. Musíte ho aktivovat podle instrukcí v SMS nebo E-mailu zadaném při registraci."
 
-#: plugin_video_antiktv/atk_client.py:530
+#: plugin_video_antiktv/atk_client.py:511
 #, python-brace-format
 msgid "You have reached the limit of maximum registered devices. Go to {my_antik}, section Devices and removed unused one."
 msgstr "Dosáhli jste limit maximálního počtu registrovaných zařízení. Choďte na {my_antik}, sekce Zařízení a vymažte nějaké nepotřebné."
 
-#: plugin_video_antiktv/atk_client.py:532
+#: plugin_video_antiktv/atk_client.py:513
 msgid "Account is marked as inactive."
 msgstr "Konto je označeno jako neaktivní."
 
-#: plugin_video_antiktv/atk_client.py:534
+#: plugin_video_antiktv/atk_client.py:515
 msgid "Unsupported login response code received from server"
 msgstr "Ze serveru byla přijata nepodporovaná odpověď na login požadavek"
 
-#: plugin_video_antiktv/atk_client.py:546
+#: plugin_video_antiktv/atk_client.py:527
 msgid "No username or password provided"
 msgstr "Přihlašovací jméno a heslo není zadané"
 
-#: plugin_video_antiktv/atk_client.py:648
+#: plugin_video_antiktv/atk_client.py:629
 msgid "Unknown channel type"
 msgstr "Neznámy typ kanálů"
 
-#: plugin_video_antiktv/atk_client.py:725
+#: plugin_video_antiktv/atk_client.py:706
 msgid "Failed to get stream URL"
 msgstr "Nepodařilo se získat URL streamu"
 
-#: plugin_video_antiktv/atk_client.py:730
+#: plugin_video_antiktv/atk_client.py:711
 msgid "Not available stream found for this channel"
 msgstr "Pro tento kanál není dostupný žádný stream"
 
@@ -86,31 +86,31 @@ msgstr "Pro tento kanál není dostupný žádný stream"
 msgid "Platform of your receiver is currently not supported. Please send log file {log_file} to {email} and we will try to add support for it ..."
 msgstr "Platforma vašeho přijímače není podporovaná. Prosím zašlete log soubor {log_file} na {email} a pokusíme se pro něj podporu přidat ..."
 
-#: plugin_video_antiktv/provider.py:20
+#: plugin_video_antiktv/provider.py:22
 msgid "Television"
 msgstr "Televize"
 
-#: plugin_video_antiktv/provider.py:21
+#: plugin_video_antiktv/provider.py:23
 msgid "Here you will find list of television channels"
 msgstr "Tady najdete seznam televizních kanálů"
 
-#: plugin_video_antiktv/provider.py:23
+#: plugin_video_antiktv/provider.py:25
 msgid "Radios"
 msgstr "Radia"
 
-#: plugin_video_antiktv/provider.py:24
+#: plugin_video_antiktv/provider.py:26
 msgid "Here you will find list of radio channels available with your subscription"
 msgstr "Obsahuje seznam rádií dostupných s vašim předplatným"
 
-#: plugin_video_antiktv/provider.py:26
+#: plugin_video_antiktv/provider.py:28
 msgid "Cameras"
 msgstr "Kamery"
 
-#: plugin_video_antiktv/provider.py:27
+#: plugin_video_antiktv/provider.py:29
 msgid "Cameras from Kosice or other places in Slovakia"
 msgstr "Kamery z Košic a ostatních míst Slovenska"
 
-#: plugin_video_antiktv/provider.py:35
+#: plugin_video_antiktv/provider.py:37
 msgid "All"
 msgstr "Všechny"
 
@@ -118,89 +118,93 @@ msgstr "Všechny"
 msgid "Play from beginning"
 msgstr "Přehrát od začátku"
 
-#: plugin_video_antiktv/provider.py:127
+#: plugin_video_antiktv/provider.py:66
+msgid "Show archive"
+msgstr "Zobrazit archiv"
+
+#: plugin_video_antiktv/provider.py:120
 msgid "By channels"
 msgstr "Podle kanálů"
 
-#: plugin_video_antiktv/provider.py:128
+#: plugin_video_antiktv/provider.py:121
 msgid "By genres"
 msgstr "Podle žánrů"
 
-#: plugin_video_antiktv/provider.py:361
+#: plugin_video_antiktv/provider.py:339
 msgid "Informations and settings"
 msgstr "Informace a nastavení"
 
-#: plugin_video_antiktv/provider.py:376
+#: plugin_video_antiktv/provider.py:354
 msgid "User account"
 msgstr "Poživatelské konto"
 
-#: plugin_video_antiktv/provider.py:377
+#: plugin_video_antiktv/provider.py:355
 msgid "Purchased packages"
 msgstr "Zakoupené balíky"
 
-#: plugin_video_antiktv/provider.py:378
+#: plugin_video_antiktv/provider.py:356
 msgid "Refresh channel list"
 msgstr "Obnovit seznam kanálů"
 
-#: plugin_video_antiktv/provider.py:379
+#: plugin_video_antiktv/provider.py:357
 msgid "Run EPG export to enigma or XML files"
 msgstr "Spustit export EPG do enigmy nebo do XML souborů"
 
-#: plugin_video_antiktv/provider.py:380
+#: plugin_video_antiktv/provider.py:358
 msgid "Request device identification code"
 msgstr "Vyžádat identifikaci tohoto zařízení"
 
-#: plugin_video_antiktv/provider.py:381
+#: plugin_video_antiktv/provider.py:359
 msgid "Logout from this device"
 msgstr "Odhlásit z tohoto zařízení"
 
-#: plugin_video_antiktv/provider.py:387
+#: plugin_video_antiktv/provider.py:365
 msgid "EPG export started"
 msgstr "EPG export byl spuštěn"
 
-#: plugin_video_antiktv/provider.py:394
+#: plugin_video_antiktv/provider.py:372
 msgid "Channel list was updated"
 msgstr "Seznam kanálů byl aktualizován"
 
-#: plugin_video_antiktv/provider.py:400
+#: plugin_video_antiktv/provider.py:378
 #, python-brace-format
 msgid "Device identification code is: {did}"
 msgstr "Identifikační kód tohoto zařízení je: {did}"
 
-#: plugin_video_antiktv/provider.py:418
+#: plugin_video_antiktv/provider.py:396
 #, python-brace-format
 msgid "To order more packages go to {antik_site}"
 msgstr "Pro objednávku dalších balíku choďte na {antik_site}"
 
-#: plugin_video_antiktv/provider.py:425
+#: plugin_video_antiktv/provider.py:403
 msgid "Do you really want to logout from this device?"
 msgstr "Opravdu se chcete odhlásit z tohoto zařízení?"
 
-#: plugin_video_antiktv/provider.py:433
+#: plugin_video_antiktv/provider.py:411
 msgid "You have been logged out from this device"
 msgstr "Byli jste odhlášen z tohoto zařízení"
 
-#: plugin_video_antiktv/provider.py:441
+#: plugin_video_antiktv/provider.py:419
 msgid "Customer"
 msgstr "Zákazník"
 
-#: plugin_video_antiktv/provider.py:442
+#: plugin_video_antiktv/provider.py:420
 msgid "Name"
 msgstr "Jméno"
 
-#: plugin_video_antiktv/provider.py:443
+#: plugin_video_antiktv/provider.py:421
 msgid "E-Mail"
 msgstr "E-Mail"
 
-#: plugin_video_antiktv/provider.py:444
+#: plugin_video_antiktv/provider.py:422
 msgid "Customer key"
 msgstr "Zákaznický klíč"
 
-#: plugin_video_antiktv/provider.py:446
+#: plugin_video_antiktv/provider.py:424
 msgid "This device identification"
 msgstr "Identifikace tohoto zařízení"
 
-#: plugin_video_antiktv/provider.py:449
+#: plugin_video_antiktv/provider.py:427
 msgid "Provider name"
 msgstr "Jméno poskytovatele"
 

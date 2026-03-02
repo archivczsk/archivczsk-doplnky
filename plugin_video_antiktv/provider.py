@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPModuleLiveTV, CPModuleArchive, CPModuleTemplate
+from tools_archivczsk.contentprovider.provider import InfoLabels
 from tools_archivczsk.string_utils import _I, _C, _B
 from tools_archivczsk.generator.lamedb import channel_name_normalise
 from tools_archivczsk.player.features import PlayerFeatures
+from tools_archivczsk.date_utils import iso8601_to_datetime
 
 from .atk_loader import ATKClient
 from .bouquet import AntikTVBouquetXmlEpgGenerator
@@ -49,39 +51,33 @@ class AntikTVModuleLiveTV(CPModuleLiveTV):
 				continue
 
 			menu = self.cp.create_ctx_menu()
+			il = InfoLabels(channel["name"])
 			try:
 				epg = epg_list[ channel["id_content"] ]["epg"][0]
 
-				if "subtitle" in epg:
-					epg_str = "  " + _I(str(epg["title"]) + ": " + str(epg["subtitle"]))
-					title = str(epg["title"]) + ": " + str(epg["subtitle"])
-				else:
-					epg_str = "  " + _I(epg["title"])
-					title = str(epg["title"])
-
-				time_prefix = self.cp.convert_time(epg["start"], epg["stop" ]) + "\n"
+				il.epg_title = str(epg["title"])
+				il.episode_name = epg.get('subtitle')
+				il.epg_start = iso8601_to_datetime(epg["start"])
+				il.epg_stop = iso8601_to_datetime(epg["stop"])
+				il.desc = str(epg.get("desc", ""))
 
 				if channel.get('archive'):
 					menu.add_media_menu_item(self.cp._("Play from beginning"), cmd=self.resolve_startover_url, id_content=channel['id_content'])
+					menu.add_menu_item(self.cp._("Show archive"), cmd=self.cp.get_module(AntikTVModuleArchive).get_archive_days_for_channels, channel_id=channel['id'], archive_hours=480)
 
 			except:
-				epg = { "title": str(channel.get('desc_short', '')), "desc": str(channel.get('desc_long', '')) }
-				epg_str = "  " + _I(channel.get('desc_short', ''))
-				title = str(channel.get('desc_short', ''))
-				time_prefix = ""
+				il.epg_title = str(channel.get('desc_short', ''))
+				il.short_desc = str(channel.get('desc_long', ''))
 
-			info_labels = {
-				'plot': time_prefix + str(epg.get("desc", "")),
-				'title': title,
-				'adult': channel['adult']
-			}
+			il.adult = channel['adult']
 
 			if channel["adult"] and self.cp.get_parental_settings('unlocked') == False:
 				img = channel.get("logo").replace('.png', '_608x608.png').replace('&w=50', '&w=608')
 			else:
 				img = channel.get("snapshot") or channel.get("logo").replace('.png', '_608x608.png').replace('&w=50', '&w=608')
+				il.img_cache = False
 
-			self.cp.add_video(channel["name"] + epg_str, img, info_labels=info_labels, menu=menu, download=False, cmd=self.resolve_play_url, channel_title=channel['name'], channel_id=channel['id'], epg_title=title)
+			self.cp.add_video(il.format_title(), img, il(), menu=menu, download=False, cmd=self.resolve_play_url, channel_title=channel['name'], channel_id=channel['id'], epg_title=il.epg_title)
 
 	# #################################################################################################
 
@@ -94,11 +90,8 @@ class AntikTVModuleLiveTV(CPModuleLiveTV):
 	def resolve_startover_url(self, id_content):
 		self.cp.ensure_supporter()
 		epg = self.cp.atk.get_actual_epg([id_content]).get(id_content, {}).get('epg',[{}])[0]
-
-		epg_start = datetime.strptime(epg["start"][:19], "%Y-%m-%dT%H:%M:%S")
-		epg_stop = datetime.strptime(epg["stop"][:19], "%Y-%m-%dT%H:%M:%S")
-
-		self.cp.get_module(AntikTVModuleArchive).get_archive_url( str(epg["title"]), id_content, epg_start, epg_stop)
+		if epg:
+			self.cp.get_module(AntikTVModuleArchive).get_archive_url( str(epg["title"]), id_content, iso8601_to_datetime(epg['start']), iso8601_to_datetime(epg['stop']))
 
 	# #################################################################################################
 
@@ -170,30 +163,22 @@ class AntikTVModuleArchive(CPModuleArchive):
 
 		for epg in epg_list:
 			if epg.get("archived", False):
-				# pridaj video
-				epg_start = datetime.strptime(epg["start"][:19], "%Y-%m-%dT%H:%M:%S")
-				epg_stop = datetime.strptime(epg["stop"][:19], "%Y-%m-%dT%H:%M:%S")
-				title = "{:02}:{:02} - {:02d}:{:02d}".format(epg_start.hour, epg_start.minute, epg_stop.hour, epg_stop.minute)
+				il = InfoLabels(channel['name'])
 
-				try:
-					title = title + " - " + _I(epg["title"])
-				except:
-					pass
+				il.epg_start = iso8601_to_datetime(epg['start'])
+				il.epg_stop = iso8601_to_datetime(epg['stop'])
+				il.epg_title = str(epg.get('title') or '')
+				il.desc = epg.get("description")
+				il.genre = epg.get('genres')
+				il.duration = epg.get('duration')
+				il.adult = channel.get('adult')
 
-				info_labels = {
-					'plot': epg.get("description"),
-					'title': epg["title"],
-					'genre': ', '.join(epg.get('genres', [])),
-					'duration': epg['duration'],
-					'adult': channel['adult']
-				}
-
-				if channel['adult'] and self.cp.get_parental_settings('unlocked') == False:
+				if channel.get('adult') and self.cp.get_parental_settings('unlocked') == False:
 					img = None
 				else:
 					img = epg.get('image')
 
-				self.cp.add_video(title, img, info_labels, cmd=self.get_archive_url, epg_title=str(epg["title"]), channel_id=channel['id_content'], epg_start=epg_start, epg_stop=epg_stop)
+				self.cp.add_video(il.format_archive_title(), img, il(), cmd=self.get_archive_url, epg_title=str(epg["title"]), channel_id=channel['id_content'], epg_start=il.epg_start, epg_stop=il.epg_stop)
 
 	# #################################################################################################
 
@@ -216,8 +201,6 @@ class AntikTVModuleArchive(CPModuleArchive):
 	# #################################################################################################
 
 	def parse_archives(self, archives, count, offset, simple_title=False, season_serie_id=None, next_tag=None, **next_tag_args):
-		result = []
-
 		for archive in archives:
 			info_labels = {}
 			img = None
@@ -261,10 +244,7 @@ class AntikTVModuleArchive(CPModuleArchive):
 					except:
 						pass
 
-				epg_start = datetime.strptime(archive["start"][:19], "%Y-%m-%dT%H:%M:%S")
-				epg_stop = datetime.strptime(archive["stop"][:19], "%Y-%m-%dT%H:%M:%S")
-
-				self.cp.add_video(title, img, info_labels, cmd=self.get_archive_url, epg_title=title, channel_id=archive["channel_id_content"], epg_start=epg_start, epg_stop=epg_stop)
+				self.cp.add_video(title, img, info_labels, cmd=self.get_archive_url, epg_title=title, channel_id=archive["channel_id_content"], epg_start=iso8601_to_datetime(archive["start"]), epg_stop=iso8601_to_datetime(archive["stop"]))
 
 		if count > offset + len(archives):
 			self.cp.add_next(next_tag, offset=offset + len(archives), **next_tag_args)
@@ -323,36 +303,31 @@ class AntikTVModuleArchive(CPModuleArchive):
 
 		for epg in epg_list:
 			if epg.get("archived", False):
-				epg_start = datetime.strptime(epg["start"][:19], "%Y-%m-%dT%H:%M:%S")
-				epg_stop = datetime.strptime(epg["stop"][:19], "%Y-%m-%dT%H:%M:%S")
-
-				title = "{:02}:{:02} - {:02d}:{:02d}".format(epg_start.hour, epg_start.minute, epg_stop.hour, epg_stop.minute)
+				epg_start = iso8601_to_datetime(epg["start"])
+				epg_stop = iso8601_to_datetime(epg["stop"])
 
 				if abs(int( time.mktime(epg_start.timetuple()) ) - event_start) > 60:
 #					self.cp.log_debug("Archive event %d - %d doesn't match: %s - %s" % (int(time.mktime(epg_start.timetuple())), int(time.mktime(epg_stop.timetuple())), title, epg.get("title") or '???'))
 					continue
 
-				try:
-					title = title + " - " + epg["title"]
-				except:
-					pass
+				il = InfoLabels(channel['name'])
 
-				self.cp.log_debug("Found matching archive event: %s" % title)
+				il.epg_start = epg_start
+				il.epg_stop = epg_stop
+				il.epg_title = str(epg.get('title') or '')
+				il.desc = epg.get("description")
+				il.genre = epg.get('genres')
+				il.duration = epg.get('duration')
+				il.adult = channel.get('adult')
 
-				info_labels = {
-					'plot': epg.get("description"),
-					'title': epg["title"],
-					'genre': ', '.join(epg.get('genres', [])),
-					'duration': epg['duration'],
-					'adult': channel['adult']
-				}
-
-				if channel['adult'] and self.cp.get_parental_settings('unlocked') == False:
+				if channel.get('adult') and self.cp.get_parental_settings('unlocked') == False:
 					img = None
 				else:
 					img = epg.get('image')
 
-				self.cp.add_video(title, img, info_labels, cmd=self.get_archive_url, epg_title=str(epg["title"]), channel_id=channel['id_content'], epg_start=epg_start, epg_stop=epg_stop)
+				self.cp.log_debug("Found matching archive event: %s" % il.epg_title)
+
+				self.cp.add_video(il.format_archive_title(), img, il(), cmd=self.get_archive_url, epg_title=str(epg["title"]), channel_id=channel['id_content'], epg_start=epg_start, epg_stop=epg_stop)
 				break
 
 

@@ -1,3 +1,7 @@
+2.32: 02.03.2026
+- vylepšené formátovanie popisu v EPG
+- možnosť prechodu priamo na archív programu cez kontextové menu
+
 2.31: 28.01.2026
 - podpora nového HTTP servera v ArchivCZSK 3.5.0
 
