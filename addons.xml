@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <addons>
 <addon id="plugin.video.aktualne" name="Aktuálně (video)" version="1.8" hash="73a61f12609e704164f094bcabfaae03" rhash="73a61f12609e704164f094bcabfaae03" />
-<addon id="plugin.video.antiktv" name="Antik TV" version="2.31" hash="9f17340d2bb4494e3a96c5c1416c8ed6" rhash="bae9d29d1b58a061fee314f6ce19ab78" />
+<addon id="plugin.video.antiktv" name="Antik TV" version="2.32" hash="8721d9f0b7fbd08109110df5b8b7e5a3" rhash="792eab8dfc08f0273280e3000a107a40" />
 <addon id="plugin.video.autosalontv" name="Autosalon" version="1.9" hash="e1836431641d28c728f02e2b0a0037e4" rhash="e1836431641d28c728f02e2b0a0037e4" />
 <addon id="plugin.video.disneyplus" name="Disney+" version="2.7" hash="9b4f337a451cca43d23e75f20a0f30a3" rhash="a99e06ffbb749b1277f64bb218645ebc" />
 <addon id="plugin.video.dupe" name="Dupe" version="1.4" hash="d2b303fd986c73cefd81a47fa88481ef" rhash="941c4536fc43494000f5a21000370c65" />
@@ -26,7 +26,7 @@
 <addon id="plugin.video.sosac.ph" name="Sosáč" version="2.12" hash="afcc179b2f1c2770c9ca33e19b25f39f" rhash="3dad6a97846538930af8e8d347807677" />
 <addon id="plugin.video.stalker" name="Stalker" version="1.10" hash="2cbc3ff62137ae282b96802c72dd28bd" rhash="2cbc3ff62137ae282b96802c72dd28bd" />
 <addon id="plugin.video.stream-cinema" name="Stream Cinema" version="3.30" hash="4760a8e25e0a95e5124afde188ef93c7" rhash="dd6484fc4ed50ab7700dc8e6f4af4da0" />
-<addon id="plugin.video.stremio" name="Stremio" version="1.0" hash="06f61f2562839dda5acfb7668f8501f9" rhash="f1dbe8a41ea455fcfc8bceee7ed059fa" />
+<addon id="plugin.video.stremio" name="Stremio" version="1.1" hash="a893d7995da5562ddfad1319ad38ee96" rhash="3a4a34f9f31f2100c48d7bc190c7e6a2" />
 <addon id="plugin.video.sweettv" name="Sweet.tv" version="1.25" hash="7943a5f77f7351c392468a0f924c8457" rhash="353764c28166233b14cecb532368cc1c" />
 <addon id="plugin.video.ta3.com" name="TA3.com" version="2.3" hash="e9e4ca73c961afa78477fc369612146b" rhash="a9a40d85f4a8afde8d197f5cab07cfb2" />
 <addon id="plugin.video.telly" name="Telly" version="1.9.0" hash="aae23747c70b0c3d6eac87563610d62c" rhash="468d71083682e63a0b456d54794e5f16" />
@@ -39,8 +39,8 @@
 <addon id="plugin.video.voyo" name="VOYO" version="1.11" hash="c95c3178540683c920cd4db36791bbdc" rhash="f6bb2a32ecafed563e1ebb7689614df4" />
 <addon id="plugin.video.webshare" name="Webshare.cz" version="1.5" hash="f5bab99a64256c82ddab83a6c7dae41c" rhash="27a62efdf5e34bd0b1f82f1eb2504ee2" />
 <addon id="plugin.video.yt" name="YouTube" version="2.8" hash="82af8af9148686b8d33e8d8c2d63f3ac" rhash="5d4560f88295137cfee8557ca8b08fcf" />
-<addon id="tools.archivczsk" name="Addons base" version="3.6" hash="6555a713690529eb1abb422a3750bdb9" rhash="56fdbffc3faa93dc4418dbfefbf3ed24" />
-<addon id="tools.cenc" name="Content encryption support" version="1.10" hash="0a07fb7a4da64058c0c66ad417235656" rhash="0a07fb7a4da64058c0c66ad417235656" />
+<addon id="tools.archivczsk" name="Addons base" version="3.7" hash="e2ac9fea807097494f53b1b49620cb75" rhash="17d9bf9d086dcf08385658fa603cb287" />
+<addon id="tools.cenc" name="Content encryption support" version="1.11" hash="d8c255e0b0f4d5c947c4cefbd9ddecf8" rhash="d8c255e0b0f4d5c947c4cefbd9ddecf8" />
 <addon id="tools.xbmc" name="xbmc addons helper" version="1.5" hash="3c13f673a3cb346c95846cbe7444f300" rhash="3c13f673a3cb346c95846cbe7444f300" />
 <addon id="plugin.video.archivo2tv" name="Archív O2TV" version="0" supported="no"><extension point="archivczsk.addon.metadata"><broken>Prevádzka služby O2TV bola ukončená. Pokračovaním je služba Oneplay.</broken></extension></addon>
 <addon id="plugin.video.eurosport" name="Eurosport player" version="0" supported="no"><extension point="archivczsk.addon.metadata"><broken>Prevádzka služby eurosport player bola ukončená.</broken></extension></addon>
