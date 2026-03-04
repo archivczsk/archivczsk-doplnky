@@ -1,3 +1,6 @@
+1.12 - 04.03.2026
+- binary libs for arm and mipsel compiled with older version of gcc
+
 1.11 - 26.02.2026
 - added support for dynamic playready PSSHs
 - improved interface with mp4modify to be more clean (no more touching of internal python buffers)
