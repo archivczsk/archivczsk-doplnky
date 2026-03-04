@@ -23,13 +23,14 @@ def iso8601_to_timestamp(iso_string, utc=False):
 		else:
 			tz_offset = datetime.timedelta(hours=-int(tz_hour), minutes=-int(tz_min))
 	elif iso_string[-5] in ('+', '-'):
-		# 2022-12-23T04:59:00+3600
-		tz_min = iso_string[-4:]
+		# 2022-12-23T04:59:00+0100
+		tz_hour = iso_string[-4:-2]
+		tz_min = iso_string[-2:]
 		iso_string = iso_string[:-5]
 		if iso_string[-5] == '+':
-			tz_offset = datetime.timedelta(minutes=int(tz_min))
+			tz_offset = datetime.timedelta(hours=int(tz_hour), minutes=int(tz_min))
 		else:
-			tz_offset = datetime.timedelta(minutes=-int(tz_min))
+			tz_offset = datetime.timedelta(hours=-int(tz_hour), minutes=-int(tz_min))
 	else:
 		tz_offset = datetime.timedelta(hours=0)
 

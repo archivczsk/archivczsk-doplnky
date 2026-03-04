@@ -1,3 +1,6 @@
+3.9 - 04.03.2026
+    - fixed broken iso8601 parser when extended format is used
+
 3.8 - 02.03.2026
     - fix broken updater of ArchivCZSK in version 3.5.4
 
