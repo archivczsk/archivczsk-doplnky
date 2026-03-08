@@ -336,17 +336,12 @@ class StremioClient(object):
 		}
 
 		self.clear_addons()
-		enable_adult = self.cp.get_setting('enable-adult')
 
 		resp = self.call_api('addonCollectionGet', data)
 		for addon_desc in (resp.get('addons') or []):
 			self.cp.log_debug("Loading addon: %s" % addon_desc.get('transportUrl'))
 			addon = StremioAddon(self.cp, addon_desc['transportUrl'], addon_desc.get('manifest'))
-
-			if not enable_adult and addon.is_adult():
-				self.cp.log_info("Ignoring adult addon: %s" % addon.addon_id)
-			else:
-				self.addons[addon.addon_id] = addon
+			self.addons[addon.addon_id] = addon
 
 	# ##################################################################################################################
 

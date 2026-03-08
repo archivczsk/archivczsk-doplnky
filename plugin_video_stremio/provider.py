@@ -2,7 +2,7 @@
 from datetime import date, datetime
 import json, base64, re, os
 from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
-from tools_archivczsk.contentprovider.provider import CommonContentProvider
+from tools_archivczsk.contentprovider.provider import CommonContentProvider, InfoLabels
 from tools_archivczsk.contentprovider.exception import AddonErrorException, AddonSilentExitException, AddonInfoException
 from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman
 from tools_archivczsk.date_utils import iso8601_to_datetime
@@ -42,9 +42,12 @@ class StremioContentProvider(CommonContentProvider):
 		self.service = StremioServiceClient(self)
 		self.watched = StremioWatched(self)
 		self.home_items = []
+		self.adult_addons = {}
+		self.adult_catalogs = {}
 
 		# hack to handle compatibility with ArchivCZSK, because in stremio 'movie' can be anything and here we need to know if it is single video or collection
 		self.collection_prefixes = ('tvdbc:',)
+		self.load_adults_data()
 
 	# ##################################################################################################################
 
@@ -125,18 +128,28 @@ class StremioContentProvider(CommonContentProvider):
 					self.log_error("Addon %s not found - ignoring home item %s" % (data['addon_id'], item['title']))
 					continue
 
+			il = InfoLabels(item.get('title'))
+
 			if item['type'] == 'addon':
-				info_labels = {
-					'plot': '[{}]\n{}'.format(addon.version, addon.description or '')
-				}
-				self.add_dir(item['title'], data.get('img'), info_labels, menu, cmd=self.list_addon_root, addon_id=data['addon_id'])
+				il.short_desc = [
+					'[{}]'.format(addon.version),
+					addon.description or ''
+				]
+				il.adult = self.is_adult(addon.addon_id)
+				self.add_adult_management(menu, addon.addon_id)
+				self.add_dir(il, data.get('img'), menu, cmd=self.list_addon_root, addon_id=data['addon_id'])
 			elif item['type'] == 'catalog_type':
-				self.add_dir(item['title'], info_labels={'plot': addon.name}, menu=menu, cmd=self.list_catalog_root, addon_id=data['addon_id'], cat_type=data['cat_type'])
+				il.short_desc = addon.name
+				il.adult = self.is_adult(data['addon_id'])
+				self.add_dir(il, menu=menu, cmd=self.list_catalog_root, addon_id=data['addon_id'], cat_type=data['cat_type'])
 			elif item['type'] == 'catalog':
-				info_labels = {
-					'plot': '{}\n{}'.format(addon.name, self._(data['cat_type'].capitalize()))
-				}
-				self.add_dir(item['title'], info_labels=info_labels, menu=menu, cmd=self.list_catalog, addon_id=data['addon_id'], cat_type=data['cat_type'], cat_id=data['cat_id'], params=item.get('params'), extra=data['extra'])
+				il.short_desc = [
+					addon.name,
+					self._(data['cat_type'].capitalize())
+				]
+				il.adult = self.is_adult(data['addon_id'], data['cat_type'], data['cat_id'])
+				self.add_adult_management(menu, addon.addon_id, data['cat_type'], data['cat_id'])
+				self.add_dir(il, menu=menu, cmd=self.list_catalog, addon_id=data['addon_id'], cat_type=data['cat_type'], cat_id=data['cat_id'], params=item.get('params'), extra=data['extra'])
 			else:
 				self.log_error("Unsupported home item: %s" % item['type'])
 
@@ -162,15 +175,15 @@ class StremioContentProvider(CommonContentProvider):
 			return
 
 		for item_id in self.watched.get(item_type):
-			item_data = self.load_cached_item(item_type, item_id)
-			if item_data:
+			il = self.load_cached_item(item_type, item_id)
+			if il.title:
 				menu = self.create_ctx_menu()
 				menu.add_menu_item(self._("Remove from seen"), cmd=self.remove_last_seen, item_type=item_type, item_id=item_id)
 
 				if item_type in ('movie', 'tv') and not item_id.startswith(self.collection_prefixes):
-					self.add_video(menu=menu, cmd=self.resolve_stream, video_title=item_data['title'], item_type=item_type, item_id=item_id, **item_data)
+					self.add_video(il, menu=menu, cmd=self.resolve_stream, video_title=il.title, item_type=item_type, item_id=item_id, streams=getattr(il, 'streams', None))
 				else:
-					self.add_dir(menu=menu, cmd=self.list_videos, addon_id=None, item_type=item_type, item_id=item_id, **item_data)
+					self.add_dir(il, menu=menu, cmd=self.list_videos, addon_id=None, item_type=item_type, item_id=item_id)
 
 
 	# #################################################################################################
@@ -232,6 +245,64 @@ class StremioContentProvider(CommonContentProvider):
 
 	# #################################################################################################
 
+	def load_adults_data(self):
+		adult = self.load_cached_data('adult')
+		self.adult_addons = { a: True for a in adult.get('addons',[])}
+		self.adult_catalogs = { c: True for c in adult.get('catalogs',[])}
+
+	# #################################################################################################
+
+	def add_to_adult(self, addon_id, cat_type=None, cat_id=None):
+		if cat_id:
+			key = '{}:{}:{}'.format(addon_id, cat_type, cat_id)
+			self.adult_catalogs[key] = True
+			self.update_cached_data('adult', {'catalogs': list(self.adult_catalogs.keys())})
+		else:
+			self.adult_addons[addon_id] = True
+			self.update_cached_data('adult', {'addons': list(self.adult_addons.keys())})
+
+		self.refresh_screen()
+
+	# #################################################################################################
+
+	def remove_from_adult(self, addon_id, cat_type=None, cat_id=None):
+		if cat_id:
+			key = '{}:{}:{}'.format(addon_id, cat_type, cat_id)
+			if key in self.adult_catalogs:
+				del self.adult_catalogs[key]
+				self.update_cached_data('adult', {'catalogs': list(self.adult_catalogs.keys())})
+		else:
+			if addon_id in self.adult_addons:
+				del self.adult_addons[addon_id]
+				self.update_cached_data('adult', {'addons': list(self.adult_addons.keys())})
+
+		self.refresh_screen()
+
+	# #################################################################################################
+
+	def is_adult(self, addon_id, cat_type=None, cat_id=None, check_manifest=True):
+		if check_manifest:
+			addon = self.stremio.get_addon(addon_id)
+
+			if (addon and addon.is_adult()) or self.adult_addons.get(addon_id):
+				return True
+
+		if cat_id:
+			return self.adult_catalogs.get( '{}:{}:{}'.format(addon_id, cat_type, cat_id) )
+		else:
+			return self.adult_addons.get(addon_id)
+
+	# #################################################################################################
+
+	def add_adult_management(self, menu, addon_id, cat_type=None, cat_id=None):
+		if self.get_parental_settings('unlocked'):
+			if self.is_adult(addon_id, cat_type, cat_id, check_manifest=False):
+				menu.add_menu_item(self._("Unmark as adult"), self.remove_from_adult, addon_id=addon_id, cat_type=cat_type, cat_id=cat_id)
+			else:
+				menu.add_menu_item(self._("Mark as adult"), self.add_to_adult, addon_id=addon_id, cat_type=cat_type, cat_id=cat_id)
+
+	# #################################################################################################
+
 	def search(self, keyword, search_id, page=0):
 		self.log_debug("Search called with keyword: '%s' and search_id: %s" % (keyword, search_id))
 
@@ -264,6 +335,7 @@ class StremioContentProvider(CommonContentProvider):
 		addon = self.stremio.get_addon(search_id['id'])
 		extra = search_id.get('extra')
 		supports_filtering = self.stremio.supports_filtering(extra)
+		is_adult = self.is_adult(addon.addon_id, search_id['type'], search_id['cat_id'])
 
 		items = addon.search(search_id['type'], search_id['cat_id'], keyword, search_id.get('params') or self.stremio.build_default_params(extra), page=page)
 		for item in items:
@@ -273,7 +345,7 @@ class StremioContentProvider(CommonContentProvider):
 			else:
 				menu = {}
 
-			self.add_item_uni(search_id['id'], item, menu)
+			self.add_item_uni(search_id['id'], item, menu, is_adult)
 
 		# page == None -> disable paging
 		if page != None and len(items) >= STREMIO_PAGE_SIZE and self.stremio.supports_paging(extra):
@@ -283,12 +355,17 @@ class StremioContentProvider(CommonContentProvider):
 
 	def list_addons(self):
 		for a in self.stremio.get_catalog_addons():
-			info_labels = {
-				'plot': '[{}]\n{}'.format(a.version, a.description or '')
-			}
+			il = InfoLabels(a.name)
+			il.short_desc = [
+				'[{}]'.format(a.version),
+				a.description or ''
+			]
+			il.adult = self.is_adult(a.addon_id)
+
 			menu = self.create_ctx_menu()
 			menu.add_menu_item(self._("Add to home screen"), cmd=self.add_to_home, item_type='addon', item_name=a.name, item_data={'addon_id': a.addon_id, 'img': a.logo})
-			self.add_dir(a.name, a.logo, info_labels, menu, cmd=self.list_addon_root, addon_id=a.addon_id)
+			self.add_adult_management(menu, a.addon_id)
+			self.add_dir(a.name, a.logo, il(), menu, cmd=self.list_addon_root, addon_id=a.addon_id)
 
 	# #################################################################################################
 
@@ -305,7 +382,9 @@ class StremioContentProvider(CommonContentProvider):
 		for t in types:
 			menu = self.create_ctx_menu()
 			menu.add_menu_item(self._("Add to home screen"), cmd=self.add_to_home, item_type='catalog_type', item_name=self._(t.capitalize()), item_data={'addon_id': addon_id, 'cat_type': t})
-			self.add_dir(self._(t.capitalize()), info_labels={'plot': addon.name}, menu=menu, cmd=self.list_catalog_root, addon_id=addon_id, cat_type=t)
+			il = InfoLabels(self._(t.capitalize()))
+			il.short_desc = addon.name
+			self.add_dir(il, menu=menu, cmd=self.list_catalog_root, addon_id=addon_id, cat_type=t)
 
 	# #################################################################################################
 
@@ -326,16 +405,20 @@ class StremioContentProvider(CommonContentProvider):
 				extra = c.get('extra')
 				title = c.get('name') or c.get('id')
 
-				info_labels = {
-					'plot': '{}\n{}'.format(self.stremio.get_addon(aid).name, self._(c['type'].capitalize()))
-				}
+				il = InfoLabels(title)
+				il.short_desc = [
+					self.stremio.get_addon(aid).name,
+					self._(c['type'].capitalize())
+				]
+				il.adult = self.is_adult(aid, c['type'], c['id'])
 
 				if self.stremio.supports_search(extra, True):
-					self.add_search_dir(title, self.create_search_id(aid, c['type'], c['id']), info_labels=info_labels)
+					self.add_search_dir(il, self.create_search_id(aid, c['type'], c['id']))
 				else:
 					menu = self.create_ctx_menu()
 					menu.add_menu_item(self._("Add to home screen"), cmd=self.add_to_home, item_type='catalog', item_name=title, item_data={'addon_id': aid, 'cat_type': c['type'], 'cat_id': c['id'], 'extra': extra})
-					self.add_dir(title, info_labels=info_labels, menu=menu, cmd=self.list_catalog, addon_id=aid, cat_type=c['type'], cat_id=c['id'], extra=extra)
+					self.add_adult_management(menu, aid, c['type'], c['id'])
+					self.add_dir(il, menu=menu, cmd=self.list_catalog, addon_id=aid, cat_type=c['type'], cat_id=c['id'], extra=extra)
 
 	# #################################################################################################
 
@@ -347,6 +430,7 @@ class StremioContentProvider(CommonContentProvider):
 		items = addon.get_catalog(cat_type, cat_id, params=params or self.stremio.build_default_params(extra), page=page)
 
 		supports_filtering = self.stremio.supports_filtering(extra)
+		is_adult = self.is_adult(addon_id, cat_type, cat_id)
 
 		for item in items:
 			if supports_filtering:
@@ -354,7 +438,7 @@ class StremioContentProvider(CommonContentProvider):
 				menu.add_menu_item(self._("Advanced filtering"), cmd=self.advanced_filter, addon_id=addon_id, cat_type=cat_type, cat_id=cat_id, extra=extra)
 			else:
 				menu = {}
-			self.add_item_uni(addon_id, item, menu)
+			self.add_item_uni(addon_id, item, menu, is_adult)
 
 		if len(items) >= STREMIO_PAGE_SIZE and self.stremio.supports_paging(extra):
 			self.add_next(cmd=self.list_catalog, addon_id=addon_id, cat_type=cat_type, cat_id=cat_id, extra=extra, page=page+1)
@@ -432,8 +516,7 @@ class StremioContentProvider(CommonContentProvider):
 
 	# #################################################################################################
 
-	def add_item_uni(self, addon_id, item, menu=None):
-		plot = item.get('description') or ''
+	def add_item_uni(self, addon_id, item, menu=None, is_adult=False):
 		genres = item.get('genres') or item.get('genre')
 
 		if not genres:
@@ -442,45 +525,29 @@ class StremioContentProvider(CommonContentProvider):
 
 		if genres:
 			genres = [g.strip().capitalize() for g in genres]
-			plot = '[{}]\n{}'.format(' / '.join(genres), plot)
 
-		year = unicode(item.get('releaseInfo') or item.get('released') or '').split('-')[0].split('–')[0] or None
-
-		info_labels={
-			'plot': plot,
-			'genre': genres,
-			'year': year,
-			'rating': item.get('imdbRating'),
-			'title': item['name']
-		}
-
-		title = item['name']
-		if year:
-			title = '{} ({})'.format(title, year)
+		il = InfoLabels(item['name'], auto_genres=True)
+		il.year = unicode(item.get('releaseInfo') or item.get('released') or '').split('-')[0].split('–')[0] or None
+		il.desc = item.get('description')
+		il.genre = genres
+		il.rating = item.get('imdbRating')
+		il.img = item.get('poster') or item.get('logo')
+		il.adult = is_adult or None
 
 		if item.get('trailers'):
 			menu = menu or self.create_ctx_menu()
 			menu.add_media_menu_item(self._("Play trailer"), cmd=self.resolve_trailer, trailers=item['trailers'])
 
-		common_item_data = {
-			'title': title,
-			'img': item.get('poster') or item.get('logo'),
-			'info_labels': info_labels,
-		}
-
 		if item['type'] in ('movie', 'tv') and not item['id'].startswith(self.collection_prefixes):
-			self.add_video(menu=menu, cmd=self.resolve_stream, video_title=item['name'], item_type=item['type'], item_id=item['id'], addon_id=addon_id, cached_item_data=common_item_data, streams=item.get('streams'), **common_item_data)
+			self.add_video(il, menu=menu, cmd=self.resolve_stream, video_title=item['name'], item_type=item['type'], item_id=item['id'], addon_id=addon_id, cached_item_data=il, streams=item.get('streams'))
 		else:
-			cached_item_data = common_item_data.copy()
-			cached_item_data.update({
-				'item_type': item['type'],
-				'item_id': item['id']
-			})
-			self.add_dir(menu=menu, cmd=self.list_videos, addon_id=addon_id, item_type=item['type'], item_id=item['id'], cached_item_data=cached_item_data, **common_item_data)
+			il.item_type = item['type']
+			il.item_id = item['id']
+			self.add_dir(il, menu=menu, cmd=self.list_videos, addon_id=addon_id, item_type=item['type'], item_id=item['id'], cached_item_data=il)
 
 	# #################################################################################################
 
-	def list_videos(self, addon_id, item_type, item_id, cached_item_data=None, **kwargs):
+	def list_videos(self, addon_id, item_type, item_id, cached_item_data=None):
 		if addon_id:
 			addon = self.stremio.get_addon(addon_id)
 			meta = addon.get_meta(item_type, item_id)
@@ -503,6 +570,7 @@ class StremioContentProvider(CommonContentProvider):
 				return
 
 		seasons = sorted(set([v.get('season') for v in (meta.get('videos') or [])]))
+		meta['adult'] = self.is_adult(addon_id, item_type, item_id)
 
 		if len(seasons) == 1:
 			return self.list_meta(addon_id, meta, seasons[0], cached_item_data)
@@ -525,45 +593,26 @@ class StremioContentProvider(CommonContentProvider):
 			genres = [g.get('name','').capitalize() for g in filter(lambda x: (x.get('category') or '').lower() == 'genres', meta.get('links') or [])]
 
 		for v in filter(lambda x: x.get('season') == season, (meta.get('videos') or [])):
-			info_labels = {
-				'title': meta['name'],
-				'plot': v.get('description'),
-				'year': (v.get('releaseInfo') or v.get('released') or '').split('-')[0].split('–')[0] or None,
-				'genre': genres
-			}
-
-			info_labels['episode'] = v.get('episode')
-			info_labels['epname'] = v.get('name') or v.get('title')
-
-			if season:
-				info_labels['season'] = season
-				ep_code = ' %s (%d)' % (int_to_roman(season), v['episode'])
-				ep_code2 = ' S%02dE%02d' % (season, int(v['episode']))
-			elif v.get('episode'):
-				ep_code = ' (%d)' % v['episode']
-				ep_code2 = ' E%02d' % int(v['episode'])
-			else:
-				ep_code = ''
-				ep_code2 = ''
-
-			info_labels['title'] += ep_code
-			info_labels['filename'] = '{}{}: {}'.format(meta['name'], ep_code2, info_labels['epname'])
+			il = InfoLabels(meta['name'], auto_genres=True)
+			il.desc = v.get('description')
+			il.year = unicode(v.get('releaseInfo') or v.get('released') or '').split('-')[0].split('–')[0] or None,
+			il.genre = genres
+			il.episode_name = v.get('name') or v.get('title')
+			il.episode_num = v.get('episode')
+			il.season_num = season
+			il.adult = meta['adult']
 
 			aired = v.get('firstAired') or v.get('released')
 
 			if aired:
 				aired = iso8601_to_datetime(aired)
-				available = aired < datetime.now()
-			else:
-				available = True
+				il.active = aired < datetime.now()
 
-			img = v.get('poster') or v.get('thumbnail') or meta.get('poster') or meta.get('logo')
-			if available:
-				title = '{:02d}. {}'.format(v['episode'], info_labels['epname']) if v.get('episode') else info_labels['epname']
-				self.add_video(title, img, info_labels, cmd=self.resolve_stream, video_title=v.get('name') or v.get('title'), item_type=meta['type'], addon_id=addon_id, item_id=v['id'], cached_item_data=cached_item_data, streams=v.get('streams'))
+			il.img = v.get('poster') or v.get('thumbnail') or meta.get('poster') or meta.get('logo')
+			if il.active:
+				self.add_video(il, cmd=self.resolve_stream, video_title=v.get('name') or v.get('title'), item_type=meta['type'], addon_id=addon_id, item_id=v['id'], cached_item_data=cached_item_data, streams=v.get('streams'))
 			else:
-				title = '{:02d}. {}'.format(v['episode'], _C('gray', info_labels['epname'])) if v.get('episode') else _C('gray', info_labels['epname'])
-				self.add_video(title, img, info_labels)
+				self.add_video(il)
 
 	# #################################################################################################
 
@@ -587,7 +636,7 @@ class StremioContentProvider(CommonContentProvider):
 		self.ensure_supporter()
 		if streams:
 			if cached_item_data:
-				cached_item_data['streams'] = streams
+				cached_item_data.streams = streams
 
 			streams = [ (addon_id, s,) for s in streams]
 		else:
@@ -602,13 +651,15 @@ class StremioContentProvider(CommonContentProvider):
 
 			return self.call_another_addon('plugin.video.yt', youtube_params, 'resolve')
 
+		enable_adult = self.get_parental_settings('unlocked')
 		if addon_id and not streams:
 			# addon that provided catalog has priority to resolve streams
 			addon = self.stremio.get_addon(addon_id)
 			try:
-				for s in (addon.get_streams(item_type, item_id) or []):
-					if s:
-						streams.append( (addon, s,) )
+				if enable_adult or not self.is_adult(addon.addon_id):
+					for s in (addon.get_streams(item_type, item_id) or []):
+						if s:
+							streams.append( (addon, s,) )
 			except:
 				self.log_error("Failed to resolve stream using addon %s" % addon)
 				self.log_exception()
@@ -617,10 +668,11 @@ class StremioContentProvider(CommonContentProvider):
 		if not streams:
 			for a in self.stremio.get_stream_addons(item_id):
 				try:
-					self.log_debug("Requesting streams from %s" % a)
-					for s in (a.get_streams(item_type, item_id) or []):
-						if s:
-							streams.append( (a, s,))
+					if enable_adult or not self.is_adult(a.addon_id):
+						self.log_debug("Requesting streams from %s" % a)
+						for s in (a.get_streams(item_type, item_id) or []):
+							if s:
+								streams.append( (a, s,))
 				except:
 					self.log_error("Failed to resolve stream using addon %s" % a)
 					self.log_exception()
@@ -791,16 +843,13 @@ class StremioContentProvider(CommonContentProvider):
 		subs = data_item.get('subs') or []
 		item_id = data_item.get('item_id')
 		item_type = data_item.get('item_type')
-		cached_item_data = data_item.get('cached_item_data') or {}
+		cached_item_data = data_item.get('cached_item_data')
 
 		if action.lower() == 'play':
-			if 'item_type' in cached_item_data and 'item_id' in cached_item_data:
+			if cached_item_data and hasattr(cached_item_data, 'item_type') and hasattr(cached_item_data, 'item_id'):
 				# this part is valid for series and channels - replace episode/video type+id by series/channel type+id
-				cached_item_data = cached_item_data.copy()
-				item_type = cached_item_data['item_type']
-				item_id = cached_item_data['item_id']
-				del cached_item_data['item_type']
-				del cached_item_data['item_id']
+				item_type = cached_item_data.item_type
+				item_id = cached_item_data.item_id
 
 			# add to watched all items except for TV channels
 			if item_type not in ('tv',):
@@ -833,13 +882,30 @@ class StremioContentProvider(CommonContentProvider):
 		if item_type and item_id:
 			cache_name = '{}_{}'.format(item_type, item_id).replace('/', '')
 			if item_data == None or not self.load_cached_data(cache_name):
-				self.log_debug("Saving cached data: %s" % json.dumps(item_data))
-				self.save_cached_data(cache_name, item_data)
+				s = item_data.save(blacklist=['item_type', 'item_id']) if item_data != None else None
+#				self.log_debug("Saving cached data: %s" % json.dumps(s))
+				self.save_cached_data(cache_name, s)
 
 	# #################################################################################################
 
 	def load_cached_item(self, item_type, item_id):
 		cache_name = '{}_{}'.format(item_type, item_id).replace('/', '')
-		return self.load_cached_data(cache_name)
+		item_data = self.load_cached_data(cache_name)
+
+		il = InfoLabels(None)
+		if 'info_labels' in item_data:
+			# backward compatiblity with version <= 1.1
+			info = item_data['info_labels']
+			il.load({
+				'title': info.get('title'),
+				'desc': info.get('plot'),
+				'year': info.get('year'),
+				'img': item_data.get('img'),
+				'rating': info.get('rating')
+			})
+		else:
+			il.load(item_data)
+
+		return il
 
 	# #################################################################################################

@@ -12,7 +12,6 @@
 	<setting label="Start subtitles automatically" id="subs-autostart" type="keyenum" values="always;Always|undubbed;When undubbed|never;Never" default="undubbed" />
 	<setting label="Start forced subtitles automatically" id="forced-subs-autostart" type="bool" default="true" />
 	<setting label="Language of dubbed entries" id="dubbed-lang" type="keyenum" values="auto;Auto|cs;CZ|sk;SK|cs+sk;CZ &amp; SK|sk+cs;SK &amp; CZ|en;EN|de;DE|hu;HU|pl;PL" default="auto" />
-	<setting label="Enable adult content" id="enable-adult" type="bool" default="true" />
 <!--		<setting label="Filter streams by language" id="stream-lang-filter" type="keyenum" values="all;All|cs+sk;CZ &amp; SK|cs;CZ|sk;SK|en;EN" default="all" />
 		<setting label="Minimal offered stream quality" id="min-quality" type="keyenum" values="0;All|720;720p|1080;1080p|2160;4k" default="720" />
 		<setting label="Maximal offered stream quality" id="max-quality" type="keyenum" values="720;720p|1080;1080p|2160;4k|4320;8k" default="2160" />

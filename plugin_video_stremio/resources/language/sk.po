@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_stremio\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-21 20:24+0100\n"
-"PO-Revision-Date: 2026-02-21 20:24+0100\n"
+"POT-Creation-Date: 2026-03-10 11:33+0100\n"
+"PO-Revision-Date: 2026-03-10 11:34+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -16,117 +16,125 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.5\n"
 
-#: plugin_video_stremio/provider.py:21
+#: plugin_video_stremio/provider.py:26
 msgid "Movie"
 msgstr "Film"
 
-#: plugin_video_stremio/provider.py:22
+#: plugin_video_stremio/provider.py:27
 msgid "Series"
 msgstr "Seriály"
 
-#: plugin_video_stremio/provider.py:23
+#: plugin_video_stremio/provider.py:28
 msgid "Channel"
 msgstr "Kanál"
 
-#: plugin_video_stremio/provider.py:24
+#: plugin_video_stremio/provider.py:29
 msgid "Other"
 msgstr "Iné"
 
-#: plugin_video_stremio/provider.py:93
+#: plugin_video_stremio/provider.py:101
 msgid "Last viewed"
 msgstr "Posledné sledované"
 
-#: plugin_video_stremio/provider.py:96
+#: plugin_video_stremio/provider.py:104
 msgid "Home"
 msgstr "Domov"
 
-#: plugin_video_stremio/provider.py:97
+#: plugin_video_stremio/provider.py:105
 msgid "Discover"
 msgstr "Preskúmať"
 
-#: plugin_video_stremio/provider.py:107
+#: plugin_video_stremio/provider.py:115
 msgid "Remove from home screen"
 msgstr "Odstrániť z domovskej obrazovky"
 
-#: plugin_video_stremio/provider.py:110
+#: plugin_video_stremio/provider.py:118
 msgid "Move up"
 msgstr "Posunúť hore"
 
-#: plugin_video_stremio/provider.py:113
+#: plugin_video_stremio/provider.py:121
 msgid "Move down"
 msgstr "Posunúť dole"
 
-#: plugin_video_stremio/provider.py:145
+#: plugin_video_stremio/provider.py:163
 msgid "Addons"
 msgstr "Doplnky"
 
-#: plugin_video_stremio/provider.py:163
+#: plugin_video_stremio/provider.py:181
 msgid "Remove from seen"
 msgstr "Odstrániť z videných"
 
-#: plugin_video_stremio/provider.py:203
+#: plugin_video_stremio/provider.py:221
 msgid "Enter home screen item name"
 msgstr "Zadajte názov položky domovskej obrazovky"
 
-#: plugin_video_stremio/provider.py:243
+#: plugin_video_stremio/provider.py:300
+msgid "Unmark as adult"
+msgstr "Zrušiť označenie ako obsah pre dospelých"
+
+#: plugin_video_stremio/provider.py:302
+msgid "Mark as adult"
+msgstr "Označiť ako obsah pre dospelých"
+
+#: plugin_video_stremio/provider.py:319
 msgid "Select what to search"
 msgstr "Vyberte, čo chcete vyhľadávať"
 
-#: plugin_video_stremio/provider.py:267 plugin_video_stremio/provider.py:349
-#: plugin_video_stremio/provider.py:393
+#: plugin_video_stremio/provider.py:344 plugin_video_stremio/provider.py:438
+#: plugin_video_stremio/provider.py:482
 msgid "Advanced filtering"
 msgstr "Rozšírené filtrovanie"
 
-#: plugin_video_stremio/provider.py:285 plugin_video_stremio/provider.py:302
-#: plugin_video_stremio/provider.py:332
+#: plugin_video_stremio/provider.py:366 plugin_video_stremio/provider.py:384
+#: plugin_video_stremio/provider.py:419
 msgid "Add to home screen"
 msgstr "Pridať na domovskú obrazovku"
 
-#: plugin_video_stremio/provider.py:371
+#: plugin_video_stremio/provider.py:460
 msgid "Select filtering"
 msgstr "Vyberte filtrovanie"
 
-#: plugin_video_stremio/provider.py:458
+#: plugin_video_stremio/provider.py:539
 msgid "Play trailer"
 msgstr "Prehrať trailer"
 
-#: plugin_video_stremio/provider.py:507
+#: plugin_video_stremio/provider.py:580
 msgid "Special"
 msgstr "Špeciálne"
 
-#: plugin_video_stremio/provider.py:509
+#: plugin_video_stremio/provider.py:582
 msgid "Season"
 msgstr "Sezóna"
 
-#: plugin_video_stremio/provider.py:629
+#: plugin_video_stremio/provider.py:686
 msgid "No playable stream found for this item"
 msgstr "Pre túto položku nebol nájdený žiadny prehrateľný stream"
 
-#: plugin_video_stremio/provider.py:645
+#: plugin_video_stremio/provider.py:702
 msgid "Please select stream"
 msgstr "Prosím vyberte stream"
 
-#: plugin_video_stremio/provider.py:728
+#: plugin_video_stremio/provider.py:785
 msgid "Trailers"
 msgstr "Upútavky"
 
-#: plugin_video_stremio/provider.py:734
+#: plugin_video_stremio/provider.py:791
 msgid "Trailer"
 msgstr "Upútavka"
 
-#: plugin_video_stremio/stremio.py:144
+#: plugin_video_stremio/stremio.py:151
 msgid "Error by calling stremio addon API"
 msgstr "Chyba pri volaní API stremio doplnku"
 
-#: plugin_video_stremio/stremio.py:287
+#: plugin_video_stremio/stremio.py:294
 msgid "Error by calling stremio API"
 msgstr "Chyba pri volaní rozhrania stremio API"
 
-#: plugin_video_stremio/stremio.py:314
+#: plugin_video_stremio/stremio.py:321
 msgid "Login failed. Probably wrong username or password provided."
 msgstr "Prihlásenie sa nepodarilo. Pravdepodobne ste zadali nesprávne používateľské meno alebo heslo."
 
-#: plugin_video_stremio/stremio.py:318
+#: plugin_video_stremio/stremio.py:325
 msgid "Login failed. Wrong response data received."
 msgstr "Prihlásenie sa nepodarilo. Boli prijaté nesprávne údaje odpovede."
 
