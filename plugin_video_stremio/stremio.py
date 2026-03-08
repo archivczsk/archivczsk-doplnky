@@ -142,7 +142,13 @@ class StremioAddon(object):
 
 		if 'error' in resp_json:
 			self.cp.log_error('Error response returned by calling %s\n%s' % (url, json.dumps(resp_json)))
-			raise AddonErrorException('{}: {}'.format(self._("Error by calling stremio addon API"), resp_json['error'].get('message')))
+
+			if isinstance(resp_json.get('error'), dict):
+				err_str = resp_json['error'].get('message')
+			else:
+				err_str = None
+
+			raise AddonErrorException('{}: {}'.format(self._("Error by calling stremio addon API"), err_str or resp_json.get('error')))
 
 		self.cache.put(url, resp_json)
 		return resp_json or {}
