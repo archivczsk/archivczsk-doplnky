@@ -19,10 +19,12 @@ from tools_archivczsk.date_utils import iso8601_to_timestamp
 
 from tools_archivczsk.websocket import create_connection, WebSocketException
 
-############### init ################
+DUMP_REQUESTS = False
+
+# #################################################################################################
 
 class Oneplay(object):
-	APP_VERSION = 'R6.19'
+	APP_VERSION = 'R8.14'
 
 	def __init__(self, cp):
 		self.cp = cp
@@ -129,7 +131,7 @@ class Oneplay(object):
 		if self.access_token:
 			headers['Authorization'] = 'Bearer ' + self.access_token
 
-		url = 'https://http.cms.jyxo.cz/api/v1.6/' + endpoint
+		url = 'https://http.cms.jyxo.cz/api/v1.8/' + endpoint
 
 		request_id = str(uuid.uuid4())
 		client_id = str(uuid.uuid4())
@@ -194,24 +196,38 @@ class Oneplay(object):
 			self.cp.log_exception()
 			json_response = {}
 
-		if json_response.get('result',{}).get('status') != 'OkAsync':
+		if json_response.get('result',{}).get('status') == 'OkAsync':
+			while True:
+				try:
+					json_response = json.loads(ws.recv())
+				except WebSocketException as e:
+					ws.close()
+					raise AddonErrorException('{}:\n{}'.format(self._("Failed to read data from server"), str(e)))
+
+				if json_response.get('schema') != 'Ping':
+					break
+
+			if DUMP_REQUESTS:
+				dump_json_request(resp, json_response)
+		elif json_response.get('result',{}).get('status') == 'Ok':
+			if DUMP_REQUESTS:
+				dump_json_request(resp)
+
+			json_response = {
+				'response': {
+					'result': {
+						'status': 'Ok',
+					},
+					'data': json_response.get('data') or {}
+				}
+			}
+		else:
 			ws.close()
 			self.cp.log_error("Wrong response received:\n%s" % resp.text)
 			self.showError(self._("Received wrong response from server"))
 
-		while True:
-			try:
-				json_response = json.loads(ws.recv())
-			except WebSocketException as e:
-				ws.close()
-				raise AddonErrorException('{}:\n{}'.format(self._("Failed to read data from server"), str(e)))
-
-			if json_response.get('schema') != 'Ping':
-				break
-
 		ws.close()
 
-#		dump_json_request(resp, json_response)
 		if json_response.get('schema') == 'Event':
 			resp_data = json_response.get('eventData')
 		else:
@@ -792,6 +808,9 @@ class Oneplay(object):
 	# #################################################################################################
 
 	def mylist_add( self, content_id ):
+		if isinstance(content_id, dict):
+			content_id = content_id.get('contentId') or content_id
+
 		payload = {
 			"changes": [ {
 				"schema":"UserMyListChange",
@@ -809,7 +828,9 @@ class Oneplay(object):
 	# #################################################################################################
 
 	def get_stream_url(self, content_id, start_mode=None, is_md=False):
-		if is_md:
+		if isinstance(content_id, dict):
+			payload = content_id
+		elif is_md:
 			payload = {
 				"criteria":{
 					"schema":"MDPlaybackCriteria",
@@ -923,16 +944,19 @@ class Oneplay(object):
 	# #################################################################################################
 
 	def get_archive_link(self, epg_id):
-		if not epg_id.startswith('epgitem.'):
+		if isinstance(epg_id, dict) or not epg_id.startswith('epgitem.'):
 			try:
-				payload = {
-					"contentId":epg_id
-				}
+				if isinstance(epg_id, dict):
+					payload = epg_id
+				else:
+					payload = {
+						"contentId":epg_id
+					}
 				response = self.call_api('page.content.display', payload)
 
 				for block in response['layout']['blocks']:
 					if block['schema'] == 'ContentHeaderBlock':
-						epg_id = block.get('mainAction',{}).get('action',{}).get('params',{}).get('payload',{}).get('criteria',{}).get('contentId') or epg_id
+						epg_id = block.get('mainAction',{}).get('action',{}).get('params',{}).get('payload',{}).get('criteria',{}).get('contentId') or block.get('mainAction',{}).get('action',{}).get('params',{}).get('payload',{}) or epg_id
 						break
 			except Exception as e:
 				self.cp.log_error("Failed to get content ID from %s using page.content.display: %s" % (epg_id, str(e)))
@@ -955,7 +979,7 @@ class Oneplay(object):
 		for e in epg_entry.get('actions',[]):
 			if e.get('params',{}).get('schema') == 'PageContentDisplayApiAction':
 				if e['params']['contentType'] in ('show', 'movie'):
-					epg_id = e['params']['payload']['deeplink']['epgItem']
+					epg_id = e['params']['payload']
 				else:
 					epg_id = e['params']['payload']['contentId']
 
@@ -1050,13 +1074,20 @@ class Oneplay(object):
 								})
 
 							elif item['action']['params']['schema'] == 'ContentPlayApiAction':
-								ret.append({
-									'type': 'video',
-									'id': item['action']['params']['payload']['criteria']['contentId'],
-									'title':  item['title'],
-									'img': self._get_img(item),
-								})
-
+								if item['action']['params']['payload']['criteria']['schema'] == 'ContentCriteria':
+									ret.append({
+										'type': 'video',
+										'id': item['action']['params']['payload']['criteria']['contentId'],
+										'title':  item['title'],
+										'img': self._get_img(item),
+									})
+								else:
+									ret.append({
+										'type': 'video',
+										'id': item['action']['params']['payload'],
+										'title':  item['title'],
+										'img': self._get_img(item),
+									})
 							else:
 								self.cp.log_error("Unsupported item type: %s" % item['action']['params']['schema'])
 
@@ -1209,7 +1240,7 @@ class Oneplay(object):
 
 					if season_select == False:
 						for item in carousel['tiles']:
-							item_id = item.get('action', {}).get('params',{}).get('payload',{}).get('criteria',{}).get('contentId') or item.get('action', {}).get('params',{}).get('payload',{}).get('contentId')
+							item_id = item.get('action', {}).get('params',{}).get('payload',{}).get('criteria',{}).get('contentId') or item.get('action', {}).get('params',{}).get('payload',{}).get('contentId') or item.get('action', {}).get('params',{}).get('payload',{})
 							if item_id:
 								ret.append({
 									'type': 'video',
