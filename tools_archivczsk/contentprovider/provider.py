@@ -141,6 +141,26 @@ class InfoLabels(object):
 
 	# #################################################################################################
 
+	def save(self, blacklist=None):
+		blacklist = blacklist or []
+		d = InfoLabels(None)
+		ret = {}
+
+		for k, v in self.__dict__.items():
+			if k not in blacklist and v != getattr(d, k, None):
+				ret[k] = v
+		return ret
+
+	# #################################################################################################
+
+	def load(self, d, blacklist=None):
+		blacklist = blacklist or []
+		for k, v in d.items():
+			if k not in blacklist:
+				setattr(self, k, v)
+
+	# #################################################################################################
+
 	def set_rating(self, rating, name=None):
 		if name:
 			if not self.rating:
