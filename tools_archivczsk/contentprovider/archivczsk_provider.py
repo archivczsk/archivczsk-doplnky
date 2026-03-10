@@ -7,6 +7,7 @@ from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 from Plugins.Extensions.archivCZSK.version import version as archivczsk_version
 from Plugins.Extensions.archivCZSK.engine.httpserver import archivCZSKHttpServer
 from .exception import LoginException, AddonErrorException, AddonInfoException, AddonWarningException, AddonSilentExitException
+from .provider import InfoLabels
 from ..string_utils import _B
 from collections import OrderedDict
 from hashlib import md5
@@ -624,11 +625,21 @@ class ArchivCZSKContentProvider(object):
 		if is_string(info_labels):
 			info_labels = {'plot': info_labels}
 
+		if isinstance(title, InfoLabels):
+			img = img or title.img
+			info_labels = info_labels or title()
+			title = title.format_title()
+
 		client.add_dir(title, self.action(cmd, **cmd_args), image=img, infoLabels=info_labels, menuItems=menu, video_item=False, dataItem=data_item, traktItem=trakt_item)
 
 	# #################################################################################################
 
 	def add_search_dir(self, title=None, search_id=None, img=None, info_labels={}, save_history=True):
+		if isinstance(title, InfoLabels):
+			img = img or title.img
+			info_labels = info_labels or title()
+			title = title.format_title()
+
 		client.add_dir(title if title else _B(_('Search')), self.action(self.search_list, search_id=search_id, save_history=save_history), image=img if img else _icon('search.png'), infoLabels=info_labels, search_folder=True)
 
 	# #################################################################################################
@@ -681,6 +692,11 @@ class ArchivCZSKContentProvider(object):
 
 		if is_string(info_labels):
 			info_labels = {'plot': info_labels}
+
+		if isinstance(title, InfoLabels):
+			img = img or title.img
+			info_labels = info_labels or title()
+			title = title.format_title()
 
 		if cmd == None or callable(cmd):
 			item = client.create_directory_it(title, self.action(cmd, **cmd_args), image=img, infoLabels=info_labels, menuItems=menu, video_item=True, dataItem=data_item, traktItem=trakt_item, download=download)

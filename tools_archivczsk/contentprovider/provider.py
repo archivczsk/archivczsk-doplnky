@@ -27,7 +27,7 @@ from hashlib import md5
 import xml.etree.ElementTree as ET
 from .exception import LoginException, AddonErrorException
 from ..compat import urljoin
-from ..string_utils import int_to_roman, _I, _C
+from ..string_utils import int_to_roman, _I, _C, _B
 
 # this import is needed to run shortcuts with serialised OrderedDict()
 from collections import OrderedDict
@@ -138,6 +138,8 @@ class InfoLabels(object):
 		self.epg_title = None           # main EPG title - used when title holds TV channel name
 		self.adult = None               # True if the content is for adults and parental protection should be applied
 		self.active = True              # if False, then item will be grayed out to mark it as inactive
+		self.watched = False            # if set, it will mark item as watched
+		self.fully_watched = True       # if set, then watched item will by marked as "fully watched" - usefull for series
 
 	# #################################################################################################
 
@@ -187,6 +189,17 @@ class InfoLabels(object):
 
 	# #################################################################################################
 
+	def _mark_watched(self):
+		if self.watched:
+			if self.fully_watched:
+				return _B(' *')
+			else:
+				return  ' *'
+		else:
+			return ''
+
+	# #################################################################################################
+
 	def format_epg_title(self):
 		#assuming it is TV channel with EPG
 		if self.episode_name:
@@ -199,21 +212,15 @@ class InfoLabels(object):
 	def format_episode_title(self, short):
 		if short:
 			if self.episode_num:
-				return '{:02d}. {}'.format(self.episode_num, self.episode_name if self.active else _C('gray', self.episode_name))
+				return '{:02d}. {}{}'.format(self.episode_num, self.episode_name if self.active else _C('gray', self.episode_name), self._mark_watched())
 			else:
-				if self.active:
-					return self.episode_name
-				else:
-					return _C('gray', self.episode_name)
+				return '{}{}'.format(self.episode_name if self.active else _C('gray', self.episode_name), self._mark_watched())
 		else:
 			# series name + episode title
 			ep_code, ep_code2 = self._get_epcode()
 			ret = '{}{}: {}'.format(self.title, ep_code, self.episode_name)
 
-			if self.active:
-				return ret
-			else:
-				return _C('gray', ret)
+			return '{}{}'.format(ret if self.active else _C('gray', ret), self._mark_watched())
 
 	# #################################################################################################
 
@@ -224,11 +231,13 @@ class InfoLabels(object):
 		elif self.episode_name:
 			# assuming it is a episode
 			return self.format_episode_title(short)
-		elif self.year:
-			ret = '{} ({})'.format(self.title, self._get_year())
-			return ret if self.active else _C("gray", ret)
 		else:
-			return self.title if self.active else _C("gray", self.title)
+			if self.year:
+				ret = '{} ({})'.format(self.title, self._get_year())
+			else:
+				ret = self.title
+
+			return '{}{}'.format(ret if self.active else _C("gray", ret), self._mark_watched())
 
 	# #################################################################################################
 
