@@ -627,6 +627,8 @@ class StremioContentProvider(CommonContentProvider):
 
 	def format_stream_title(self, addon, sinfo, idx):
 		# TODO: create nice stream title - it is also possible to create custom formating based on addon ID
+		if hasattr(addon, 'format_stream_title'):
+			return addon.format_stream_title(sinfo)
 
 		return '{}: {}'.format(clean_str(sinfo.get('name')) or addon.name, clean_str(sinfo['title'].split('\n', 1)[1] if '\n' in sinfo.get('title','') else sinfo.get('title','') ) or sinfo.get('description') or idx+1)
 

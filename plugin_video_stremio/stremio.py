@@ -6,7 +6,7 @@ from tools_archivczsk.cache import ExpiringLRUCache
 from tools_archivczsk.compat import urlparse, urlunparse, parse_qs, urlencode, urljoin, quote_plus
 from collections import OrderedDict
 from tools_archivczsk.cache import ExpiringLRUCache
-import time
+import time, os
 import json, re
 
 NON_BMP_RE = re.compile(u"[^\U00000000-\U0000218f\U00002c00-\U0000d7ff\U0000f900-\U0000ffff]", flags=re.UNICODE)
@@ -37,10 +37,13 @@ class StremioAddon(object):
 		self.parse_catalogs(manifest.get('catalogs'))
 		self.log_debug("addon succesfully loaded")
 		self.log_debug("Supported resources: %s" % json.dumps(self.resources))
+		self.i = 0
 
 		if self.addon_id == 'org.stremio.local' and self.cp.get_setting('streaming-server'):
 			# update IP address of local addon
 			self.url = self.url.replace('127.0.0.1', self.cp.get_setting('streaming-server'))
+
+		self.install_title_formatter()
 
 	def log_debug(self, s):
 		self.cp.log_debug("[{}] {}".format(self, s))
@@ -181,6 +184,16 @@ class StremioAddon(object):
 
 		resp = self.call_api('stream', cat_type, item_id)
 
+		# if resp.get('streams'):
+		# 	while True:
+		# 		self.i += 1
+		# 		name = '/tmp/{}_streams_{:03d}.json'.format(self.addon_id, self.i)
+		# 		if not os.path.exists(name):
+		# 			with open(name, 'w') as f:
+		# 				json.dump(resp['streams'], f)
+
+		# 			break
+
 		streams = []
 		# perform some basic filtering here, to filter out unsupported streams
 		for s in resp.get('streams') or []:
@@ -215,6 +228,33 @@ class StremioAddon(object):
 
 		resp = self.call_api('subtitles', cat_type, item_id, params)
 		return resp.get('subtitles') or []
+
+	def install_title_formatter(self):
+		if self.name == 'AIOStreams':
+			self.format_stream_title = self.format_title_aiostreams
+
+	def format_title_aiostreams(self, stream):
+		# compatible with google drive formatter
+		name = stream['name']
+		cached = '⚡' in name
+		name = re.sub('⚡', '+', name)
+		name = re.sub(' (Your Media) ', '', name, flags=re.IGNORECASE)
+		name = re.sub(' \(.*\)$', '', name)
+
+		description = stream['description']
+		description = re.sub('📁.*[\n]*', '', description)
+		description = re.sub('☁︎.*\n', '', description)
+		description = re.sub('Name: .*\n', '', description)
+		description = re.sub('ℹ️.*\n', '', description)
+		description = re.sub('⚡', '+', description)
+		description = re.sub('⏱️ .* ', '', description)
+		if cached:
+			description = re.sub('👥 \d+', '', description)
+		else:
+			description = re.sub('👥 ', ' S:', description)
+		description = re.sub(' \(.* Mbps\)', '', description)
+
+		return '{}: {}'.format(re.sub('\s+', ' ', clean_str(name)), re.sub('\s+', ' ', clean_str(description)))
 
 # ##################################################################################################################
 
