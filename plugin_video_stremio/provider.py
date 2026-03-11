@@ -13,6 +13,8 @@ from tools_archivczsk.compat import urlparse, urlunparse, parse_qs, urlencode, u
 from .stremio import StremioClient, StremioServiceClient, STREMIO_PAGE_SIZE, clean_str
 from .watched import StremioWatched
 
+import threading
+
 try:
 	unicode
 except:
@@ -668,16 +670,32 @@ class StremioContentProvider(CommonContentProvider):
 
 
 		if not streams:
-			for a in self.stremio.get_stream_addons(item_id):
+			lock = threading.Lock()
+			def get_streams(a):
 				try:
-					if enable_adult or not self.is_adult(a.addon_id):
-						self.log_debug("Requesting streams from %s" % a)
-						for s in (a.get_streams(item_type, item_id) or []):
+					self.log_debug("Requesting streams from %s" % a)
+					ret = a.get_streams(item_type, item_id) or []
+
+					with lock:
+						for s in ret:
 							if s:
 								streams.append( (a, s,))
+
+					self.log_debug("Received %d streams from %s" % (len(ret), a))
 				except:
 					self.log_error("Failed to resolve stream using addon %s" % a)
 					self.log_exception()
+
+			threads = []
+			for a in self.stremio.get_stream_addons(item_id):
+				if enable_adult or not self.is_adult(a.addon_id):
+					threads.append(threading.Thread(target=get_streams, args=(a,)))
+
+			for t in threads:
+				t.start()
+
+			for t in threads:
+				t.join()
 
 		if not self.service.is_available():
 			# stremio service is not available, so filter out torrents, because they are not playable
