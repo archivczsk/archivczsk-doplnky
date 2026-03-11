@@ -6,13 +6,15 @@ from tools_archivczsk.cache import ExpiringLRUCache
 from tools_archivczsk.compat import urlparse, urlunparse, parse_qs, urlencode, urljoin, quote_plus
 from collections import OrderedDict
 from tools_archivczsk.cache import ExpiringLRUCache
+from tools_archivczsk.string_utils import _I
 import time, os
 import json, re
 
 NON_BMP_RE = re.compile(u"[^\U00000000-\U0000218f\U00002c00-\U0000d7ff\U0000f900-\U0000ffff]", flags=re.UNICODE)
+SPACE_NORMALIZE_RE = re.compile(r'\s+', flags=re.UNICODE)
 
 def clean_str(s):
-	return NON_BMP_RE.sub(u"", s).replace('\n', ' ').strip() if s else s
+	return SPACE_NORMALIZE_RE.sub(u' ', NON_BMP_RE.sub(u"", s).replace('\n', ' ')).strip() if s else s
 
 # ##################################################################################################################
 
@@ -232,14 +234,18 @@ class StremioAddon(object):
 	def install_title_formatter(self):
 		if self.name == 'AIOStreams':
 			self.format_stream_title = self.format_title_aiostreams
+		elif self.addon_id == 'org.stremio.skcz-torrents':
+			self.format_stream_title = self.format_title_czsktorrent
+		elif self.addon_id == 'org.stream-cinema.online':
+			self.format_stream_title = self.format_title_sc
 
 	def format_title_aiostreams(self, stream):
 		# compatible with google drive formatter
-		name = stream['name']
+		name = stream['name'].strip()
 		cached = '⚡' in name
 		name = re.sub('⚡', '+', name)
-		name = re.sub(' (Your Media) ', '', name, flags=re.IGNORECASE)
-		name = re.sub(' \(.*\)$', '', name)
+		name = re.sub('(Your Media)', '', name, flags=re.IGNORECASE)
+		name = re.sub(r' \(.*\)$', '', name)
 
 		description = stream['description']
 		description = re.sub('📁.*[\n]*', '', description)
@@ -249,12 +255,36 @@ class StremioAddon(object):
 		description = re.sub('⚡', '+', description)
 		description = re.sub('⏱️ .* ', '', description)
 		if cached:
-			description = re.sub('👥 \d+', '', description)
+			description = re.sub(r'👥 \d+', '', description)
 		else:
 			description = re.sub('👥 ', ' S:', description)
-		description = re.sub(' \(.* Mbps\)', '', description)
+		description = re.sub(r' \(.* Mbps\)', '', description)
 
-		return '{}: {}'.format(re.sub('\s+', ' ', clean_str(name)), re.sub('\s+', ' ', clean_str(description)))
+		return (re.sub(r'\s+', ' ', clean_str(name)), re.sub(r'\s+', ' ', clean_str(description)),)
+
+	def format_title_czsktorrent(self, stream):
+		name = clean_str(stream['name'])
+		title = stream['title']
+		if '[' in title:
+			title = '[' + re.sub(r'.*?\[', '', title, 1)
+
+		title = re.sub('👤 ', ' S:', title)
+		title = re.sub('💾 ', ' Size:', title)
+		title = re.sub('📝 ', ' Lang:', title)
+
+		return (name, clean_str(title),)
+
+	def format_title_sc(self, stream):
+		description = stream['description']
+		description = re.sub(r'🕒\[.*?\]', '', description)
+		description = clean_str(description)
+
+		name = stream['name']
+
+		if 'Dub: ✅' in name:
+			name = stream['name'].replace('Dub: ✅', ', '.join([_I(l) for l in ('CZ', 'SK') if ' {}'.format(l) in description]))
+
+		return (clean_str(name), description,)
 
 # ##################################################################################################################
 
@@ -514,7 +544,7 @@ class StremioServiceClient(object):
 
 		# this can take quite long time
 		self.cp.log_info("Probe for hash %s started" % info_hash)
-		ret = self.call_api('hlsv2/probe', params)
+		ret = self.call_api('hlsv2/probe', params) or {}
 		self.cp.log_info("Probe finished - found streams:\n%s" % json.dumps(ret.get('streams')))
 
 		return ret.get('streams')

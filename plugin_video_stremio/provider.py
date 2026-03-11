@@ -406,6 +406,7 @@ class StremioContentProvider(CommonContentProvider):
 #				self.log_debug("Processing %s catalog: %s" % (aid, c))
 				extra = c.get('extra')
 				title = c.get('name') or c.get('id')
+				title = clean_str(title)
 
 				il = InfoLabels(title)
 				il.short_desc = [
@@ -526,7 +527,7 @@ class StremioContentProvider(CommonContentProvider):
 			genres = [g.get('name') for g in filter(lambda x: (x.get('category') or '').lower() == 'genres', item.get('links') or [])]
 
 		if genres:
-			genres = [g.strip().capitalize() for g in genres]
+			genres = [g.strip().capitalize() for g in genres if g]
 
 		il = InfoLabels(item['name'], auto_genres=True)
 		il.year = unicode(item.get('releaseInfo') or item.get('released') or '').split('-')[0].split('–')[0] or None
@@ -592,7 +593,7 @@ class StremioContentProvider(CommonContentProvider):
 
 		if not genres:
 			# get genres from links
-			genres = [g.get('name','').capitalize() for g in filter(lambda x: (x.get('category') or '').lower() == 'genres', meta.get('links') or [])]
+			genres = [g.get('name','').capitalize() for g in filter(lambda x: (x.get('category') or '').lower() == 'genres', meta.get('links') or []) if g]
 
 		for v in filter(lambda x: x.get('season') == season, (meta.get('videos') or [])):
 			il = InfoLabels(meta['name'], auto_genres=True)
@@ -630,9 +631,12 @@ class StremioContentProvider(CommonContentProvider):
 	def format_stream_title(self, addon, sinfo, idx):
 		# TODO: create nice stream title - it is also possible to create custom formating based on addon ID
 		if hasattr(addon, 'format_stream_title'):
-			return addon.format_stream_title(sinfo)
+			try:
+				return addon.format_stream_title(sinfo)
+			except:
+				self.log_exception()
 
-		return '{}: {}'.format(clean_str(sinfo.get('name')) or addon.name, clean_str(sinfo['title'].split('\n', 1)[1] if '\n' in sinfo.get('title','') else sinfo.get('title','') ) or sinfo.get('description') or idx+1)
+		return (clean_str(sinfo.get('name')) or addon.name, clean_str(sinfo['title'].split('\n', 1)[1] if '\n' in sinfo.get('title','') else sinfo.get('title','') ) or clean_str(sinfo.get('description')) or idx+1,)
 
 	# #################################################################################################
 
