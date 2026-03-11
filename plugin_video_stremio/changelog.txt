@@ -1,3 +1,12 @@
+1.2: 12.03.2026
+- výrazne vylepšená rodičovská kontrola:
+    * napojenie na globálnu rodičovskú kontrolu v ArchivCZSK
+    * pridaná možnosť označiť doplnok alebo katalóg ako "pre dospelých" cez kontextové menu
+    * prezerané položky automaticky preberajú príznak "pre dospelých" z katalógov
+- paralelné vyhľadávanie streamov (zrýchli vyhľadávanie ak máte viac doplnkov s podporou streamov)
+- vylepšené formátovanie názvov streamov pre niektoré známe doplnky
+- pridaná podpora pre zoznam trackerov pri prehrávaní torrentov
+
 1.1: 02.03.2026
 - pridaná podpora pre TV kanály
 - opravy nahlásených pádov

@@ -3,7 +3,7 @@
 from tools_archivczsk.contentprovider.exception import AddonErrorException, LoginException
 from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.cache import ExpiringLRUCache
-from tools_archivczsk.compat import urlparse, urlunparse, parse_qs, urlencode, urljoin, quote_plus
+from tools_archivczsk.compat import urlparse, urlunparse, parse_qs, urlencode, urljoin, quote_plus, urlencode
 from collections import OrderedDict
 from tools_archivczsk.cache import ExpiringLRUCache
 from tools_archivczsk.string_utils import _I
@@ -537,9 +537,9 @@ class StremioServiceClient(object):
 
 		return False
 
-	def probe(self, info_hash, file_idx=-1):
+	def probe(self, info_hash, file_idx=-1, trackers=None):
 		params = {
-			'mediaURL': '{}{}/{}'.format(self.get_address(), info_hash, file_idx)
+			'mediaURL': self.get_stream(info_hash, file_idx, trackers)
 		}
 
 		# this can take quite long time
@@ -549,9 +549,15 @@ class StremioServiceClient(object):
 
 		return ret.get('streams')
 
-	def get_stream(self, info_hash, file_idx=-1):
+	def get_stream(self, info_hash, file_idx=-1, trackers=None):
 		# TODO: add support for HLS
 		# for now return direct stream without transcoding
-		return '{}{}/{}'.format(self.get_address(), info_hash, file_idx)
+
+		if trackers:
+			params = '?' + urlencode( [ ('tr', t,) for t in trackers ])
+		else:
+			params = ''
+
+		return '{}{}/{}{}'.format(self.get_address(), info_hash, file_idx, params)
 
 # ##################################################################################################################

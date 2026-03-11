@@ -756,8 +756,9 @@ class StremioContentProvider(CommonContentProvider):
 			# torrent
 			info_hash = stream[1].get('infoHash')
 			file_idx = stream[1].get('fileIdx', -1)
-			if self.service.probe(info_hash, file_idx):
-				self.add_play(video_title, self.service.get_stream(info_hash, file_idx), settings=settings, data_item=data_item)
+			trackers = stream[1].get('sources')
+			if self.service.probe(info_hash, file_idx, trackers):
+				self.add_play(video_title, self.service.get_stream(info_hash, file_idx, trackers), settings=settings, data_item=data_item)
 		else:
 			# direct HTTP stream
 			url = stream[1]['url']
