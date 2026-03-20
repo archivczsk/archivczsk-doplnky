@@ -598,7 +598,7 @@ class StremioContentProvider(CommonContentProvider):
 		for v in filter(lambda x: x.get('season') == season, (meta.get('videos') or [])):
 			il = InfoLabels(meta['name'], auto_genres=True)
 			il.desc = v.get('description')
-			il.year = unicode(v.get('releaseInfo') or v.get('released') or '').split('-')[0].split('–')[0] or None,
+			il.year = unicode(v.get('releaseInfo') or v.get('released') or '').split('-')[0].split('–')[0] or None
 			il.genre = genres
 			il.episode_name = v.get('name') or v.get('title')
 			il.episode_num = v.get('episode')
