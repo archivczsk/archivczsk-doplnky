@@ -210,15 +210,17 @@ class InfoLabels(object):
 	# #################################################################################################
 
 	def format_episode_title(self, short):
+		episode_name = self.episode_name or ''
+
 		if short:
 			if self.episode_num:
-				return '{:02d}. {}{}'.format(self.episode_num, self.episode_name if self.active else _C('gray', self.episode_name), self._mark_watched())
+				return '{:02d}. {}{}'.format(self.episode_num, episode_name if self.active else _C('gray', episode_name), self._mark_watched())
 			else:
-				return '{}{}'.format(self.episode_name if self.active else _C('gray', self.episode_name), self._mark_watched())
+				return '{}{}'.format(episode_name if self.active else _C('gray', episode_name), self._mark_watched())
 		else:
 			# series name + episode title
 			ep_code, ep_code2 = self._get_epcode()
-			ret = '{}{}: {}'.format(self.title, ep_code, self.episode_name)
+			ret = '{}{}: {}'.format(self.title, ep_code, episode_name)
 
 			return '{}{}'.format(ret if self.active else _C('gray', ret), self._mark_watched())
 
@@ -228,7 +230,7 @@ class InfoLabels(object):
 		if self.epg_title:
 			#assuming it is TV channel with EPG
 			return self.format_epg_title()
-		elif self.episode_name:
+		elif self.episode_name or self.episode_num:
 			# assuming it is a episode
 			return self.format_episode_title(short)
 		else:
