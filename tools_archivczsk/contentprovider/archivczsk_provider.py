@@ -517,6 +517,12 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 
+	def shutdown(self):
+		if hasattr(self.provider, 'shutdown'):
+			self.provider.shutdown()
+
+	# #################################################################################################
+
 	def trakt(self, session, item, action, result ):
 		if hasattr(self.provider, 'trakt'):
 			self.session = session

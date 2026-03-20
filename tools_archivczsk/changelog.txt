@@ -1,3 +1,7 @@
+3.11 - 20.03.2026
+    - added shutdown support for addons (called before reload or unload)
+    - fixed info label generator for episodes without name
+
 3.10 - 12.03.2026
     - added possibility to save/load info labels
     - added possibility to use info labels instead of title in add_dir/add_video
