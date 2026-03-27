@@ -1,3 +1,6 @@
+1.5: 27.03.2026
+- oprava pádu ak je rok filmu v nesprávnom formáte
+
 1.4: 23.02.2026
 - vypnutie posielania hlásení o chybe ak sa nepodarí získať adresa streamu pre voe
 - odstránenie internej konverzie obrázkov, nakoľko to pre ArchivCZSK 3.5.3 to už nie je potrebné

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.dupe" name="Dupe" version="1.4">
+<addon id="plugin.video.dupe" name="Dupe" version="1.5">
 	<requires>
-		<import addon="enigma2.archivczsk" version="3.5.3"/>
-		<import addon="tools.archivczsk" version="3.5" />
+		<import addon="enigma2.archivczsk" version="3.6.2"/>
+		<import addon="tools.archivczsk" version="3.11" />
 	</requires>
 	<extension point="archivczsk.addon.video"/>
 	<extension point="archivczsk.addon.seeker"/>

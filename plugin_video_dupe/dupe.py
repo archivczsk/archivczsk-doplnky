@@ -204,7 +204,11 @@ class Dupe(object):
 			data = [x.get_text().strip() for x in a.find_all('div', class_='x-text')]
 #			self.cp.log_debug("Movie data:\n%s" % data)
 
-			year = data[0][4:]
+			try:
+				year = data[0][4:].split(',')[0].strip()
+			except:
+				self.cp.log_exception()
+				year = None
 
 			ret.append({
 				'type': 'movie',
