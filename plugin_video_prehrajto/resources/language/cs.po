@@ -6,40 +6,31 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_prehrajto\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-08-05 13:56+0200\n"
-"PO-Revision-Date: 2024-08-05 13:57+0200\n"
+"POT-Creation-Date: 2026-03-31 17:04+0200\n"
+"PO-Revision-Date: 2026-03-31 17:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.4.2\n"
-
-#: plugin_video_prehrajto/provider.py:36
-msgid "Login to premium account failed. Continuing with free account."
-msgstr "Přihlášení do premium konta selhalo. Pokračuji s free kontem."
-
-#: plugin_video_prehrajto/provider.py:44
-#, python-brace-format
-msgid ""
-"In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\n"
-"python{0}-beautifulsoup4 or python{0}-bs4)"
-msgstr ""
-"K fungování doplňku si musíte pomocí svého správce balíků doinstalovat BeautifulSoup4. Hledejte balík se jménem:\n"
-"python{0}-beautifulsoup4 nebo python{0}-bs4"
-
-#: plugin_video_prehrajto/provider.py:74
-msgid "Failed to find video stream. If this message appears on every video, then site was probably changed and addon needs to be updated. In that case report this info to addon author."
-msgstr "Nepodařilo se najít video stream. Pokud se tato zpráva zobrazuje u každého videa, pak byl web pravděpodobně změněn a je třeba doplněk aktualizovat. V takovém případě nahlaste tuto informaci autorovi doplňku."
-
-#: plugin_video_prehrajto/provider.py:78
-msgid "Available subtitles"
-msgstr "Dostupné titulky"
+"X-Generator: Poedit 3.9\n"
 
 #: plugin_video_prehrajto/prehrajto.py:44
 msgid "Unexpected return code from server"
 msgstr "Neočekávaný návratový kód ze serveru"
+
+#: plugin_video_prehrajto/provider.py:31
+msgid "Login to premium account failed. Continuing with free account."
+msgstr "Přihlášení do premium konta selhalo. Pokračuji s free kontem."
+
+#: plugin_video_prehrajto/provider.py:82
+msgid "Failed to find video stream. If this message appears on every video, then site was probably changed and addon needs to be updated. In that case report this info to addon author."
+msgstr "Nepodařilo se najít video stream. Pokud se tato zpráva zobrazuje u každého videa, pak byl web pravděpodobně změněn a je třeba doplněk aktualizovat. V takovém případě nahlaste tuto informaci autorovi doplňku."
+
+#: plugin_video_prehrajto/provider.py:86
+msgid "Available subtitles"
+msgstr "Dostupné titulky"
 
 msgid "Login name"
 msgstr "Přihlašovací jméno"
@@ -50,5 +41,19 @@ msgstr "Přihlašovací heslo"
 msgid "Max watched items"
 msgstr "Maximální počet viděných položek"
 
+msgid "Number of remembered searches"
+msgstr "Počet uložených vyhledávání"
+
 msgid "Enable subtitles support"
 msgstr "Povolit podporu pro titulky"
+
+msgid "Remove duplicated items"
+msgstr "Odstranit duplicitní položky"
+
+#, python-brace-format
+#~ msgid ""
+#~ "In order addon to work you need to install the BeautifulSoup4 using your package manager. Search for package with name:\n"
+#~ "python{0}-beautifulsoup4 or python{0}-bs4)"
+#~ msgstr ""
+#~ "K fungování doplňku si musíte pomocí svého správce balíků doinstalovat BeautifulSoup4. Hledejte balík se jménem:\n"
+#~ "python{0}-beautifulsoup4 nebo python{0}-bs4"

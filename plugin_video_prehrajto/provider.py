@@ -4,6 +4,7 @@ from tools_archivczsk.string_utils import _I, _C, _B, decode_html
 from .prehrajto import PrehrajTo
 import sys
 from time import time
+from functools import partial
 
 class PrehrajtoContentProvider(CommonContentProvider):
 
@@ -45,14 +46,31 @@ class PrehrajtoContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def search(self, keyword, search_id='', page=1):
-		items, next_page = self.prehrajto.search(keyword, page=page)
+	def search(self, keyword, search_id='', page=1, limit=100):
+		resolved_items = None
+		if search_id == 'json':
+			# API for other addons - data is passed as JSON string in keyword parameter
+			data = keyword
+			keyword = data['keyword']
+			page = data.get('page', 1)
+			limit = data.get('limit', 100)
+			resolved_items = data.get('resolved_items')
+
+		items, next_page = self.prehrajto.search(keyword, limit=limit, page=page)
 
 		for item in items:
-			self.add_video(item['title'] + _I(' [' + item['size'] + ']'), item['img'], cmd=self.resolve, video_title=item['title'], video_id=item['id'], item=item)
+			if resolved_items != None:
+				resolved_items.append({
+					'title': item['title'],
+					'size': item['size'],
+					'img': item['img'],
+					'resolve_cbk': partial(self.prehrajto.resolve_video, video_id=item['id']),
+				})
+			else:
+				self.add_video(item['title'] + _I(' [' + item['size'] + ']'), item['img'], cmd=self.resolve, video_title=item['title'], video_id=item['id'], item=item)
 
-		if next_page:
-			self.add_next(cmd=self.search, keyword=keyword, page=next_page)
+		if next_page and resolved_items == None:
+			self.add_next(cmd=self.search, keyword=keyword, page=next_page, limit=limit)
 
 	# ##################################################################################################################
 

@@ -126,6 +126,7 @@ class PrehrajTo(object):
 		videos = []
 
 		keyword = strip_accents(keyword)
+		remove_duplicated = self.cp.get_setting('remove_duplicated')
 
 		while True:
 			soup = self.call_api('hledej/' + quote(keyword.encode('utf-8')), params={'videoListing-visualPaginator-page': page})
@@ -136,6 +137,11 @@ class PrehrajTo(object):
 				img = item.find('img', attrs={'data-next': '2'})
 #				time = soup.find('div', attrs={'class': 'video__tag video__tag--size'})
 				if title_and_link:
+					if size != None and remove_duplicated:
+						s = size.text.strip()
+						if any(filter(lambda v: v['size'] == s, videos)):
+							continue
+
 					videos.append({
 						'title': title_and_link.get('title').strip(),
 						'size': '?' if size == None else size.text.strip(),
