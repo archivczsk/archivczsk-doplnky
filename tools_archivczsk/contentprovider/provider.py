@@ -340,7 +340,20 @@ class InfoLabels(object):
 			'adult': self.adult
 		}
 
+	# #################################################################################################
 
+	def search_query(self):
+		ret = [self.title.lower()]
+
+		year = self._get_year()
+		if year:
+			ret.append(year)
+
+		epcode = self._get_epcode()[1]
+		if epcode:
+			ret.append(epcode)
+
+		return ' '.join(ret)
 
 # #################################################################################################
 
