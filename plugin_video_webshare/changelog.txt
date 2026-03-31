@@ -1,3 +1,7 @@
+1.6: 31.03.2026
+- pridanie API pre iné doplnky
+- pridanie filtrovania duplicitných položiek pri vyhľadávaní
+
 1.5: 14.01.2026
 - úprava inicializácie po zmenách v závislostiach doplnku
 

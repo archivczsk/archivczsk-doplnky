@@ -4,6 +4,7 @@ from tools_archivczsk.contentprovider.exception import AddonErrorException, Addo
 from tools_archivczsk.string_utils import _I, _C, _B, decode_html
 from .webshare import Webshare, WebshareLoginFail, ResolveException
 from time import time
+from functools import partial
 
 class WebshareContentProvider(CommonContentProvider):
 
@@ -38,7 +39,10 @@ class WebshareContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def root(self):
-		self.webshare.check_premium()
+		try:
+			self.webshare.check_premium()
+		except WebshareLoginFail as e:
+			self.show_info(str(e), noexit=True)
 
 		self.add_search_dir()
 		for item_id, item_data in sorted(self.watched.items(), key=lambda i: i[1]['time'], reverse=True):
@@ -48,20 +52,64 @@ class WebshareContentProvider(CommonContentProvider):
 			item.update(item_data)
 			menu = self.create_ctx_menu()
 			menu.add_menu_item(self._("Remove from watched"), cmd=self.remove_watched_item, item_id=item_id)
-			self.add_video(item['title'] + _I(' [' + item['size'] + ']'), item['img'], menu=menu, cmd=self.resolve, video_title=item['title'], video_id=item['ident'], item=item)
+
+			if isinstance(item_data['size'], str):
+				item_size = item_data['size']
+			else:
+				item_size = self.convert_size(item_data['size'])
+
+			self.add_video(item['title'] + _I(' [' + item_size + ']'), item['img'], menu=menu, cmd=self.resolve, video_title=item['title'], video_id=item['ident'], item=item)
+
+	# ##################################################################################################################
+
+	def convert_size(self, size_bytes):
+		# convert to MB
+		size = float(size_bytes) / 1024 / 1024
+
+		if size > 1024:
+			return "%.2f GB" % (size / 1024)
+		else:
+			return "%.2f MB" % size
 
 	# ##################################################################################################################
 
 	def search(self, keyword, search_id='', category=None, page=0):
+		resolved_items = None
+		premium_needed = False
+
+		if search_id == 'json':
+			# API for other addons - data is passed as JSON string in keyword parameter
+			data = keyword
+			keyword = data['keyword']
+			page = data.get('page', 0)
+			category = data.get('category', 'video')
+			resolved_items = data.get('resolved_items')
+			premium_needed = data.get('premium_needed', premium_needed)
+
+		if premium_needed:
+			try:
+				self.webshare.check_premium()
+			except WebshareLoginFail:
+				return
+
 		if category == None:
 			category = self.get_setting('search_category')
 
 		items, next_page = self.webshare.search(keyword, category=category, page=page)
 
 		for item in items:
-			self.add_video(item['title'] + _I(' [' + item['size'] + ']'), item['img'], cmd=self.resolve, video_title=item['title'], video_id=item['ident'], item=item)
+			if resolved_items != None:
+				resolved_items.append({
+					'title': item['title'],
+					'size': item['size'],
+					'size_str': self.convert_size(item['size']),
+					'img': item['img'],
+					'resolve_cbk': partial(self.webshare.resolve, ident=item['ident']),
+				})
+			else:
+				self.add_video(item['title'] + _I(' [' + self.convert_size(item['size']) + ']'), item['img'], cmd=self.resolve, video_title=item['title'], video_id=item['ident'], item=item)
 
-		if next_page:
+		if next_page and resolved_items == None:
 			self.add_next(cmd=self.search, keyword=keyword, category=category, page=page+1)
 
 	# ##################################################################################################################

@@ -20,7 +20,7 @@ class WebshareApiError(AddonErrorException):
 
 # #################################################################################################
 
-class Webshare():
+class Webshare(object):
 	BASE_URL = 'https://webshare.cz'
 
 	def __init__(self, content_provider):
@@ -36,7 +36,7 @@ class Webshare():
 	# #################################################################################################
 
 	def load_login_data(self):
-		self.load_login_data = self.cp.load_cached_data('login')
+		self.login_data = self.cp.load_cached_data('login')
 		self.login_data['load_time'] = 0 # this will force reload of user data
 
 	# #################################################################################################
@@ -211,11 +211,12 @@ class Webshare():
 			token = self.login_data.get('token')
 
 			if not token:
-				self.cp.show_info(self.cp._("Wrong webshare login data provided"), noexit=True)
-				return
+				raise WebshareLoginFail(self.cp._("Wrong webshare login data provided"))
 
 			if int(time()) > self.login_data.get('expiration', 0):
-				self.cp.show_info(self.cp._("Webshare subscription expired. Only very low quality videos will play and seeking forward/backwad will not work at all."), noexit=True)
+				raise WebshareLoginFail(self.cp._("Webshare subscription expired. Only very low quality videos will play and seeking forward/backward will not work at all."))
+		else:
+			raise WebshareLoginFail(self.cp._("No webshare login data provided. Only very low quality videos will play and seeking forward/backward will not work at all."))
 
 	# #################################################################################################
 
@@ -270,17 +271,6 @@ class Webshare():
 
 	# #################################################################################################
 
-	def convert_size(self, size_bytes):
-		# convert to MB
-		size = float(size_bytes) / 1024 / 1024
-
-		if size > 1024:
-			return "%.2f GB" % (size / 1024)
-		else:
-			return "%.2f MB" % size
-
-	# #################################################################################################
-
 	def search( self, keyword, category='video', page=0 ):
 		self.refresh_login_data()
 
@@ -298,16 +288,22 @@ class Webshare():
 			return [], False
 
 		result = []
+		remove_duplicated = self.cp.get_setting('remove_duplicated')
 
 #		total = int(xml.find('total').text)
 		for file in xml.findall('file'):
 			if file.find('password').text == '1':
 				continue
 
+			if remove_duplicated:
+				s = int(file.find('size').text)
+				if any(filter(lambda v: v['size'] == s, result)):
+					continue
+
 			result.append({
 				'title': file.find('name').text,
 				'ident': file.find('ident').text,
-				'size': self.convert_size(int(file.find('size').text)),
+				'size': int(file.find('size').text),
 				'img': file.find('img').text
 			})
 

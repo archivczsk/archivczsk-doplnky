@@ -6,27 +6,31 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_prehrajto\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-25 16:25+0200\n"
-"PO-Revision-Date: 2025-04-25 16:25+0200\n"
+"POT-Creation-Date: 2026-04-03 18:07+0200\n"
+"PO-Revision-Date: 2026-04-03 18:14+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.5\n"
+"X-Generator: Poedit 3.9\n"
 
-#: plugin_video_webshare/webshare.py:150
+#: plugin_video_webshare/webshare.py:149
 msgid "Failed to get user informations"
 msgstr "Nepodarilo sa získať informácie o používateľovi"
 
-#: plugin_video_webshare/webshare.py:215
+#: plugin_video_webshare/webshare.py:214
 msgid "Wrong webshare login data provided"
 msgstr "Nesprávne prihlasovacie údaje pre Webshare"
 
-#: plugin_video_webshare/webshare.py:219
-msgid "Webshare subscription expired. Only very low quality videos will play and seeking forward/backwad will not work at all."
+#: plugin_video_webshare/webshare.py:217
+msgid "Webshare subscription expired. Only very low quality videos will play and seeking forward/backward will not work at all."
 msgstr "Webshare predplatné vypršalo. Prehrávanie bude fungovať len u videí s veľmi nízkou kvalitou a pretáčanie vpred/vzad nebude fungovať vôbec."
+
+#: plugin_video_webshare/webshare.py:219
+msgid "No webshare login data provided. Only very low quality videos will play and seeking forward/backward will not work at all."
+msgstr "Nie sú zadané prihlasovacie údaje do služby Webshare. Prehrávať sa budú len videá veľmi nízkej kvality a posúvanie dopredu/dozadu nebude vôbec fungovať."
 
 #: plugin_video_webshare/webshare.py:234
 msgid "File is password protected"
@@ -36,7 +40,7 @@ msgstr "Súbor je chránený heslom"
 msgid "Failed to resolve file"
 msgstr "Nepodarilo sa získať adresu súboru"
 
-#: plugin_video_webshare/provider.py:34
+#: plugin_video_webshare/provider.py:35
 #, python-brace-format
 msgid ""
 "Login to premium account failed: {reason}\n"
@@ -45,11 +49,11 @@ msgstr ""
 "Prihlásenie do premium konta zlyhalo: {reason}\n"
 "Pokračujem s free kontom."
 
-#: plugin_video_webshare/provider.py:50
+#: plugin_video_webshare/provider.py:54
 msgid "Remove from watched"
 msgstr "Odstrániť zo sledovaných"
 
-#: plugin_video_webshare/provider.py:104
+#: plugin_video_webshare/provider.py:152
 msgid "Item were removed. Change will be efective after next addon start."
 msgstr "Položka bola odstránená. Zmena bude účinná po ďalšom spustení doplnku."
 
@@ -62,8 +66,14 @@ msgstr "Prihlasovacie heslo"
 msgid "Max watched items"
 msgstr "Maximálny počet videných položiek"
 
+msgid "Number of remembered searches"
+msgstr "Počet uložených vyhľadávaní"
+
 msgid "Search category"
 msgstr "Vyhľadávacia kategória"
 
 msgid "Cleanup watched items from webshare history"
 msgstr "Vymaž sledované položky z webshare histórie"
+
+msgid "Remove duplicated items"
+msgstr "Odstrániť duplicitné položky"
