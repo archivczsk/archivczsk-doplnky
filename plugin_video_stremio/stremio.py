@@ -18,9 +18,83 @@ def clean_str(s):
 
 # ##################################################################################################################
 
+class StremioAddonTitleFormatter(object):
+	def __init__(self):
+		if self.name == 'AIOStreams':
+			self.format_stream_title = self.format_title_aiostreams
+		elif self.addon_id == 'org.stremio.skcz-torrents':
+			self.format_stream_title = self.format_title_czsktorrent
+		elif self.addon_id == 'org.stream-cinema.online':
+			self.format_stream_title = self.format_title_sc
+		elif self.addon_id in ('luna.absolutecinema.addon', 'luna.search.addon'):
+			self.format_stream_title = self.format_title_luna
+
+	def format_title_aiostreams(self, stream):
+		# compatible with google drive formatter
+		name = stream['name'].strip()
+		cached = '⚡' in name
+		name = re.sub('⚡', '+', name)
+		name = re.sub('(Your Media)', '', name, flags=re.IGNORECASE)
+		name = re.sub(r' \(.*\)$', '', name)
+
+		description = stream['description']
+		description = re.sub('📁.*[\n]*', '', description)
+		description = re.sub('☁︎.*\n', '', description)
+		description = re.sub('Name: .*\n', '', description)
+		description = re.sub('ℹ️.*\n', '', description)
+		description = re.sub('⚡', '+', description)
+		description = re.sub('⏱️ .* ', '', description)
+		if cached:
+			description = re.sub(r'👥 \d+', '', description)
+		else:
+			description = re.sub('👥 ', ' S:', description)
+		description = re.sub(r' \(.* Mbps\)', '', description)
+
+		return (re.sub(r'\s+', ' ', clean_str(name)), re.sub(r'\s+', ' ', clean_str(description)),)
+
+	def format_title_czsktorrent(self, stream):
+		name = clean_str(stream['name'])
+		title = stream['title']
+		if '[' in title:
+			title = '[' + re.sub(r'.*?\[', '', title, 1)
+
+		title = re.sub('👤 ', ' S:', title)
+		title = re.sub('💾 ', ' Size:', title)
+		title = re.sub('📝 ', ' Lang:', title)
+
+		return (name, clean_str(title),)
+
+	def format_title_sc(self, stream):
+		description = stream['description']
+		description = re.sub(r'🕒\[.*?\]', '', description)
+		description = clean_str(description)
+
+		name = stream['name']
+
+		if 'Dub: ✅' in name:
+			name = stream['name'].replace('Dub: ✅', ', '.join([_I(l) for l in ('CZ', 'SK') if ' {}'.format(l) in description]))
+
+		return (clean_str(name), description,)
+
+	def format_title_luna(self, stream):
+		name = stream['name']
+		name = '{} {}'.format(self.name, clean_str(name.replace('🔎', '').replace(' · ', ', ').replace('𝗙𝘂𝗹𝗹 𝗛𝗗', '1080p').replace('𝗛𝗗', '720p').replace('𝗦𝗗', 'SD').replace('𝟰𝗞', '4K').replace('⠀', '')))
+
+		meta_info = (stream.get('title') or '').split('\n')
+
+		for i, m in enumerate(meta_info):
+			if i == 0:
+				meta_info[i] = m.replace(' · ', ' ').split(' ')[-1].strip() + 'B'
+			else:
+				meta_info[i] = clean_str(m.replace('🔊', 'Audio[').replace('💬', 'Tit[').replace(' · ', ', ').replace('⠀', ' ')) + ' ]'
+
+		return (name, ' '.join(meta_info),)
+
+# ##################################################################################################################
+
 STREMIO_PAGE_SIZE=100
 
-class StremioAddon(object):
+class StremioAddon(StremioAddonTitleFormatter):
 	def __init__(self, cp, url, manifest):
 		self.cp = cp
 		self._ = self.cp._
@@ -45,7 +119,7 @@ class StremioAddon(object):
 			# update IP address of local addon
 			self.url = self.url.replace('127.0.0.1', self.cp.get_setting('streaming-server'))
 
-		self.install_title_formatter()
+		super(StremioAddon, self).__init__()
 
 	def log_debug(self, s):
 		self.cp.log_debug("[{}] {}".format(self, s))
@@ -230,61 +304,6 @@ class StremioAddon(object):
 
 		resp = self.call_api('subtitles', cat_type, item_id, params)
 		return resp.get('subtitles') or []
-
-	def install_title_formatter(self):
-		if self.name == 'AIOStreams':
-			self.format_stream_title = self.format_title_aiostreams
-		elif self.addon_id == 'org.stremio.skcz-torrents':
-			self.format_stream_title = self.format_title_czsktorrent
-		elif self.addon_id == 'org.stream-cinema.online':
-			self.format_stream_title = self.format_title_sc
-
-	def format_title_aiostreams(self, stream):
-		# compatible with google drive formatter
-		name = stream['name'].strip()
-		cached = '⚡' in name
-		name = re.sub('⚡', '+', name)
-		name = re.sub('(Your Media)', '', name, flags=re.IGNORECASE)
-		name = re.sub(r' \(.*\)$', '', name)
-
-		description = stream['description']
-		description = re.sub('📁.*[\n]*', '', description)
-		description = re.sub('☁︎.*\n', '', description)
-		description = re.sub('Name: .*\n', '', description)
-		description = re.sub('ℹ️.*\n', '', description)
-		description = re.sub('⚡', '+', description)
-		description = re.sub('⏱️ .* ', '', description)
-		if cached:
-			description = re.sub(r'👥 \d+', '', description)
-		else:
-			description = re.sub('👥 ', ' S:', description)
-		description = re.sub(r' \(.* Mbps\)', '', description)
-
-		return (re.sub(r'\s+', ' ', clean_str(name)), re.sub(r'\s+', ' ', clean_str(description)),)
-
-	def format_title_czsktorrent(self, stream):
-		name = clean_str(stream['name'])
-		title = stream['title']
-		if '[' in title:
-			title = '[' + re.sub(r'.*?\[', '', title, 1)
-
-		title = re.sub('👤 ', ' S:', title)
-		title = re.sub('💾 ', ' Size:', title)
-		title = re.sub('📝 ', ' Lang:', title)
-
-		return (name, clean_str(title),)
-
-	def format_title_sc(self, stream):
-		description = stream['description']
-		description = re.sub(r'🕒\[.*?\]', '', description)
-		description = clean_str(description)
-
-		name = stream['name']
-
-		if 'Dub: ✅' in name:
-			name = stream['name'].replace('Dub: ✅', ', '.join([_I(l) for l in ('CZ', 'SK') if ' {}'.format(l) in description]))
-
-		return (clean_str(name), description,)
 
 # ##################################################################################################################
 
