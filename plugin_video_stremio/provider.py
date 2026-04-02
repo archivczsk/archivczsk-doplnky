@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
-from datetime import date, datetime
-import json, base64, re, os
+from datetime import datetime
+from time import time
+import json, base64, os
 from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.contentprovider.provider import CommonContentProvider, InfoLabels
-from tools_archivczsk.contentprovider.exception import AddonErrorException, AddonSilentExitException, AddonInfoException
-from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman
+from tools_archivczsk.contentprovider.exception import AddonInfoException
 from tools_archivczsk.date_utils import iso8601_to_datetime
-from tools_archivczsk.cache import lru_cache
 from tools_archivczsk.simple_config import SimpleConfigSelection, SimpleConfigInteger, SimpleConfigYesNo, SimpleConfigMultiSelection
-from tools_archivczsk.compat import urlparse, urlunparse, parse_qs, urlencode, urljoin
+from tools_archivczsk.compat import urlparse
 
 from .stremio import StremioClient, StremioServiceClient, STREMIO_PAGE_SIZE, clean_str
 from .watched import StremioWatched
@@ -37,7 +36,7 @@ class StremioContentProvider(CommonContentProvider):
 
 	def __init__(self):
 		CommonContentProvider.__init__(self)
-		self.login_settings_names = ('username', 'password')
+		self.login_optional_settings_names = ('username', 'password')
 		self.dubbed_lang_list = ['en']
 		self.lang_list = ['en']
 		self.stremio = StremioClient(self)
@@ -46,6 +45,7 @@ class StremioContentProvider(CommonContentProvider):
 		self.home_items = []
 		self.adult_addons = {}
 		self.adult_catalogs = {}
+		self.play_time = 0
 
 		# hack to handle compatibility with ArchivCZSK, because in stremio 'movie' can be anything and here we need to know if it is single video or collection
 		self.collection_prefixes = ('tvdbc:',)
@@ -93,7 +93,6 @@ class StremioContentProvider(CommonContentProvider):
 	# #################################################################################################
 
 	def root(self):
-		self.ensure_supporter()
 		self.build_lang_lists()
 		self.stremio.load_addons()
 		self.service.reinit()
@@ -182,10 +181,12 @@ class StremioContentProvider(CommonContentProvider):
 				menu = self.create_ctx_menu()
 				menu.add_menu_item(self._("Remove from seen"), cmd=self.remove_last_seen, item_type=item_type, item_id=item_id)
 
+				search_query = il.search_query()
+
 				if item_type in ('movie', 'tv') and not item_id.startswith(self.collection_prefixes):
-					self.add_video(il, menu=menu, cmd=self.resolve_stream, video_title=il.title, item_type=item_type, item_id=item_id, streams=getattr(il, 'streams', None))
+					self.add_video(il, menu=menu, cmd=self.resolve_stream, video_title=il.title, item_type=item_type, item_id=item_id, streams=getattr(il, 'streams', None), search_query=search_query)
 				else:
-					self.add_dir(il, menu=menu, cmd=self.list_videos, addon_id=None, item_type=item_type, item_id=item_id)
+					self.add_dir(il, menu=menu, cmd=self.list_videos, addon_id=None, item_type=item_type, item_id=item_id, search_query=search_query)
 
 
 	# #################################################################################################
@@ -542,15 +543,15 @@ class StremioContentProvider(CommonContentProvider):
 			menu.add_media_menu_item(self._("Play trailer"), cmd=self.resolve_trailer, trailers=item['trailers'])
 
 		if item['type'] in ('movie', 'tv') and not item['id'].startswith(self.collection_prefixes):
-			self.add_video(il, menu=menu, cmd=self.resolve_stream, video_title=item['name'], item_type=item['type'], item_id=item['id'], addon_id=addon_id, cached_item_data=il, streams=item.get('streams'))
+			self.add_video(il, menu=menu, cmd=self.resolve_stream, video_title=item['name'], item_type=item['type'], item_id=item['id'], addon_id=addon_id, cached_item_data=il, streams=item.get('streams'), search_query=il.search_query())
 		else:
 			il.item_type = item['type']
 			il.item_id = item['id']
-			self.add_dir(il, menu=menu, cmd=self.list_videos, addon_id=addon_id, item_type=item['type'], item_id=item['id'], cached_item_data=il)
+			self.add_dir(il, menu=menu, cmd=self.list_videos, addon_id=addon_id, item_type=item['type'], item_id=item['id'], cached_item_data=il, search_query=il.search_query())
 
 	# #################################################################################################
 
-	def list_videos(self, addon_id, item_type, item_id, cached_item_data=None):
+	def list_videos(self, addon_id, item_type, item_id, cached_item_data=None, search_query=None):
 		if addon_id:
 			addon = self.stremio.get_addon(addon_id)
 			meta = addon.get_meta(item_type, item_id)
@@ -576,7 +577,7 @@ class StremioContentProvider(CommonContentProvider):
 		meta['adult'] = self.is_adult(addon_id, item_type, item_id)
 
 		if len(seasons) == 1:
-			return self.list_meta(addon_id, meta, seasons[0], cached_item_data)
+			return self.list_meta(addon_id, meta, seasons[0], cached_item_data, search_query)
 
 		for s in seasons:
 			if not s or s == 0:
@@ -584,11 +585,11 @@ class StremioContentProvider(CommonContentProvider):
 			else:
 				sname = '{} {}'.format(self._("Season"), s)
 
-			self.add_dir(sname, cmd=self.list_meta, addon_id=addon_id, season=s, meta=meta, cached_item_data=cached_item_data)
+			self.add_dir(sname, cmd=self.list_meta, addon_id=addon_id, season=s, meta=meta, cached_item_data=cached_item_data, search_query=search_query)
 
 	# #################################################################################################
 
-	def list_meta(self, addon_id, meta, season=None, cached_item_data=None ):
+	def list_meta(self, addon_id, meta, season=None, cached_item_data=None, search_query=None):
 		genres = meta.get('genres') or meta.get('genre')
 
 		if not genres:
@@ -607,13 +608,16 @@ class StremioContentProvider(CommonContentProvider):
 
 			aired = v.get('firstAired') or v.get('released')
 
+			if search_query:
+				search_query += il._get_epcode()[1]
+
 			if aired:
 				aired = iso8601_to_datetime(aired)
 				il.active = aired < datetime.now()
 
 			il.img = v.get('poster') or v.get('thumbnail') or meta.get('poster') or meta.get('logo')
 			if il.active:
-				self.add_video(il, cmd=self.resolve_stream, video_title=v.get('name') or v.get('title'), item_type=meta['type'], addon_id=addon_id, item_id=v['id'], cached_item_data=cached_item_data, streams=v.get('streams'))
+				self.add_video(il, cmd=self.resolve_stream, video_title=v.get('name') or v.get('title'), item_type=meta['type'], addon_id=addon_id, item_id=v['id'], cached_item_data=cached_item_data, streams=v.get('streams'), search_query=search_query)
 			else:
 				self.add_video(il)
 
@@ -640,8 +644,10 @@ class StremioContentProvider(CommonContentProvider):
 
 	# #################################################################################################
 
-	def resolve_stream(self, video_title, item_type, item_id, addon_id=None, cached_item_data=None, streams=None):
-		self.ensure_supporter()
+	def resolve_stream(self, video_title, item_type, item_id, addon_id=None, cached_item_data=None, streams=None, search_query=None):
+		if self.play_time >= 300:
+			self.ensure_supporter(self._("You have reached the limit and playback of another item is not available for you. Unlimited playback is only available for ArchivCZSK supporters."), False)
+
 		if streams:
 			if cached_item_data:
 				cached_item_data.streams = streams
@@ -665,7 +671,7 @@ class StremioContentProvider(CommonContentProvider):
 			addon = self.stremio.get_addon(addon_id)
 			try:
 				if enable_adult or not self.is_adult(addon.addon_id):
-					for s in (addon.get_streams(item_type, item_id) or []):
+					for s in (addon.get_streams(item_type, item_id, search_query) or []):
 						if s:
 							streams.append( (addon, s,) )
 			except:
@@ -678,7 +684,7 @@ class StremioContentProvider(CommonContentProvider):
 			def get_streams(a):
 				try:
 					self.log_debug("Requesting streams from %s" % a)
-					ret = a.get_streams(item_type, item_id) or []
+					ret = a.get_streams(item_type, item_id, search_query) or []
 
 					with lock:
 						for s in ret:
@@ -703,7 +709,7 @@ class StremioContentProvider(CommonContentProvider):
 
 		if not self.service.is_available():
 			# stremio service is not available, so filter out torrents, because they are not playable
-			streams = list(filter(lambda x: x[1].get('url'), streams))
+			streams = list(filter(lambda x: x[1].get('url') or x[1].get('resolve_cbk'), streams))
 
 		if not streams:
 			self.log_error("No stream found for %s %s" % (item_type, item_id))
@@ -717,7 +723,8 @@ class StremioContentProvider(CommonContentProvider):
 			streams = streams2
 
 		if len(streams) == 1:
-			stream = streams[0]
+			stream = streams[0][1]
+			stream_addon = streams[0][0]
 		else:
 			titles = []
 			for i, s in enumerate(streams):
@@ -727,12 +734,17 @@ class StremioContentProvider(CommonContentProvider):
 			if idx == -1:
 				return
 			else:
-				stream = streams[idx]
+				stream = streams[idx][1]
+				stream_addon = streams[idx][0]
 
-		self.log_debug("Selected stream from %s: %s" % (stream[0], json.dumps(stream[1])))
+		if stream.get('resolve_cbk'):
+			stream['url'] = stream['resolve_cbk']()
+			del stream['resolve_cbk']
+
+		self.log_debug("Selected stream from %s: %s" % (stream_addon, json.dumps(stream)))
 
 		data_item = {
-			'subs': self.download_subtitles(item_type, item_id, stream[1].get('behaviorHints')),
+			'subs': self.download_subtitles(item_type, item_id, stream.get('behaviorHints')),
 			'item_type': item_type,
 			'item_id': item_id,
 			'cached_item_data': cached_item_data
@@ -752,16 +764,22 @@ class StremioContentProvider(CommonContentProvider):
 		settings['subs_always'] = self.get_setting('subs-autostart') == 'always'
 		settings['subs_forced_autostart'] = self.get_setting('forced-subs-autostart')
 
-		if stream[1].get('infoHash'):
+		if stream.get('extra-headers'):
+			settings['extra-headers'] = stream['extra-headers']
+
+		if stream.get('user-agent'):
+			settings['user-agent'] = stream['user-agent']
+
+		if stream.get('infoHash'):
 			# torrent
-			info_hash = stream[1].get('infoHash')
-			file_idx = stream[1].get('fileIdx', -1)
-			trackers = stream[1].get('sources')
+			info_hash = stream.get('infoHash')
+			file_idx = stream.get('fileIdx', -1)
+			trackers = stream.get('sources')
 			if self.service.probe(info_hash, file_idx, trackers):
 				self.add_play(video_title, self.service.get_stream(info_hash, file_idx, trackers), settings=settings, data_item=data_item)
 		else:
 			# direct HTTP stream
-			url = stream[1]['url']
+			url = stream.get('url')
 			if urlparse(url).path.endswith('.m3u8'):
 				hls_streams = self.resolve_hls_streams(url)
 				if hls_streams:
@@ -862,6 +880,16 @@ class StremioContentProvider(CommonContentProvider):
 	# #################################################################################################
 
 	def stats(self, data_item, action, duration=None, position=None, **extra_params):
+		if not hasattr(self, 'play_start'):
+			self.play_start = 0
+
+		if action in ('play', 'unpause'):
+			self.play_start = int(time())
+		elif action in ('end', 'pause'):
+			if self.play_start > 0:
+				self.play_time += (int(time()) - self.play_start)
+				self.play_start = 0
+
 		if not data_item:
 			return
 

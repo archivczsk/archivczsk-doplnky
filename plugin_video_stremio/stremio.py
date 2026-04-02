@@ -3,11 +3,10 @@
 from tools_archivczsk.contentprovider.exception import AddonErrorException, LoginException
 from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.cache import ExpiringLRUCache
-from tools_archivczsk.compat import urlparse, urlunparse, parse_qs, urlencode, urljoin, quote_plus, urlencode
+from tools_archivczsk.compat import urlencode, urljoin, quote_plus, urlencode
 from collections import OrderedDict
 from tools_archivczsk.cache import ExpiringLRUCache
 from tools_archivczsk.string_utils import _I
-import time, os
 import json, re
 
 NON_BMP_RE = re.compile(u"[^\U00000000-\U0000218f\U00002c00-\U0000d7ff\U0000f900-\U0000ffff]", flags=re.UNICODE)
@@ -95,10 +94,16 @@ class StremioAddonTitleFormatter(object):
 STREMIO_PAGE_SIZE=100
 
 class StremioAddon(StremioAddonTitleFormatter):
-	def __init__(self, cp, url, manifest):
+	def __init__(self, cp, url, manifest=None):
 		self.cp = cp
 		self._ = self.cp._
 		self.req_session = self.cp.get_requests_session()
+
+		if manifest == None:
+			response = self.req_session.get(self.TRANSPORT_URL)
+			response.raise_for_status()
+			manifest = response.json()
+
 		self.addon_id = manifest['id']
 		self.name = manifest['name'].strip()
 		self.version = manifest['version']
@@ -254,7 +259,7 @@ class StremioAddon(StremioAddonTitleFormatter):
 		resp = self.call_api('meta', cat_type, item_id)
 		return resp.get('meta') or {}
 
-	def get_streams(self, cat_type, item_id):
+	def get_streams(self, cat_type, item_id, search_query=None):
 		if not self.supports_stream(item_id):
 			return None
 
@@ -349,7 +354,7 @@ class StremioClient(object):
 	# ##################################################################################################################
 
 	def save_token(self):
-		if self.token:
+		if self.token is not None:
 			self.cp.save_cached_data('login', {
 				'token': self.token,
 				'checksum': self.get_login_checksum()
@@ -397,6 +402,12 @@ class StremioClient(object):
 		self.token = None
 		self.save_token()
 
+		if username == '' and password == '':
+			self.cp.log_info("No username or password provided - continuing with default built-in account")
+			self.token = ''
+			self.save_token()
+			return
+
 		data = {
 			'type': "Login",
 			'email': username,
@@ -426,11 +437,35 @@ class StremioClient(object):
 
 		self.clear_addons()
 
-		resp = self.call_api('addonCollectionGet', data)
+		if self.token == '':
+			resp = {}
+		else:
+			resp = self.call_api('addonCollectionGet', data)
+
 		for addon_desc in (resp.get('addons') or []):
 			self.cp.log_debug("Loading addon: %s" % addon_desc.get('transportUrl'))
-			addon = StremioAddon(self.cp, addon_desc['transportUrl'], addon_desc.get('manifest'))
-			self.addons[addon.addon_id] = addon
+			try:
+				addon = StremioAddon(self.cp, addon_desc['transportUrl'], addon_desc.get('manifest'))
+			except:
+				self.cp.log_error("Failed to load addon from %s" % addon_desc.get('transportUrl'))
+				self.cp.log_exception()
+			else:
+				self.addons[addon.addon_id] = addon
+
+		from .internal_addons import internal_addons_list
+
+		for addon_cls in internal_addons_list:
+			self.cp.log_debug("Loading internal addon: %s" % addon_cls.__name__)
+			try:
+				addon = addon_cls(self.cp)
+			except:
+				self.cp.log_error("Failed to load internal addon %s" % addon_cls.__name__)
+				self.cp.log_exception()
+			else:
+				if addon.addon_id not in self.addons:
+					self.addons[addon.addon_id] = addon
+				else:
+					self.cp.log_info("Ignoring internal addon %s - addon with the same ID is already loaded" % addon_cls.__name__)
 
 	# ##################################################################################################################
 

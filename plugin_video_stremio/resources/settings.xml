@@ -17,4 +17,11 @@
 		<setting label="Maximal offered stream quality" id="max-quality" type="keyenum" values="720;720p|1080;1080p|2160;4k|4320;8k" default="2160" />
 		<setting label="Enable h265/hevc codec" id="enable-hevc" type="bool" default="true" />
 		<setting label="Maximum size of stream (in GB)" id="max-file-size" type="number" default="0" /> -->
+	<category label="Internal addons">
+		<setting label="Prehraj.to" id="internal_prehrajto" type="bool" default="true"/>
+		<setting label="Webshare.cz" id="internal_webshare" type="bool" default="true"/>
+		<setting label="SkTOnline" id="internal_sktonline" type="bool" default="true"/>
+		<setting label="CZ Dabing &amp; Streaming" id="internal_czdabing" type="bool" default="true"/>
+		<setting label="Cinemeta" id="internal_cinemeta" type="bool" default="true"/>
+	</category>
 </settings>

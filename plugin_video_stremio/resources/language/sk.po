@@ -6,135 +6,139 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_stremio\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-10 11:33+0100\n"
-"PO-Revision-Date: 2026-03-10 11:34+0100\n"
+"POT-Creation-Date: 2026-04-03 18:25+0200\n"
+"PO-Revision-Date: 2026-04-03 18:27+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.5\n"
+"X-Generator: Poedit 3.9\n"
 
-#: plugin_video_stremio/provider.py:26
+#: plugin_video_stremio/provider.py:27
 msgid "Movie"
 msgstr "Film"
 
-#: plugin_video_stremio/provider.py:27
+#: plugin_video_stremio/provider.py:28
 msgid "Series"
 msgstr "Seriály"
 
-#: plugin_video_stremio/provider.py:28
+#: plugin_video_stremio/provider.py:29
 msgid "Channel"
 msgstr "Kanál"
 
-#: plugin_video_stremio/provider.py:29
+#: plugin_video_stremio/provider.py:30
 msgid "Other"
 msgstr "Iné"
 
-#: plugin_video_stremio/provider.py:101
+#: plugin_video_stremio/provider.py:102
 msgid "Last viewed"
 msgstr "Posledné sledované"
 
-#: plugin_video_stremio/provider.py:104
+#: plugin_video_stremio/provider.py:105
 msgid "Home"
 msgstr "Domov"
 
-#: plugin_video_stremio/provider.py:105
+#: plugin_video_stremio/provider.py:106
 msgid "Discover"
 msgstr "Preskúmať"
 
-#: plugin_video_stremio/provider.py:115
+#: plugin_video_stremio/provider.py:116
 msgid "Remove from home screen"
 msgstr "Odstrániť z domovskej obrazovky"
 
-#: plugin_video_stremio/provider.py:118
+#: plugin_video_stremio/provider.py:119
 msgid "Move up"
 msgstr "Posunúť hore"
 
-#: plugin_video_stremio/provider.py:121
+#: plugin_video_stremio/provider.py:122
 msgid "Move down"
 msgstr "Posunúť dole"
 
-#: plugin_video_stremio/provider.py:163
+#: plugin_video_stremio/provider.py:164
 msgid "Addons"
 msgstr "Doplnky"
 
-#: plugin_video_stremio/provider.py:181
+#: plugin_video_stremio/provider.py:182
 msgid "Remove from seen"
 msgstr "Odstrániť z videných"
 
-#: plugin_video_stremio/provider.py:221
+#: plugin_video_stremio/provider.py:224
 msgid "Enter home screen item name"
 msgstr "Zadajte názov položky domovskej obrazovky"
 
-#: plugin_video_stremio/provider.py:300
+#: plugin_video_stremio/provider.py:303
 msgid "Unmark as adult"
 msgstr "Zrušiť označenie ako obsah pre dospelých"
 
-#: plugin_video_stremio/provider.py:302
+#: plugin_video_stremio/provider.py:305
 msgid "Mark as adult"
 msgstr "Označiť ako obsah pre dospelých"
 
-#: plugin_video_stremio/provider.py:319
+#: plugin_video_stremio/provider.py:322
 msgid "Select what to search"
 msgstr "Vyberte, čo chcete vyhľadávať"
 
-#: plugin_video_stremio/provider.py:344 plugin_video_stremio/provider.py:438
-#: plugin_video_stremio/provider.py:482
+#: plugin_video_stremio/provider.py:347 plugin_video_stremio/provider.py:442
+#: plugin_video_stremio/provider.py:486
 msgid "Advanced filtering"
 msgstr "Rozšírené filtrovanie"
 
-#: plugin_video_stremio/provider.py:366 plugin_video_stremio/provider.py:384
-#: plugin_video_stremio/provider.py:419
+#: plugin_video_stremio/provider.py:369 plugin_video_stremio/provider.py:387
+#: plugin_video_stremio/provider.py:423
 msgid "Add to home screen"
 msgstr "Pridať na domovskú obrazovku"
 
-#: plugin_video_stremio/provider.py:460
+#: plugin_video_stremio/provider.py:464
 msgid "Select filtering"
 msgstr "Vyberte filtrovanie"
 
-#: plugin_video_stremio/provider.py:539
+#: plugin_video_stremio/provider.py:543
 msgid "Play trailer"
 msgstr "Prehrať trailer"
 
-#: plugin_video_stremio/provider.py:580
+#: plugin_video_stremio/provider.py:584
 msgid "Special"
 msgstr "Špeciálne"
 
-#: plugin_video_stremio/provider.py:582
+#: plugin_video_stremio/provider.py:586
 msgid "Season"
 msgstr "Sezóna"
 
-#: plugin_video_stremio/provider.py:686
+#: plugin_video_stremio/provider.py:649
+msgid "You have reached the limit and playback of another item is not available for you. Unlimited playback is only available for ArchivCZSK supporters."
+msgstr "Dosiahli ste limit a ďalšiu položku si už nemôžete prehrať. Neobmedzené prehrávanie je k dispozícii len pre podporovateľov ArchivCZSK."
+
+#: plugin_video_stremio/provider.py:716
 msgid "No playable stream found for this item"
 msgstr "Pre túto položku nebol nájdený žiadny prehrateľný stream"
 
-#: plugin_video_stremio/provider.py:702
+#: plugin_video_stremio/provider.py:733
 msgid "Please select stream"
 msgstr "Prosím vyberte stream"
 
-#: plugin_video_stremio/provider.py:785
+#: plugin_video_stremio/provider.py:828
 msgid "Trailers"
 msgstr "Upútavky"
 
-#: plugin_video_stremio/provider.py:791
+#: plugin_video_stremio/provider.py:834
 msgid "Trailer"
 msgstr "Upútavka"
 
-#: plugin_video_stremio/stremio.py:151
+#: plugin_video_stremio/stremio.py:235
 msgid "Error by calling stremio addon API"
 msgstr "Chyba pri volaní API stremio doplnku"
 
-#: plugin_video_stremio/stremio.py:294
+#: plugin_video_stremio/stremio.py:388
 msgid "Error by calling stremio API"
 msgstr "Chyba pri volaní rozhrania stremio API"
 
-#: plugin_video_stremio/stremio.py:321
+#: plugin_video_stremio/stremio.py:421
 msgid "Login failed. Probably wrong username or password provided."
 msgstr "Prihlásenie sa nepodarilo. Pravdepodobne ste zadali nesprávne používateľské meno alebo heslo."
 
-#: plugin_video_stremio/stremio.py:325
+#: plugin_video_stremio/stremio.py:425
 msgid "Login failed. Wrong response data received."
 msgstr "Prihlásenie sa nepodarilo. Boli prijaté nesprávne údaje odpovede."
 
@@ -207,8 +211,35 @@ msgstr ""
 msgid "PL"
 msgstr ""
 
-msgid "Enable adult content"
-msgstr "Povoliť obsah pre dospelých"
+msgid "Internal addons"
+msgstr "Interné doplnky"
+
+msgid "Prehraj.to"
+msgstr ""
+
+msgid "Webshare.cz"
+msgstr ""
+
+msgid "SkTOnline"
+msgstr ""
+
+msgid "CZ Dabing & Streaming"
+msgstr ""
+
+msgid "Cinemeta"
+msgstr ""
+
+#~ msgid "Enable integration with Prehraj.to addon"
+#~ msgstr "Povoliť integráciu s doplnkom Prehraj.to"
+
+#~ msgid "Enable integration with Webshare addon"
+#~ msgstr "Povoliť integráciu s doplnkom Webshare"
+
+#~ msgid "Enable integration with SkTOnline addon"
+#~ msgstr "Povoliť integráciu s doplnkom SkTOnline"
+
+#~ msgid "Enable adult content"
+#~ msgstr "Povoliť obsah pre dospelých"
 
 #~ msgid "Allow integration with Trakt.tv"
 #~ msgstr "Povoliť integráciu s Trakt.tv"

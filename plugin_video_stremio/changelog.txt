@@ -1,3 +1,14 @@
+1.4: 03.04.2026
+- základná funkcionalita je dostupná aj bez prihlásenia a pre všetkých
+- pridanie interných doplnkov, ktoré fungujú aj bez prihlásenia k stremio
+    * doplnok Cinemeta
+    * doplnok CZ Katalógy
+    * doplnok Prehraj.to (používa Prehraj.to doplnok z ArchivCZSK)
+    * doplnok Webshare (používa Webshare doplnok z ArchivCZSK)
+    * doplnok SkTOnline (používa SkTOnline doplnok z ArchivCZSK)
+    * interné doplnky je možné vypnúť v nastaveniach
+- vylepšené formátovanie názvov streamov pre ďalšie doplnky
+
 1.3: 27.03.2026
 - oprava preklepu pri nastavovaní roku u epizód
 
