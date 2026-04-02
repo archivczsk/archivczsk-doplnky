@@ -1,3 +1,6 @@
+2.10: 02.04.2026
+- added search API for other addons
+
 2.9: 14.01.2026
 - updated initialisation due changes in dependencies
 

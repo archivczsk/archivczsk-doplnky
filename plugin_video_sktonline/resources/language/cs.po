@@ -6,29 +6,32 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_sktonline\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-25 10:57+0200\n"
-"PO-Revision-Date: 2024-04-25 10:59+0200\n"
+"POT-Creation-Date: 2026-04-03 12:54+0200\n"
+"PO-Revision-Date: 2026-04-03 12:54+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.9\n"
 
-#: plugin_video_sktonline/provider.py:52
+#: plugin_video_sktonline/provider.py:49
 #, python-brace-format
 msgid "Login with provided AVS cookie failed. Visit {url} for instructions how to provide valid login cookie."
 msgstr "Přihlášení pomocí zadaného AVS cookie se nezdařilo. Navštivte stránku {url}, kde naleznete pokyny, jak zadat platný přihlašovací cookie."
 
-#: plugin_video_sktonline/provider.py:79
+#: plugin_video_sktonline/provider.py:76
 msgid "HTTP reponse code"
 msgstr "HTTP návratový kód"
 
-#: plugin_video_sktonline/provider.py:114
+#: plugin_video_sktonline/provider.py:151
 #, python-brace-format
 msgid "For starting playback you need to set valid AVS cookie. Visit {url} for instructions how to do so."
 msgstr "Pro spuštění přehrávání je potřeba nastavit platný AVS cookie. Pokyny, jak to provést, naleznete na adrese {url}."
+
+msgid "Number of remembered searches"
+msgstr "Počet uložených vyhledávání"
 
 #~ msgid "Login failed - check login name and password"
 #~ msgstr "Přihlášení selhalo - zkontrolujte přihlašovací jméno a heslo"

@@ -5,6 +5,7 @@ from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.string_utils import _I, _C, _B, decode_html, strip_accents
 from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.compat import quote
+from functools import partial
 import re
 
 COMMON_HEADERS = {
@@ -75,8 +76,29 @@ class SkTContentProvider(CommonContentProvider):
 			raise AddonErrorException(self._('HTTP reponse code') + ': %d' % response.status_code)
 
 	def search(self, keyword, search_id):
-		keyword = strip_accents(keyword)
-		return self.list_videos('search/videos?t=a&o=mr&type=public&search_query=' + quote(keyword))
+		resolved_items = None
+
+		if search_id == 'json':
+			# API for other addons - data is passed as JSON string in keyword parameter
+			data = keyword
+			keyword = data['keyword']
+			resolved_items = data.get('resolved_items')
+		else:
+			keyword = strip_accents(keyword)
+
+		url = 'search/videos?t=a&o=mr&type=public&search_query=' + quote(keyword)
+		if resolved_items is not None:
+			videos, _ = self.read_videos(url)
+
+			for video in videos:
+				resolved_items.append({
+					'title': video['title'],
+					'img': video['img'],
+					'duration': video['duration'],
+					'resolve_cbk': partial(self.resolve_stream, video['link']),
+				})
+		else:
+			return self.list_videos(url)
 
 	def root(self):
 		self.check_login()
@@ -86,26 +108,44 @@ class SkTContentProvider(CommonContentProvider):
 		for link, img, name, count in re.compile('col-sm-6.*?href="(.*?)".*?class="thumb-overlay.*?img src="(.*?)".*?title="(.*?)".*?pull-right.*?span.*?>([0-9]*?)<', re.DOTALL).findall(httpdata):
 			self.add_dir(name + " (" + count + ")", cmd=self.list_videos, url=link[1:] + "?t=a&o=mr&type=public")
 
-	def list_videos(self, url):
+	def read_videos(self, url):
 		httpdata = self.call_api(url)
 
+		ret = []
 		for link, img, name, duration in re.compile('href=".*?/video/([0-9]*?)/.*?thumb-overlay.*?img src="(.*?)".*?title="(.*?)".*?duration">(.*?)<', re.DOTALL).findall(httpdata):
-			info_labels = {
-				'plot': duration.strip(),
-			}
-			name = decode_html(name)
-			self.add_video(name, img, info_labels, cmd=self.resolve, name=name, url="video/" + link + "/")
+			ret.append({
+				'title': decode_html(name),
+				'img': img,
+				'duration': duration.strip(),
+				'link': "video/" + link + "/",
+			})
 
 		nextpage = re.compile('<a href="([^"]*?)" class="prevnext">&raquo;</a>', re.DOTALL).findall(httpdata)
-		if nextpage and nextpage[0]:
-			self.add_next(cmd=self.list_videos, url=nextpage[0])
+		return ret, nextpage and nextpage[0]
 
-	def resolve(self, name, url):
+	def list_videos(self, url):
+		videos, next_page = self.read_videos(url)
+		for video in videos:
+			info_labels = {
+				'plot': video['duration'],
+			}
+			self.add_video(video['title'], video['img'], info_labels, cmd=self.resolve, name=video['title'], url=video['link'])
+
+		if next_page:
+			self.add_next(cmd=self.list_videos, url=next_page)
+
+	def resolve_stream(self, url):
 		httpdata = self.call_api(url)
 
 		links = []
 		for link, res in re.compile('source src="(.*?)".*?res=\'(.*?)\'', re.DOTALL).findall(httpdata):
 			links.append((link, res,))
+
+		return links
+
+	def resolve(self, name, url):
+
+		links = self.resolve_stream(url)
 
 		if len(links) == 0 and not self.avs:
 			self.show_info(self._("For starting playback you need to set valid AVS cookie. Visit {url} for instructions how to do so.").format(url=self.LOGIN_INFO_URL))
