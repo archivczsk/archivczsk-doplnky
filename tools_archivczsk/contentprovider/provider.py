@@ -1057,10 +1057,10 @@ class CommonContentProvider(object):
 		# this is just a dummy implementation
 		return self.name.lower()
 
-	def open_simple_config(self, config_entries, title=None, s=True):
+	def open_simple_config(self, config_entries, title=None):
 		return False
 
-	def ensure_supporter(self):
+	def ensure_supporter(msg=None, add_bonus_msg=True):
 		return
 
 	def is_supporter(self):

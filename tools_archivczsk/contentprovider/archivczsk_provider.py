@@ -851,8 +851,8 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 
-	def open_simple_config(self, config_entries, title=None, s=True):
-		return client.openSimpleConfig(self.session, config_entries, title, s)
+	def open_simple_config(self, config_entries, title=None):
+		return client.openSimpleConfig(self.session, config_entries, title)
 
 	# #################################################################################################
 
@@ -867,8 +867,8 @@ class ArchivCZSKContentProvider(object):
 
 	# #################################################################################################
 
-	def ensure_supporter(self, msg=None):
-		client.ensure_supporter(self.session, msg)
+	def ensure_supporter(self, msg=None, add_bonus_msg=True):
+		client.ensure_supporter(self.session, msg, add_bonus_msg)
 
 	# #################################################################################################
 
