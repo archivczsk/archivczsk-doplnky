@@ -597,7 +597,13 @@ class StremioContentProvider(CommonContentProvider):
 			genres = [g.get('name','').capitalize() for g in filter(lambda x: (x.get('category') or '').lower() == 'genres', meta.get('links') or []) if g]
 
 		for v in filter(lambda x: x.get('season') == season, (meta.get('videos') or [])):
-			il = InfoLabels(meta['name'], auto_genres=True)
+			name = meta.get('name')
+			if not name and cached_item_data:
+				name = cached_item_data.title
+			else:
+				name = ''
+
+			il = InfoLabels(name, auto_genres=True)
 			il.desc = v.get('description')
 			il.year = unicode(v.get('releaseInfo') or v.get('released') or '').split('-')[0].split('–')[0] or None
 			il.genre = genres
