@@ -53,10 +53,11 @@ class WebshareContentProvider(CommonContentProvider):
 			menu = self.create_ctx_menu()
 			menu.add_menu_item(self._("Remove from watched"), cmd=self.remove_watched_item, item_id=item_id)
 
-			if isinstance(item_data['size'], str):
-				item_size = item_data['size']
-			else:
+
+			try:
 				item_size = self.convert_size(item_data['size'])
+			except:
+				item_size = item_data.get('size') or 'N/A'
 
 			self.add_video(item['title'] + _I(' [' + item_size + ']'), item['img'], menu=menu, cmd=self.resolve, video_title=item['title'], video_id=item['ident'], item=item)
 
