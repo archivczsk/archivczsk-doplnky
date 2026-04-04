@@ -26,7 +26,7 @@
 <addon id="plugin.video.sosac.ph" name="Sosáč" version="2.12" hash="afcc179b2f1c2770c9ca33e19b25f39f" rhash="3dad6a97846538930af8e8d347807677" />
 <addon id="plugin.video.stalker" name="Stalker" version="1.10" hash="2cbc3ff62137ae282b96802c72dd28bd" rhash="2cbc3ff62137ae282b96802c72dd28bd" />
 <addon id="plugin.video.stream-cinema" name="Stream Cinema" version="3.30" hash="4760a8e25e0a95e5124afde188ef93c7" rhash="dd6484fc4ed50ab7700dc8e6f4af4da0" />
-<addon id="plugin.video.stremio" name="Stremio" version="1.4" hash="77db223fd1e7d4c5eb49229089b433ca" rhash="56307d3b4ecf810b3aa22e6fea2222b0" />
+<addon id="plugin.video.stremio" name="Stremio" version="1.5" hash="e7edbe8acd9a3c97040aebb98d9d697e" rhash="b5f994e249767ff720f1ac501da05b4f" />
 <addon id="plugin.video.sweettv" name="Sweet.tv" version="1.25" hash="7943a5f77f7351c392468a0f924c8457" rhash="353764c28166233b14cecb532368cc1c" />
 <addon id="plugin.video.ta3.com" name="TA3.com" version="2.3" hash="e9e4ca73c961afa78477fc369612146b" rhash="a9a40d85f4a8afde8d197f5cab07cfb2" />
 <addon id="plugin.video.telly" name="Telly" version="1.9.0" hash="aae23747c70b0c3d6eac87563610d62c" rhash="468d71083682e63a0b456d54794e5f16" />
