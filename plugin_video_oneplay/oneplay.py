@@ -209,22 +209,13 @@ class Oneplay(object):
 
 			if DUMP_REQUESTS:
 				dump_json_request(resp, json_response)
-		elif json_response.get('result',{}).get('status') == 'Ok':
+		else:
 			if DUMP_REQUESTS:
 				dump_json_request(resp)
 
 			json_response = {
-				'response': {
-					'result': {
-						'status': 'Ok',
-					},
-					'data': json_response.get('data') or {}
-				}
+				'response': json_response
 			}
-		else:
-			ws.close()
-			self.cp.log_error("Wrong response received:\n%s" % resp.text)
-			self.showError(self._("Received wrong response from server"))
 
 		ws.close()
 
