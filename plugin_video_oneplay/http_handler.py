@@ -4,7 +4,7 @@ import traceback
 import base64
 from tools_archivczsk.http_handler.dash import DashHTTPRequestHandler
 from tools_archivczsk.http_handler.hls import HlsHTTPRequestHandler, HlsMasterProcessor
-from tools_archivczsk.date_utils import iso8601_duration_to_seconds
+from tools_archivczsk.date_utils import iso8601_duration_to_seconds, iso8601_to_datetime
 import json
 
 from time import time
@@ -231,6 +231,17 @@ class OneplayHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler):
 
 	def fix_startover(self, root):
 		root.set('startover', '1')
+
+		if not root.get('timeShiftBufferDepth'):
+			# buffer depth is required for startover to work - create new one by substracting availabilityStartTime and publishTime
+			try:
+				availability_start_time = iso8601_to_datetime(root.get('availabilityStartTime'))
+				publish_time = iso8601_to_datetime(root.get('publishTime'))
+				if availability_start_time and publish_time:
+					buffer_depth = (publish_time - availability_start_time).total_seconds()
+					root.set('timeShiftBufferDepth', 'PT{}S'.format(int(buffer_depth)))
+			except:
+				self.cp.log_exception()
 
 	# #################################################################################################
 
