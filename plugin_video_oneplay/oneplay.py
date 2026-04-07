@@ -24,7 +24,8 @@ DUMP_REQUESTS = False
 # #################################################################################################
 
 class Oneplay(object):
-	APP_VERSION = 'R8.14'
+	APP_VERSION = 'R9.18'
+	API_VERSION = '1.9'
 
 	def __init__(self, cp):
 		self.cp = cp
@@ -131,7 +132,7 @@ class Oneplay(object):
 		if self.access_token:
 			headers['Authorization'] = 'Bearer ' + self.access_token
 
-		url = 'https://http.cms.jyxo.cz/api/v1.8/' + endpoint
+		url = 'https://http.cms.jyxo.cz/api/v{}/{}'.format(self.API_VERSION, endpoint)
 
 		request_id = str(uuid.uuid4())
 		client_id = str(uuid.uuid4())
@@ -1096,7 +1097,7 @@ class Oneplay(object):
 						'type': 'tab',
 						'id': tab['id'],
 						'title': tab['label']['name'],
-						'img': self._get_img(tab['label']['style']['iconUrl']),
+						'img': self._get_img(tab['label']['style'].get('iconUrl')),
 						'mylist':  block.get("template") == "myList"
 					})
 			else:
