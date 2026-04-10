@@ -260,6 +260,7 @@ class ArchivCZSKContentProvider(object):
 		provider.is_supporter = self.is_supporter
 		provider.open_donate_dialog = self.open_donate_dialog
 		provider.get_http_handler = self.get_http_handler
+		provider.update_content = self.update_content
 
 		if not hasattr(provider, 'settings'):
 			provider.settings = self.addon.settings
@@ -567,10 +568,11 @@ class ArchivCZSKContentProvider(object):
 
 	def search_edit(self, search_id=None, what=''):
 		replacement = client.getTextInput(self.session, _('Search'), what)
+		if not replacement:
+			raise AddonSilentExitException()
 
-		if replacement != '':
-			self.searches.edit_search(search_id, what, replacement)
-			client.refresh_screen()
+		self.searches.edit_search(search_id, what, replacement)
+		client.refresh_screen()
 
 	# #################################################################################################
 
@@ -578,17 +580,18 @@ class ArchivCZSKContentProvider(object):
 		if what == '':
 			what = client.getTextInput(self.session, _('Search'))
 
-		if not what == '':
+		if not what:
+			raise AddonSilentExitException()
 
-			try:
-				maximum = int(self.provider.get_setting('keep-searches'))
-			except:
-				maximum = 10
+		try:
+			maximum = int(self.provider.get_setting('keep-searches'))
+		except:
+			maximum = 10
 
-			if save_history:
-				self.searches.add_search(search_id, what, maximum)
+		if save_history:
+			self.searches.add_search(search_id, what, maximum)
 
-			self.provider.search(what, search_id)
+		self.provider.search(what, search_id)
 
 	# #################################################################################################
 
@@ -889,3 +892,6 @@ class ArchivCZSKContentProvider(object):
 		return self.http_handler
 
 	# #################################################################################################
+
+	def update_content(self):
+		client.set_command('updatelist')
