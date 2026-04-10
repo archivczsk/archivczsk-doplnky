@@ -344,7 +344,7 @@ class StremioContentProvider(CommonContentProvider):
 		for item in items:
 			if supports_filtering:
 				menu = self.create_ctx_menu()
-				menu.add_menu_item(self._("Advanced filtering"), cmd=self.advanced_search_filter, keyword=keyword, search_id=search_id)
+				menu.add_menu_item(self._("Advanced filtering"), cmd=self.advanced_search_filter, keyword=keyword, search_id=search_id, update_content=search_id.get('params'))
 			else:
 				menu = {}
 
@@ -439,7 +439,7 @@ class StremioContentProvider(CommonContentProvider):
 		for item in items:
 			if supports_filtering:
 				menu = self.create_ctx_menu()
-				menu.add_menu_item(self._("Advanced filtering"), cmd=self.advanced_filter, addon_id=addon_id, cat_type=cat_type, cat_id=cat_id, extra=extra)
+				menu.add_menu_item(self._("Advanced filtering"), cmd=self.advanced_filter, addon_id=addon_id, cat_type=cat_type, cat_id=cat_id, extra=extra, update_content=params)
 			else:
 				menu = {}
 			self.add_item_uni(addon_id, item, menu, is_adult)
@@ -499,7 +499,7 @@ class StremioContentProvider(CommonContentProvider):
 
 	# #################################################################################################
 
-	def advanced_search_filter(self, keyword, search_id):
+	def advanced_search_filter(self, keyword, search_id, update_content=False):
 		params = self.get_advanced_filter_params(search_id.get('extra'))
 		if params == None:
 			return self.reload_screen()
@@ -507,14 +507,20 @@ class StremioContentProvider(CommonContentProvider):
 		search_id = search_id.copy()
 		search_id['params'] = params
 
+		if update_content:
+			self.update_content()
+
 		return self.search(keyword, search_id=search_id)
 
 	# #################################################################################################
 
-	def advanced_filter(self, addon_id, cat_type, cat_id, extra):
+	def advanced_filter(self, addon_id, cat_type, cat_id, extra, update_content=False):
 		params = self.get_advanced_filter_params(extra)
 		if params == None:
 			return self.reload_screen()
+
+		if update_content:
+			self.update_content()
 
 		return self.list_catalog(addon_id, cat_type, cat_id, params=params, extra=extra)
 
