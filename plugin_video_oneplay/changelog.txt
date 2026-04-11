@@ -1,3 +1,6 @@
+1.22 - 11.04.2026
+- oprava prihlásenia a zobrazenia zaregistrovaných zariadení po zmene oneplay API
+
 1.21 - 07.04.2026
 - oprava pádu pri vstupe do "môjho zoznamu"
 - oprava funkcionality pri použití synchrónnych volaní na strane servera

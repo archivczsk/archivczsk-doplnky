@@ -355,15 +355,7 @@ class Oneplay(object):
 		}
 		self.call_api('user.device.change', payload)
 
-		payload = {
-			"screen":"devices"
-		}
-
-		self.cp.log_debug("Requesting display setting")
-		response = self.call_api('setting.display', payload)
-
-		self.cp.log_debug("Checking registered devices")
-		for device in response['screen']['userDevices']['devices']:
+		for device in self.get_devices():
 			if device['id'] != device_id and device['name'] == self.device_id:
 				self.cp.log_debug("Removing old registered device")
 				self.device_remove(device['id'])
@@ -453,16 +445,6 @@ class Oneplay(object):
 
 	# #################################################################################################
 
-	def get_device_limit_info(self):
-		payload = {
-			"screen":"devices"
-		}
-
-		response = self.call_api('setting.display', payload)
-		return response['screen']['deviceLimit']['name']
-
-	# #################################################################################################
-
 	def get_devices(self):
 		payload = {
 			"screen":"devices"
@@ -471,7 +453,13 @@ class Oneplay(object):
 		response = self.call_api('setting.display', payload)
 
 		ret = []
-		for device in response.get('screen',{}).get('userDevices',{}).get('devices',[]):
+		devices = []
+		for block in response.get('screen',{}).get('blocks',[]):
+			if block.get('schema') == 'SettingUserDevicesBlock':
+				devices = block.get('devices',{}).get('devices',[])
+				break
+
+		for device in devices:
 			ret.append({
 				'name': device['name'],
 				'type': device['deviceType'],
