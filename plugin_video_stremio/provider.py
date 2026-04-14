@@ -746,7 +746,13 @@ class StremioContentProvider(CommonContentProvider):
 				stream_addon = streams[idx][0]
 
 		if stream.get('resolve_cbk'):
-			stream['url'] = stream['resolve_cbk']()
+			try:
+				stream['url'] = stream['resolve_cbk']()
+			except Exception as e:
+				self.log_error("Failed to resolve stream URL using callback")
+				self.log_exception()
+				raise AddonInfoException(self._("Failed to resolve stream URL") + ':\n%s' % str(e))
+
 			del stream['resolve_cbk']
 
 		self.log_debug("Selected stream from %s: %s" % (stream_addon, json.dumps(stream)))

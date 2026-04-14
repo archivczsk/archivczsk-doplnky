@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_stremio\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-14 13:21+0200\n"
-"PO-Revision-Date: 2026-04-14 13:24+0200\n"
+"POT-Creation-Date: 2026-04-14 13:59+0200\n"
+"PO-Revision-Date: 2026-04-14 14:01+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -106,23 +106,27 @@ msgstr "Speciální"
 msgid "Season"
 msgstr "Sezóna"
 
-#: plugin_video_stremio/provider.py:661
+#: plugin_video_stremio/provider.py:657
 msgid "You have reached the limit and playback of another item is not available for you. Unlimited playback is only available for ArchivCZSK supporters."
 msgstr "Dosáhli jste limitu a další položku již nelze přehrát. Neomezené přehrávání je k dispozici pouze pro podporovatele ArchivCZSK."
 
-#: plugin_video_stremio/provider.py:728
+#: plugin_video_stremio/provider.py:724
 msgid "No playable stream found for this item"
 msgstr "Pro tuto položku nebyl naleze žádný přehratelný stream"
 
-#: plugin_video_stremio/provider.py:745
+#: plugin_video_stremio/provider.py:741
 msgid "Please select stream"
 msgstr "Prosim zvolte stream"
 
-#: plugin_video_stremio/provider.py:840
+#: plugin_video_stremio/provider.py:754
+msgid "Failed to resolve stream URL"
+msgstr "Nepodařilo se načíst URL adresu streamu"
+
+#: plugin_video_stremio/provider.py:842
 msgid "Trailers"
 msgstr "Upoutávky"
 
-#: plugin_video_stremio/provider.py:846
+#: plugin_video_stremio/provider.py:848
 msgid "Trailer"
 msgstr "Upoutávka"
 
