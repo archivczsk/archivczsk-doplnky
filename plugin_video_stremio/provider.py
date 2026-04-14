@@ -184,7 +184,7 @@ class StremioContentProvider(CommonContentProvider):
 				search_query = il.search_query()
 
 				if item_type in ('movie', 'tv') and not item_id.startswith(self.collection_prefixes):
-					self.add_video(il, menu=menu, cmd=self.resolve_stream, video_title=il.title, item_type=item_type, item_id=item_id, streams=getattr(il, 'streams', None), search_query=search_query)
+					self.add_video(il, menu=menu, cmd=self.resolve_stream, video_title=il.format_title(False), item_type=item_type, item_id=item_id, streams=getattr(il, 'streams', None), search_query=search_query)
 				else:
 					self.add_dir(il, menu=menu, cmd=self.list_videos, addon_id=None, item_type=item_type, item_id=item_id, search_query=search_query)
 
@@ -549,7 +549,7 @@ class StremioContentProvider(CommonContentProvider):
 			menu.add_media_menu_item(self._("Play trailer"), cmd=self.resolve_trailer, trailers=item['trailers'])
 
 		if item['type'] in ('movie', 'tv') and not item['id'].startswith(self.collection_prefixes):
-			self.add_video(il, menu=menu, cmd=self.resolve_stream, video_title=item['name'], item_type=item['type'], item_id=item['id'], addon_id=addon_id, cached_item_data=il, streams=item.get('streams'), search_query=il.search_query())
+			self.add_video(il, menu=menu, cmd=self.resolve_stream, video_title=il.format_title(False), item_type=item['type'], item_id=item['id'], addon_id=addon_id, cached_item_data=il, streams=item.get('streams'), search_query=il.search_query())
 		else:
 			il.item_type = item['type']
 			il.item_id = item['id']
@@ -603,11 +603,7 @@ class StremioContentProvider(CommonContentProvider):
 			genres = [g.get('name','').capitalize() for g in filter(lambda x: (x.get('category') or '').lower() == 'genres', meta.get('links') or []) if g]
 
 		for v in filter(lambda x: x.get('season') == season, (meta.get('videos') or [])):
-			name = meta.get('name')
-			if not name and cached_item_data:
-				name = cached_item_data.title
-			else:
-				name = ''
+			name = meta.get('name') or (cached_item_data.title if cached_item_data else '')
 
 			il = InfoLabels(name, auto_genres=True)
 			il.desc = v.get('description')
@@ -629,7 +625,7 @@ class StremioContentProvider(CommonContentProvider):
 
 			il.img = v.get('poster') or v.get('thumbnail') or meta.get('poster') or meta.get('logo')
 			if il.active:
-				self.add_video(il, cmd=self.resolve_stream, video_title=v.get('name') or v.get('title'), item_type=meta['type'], addon_id=addon_id, item_id=v['id'], cached_item_data=cached_item_data, streams=v.get('streams'), search_query=search_query)
+				self.add_video(il, cmd=self.resolve_stream, video_title=il.format_title(False), item_type=meta['type'], addon_id=addon_id, item_id=v['id'], cached_item_data=cached_item_data, streams=v.get('streams'), search_query=search_query)
 			else:
 				self.add_video(il)
 
