@@ -236,7 +236,6 @@ class Webshare(object):
 		xml = self.call_ws_api('file_link', request_data)
 
 		if xml.find('status').text != 'OK':
-			self.login_data = {}
 			raise ResolveException(self.cp._("Failed to resolve file") + ": %s" % xml.find('message').text)
 
 		if self.cp.get_setting('cleanup_history'):
