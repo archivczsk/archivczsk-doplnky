@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_stremio\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-03 18:25+0200\n"
-"PO-Revision-Date: 2026-04-03 18:27+0200\n"
+"POT-Creation-Date: 2026-04-14 13:21+0200\n"
+"PO-Revision-Date: 2026-04-14 13:24+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -94,35 +94,35 @@ msgstr "Pridať na domovskú obrazovku"
 msgid "Select filtering"
 msgstr "Vyberte filtrovanie"
 
-#: plugin_video_stremio/provider.py:543
+#: plugin_video_stremio/provider.py:549
 msgid "Play trailer"
 msgstr "Prehrať trailer"
 
-#: plugin_video_stremio/provider.py:584
+#: plugin_video_stremio/provider.py:590
 msgid "Special"
 msgstr "Špeciálne"
 
-#: plugin_video_stremio/provider.py:586
+#: plugin_video_stremio/provider.py:592
 msgid "Season"
 msgstr "Sezóna"
 
-#: plugin_video_stremio/provider.py:649
+#: plugin_video_stremio/provider.py:661
 msgid "You have reached the limit and playback of another item is not available for you. Unlimited playback is only available for ArchivCZSK supporters."
 msgstr "Dosiahli ste limit a ďalšiu položku si už nemôžete prehrať. Neobmedzené prehrávanie je k dispozícii len pre podporovateľov ArchivCZSK."
 
-#: plugin_video_stremio/provider.py:716
+#: plugin_video_stremio/provider.py:728
 msgid "No playable stream found for this item"
 msgstr "Pre túto položku nebol nájdený žiadny prehrateľný stream"
 
-#: plugin_video_stremio/provider.py:733
+#: plugin_video_stremio/provider.py:745
 msgid "Please select stream"
 msgstr "Prosím vyberte stream"
 
-#: plugin_video_stremio/provider.py:828
+#: plugin_video_stremio/provider.py:840
 msgid "Trailers"
 msgstr "Upútavky"
 
-#: plugin_video_stremio/provider.py:834
+#: plugin_video_stremio/provider.py:846
 msgid "Trailer"
 msgstr "Upútavka"
 
@@ -165,6 +165,9 @@ msgstr "Ukladať pozíciu prehrávania u videných položiek"
 
 msgid "Don't store if play position is more then (in %)"
 msgstr "Neukladať pozíciu prehrávania ak je viac ako (v %)"
+
+msgid "Automaticaly search and download external subtitles"
+msgstr "Automatické vyhľadávanie a sťahovanie externých titulkov"
 
 msgid "Start subtitles automatically"
 msgstr "Automaticky spustiť titulky"

@@ -9,6 +9,7 @@
 	<setting label="Store play position of last seen entries" id="save-last-play-pos" type="bool" default="false"/>
 	<setting label="Don't store if play position is more then (in %)" id="last-play-pos-limit" type="labelenum" values="80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100" default="95"/>
 <!--	<setting label="Allow integration with Trakt.tv" id="trakt_enabled" type="bool" default="false"/> -->
+	<setting label="Automaticaly search and download external subtitles" id="external-subtitles" type="bool" default="true"/>
 	<setting label="Start subtitles automatically" id="subs-autostart" type="keyenum" values="always;Always|undubbed;When undubbed|never;Never" default="undubbed" />
 	<setting label="Start forced subtitles automatically" id="forced-subs-autostart" type="bool" default="true" />
 	<setting label="Language of dubbed entries" id="dubbed-lang" type="keyenum" values="auto;Auto|cs;CZ|sk;SK|cs+sk;CZ &amp; SK|sk+cs;SK &amp; CZ|en;EN|de;DE|hu;HU|pl;PL" default="auto" />

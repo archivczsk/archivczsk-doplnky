@@ -756,7 +756,7 @@ class StremioContentProvider(CommonContentProvider):
 		self.log_debug("Selected stream from %s: %s" % (stream_addon, json.dumps(stream)))
 
 		data_item = {
-			'subs': self.download_subtitles(item_type, item_id, stream.get('behaviorHints')),
+			'subs': self.download_subtitles(item_type, item_id, stream.get('behaviorHints')) if self.get_setting('external-subtitles') else None,
 			'item_type': item_type,
 			'item_id': item_id,
 			'cached_item_data': cached_item_data
