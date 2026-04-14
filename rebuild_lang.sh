@@ -12,6 +12,12 @@ else
 fi
 
 ADDON="$1"
+
+if [ ! -d ${ADDON} ] ; then
+	echo "Addon directory ${ADDON} doesn't exists"
+	exit 1
+fi
+
 PY_FILES=$(find $ADDON -name '*.py')
 LOCALE_DIR=${ADDON}/resources/language
 mkdir -p $LOCALE_DIR
