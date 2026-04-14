@@ -100,7 +100,7 @@ class StremioAddon(StremioAddonTitleFormatter):
 		self.req_session = self.cp.get_requests_session()
 
 		if manifest == None:
-			response = self.req_session.get(self.TRANSPORT_URL)
+			response = self.req_session.get(url)
 			response.raise_for_status()
 			manifest = response.json()
 
@@ -429,6 +429,11 @@ class StremioClient(object):
 
 	# ##################################################################################################################
 
+	def get_custom_addons(self):
+		return self.cp.load_cached_data('custom_addons') or []
+
+	# ##################################################################################################################
+
 	def load_addons(self):
 		data = {
 			'type': "AddonCollectionGet",
@@ -442,7 +447,7 @@ class StremioClient(object):
 		else:
 			resp = self.call_api('addonCollectionGet', data)
 
-		for addon_desc in (resp.get('addons') or []):
+		for addon_desc in (resp.get('addons') or []) + self.get_custom_addons():
 			self.cp.log_debug("Loading addon: %s" % addon_desc.get('transportUrl'))
 			try:
 				addon = StremioAddon(self.cp, addon_desc['transportUrl'], addon_desc.get('manifest'))
