@@ -1,3 +1,6 @@
+1.16.0:
+- synchronizácia kódu s kodi doplnkom
+
 1.15.0:
 - oprava po zmenách na stránke (vďaka bluedawe za úpravu)
 
