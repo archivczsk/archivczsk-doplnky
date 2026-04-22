@@ -261,6 +261,7 @@ class ArchivCZSKContentProvider(object):
 		provider.open_donate_dialog = self.open_donate_dialog
 		provider.get_http_handler = self.get_http_handler
 		provider.update_content = self.update_content
+		provider.check_for_abort = self.check_for_abort
 
 		if not hasattr(provider, 'settings'):
 			provider.settings = self.addon.settings
@@ -887,7 +888,7 @@ class ArchivCZSKContentProvider(object):
 
 	def get_http_handler(self):
 		if self.http_handler is None:
-			raise Exception("HTTP handler is not registered using ArchivCZSKContentProvider or you call this method during __init__ when when it is not yet available!")
+			raise Exception("HTTP handler is not registered using ArchivCZSKContentProvider or you call this method during __init__ when it is not yet available!")
 
 		return self.http_handler
 
@@ -895,3 +896,10 @@ class ArchivCZSKContentProvider(object):
 
 	def update_content(self):
 		client.set_command('updatelist')
+
+	# #################################################################################################
+
+	def check_for_abort(self):
+		return client.check_for_abort()
+
+	# #################################################################################################

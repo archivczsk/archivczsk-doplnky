@@ -1103,3 +1103,9 @@ class CommonContentProvider(object):
 		It is usefull when for sorting and filtering content.
 		'''
 		return
+
+	def check_for_abort(self):
+		'''
+		Checks if user requested to abort current operation (by hitting back or exit button). If it returns True, then you should stop your work.
+		'''
+		return False
