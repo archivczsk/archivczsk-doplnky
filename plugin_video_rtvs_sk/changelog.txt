@@ -1,3 +1,6 @@
+1.17.0:
+- oprava pádov v sekcii rádio
+
 1.16.0:
 - synchronizácia kódu s kodi doplnkom
 

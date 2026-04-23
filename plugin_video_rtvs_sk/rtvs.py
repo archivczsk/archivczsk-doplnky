@@ -185,6 +185,14 @@ class RtvsContentProvider(ContentProvider):
 		elif url.find('#live#') == 0:
 			return self.live()
 
+		elif url.find('ord=az') != -1 and url.find('l=') != -1:
+			self.info('AZ listing: %s' % url)
+			if url.find('&radio=1') == -1:
+				return self.list_az(util.request(self._fix_url(url)))
+			else:
+				self.base_url = self._get_url(True)
+				return self.list_az_radio(util.request(self._fix_url_radio(url)))
+
 		elif url.find("#date_radio#") == 0 or (url.find("radio=1") != -1 and url.find('ord=dt') == -1):
 			d = re.search('#date(?:_radio|)#(?P<month>[\d]{1,2})\.(?P<year>[\d]{4})', url)
 			month = d.group('month')
@@ -214,14 +222,6 @@ class RtvsContentProvider(ContentProvider):
 		elif url.find("#extra_radio#") == 0:
 			self.base_url = self._get_url(True)
 			return self.get_radio_archiv_extra()
-
-		elif url.find('ord=az') != -1 and url.find('l=') != -1:
-			self.info('AZ listing: %s' % url)
-			if url.find('&radio=1') == -1:
-				return self.list_az(util.request(self._fix_url(url)))
-			else:
-				self.base_url = self._get_url(True)
-				return self.list_az_radio(util.request(self._fix_url_radio(url)))
 
 		elif url.find('/archiv/extra/') != -1:
 			self.base_url = self._get_url(True)
@@ -641,9 +641,11 @@ class RtvsContentProvider(ContentProvider):
 		prev_url = re.sub('&amp;', '&', prev_url)
 		self.info("<list_episodes> prev_url: %s" % prev_url)
 		if prev_url.find('_radio_') == -1:
+			radio_url = False
 			for m in re.finditer(LISTING_ITER_RE, page, re.IGNORECASE | re.DOTALL):
 				episodes.append([self._fix_url(re.sub('&amp;', '&', m.group('url'))), m])
 		else:
+			radio_url = True
 			for m in re.finditer(LISTING_ITER_RE, page, re.IGNORECASE | re.DOTALL):
 				episodes.append([self._fix_url_radio(re.sub('&amp;', '&', m.group('url'))), m])
 
@@ -655,7 +657,7 @@ class RtvsContentProvider(ContentProvider):
 			item = self.list_episode(p)
 			item['url'] = re.sub('&amp;', '&', m.group('url'))
 			if not data_json:
-				data_json = self.data_web(util.request(self._fix_url(item['url'])))
+				data_json = self.data_web(util.request(self._fix_url_radio(item['url']) if radio_url else self._fix_url(item['url'])))
 
 			if data_json:
 				item['title'] = "%s (%s. %s)" % (item['title'] or data_json['name'], dnum, current_date)
