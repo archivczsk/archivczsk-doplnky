@@ -640,6 +640,12 @@ class ArchivCZSKContentProvider(object):
 			info_labels = info_labels or title()
 			title = title.format_title()
 
+		if isinstance(info_labels, InfoLabels):
+			if info_labels.lazy_load:
+				info_labels = (info_labels.export(), info_labels,)
+			else:
+				info_labels = info_labels.export()
+
 		client.add_dir(title, self.action(cmd, **cmd_args), image=img, infoLabels=info_labels, menuItems=menu, video_item=False, dataItem=data_item, traktItem=trakt_item)
 
 	# #################################################################################################
@@ -649,6 +655,12 @@ class ArchivCZSKContentProvider(object):
 			img = img or title.img
 			info_labels = info_labels or title()
 			title = title.format_title()
+
+		if isinstance(info_labels, InfoLabels):
+			if info_labels.lazy_load:
+				info_labels = (info_labels.export(), info_labels,)
+			else:
+				info_labels = info_labels.export()
 
 		client.add_dir(title if title else _B(_('Search')), self.action(self.search_list, search_id=search_id, save_history=save_history), image=img if img else _icon('search.png'), infoLabels=info_labels, search_folder=True)
 

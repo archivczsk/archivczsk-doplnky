@@ -129,7 +129,7 @@ class InfoLabels(object):
 		self.duration = None            # media item duration in seconds
 		self.filename = None            # filename used for download (will be auto generated if not set)
 		self.episode_name = None        # episode name - tv show name is set in title or epg_title (when TV channel view is used)
-		self.season_num = None          # season number (if knonw)
+		self.season_num = None          # season number (if known)
 		self.episode_num = None         # episode number (if known) - used to generate proper series and episodes code
 		self.img = None                 # path to the item image (or list of images)
 		self.img_cache = None           # If image cache should be used (default) or False if fresh image should be loaded every time image is displayed

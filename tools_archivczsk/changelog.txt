@@ -1,3 +1,8 @@
+3.13 - 24.04.2026
+    - search folder gui improvements
+    - added api for addons to check, if running task should be aborted
+    - added support for prefilled + lazy load InfoLabels at the same time
+
 3.12 - 31.03.2026
     - added search query builder into InfoLabels
 
