@@ -72,7 +72,7 @@ class MagioGO(object):
 	]
 
 	os_version = '12.0'
-	app_version = '4.1.0'
+	app_version = '4.1.5'
 
 	def __init__(self, content_provider):
 		self.cp = content_provider
@@ -138,7 +138,7 @@ class MagioGO(object):
 			self.log_function("Failed to get last app version: response code = %d" % response.status_code )
 			return
 
-		ver_text = BeautifulSoup(response.content, "html.parser").find('section', {'id': 'mostRecentVersion'}).find('article', {'class': 'overview'}).find('h4').get_text()
+		ver_text = BeautifulSoup(response.content, "html.parser").find('section', {'id': 'mostRecentVersion'}).find('div', {'aria-labelledby': "mostRecentVersion"}).find_all('span')[-1].get_text()
 
 		if ver_text and ver_text.startswith('Version '):
 			self.app_version = ver_text.split(' ')[1]
@@ -418,9 +418,9 @@ class MagioGO(object):
 			else:
 				raise AddonErrorException( '%s' % response.get('errorMessage', response["errorCode"]))
 
-#		self.log_function("Stream URL for channel %s: %s" % (channel_id, url))
+#		self.log_function("Stream URL for channel %s: %s" % (stream_id, url))
 
-		return url
+		return url.replace("OTT_SMALLSCREEN_DASH_10", "OTT_BIGSCREEN_DASH_4_4K")
 
 	# #################################################################################################
 
