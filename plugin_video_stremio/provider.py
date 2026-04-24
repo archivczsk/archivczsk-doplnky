@@ -787,7 +787,7 @@ class StremioContentProvider(CommonContentProvider):
 		if stream.get('infoHash'):
 			# torrent
 			info_hash = stream.get('infoHash')
-			file_idx = stream.get('fileIdx', -1)
+			file_idx = stream.get('fileIdx', 0)
 			trackers = stream.get('sources')
 			if self.service.probe(info_hash, file_idx, trackers):
 				self.add_play(video_title, self.service.get_stream(info_hash, file_idx, trackers), settings=settings, data_item=data_item)
