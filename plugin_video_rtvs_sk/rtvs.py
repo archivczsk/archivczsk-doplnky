@@ -27,11 +27,13 @@ import urllib
 try:
 	import cookielib
 	import urllib2
+	from urlparse import urljoin
 #Python 3
 except:
 	import http.cookiejar
 	cookielib = http.cookiejar
 	urllib2 = urllib.request
+	from urllib.parse import urljoin
 
 
 import calendar
@@ -563,7 +565,7 @@ class RtvsContentProvider(ContentProvider):
 		if _next:
 			item = self.dir_item()
 			item['type'] = 'next'
-			item['url'] = urllib.parse.urljoin(HOST, _next.group(1).replace("&amp;", "&"))
+			item['url'] = urljoin(HOST, _next.group(1).replace("&amp;", "&"))
 			self._filter(result, item)
 		return result
 
