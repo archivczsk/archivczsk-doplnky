@@ -1,1 +1,19 @@
-0.11 - Initial release
+0.11 - 11.05.2026
+- prvá verzia doplnku pre Tvheadend DVR server
+- živé vysielanie kanálov cez Tvheadend HTTP API
+- prehrávanie archívu (DVR nahrávky)
+- podpora EPG (aktuálny a nasledujúci program)
+- automatické generovanie userbouquetu (TV + Rádio)
+- sťahovanie piconov z Tvheadend imagecache (SRP aj SNP formát)
+- export XML EPG pre epgimport plugin
+- priame vkladanie EPG do Enigma2
+- podpora kategórií v userbouquete
+- vlastný názov bouquetu pre TV a Rádio
+- nastaviteľný interval automatického obnovenia bouquetu
+- výber TVH stream profilu (pass/mpegts/matroska/htsp)
+- podpora HTTP Digest/Basic autentifikácie
+- zmysluplné hlásenie chyby pri použití Python 2
+- cache pre kanály a DVR záznamy (ExpiringLRUCache)
+- opakované pokusy pri sťahovaní ikoniek (3x pri timeout, 2x pri chybe servera)
+- efektívna synchronizácia picon workera cez threading.Event
+- slovenský a český preklad
