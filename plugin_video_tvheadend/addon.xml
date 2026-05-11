@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.tvheadend" name="Tvheadend" version="0.12">
+<addon id="plugin.video.tvheadend" name="Tvheadend" version="0.11">
 	<requires>
 		<import addon="enigma2.archivczsk" version="3.5.0"/>
 		<import addon="tools.archivczsk" version="3.4"/>

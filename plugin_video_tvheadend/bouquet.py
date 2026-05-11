@@ -892,16 +892,20 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 			except Exception:
 				pass
 			if last and (now - last) < 43200:
-				picon_dir_check = preferred_dir or "/media/hdd/picon"
-				try:
-					# Počítaj priame PNG súbory (nie symlinky)
-					count = len([f for f in os.listdir(picon_dir_check)
-								 if f.endswith('.png') and
-								 not os.path.islink(os.path.join(picon_dir_check, f))])
-					if count > 50:
-						return
-				except Exception:
-					pass
+				# Skontroluj všetky štandardné picon adresáre
+				picon_count = 0
+				for pd in (preferred_dir, '/usr/share/enigma2/picon', '/media/hdd/picon', '/media/usb/picon'):
+					if not pd:
+						continue
+					try:
+						if os.path.isdir(pd):
+							picon_count += len([f for f in os.listdir(pd)
+											 if f.endswith('.png') and
+											 not os.path.islink(os.path.join(pd, f))])
+					except Exception:
+						pass
+				if picon_count > 50:
+					return
 		except Exception:
 			pass
 

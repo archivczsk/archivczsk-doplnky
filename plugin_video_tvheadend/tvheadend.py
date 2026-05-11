@@ -369,14 +369,26 @@ class Tvheadend(object):
 				except Exception:
 					pass
 
-			# Stamp neplatny ak je picon adresar prazdny
+			# Stamp je neplatný ak je picon adresár prázdny – napr. po reinstalácii
 			picon_dir_empty = True
-			try:
-				pd = '/usr/share/enigma2/picon'
-				if os.path.isdir(pd):
-					picon_dir_empty = len([f for f in os.listdir(pd) if f.endswith('.png')]) == 0
-			except Exception:
-				pass
+			for pd in ('/usr/share/enigma2/picon', '/media/hdd/picon', '/media/usb/picon'):
+				try:
+					if os.path.isdir(pd):
+						if len([f for f in os.listdir(pd) if f.endswith('.png')]) > 0:
+							picon_dir_empty = False
+							break
+				except Exception:
+					pass
+
+			# Stamp pre kopírovanie – zmaž ak je picon adresár prázdny
+			_PICON_COPY_STAMP = '/tmp/archivczsk_tvheadend_picon_copy.stamp'
+			if picon_dir_empty:
+				try:
+					if os.path.isfile(_PICON_COPY_STAMP):
+						os.remove(_PICON_COPY_STAMP)
+						self._log_picon('Picon dir empty – removed copy stamp')
+				except Exception:
+					pass
 
 			if last and (now - last) < ttl and cache_has_files and not picon_dir_empty:
 				self._log_picon('Picon cache is fresh (last=%d, ttl=%d), skipping' % (last, ttl))
