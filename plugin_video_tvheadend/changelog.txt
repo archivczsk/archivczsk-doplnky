@@ -1,9 +1,6 @@
 0.13 - 12.05.2026
 - oprava automatického sťahovania piconov po čistej inštalácii prijímača
 
-0.13 - 12.05.2026
-- oprava automatického sťahovania piconov po čistej inštalácii prijímača
-
 0.12 - 11.05.2026
 - oprava zobrazovania zoznamu zmien
 
