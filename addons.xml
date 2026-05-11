@@ -32,7 +32,7 @@
 <addon id="plugin.video.telly" name="Telly" version="1.9.0" hash="aae23747c70b0c3d6eac87563610d62c" rhash="468d71083682e63a0b456d54794e5f16" />
 <addon id="plugin.video.tipostv" name="Tipos TV" version="1.2" hash="e337662a26d2ac0bc6f86b3d1c44f64f" rhash="cf255ffe91148173ea4fd52bfcd8dfd8" />
 <addon id="plugin.video.tvcom.cz" name="tvcom.cz" version="1.6" hash="ccf4617244add2159db9a82bdae810c5" rhash="ccf4617244add2159db9a82bdae810c5" />
-<addon id="plugin.video.tvheadend" name="Tvheadend" version="0.11" hash="b3a6bab0cf760d17f3c04d5725fb58f0" rhash="88a57fb86a1e6c0d3125bb4bafa3e54b" />
+<addon id="plugin.video.tvheadend" name="Tvheadend" version="0.12" hash="15036ae9ce14ef2f8bec6c12266f522c" rhash="111c175bd15e81d214cb58e7c414b6cd" />
 <addon id="plugin.video.tvlux" name="TV Lux" version="1.1" hash="645da0301ef29f55b4e4686bf82139a2" rhash="65e6a480e3c73af0d3a7b515b554e51e" />
 <addon id="plugin.video.tvnoe" name="TV Noe" version="1.1" hash="569ae4fe72ae953f49da90fa22d9ca4a" rhash="c44ee161a8dfc1e367061b7f6eac0e69" />
 <addon id="plugin.video.tvseznam" name="Televize Seznam" version="1.10" hash="d8afda7516c7dfa3a802f6d26a20ea2f" rhash="d8afda7516c7dfa3a802f6d26a20ea2f" />
