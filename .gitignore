@@ -6,3 +6,6 @@
 hashes
 *.mo
 atk_client.py
+release_tvh.sh
+plugin_video_tvheadend*.zip
+plugin_video_tvheadend.bak_*/
