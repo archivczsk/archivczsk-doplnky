@@ -4,5 +4,7 @@ from tools_archivczsk.contentprovider.archivczsk_provider import ArchivCZSKConte
 from .provider import TvheadendContentProvider
 from .http_handler import TvheadendHTTPRequestHandler
 
+
 def main(addon):
-	return ArchivCZSKContentProvider(TvheadendContentProvider, addon, http_cls=TvheadendHTTPRequestHandler)
+	return ArchivCZSKContentProvider(TvheadendContentProvider, addon,
+	                                  http_cls=TvheadendHTTPRequestHandler)

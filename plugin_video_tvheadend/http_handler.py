@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from Plugins.Extensions.archivCZSK.engine.httpserver import AddonHttpRequestHandler
 
+
 class TvheadendHTTPRequestHandler(AddonHttpRequestHandler):
 	playlive_uri = "/tvheadend/playlive/"
 
@@ -15,8 +16,10 @@ class TvheadendHTTPRequestHandler(AddonHttpRequestHandler):
 		if not key:
 			return self.reply_error404(request)
 		try:
-			if not self.cp.login(silent=True):
-				return self.reply_error404(request)
+			# FIX 0.48: nevolaj plné self.cp.login() — get_url_by_channel_key()
+			# si interne spraví fast-path login cez TTL cache.
+			# Pôvodné volanie login(silent=True) pri každom playback-u robilo
+			# zbytočný cleanup/init/refresh chain.
 			url = self.cp.get_url_by_channel_key(key)
 		except Exception:
 			url = ""

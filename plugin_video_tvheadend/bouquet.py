@@ -31,11 +31,15 @@ except NameError:
 # urllib parsing (py3: urllib.parse, py2: urlparse)
 try:
 	import urllib.parse as urllib_parse
+	from urllib.parse import unquote as _url_unquote
 except Exception:
 	try:
 		import urlparse as urllib_parse
+		from urllib import unquote as _url_unquote
 	except Exception:
 		urllib_parse = None
+		def _url_unquote(s):
+			return s
 
 from tools_archivczsk.generator.bouquet_xmlepg import BouquetXmlEpgGenerator
 
@@ -49,6 +53,19 @@ try:
 except Exception:
 	_tvh_picon_ready = None
 
+# FIX 0.48b: import 404 negative cache helpers
+try:
+	from .tvheadend import (_picon_url_in_404_cache as _tvh_picon_in_404,
+	                         _picon_mark_404 as _tvh_picon_mark_404,
+	                         _picon_404_count as _tvh_picon_404_count)
+except Exception:
+	def _tvh_picon_in_404(url):
+		return False
+	def _tvh_picon_mark_404(url):
+		pass
+	def _tvh_picon_404_count():
+		return 0
+
 # ✅ We will override default bouquet generator (without editing bouquet_xmlepg.py)
 try:
 	from tools_archivczsk.generator.bouquet import BouquetGeneratorTemplate
@@ -56,8 +73,42 @@ except Exception:
 	# fallback (just in case of different import path)
 	from tools_archivczsk.generator.bouquet_xmlepg import BouquetGeneratorTemplate
 
+# FIX 0.48j: import persistent data path helper
+from ._paths import data_path
 
-_PICON_LOG = "/tmp/archivczsk_tvheadend_picons.log"
+
+# FIX 0.48j: _PICON_LOG odstránené — logy idú cez print() do archivCZSK.log
+# (sledovať cez `grep '\[plugin.tvheadend' /tmp/archivCZSK.log`)
+
+# FIX 0.48e: stamp pre last-EPG-inject timestamp. Zapíše sa po každej úspešnej
+# inject_tvh_epg_into_enigma() — provider.py:_maybe_auto_inject_epg() ho používa
+# na rozhodnutie či treba spustiť ďalšiu injekciu (interval-based).
+# FIX 0.48j: persistent data dir
+_EPG_INJECT_STAMP = data_path("tvh_epg_inject.stamp")
+
+# FIX 0.48b: module-level debounce stamp pre download_picons_from_bouquets.
+# Framework BouquetXmlEpgGenerator volá _post() pri každom channel_type
+# (tv + radio = 2×). Bez debouncu sa logika kopírovania a fallback
+# downloadov spúšťa 2× po sebe → log spam + zbytočná záťaž.
+# FIX 0.50beta: locky inicializované eagerly pri importe modulu namiesto
+# lazy v rámci funkcie. Lazy init `if X is None: X = Lock()` mal race
+# condition keď 2 thready prešli kontrolou predtým ako jeden vytvoril
+# inštanciu — druhý prepísal lock cudzou inštanciou a debouncing stratil
+# atomicitu. Eager init je O(1) pri starte a deterministické.
+_DOWNLOAD_PICONS_LOCK = threading.Lock() if threading is not None else None
+_LAST_DOWNLOAD_PICONS_TS = [0]
+_DOWNLOAD_PICONS_DEBOUNCE_SEC = 30  # min interval medzi behom
+
+# FIX 0.48c: debounce pre celý refresh_userbouquet_start._post() callback.
+# Predtým debouncoval len picon copy step (#FIX 0.48b), ale celý _post()
+# obsahuje aj _fix_radio_bouquet_filenames() + eDVBDB.reloadBouquets() +
+# OpenWebif HTTP request — tie bežali 2× za sebou (raz pre TV, raz pre Radio
+# channel_type). Aplikujeme rovnakú debounce logiku ako pri picon copy,
+# 30 sekundové okno je dostatočné na pokrytie tv+radio framework cyklu.
+# FIX 0.50beta: eager init (rovnaký dôvod ako _DOWNLOAD_PICONS_LOCK).
+_POST_CALLBACK_LOCK = threading.Lock() if threading is not None else None
+_LAST_POST_CALLBACK_TS = [0]
+_POST_CALLBACK_DEBOUNCE_SEC = 30
 
 
 class CustomBouquetGenerator(BouquetGeneratorTemplate):
@@ -148,13 +199,16 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 			'userbouquet_custom_name_tv',
 			'userbouquet_custom_name_radio',
 
-			'enable_xmlepg',
-			'xmlepg_dir',
-			'xmlepg_days',
+			# FIX 0.48e: enable_xmlepg/xmlepg_dir/xmlepg_days odstránené —
+			# nahradené direct injection do eEPGCache cez tvh_epg_inject_interval.
 			'enable_picons',
 			'player_name',
 			'enigmaepg_days',
 			'bouquet_refresh_interval',
+
+			# FIX 0.48e: nový interval pre auto-injection (nahrádza
+			# tvh_inject_epg_to_enigma bool z 0.48d). 0 = vypnuté.
+			'tvh_epg_inject_interval',
 		)
 
 		# ✅ support TV + RADIO
@@ -166,6 +220,7 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 		self._channels = []
 		self._key_to_url = {}
 		self._epg_cache = None
+		self._epg_cache_ts = 0  # FIX 0.48c: TTL stamp pre _epg_cache
 		self._tagmap = None
 
 		# ✅ TAG ORDER CACHE (sorting categories according to TVH "index")
@@ -177,10 +232,12 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 	# -------------------------------------------------
 
 	def _log(self, msg):
+		"""FIX 0.48j: log cez print() namiesto vlastného súboru. Zapisuje sa
+		do /tmp/archivCZSK.log cez stdout redirection ArchivCZSK frameworku.
+		Sleduj cez: `grep '\\[plugin.tvheadend.bouquet\\]' /tmp/archivCZSK.log`
+		"""
 		try:
-			ts = time.strftime("%Y-%m-%d %H:%M:%S")
-			with open(_PICON_LOG, "a") as f:
-				f.write("[%s] %s\n" % (ts, msg))
+			print('[plugin.tvheadend.bouquet] %s' % msg)
 		except Exception:
 			pass
 
@@ -227,6 +284,22 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 			return default
 
 	def get_setting(self, name):
+		# FIX 0.48e: XML EPG cesta bola odstránená — pre staré inštalácie
+		# kde užívateľ má enable_xmlepg=true v /etc/enigma2/settings (z 0.48d
+		# a starších) vrátime False, aby framework neprodukoval XML súbory.
+		# Týmto sa nezbavíme legacy záznamu, ale efektívne ho prepíšeme.
+		if name == 'enable_xmlepg':
+			return False
+		if name == 'xmlepg_dir':
+			return ''
+		if name == 'xmlepg_days':
+			return 0
+		# FIX 0.48e: tvh_inject_epg_to_enigma (bool z 0.48d) odstránené —
+		# nahradené tvh_epg_inject_interval. Pre legacy True hodnotu zachováme
+		# spätnú kompatibilitu: ak nový setting nie je nastavený a starý
+		# bool je True, použijeme default interval 14400s (4h).
+		# Pre len-vnútorné použitie pridáme proxy meno '_inject_epg_enabled'.
+
 		try:
 			val = self.cp.get_setting(name)
 		except Exception:
@@ -237,12 +310,18 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
 		if name in (
 			"enable_userbouquet", "enable_userbouquet_radio",
-			"userbouquet_categories", "enable_xmlepg",
-			"enable_picons"
+			"userbouquet_categories",
+			"enable_picons",
 		):
 			if val is not None:
 				return self._to_bool(val, default=False)
 			return self._to_bool(raw, default=False)
+
+		# FIX 0.48e: nový interval setting parsovaný ako int (sekundy)
+		if name == 'tvh_epg_inject_interval':
+			if val is not None:
+				return self._to_int(val, default=14400)
+			return self._to_int(raw, default=14400)
 
 		if name in ("xmlepg_days", "enigmaepg_days"):
 			if val is not None:
@@ -413,6 +492,7 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 		self._channels = []
 		self._key_to_url = {}
 		self._epg_cache = None
+		self._epg_cache_ts = 0   # FIX 0.48c: reset TTL stamp pri reload kanálov
 		self._tagmap = None
 
 		# reset tag-order cache
@@ -599,16 +679,13 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 		- potom odstran vsetko okrem a-z0-9
 		'JOJ +1 HD' -> 'jojplus1hd.png'
 		'Jednotka HD' -> 'jednotkahd.png'
+
+		FIX 0.48c: používame self._strip_accents (tools_archivczsk-backed)
+		namiesto duplicitnej unicodedata-implementácie.
 		"""
 		if not channel_name:
 			return None
-		import unicodedata as _ud
-		s = (channel_name or "").strip().lower()
-		try:
-			s = _ud.normalize("NFKD", s)
-			s = "".join(c for c in s if not _ud.combining(c))
-		except Exception:
-			pass
+		s = self._strip_accents((channel_name or "").strip().lower())
 		s = s.replace("&", "and").replace("+", "plus").replace("*", "star")
 		s = re.sub(r"[^a-z0-9]", "", s)
 		return (s + ".png") if s else None
@@ -789,14 +866,9 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 					if tail and "/" not in tail and "%" not in tail and "=" not in tail:
 						url_raw = url_raw[:last_colon]
 				try:
-					from urllib.parse import unquote
-					return unquote(url_raw)
-				except ImportError:
-					try:
-						from urllib import unquote
-						return unquote(url_raw)
-					except Exception:
-						return url_raw
+					return _url_unquote(url_raw)
+				except Exception:
+					return url_raw
 		return None
 
 	def _extract_channel_uuid(self, service_ref):
@@ -881,11 +953,26 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 			self._log("enable_userbouquet=false and enable_userbouquet_radio=false -> skip")
 			return
 
+		# FIX 0.48b: DEBOUNCE — BouquetXmlEpgGenerator framework volá _post()
+		# pri každom channel_type ('tv' + 'radio'), takže táto funkcia by
+		# bežala 2× za sebou. Zaveďme min interval 30 sekúnd medzi behmi.
+		# FIX 0.50beta: lock je teraz module-level eager init, nie lazy
+		now = int(time.time())
+		if _DOWNLOAD_PICONS_LOCK is not None:
+			with _DOWNLOAD_PICONS_LOCK:
+				since = now - _LAST_DOWNLOAD_PICONS_TS[0]
+				if since < _DOWNLOAD_PICONS_DEBOUNCE_SEC:
+					self._log("download_picons_from_bouquets called %ds after last run, "
+					          "debounce window %ds — skipping duplicate" %
+					          (since, _DOWNLOAD_PICONS_DEBOUNCE_SEC))
+					return
+				_LAST_DOWNLOAD_PICONS_TS[0] = now
+
 		# Stamp – kopíruj max raz za 12 hodín
 		# ale vždy ak je picon adresár prázdny (nový box, po zmazaní)
-		_PICON_COPY_STAMP = "/tmp/archivczsk_tvheadend_picon_copy.stamp"
+		# FIX 0.48j: persistent data dir
+		_PICON_COPY_STAMP = data_path("tvh_picon_copy.stamp")
 		try:
-			now = int(time.time())
 			last = 0
 			try:
 				last = int(os.path.getmtime(_PICON_COPY_STAMP))
@@ -936,6 +1023,10 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 		total_skipped_same = 0
 		total_copied = 0
 		total_downloaded = 0
+		# FIX 0.48b: tracknúť fallback failures + 404 cache skips
+		total_fallback_failed = 0
+		total_fallback_404 = 0
+		total_fallback_404_skipped = 0
 
 		for bq in tvfiles:
 			try:
@@ -1002,23 +1093,50 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 						continue
 
 					try:
-						self.cp.tvh.download_image_to_file(icon_public, dst)
+						# FIX 0.48: method was renamed; old name 'download_image_to_file'
+						# did NOT exist and the try/except hid the bug — picons for
+						# uncached channels were never fetched as fallback.
+						# FIX 0.48b: pred fallback downloadom skontroluj 404 cache —
+						# inak by sme pri každom volaní spamovali log a hammerovali TVH.
+						if _tvh_picon_in_404(icon_public):
+							total_fallback_404_skipped += 1
+							last_service_ref = None
+							continue
+						self.cp.tvh._download_image(icon_public, dst)
 						try:
 							os.chmod(dst, 0o644)
 						except Exception:
 							pass
 						total_downloaded += 1
-					except Exception:
-						pass
+					except Exception as _e:
+						# Log len prvých 5 fallback failures, zvyšok len count
+						total_fallback_failed += 1
+						msg = str(_e) or ''
+						if '404' in msg:
+							# _download_image už zapísal do 404 cache, my len zarátame
+							total_fallback_404 += 1
+						if total_fallback_failed <= 5:
+							self._log("Fallback _download_image failed for %s: %s"
+							          % (icon_public, _e))
+						elif total_fallback_failed == 6:
+							self._log("... (suppressing further fallback FAIL logs; "
+							          "summary at end)")
 
 					last_service_ref = None
 
-		self._log("Picons: services=%d uuidHits=%d nameHits=%d skippedSameKB=%d copied=%d downloaded=%d" %
-				  (total_service, total_uuid, total_name, total_skipped_same, total_copied, total_downloaded))
+		# FIX 0.48b: sumár statistiky + 404 info
+		self._log("Picons: services=%d uuidHits=%d nameHits=%d skippedSameKB=%d "
+		          "copied=%d downloaded=%d fallback_failed=%d (404=%d, "
+		          "skipped_404_cache=%d). Total 404 cache size: %d" %
+				  (total_service, total_uuid, total_name, total_skipped_same,
+				   total_copied, total_downloaded, total_fallback_failed,
+				   total_fallback_404, total_fallback_404_skipped,
+				   _tvh_picon_404_count()))
 
 		# Zapíš stamp
 		try:
-			_PICON_COPY_STAMP = "/tmp/archivczsk_tvheadend_picon_copy.stamp"
+			# FIX 0.48j: persistent data dir
+			_PICON_COPY_STAMP = data_path("tvh_picon_copy.stamp")
 			with open(_PICON_COPY_STAMP, 'w') as f:
 				f.write(str(int(time.time())))
 		except Exception:
@@ -1184,6 +1302,152 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 		if renamed_to:
 			self._ensure_bouquets_radio_has(renamed_to[0])
 
+	# -------------------------------------------------
+	# FIX 0.48d: DIRECT EPG INJECTION INTO ENIGMA2 eEPGCache
+	# (bez závislosti na epgimport plugine — analogické s M3U side)
+	# -------------------------------------------------
+
+	def _build_uuid_to_short_sref_from_bouquets(self):
+		"""
+		Parsuje vygenerované userbouquet.tvheadend_*.tv/.radio súbory a vracia
+		dict {channel_uuid: short_service_ref_with_trailing_colon}.
+
+		Short service ref = prvých 10 ':'-oddelených polí + trailing ':'.
+		eEPGCache.importEvent() očakáva presne tento formát.
+		"""
+		out = {}
+		for bq in self._find_bouquet_files():
+			if not self._is_tvheadend_bouquet_file(bq):
+				continue
+			try:
+				with _open_utf8(bq, "r") as f:
+					for line in f:
+						if not line.startswith("#SERVICE "):
+							continue
+						sref_full = line[len("#SERVICE "):].strip()
+						parts = sref_full.split(":")
+						# Musí mať aspoň 11 polí (10 + URL); markery majú menej
+						if len(parts) < 11:
+							continue
+						# Vyhoď markery (type 1:64:...) ktoré nemajú stream URL
+						if parts[1] == "64":
+							continue
+						sref_short = ":".join(parts[:10]) + ":"
+						uuid = self._extract_channel_uuid(sref_full)
+						if uuid:
+							# Posledný-write-wins (ak by ten istý UUID bol vo viacerých
+							# bouquetoch — typicky nemá ale buďme bezpeční)
+							out[uuid] = sref_short
+			except Exception as e:
+				self._log("Failed to parse bouquet %s: %s" % (bq, e))
+				continue
+		return out
+
+	def inject_tvh_epg_into_enigma(self):
+		"""
+		FIX 0.48d/e: priame injektovanie XMLTV EPG do Enigma2 eEPGCache.
+		Bez závislosti na epgimport plugine — paralela s M3UProvider's
+		inject_epg_into_enigma().
+
+		FIX 0.48e: gated by tvh_epg_inject_interval > 0 (nie bool).
+
+		Workflow:
+		  1. Skontroluj že je injection povolené v settings (interval > 0)
+		  2. Postav map channel_uuid -> short_service_ref z userbouquet súborov
+		  3. Stiahni XMLTV z TVH /xmltv/channels
+		  4. Zavolaj existujúci m3u_epg_injector.inject_epg_into_enigma()
+		     so shim-om ktorý vystavuje TVH kanály v M3U-provider formáte
+		"""
+		try:
+			interval = int(self.get_setting("tvh_epg_inject_interval") or 0)
+		except Exception:
+			interval = 0
+		if interval <= 0:
+			self._log("tvh_epg_inject_interval=0 (Disabled) -> skip")
+			return False
+
+		# Krok 1: vyžadujeme aspoň jeden TVH bouquet (inak nie sú service refs)
+		if not (self.get_setting("enable_userbouquet")
+		        or self.get_setting("enable_userbouquet_radio")):
+			self._log("inject_epg: no bouquet enabled -> skip")
+			return False
+
+		# Krok 2: postav uuid -> sref mapu
+		uuid_to_sref = self._build_uuid_to_short_sref_from_bouquets()
+		if not uuid_to_sref:
+			self._log("inject_epg: no service refs found in bouquet files "
+			          "-> skip (run bouquet refresh first)")
+			return False
+		self._log("inject_epg: built service ref map for %d channels" %
+		          len(uuid_to_sref))
+
+		# Krok 3: fetch XMLTV z TVH
+		try:
+			xmltv_bytes = self.cp.tvh.fetch_xmltv_bytes(timeout=60)
+		except Exception as e:
+			self._log("inject_epg: XMLTV fetch failed: %s" % e)
+			return False
+
+		if not xmltv_bytes:
+			self._log("inject_epg: empty XMLTV response")
+			return False
+		self._log("inject_epg: fetched XMLTV (%d bytes)" % len(xmltv_bytes))
+
+		# Krok 4: decompress ak treba (TVH typicky neGZIPuje cez requests,
+		# ale ak by sa magic bytes objavili, handluj to)
+		try:
+			import gzip as _gzip
+			import io as _io_dec
+			if xmltv_bytes[:2] == b'\x1f\x8b':
+				xmltv_bytes = (_gzip.decompress(xmltv_bytes)
+				               if hasattr(_gzip, 'decompress')
+				               else _gzip.GzipFile(fileobj=_io_dec.BytesIO(xmltv_bytes)).read())
+				self._log("inject_epg: gzip-decompressed XMLTV")
+		except Exception as e:
+			self._log("inject_epg: decompression failed (continuing with raw): %s" % e)
+
+		# Krok 5: zavolaj M3U injector cez shim provider
+		try:
+			from .m3u_epg_injector import inject_epg_into_enigma
+		except Exception as e:
+			self._log("inject_epg: m3u_epg_injector unavailable: %s" % e)
+			return False
+
+		# Shim — minimal "provider"-shaped object pre injector
+		class _TVHEPGProviderShim(object):
+			def __init__(self, uuid_to_sref):
+				self._channels = []
+				for uuid, sref in uuid_to_sref.items():
+					self._channels.append({
+						# injector si extrahuje short ref cez _service_ref_for_epg(),
+						# ktorý je idempotentný — náš short_sref ostane rovnaký
+						'_service_ref': sref,
+						'tvg_id': uuid,
+						'_tvg_id_aliases': set(),
+					})
+			def get_all_channels(self):
+				return self._channels
+
+		shim = _TVHEPGProviderShim(uuid_to_sref)
+		try:
+			stats = inject_epg_into_enigma(shim, xmltv_bytes, log=self._log)
+			self._log("inject_epg: injection complete — events=%d, "
+			          "services=%d, programmes_seen=%d, programmes_matched=%d" %
+			          (stats.get('events_total', 0),
+			           stats.get('services_total', 0),
+			           stats.get('programmes_seen', 0),
+			           stats.get('programmes_matched', 0)))
+			# FIX 0.48e: zapíš stamp pre _maybe_auto_inject_epg debounce
+			try:
+				with open(_EPG_INJECT_STAMP, 'w') as f:
+					f.write(str(int(time.time())))
+			except Exception:
+				pass
+			return True
+		except Exception as e:
+			self._log("inject_epg: inject_epg_into_enigma() failed: %s" % e)
+			return False
+
 	def refresh_userbouquet_start(self, *args, **kwargs):
 		try:
 			ret = BouquetXmlEpgGenerator.refresh_userbouquet_start(self, *args, **kwargs)
@@ -1191,28 +1455,97 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 			ret = None
 
 		def _post():
+			# FIX 0.48c: debounce celého _post() callbacku.
+			# Framework volá refresh_userbouquet_start raz pre channel_type='tv'
+			# a raz pre 'radio', takže _post() je v rade 2× ~1s od seba.
+			# Bez debouncu by sa _fix_radio_bouquet_filenames(),
+			# download_picons() (interne má svoj vlastný debounce) a 2×
+			# eDVBDB.reloadBouquets() + OpenWebif request spustili dvojnásobne.
+			# FIX 0.50beta: lock je teraz module-level eager init, nie lazy
+			now_ts = int(time.time())
+			if _POST_CALLBACK_LOCK is not None:
+				with _POST_CALLBACK_LOCK:
+					since = now_ts - _LAST_POST_CALLBACK_TS[0]
+					if since < _POST_CALLBACK_DEBOUNCE_SEC:
+						self._log("refresh_userbouquet_start._post called %ds "
+						          "after last run (debounce %ds) — skipping "
+						          "duplicate" % (since, _POST_CALLBACK_DEBOUNCE_SEC))
+						return
+					_LAST_POST_CALLBACK_TS[0] = now_ts
+
 			try:
 				self._fix_radio_bouquet_filenames()
 			except Exception:
 				pass
 			# Počkaj kým picon worker dobeží (max 120 sekúnd)
 			# Používame threading.Event namiesto sleep slučky – efektívnejšie
+			# FIX 0.48c: event sa teraz správne čistí na začiatku worker-a
+			# (predtým bol set forever a wait() sa vracal okamžite).
 			try:
 				if _tvh_picon_ready is not None:
 					_tvh_picon_ready.wait(timeout=120)
 				else:
 					# fallback na stamp kontrolu
-					import time as _time
+					# FIX 0.48j: persistent data dir (rovnaký path ako tvheadend._PICON_STAMP)
+					_picon_stamp_path = data_path("tvh_picon.stamp")
 					for _ in range(120):
-						if os.path.isfile("/tmp/archivczsk_tvheadend_img.picon.stamp"):
+						if os.path.isfile(_picon_stamp_path):
 							break
-						_time.sleep(1)
+						time.sleep(1)
 			except Exception:
 				pass
 			try:
 				self.download_picons()
 			except Exception:
 				pass
+
+			# FIX 0.48: po dokončení refresh-u prinúť Enigma2 znovu načítať
+			# bouquet súbory z disku — bez tohto user musel reštartovať Enigma2
+			# aby uvidel nové kanály v live TV. M3UBouquetWriter to už robí
+			# (eDVBDB + OpenWebif), pridávame ekvivalent aj sem.
+			try:
+				from enigma import eDVBDB
+				db = eDVBDB.getInstance()
+				db.reloadBouquets()
+				self._log("eDVBDB.reloadBouquets() OK after TVH bouquet refresh")
+				try:
+					db.reloadServicelist()
+				except Exception:
+					pass
+			except ImportError:
+				# bežíme mimo Enigma2 (testy) — preskoč
+				pass
+			except Exception as e:
+				self._log("eDVBDB.reloadBouquets() failed: %s" % e)
+
+			# OpenWebif fallback — funguje aj keď enigma cache caching skin
+			try:
+				try:
+					from urllib.request import urlopen as _urlopen
+				except ImportError:
+					from urllib2 import urlopen as _urlopen
+				resp = _urlopen('http://127.0.0.1/web/servicelistreload?mode=2',
+				                timeout=5)
+				try:
+					resp.read()
+				finally:
+					try:
+						resp.close()
+					except Exception:
+						pass
+				self._log("OpenWebif servicelistreload OK")
+			except Exception:
+				# OpenWebif nemusí byť spustený — to je v poriadku
+				pass
+
+			# FIX 0.48d: direct EPG injection do Enigma2 eEPGCache.
+			# Beží AŽ po reloadBouquets, lebo predtým by Enigma2 nemala
+			# v memory service refs (technicky to nevadí pre eEPGCache, ale
+			# logicky to dáva zmysel — najprv refs, potom EPG pre ne).
+			try:
+				self.inject_tvh_epg_into_enigma()
+			except Exception as e:
+				self._log("inject_tvh_epg_into_enigma() raised: %s" % e)
 
 		try:
 			if threading is not None:
@@ -1244,6 +1577,13 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 					return v
 		return ""
 
+	# FIX 0.48c: TTL pre EPG cache.
+	# Predtým: _epg_cache sa naplnil pri prvom volaní get_epg() a držal sa
+	# navždy. Pri preload="yes" plugine s 24/7 boxom to znamenalo že po
+	# týždni mal generátor stále EPG zo dňa štartu E2. Teraz: 30 min TTL,
+	# po expirácii sa nasledujúce volanie naparuje fresh data.
+	_EPG_CACHE_TTL_SEC = 1800  # 30 min
+
 	def get_epg(self, channel, fromts, tots):
 		ch_uuid = channel.get('key') or ''
 		if not ch_uuid:
@@ -1252,8 +1592,21 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 		fromts_i = int(fromts)
 		tots_i = int(tots)
 
+		# FIX 0.48c: TTL check pre _epg_cache
+		now_ts = int(time.time())
+		cache_ts = getattr(self, '_epg_cache_ts', 0)
+		if (self._epg_cache is not None and cache_ts > 0
+		        and (now_ts - cache_ts) >= self._EPG_CACHE_TTL_SEC):
+			self._epg_cache = None
+			try:
+				self._log("EPG cache expired (age %ds > TTL %ds), reloading" %
+				          (now_ts - cache_ts, self._EPG_CACHE_TTL_SEC))
+			except Exception:
+				pass
+
 		if self._epg_cache is None:
 			self._epg_cache = {}
+			self._epg_cache_ts = now_ts
 			try:
 				data = self.cp.tvh.api_get(
 					"api/epg/events/grid",

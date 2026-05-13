@@ -17,10 +17,34 @@ from __future__ import absolute_import, unicode_literals, print_function
 
 import os
 import sys
+import io
 import time
+import gzip
 import base64
 import unicodedata
 from datetime import datetime
+
+try:
+	import lzma  # Py3
+except ImportError:
+	try:
+		from backports import lzma
+	except ImportError:
+		lzma = None
+
+# urllib for Py2/Py3
+try:
+	from urllib.request import Request, urlopen
+except ImportError:
+	from urllib2 import Request, urlopen
+
+# XMLTV iterparse (cElementTree faster on Py2)
+try:
+	from xml.etree.cElementTree import iterparse as _et_iterparse
+	from xml.etree.cElementTree import parse as _et_parse
+except ImportError:
+	from xml.etree.ElementTree import iterparse as _et_iterparse
+	from xml.etree.ElementTree import parse as _et_parse
 
 from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from tools_archivczsk.contentprovider.exception import AddonErrorException
@@ -36,6 +60,30 @@ except Exception:
 	def _C(color, s):
 		return str(s) if s is not None else ''
 
+# FIX 0.48c (skyjet review #15): používať tools_archivczsk.string_utils.strip_accents
+# namiesto vlastnej implementácie cez unicodedata. Fallback ostáva pre prípad
+# že by tools_archivczsk verzia nemal tento helper.
+try:
+	from tools_archivczsk.string_utils import strip_accents as _strip_accents_tool
+except Exception:
+	_strip_accents_tool = None
+
+def _strip_accents_compat(s):
+	"""Vráti string bez diakritiky. Preferuje tools_archivczsk helper,
+	pri jeho nedostupnosti používa lokálny unicodedata fallback."""
+	if not s:
+		return ''
+	if _strip_accents_tool is not None:
+		try:
+			return _strip_accents_tool(s)
+		except Exception:
+			pass
+	try:
+		s = unicodedata.normalize('NFKD', s)
+		return ''.join(c for c in s if not unicodedata.combining(c))
+	except Exception:
+		return s
+
 from .tvheadend import Tvheadend
 
 try:
@@ -43,16 +91,39 @@ try:
 except Exception:
 	TvheadendBouquetXmlEpgGenerator = None
 
+# M3U external source manager (optional - plugin works without it)
+try:
+	from .m3u_manager import M3URefreshManager
+except Exception:
+	M3URefreshManager = None
+
+# FIX 0.48f: hardcoded M3U bouquet filename prefix (predtým configurable
+# setting m3u_bouquet_prefix). Import s fallback aby plugin fungoval aj
+# keď je m3u_bouquet modul nedostupný.
+try:
+	from .m3u_bouquet import M3U_BOUQUET_PREFIX
+except Exception:
+	M3U_BOUQUET_PREFIX = 'm3u_iptv'
+
 
 # --------------------------------------------------------------------------
 # Konštanty
 # --------------------------------------------------------------------------
-_POSTER_CACHE_DIR   = "/tmp/archivczsk_poster"
-_POSTER_CLEAN_STAMP = "/tmp/archivczsk_tvheadend_poster_clean.stamp"
+# FIX 0.48j: stamp súbory sa ukladajú do persistent data dir-u namiesto /tmp,
+# aby prežili reboot E2 (predtým sa všetky TTL gates pri reboot-e zresetli).
+# Cache picons ostáva v /tmp lebo je regenerovateľná a tmpfs je rýchle.
+from ._paths import data_path, get_data_dir
+
+# FIX 0.48: predtým ukazoval na /tmp/archivczsk_poster (cache iného doplnku);
+# plugin reálne píše svoje obrázky do /tmp/archivczsk_tvheadend_img, takže
+# cleanup roky nič nemazal a /tmp na boxoch s nonstop behom donekonečna rástol.
+# FIX 0.48j: cache obrázkov ostáva v /tmp (regenerovateľné dáta).
+_POSTER_CACHE_DIR   = "/tmp/archivczsk_tvheadend_img"
+_POSTER_CLEAN_STAMP = data_path("tvh_poster_clean.stamp")
 _POSTER_TTL_DAYS    = 7
 
 # Export bouquet/EPG sa nespúšťa pri každom silent login-e (napr. z HTTP handlera)
-_EXPORT_TRIGGER_STAMP   = "/tmp/archivczsk_tvheadend_exports_trigger.stamp"
+_EXPORT_TRIGGER_STAMP   = data_path("tvh_exports_trigger.stamp")
 _EXPORT_TRIGGER_TTL_SEC = 1800  # 30 min
 
 # DVR entries cache – používame tools_archivczsk ExpiringLRUCache
@@ -65,7 +136,52 @@ _DVR_CACHE_TS = 0
 _DVR_CACHE_TTL = 60
 
 # Bouquet auto-refresh stamp
-_BOUQUET_REFRESH_STAMP = "/tmp/archivczsk_tvheadend_bouquet_refresh.stamp"
+_BOUQUET_REFRESH_STAMP = data_path("tvh_bouquet_refresh.stamp")
+
+# FIX 0.48e: stamp pre auto-EPG-inject. Synchronizovaný s bouquet.py kde sa
+# zapisuje po každej úspešnej injekcii. Provider číta tento súbor v
+# _maybe_auto_inject_epg() na rozhodnutie či treba spustiť ďalšiu injekciu.
+_EPG_INJECT_STAMP = data_path("tvh_epg_inject.stamp")
+
+# FIX 0.48g: paralelný stamp pre M3U-side EPG injection.
+# Zapisuje sa z m3u_manager.refresh_now() aj inject_epg_only().
+_EPG_INJECT_STAMP_M3U = data_path("m3u_epg_inject.stamp")
+
+# FIX 0.48: TTL cache pre _check_tvh_silent() — zabraňuje N×/sec HTTP requestom
+# na /api/serverinfo počas navigácie v menu.
+# FIX 0.48h: asymetrické TTL — pozitívny check 30s (znižuje GUI lag),
+# negatívny len 5s (rýchla recovery po TVH transient failure). Predtým
+# spoločné 30s znamenalo že keď TVH zlyhal na 1 request, ďalších 30s
+# plugin tvrdil že je offline aj keď sa medzitým obnovil. To je presne
+# čo užívatelia zažili v logu — TVH bol späť za pár sekúnd, ale plugin
+# 30s ďalej hlásil "not configured".
+# 'reason' tracking: rozlíšenie 'not_configured' (chýbajú credentials)
+# vs 'unreachable' (sú vyplnené ale API call zlyhal) → root() ukáže
+# odlišnú chybovú hlášku.
+_TVH_LOGIN_CACHE_TTL_OK   = 30
+_TVH_LOGIN_CACHE_TTL_FAIL = 5
+_TVH_LOGIN_CACHE = {'ts': 0, 'ok': False, 'reason': None, 'last_error': ''}
+
+# FIX 0.48: globálny stav watchdog timera — drží referenciu, aby ho GC nezahodil
+_WATCHDOG_STATE = {'timer': None, 'last_state': None, 'started': False}
+_WATCHDOG_INTERVAL_MS = 5 * 60 * 1000  # 5 minút
+
+# FIX 0.48i: fast-recovery poll state. Keď _check_tvh_silent detekuje
+# zlyhanie, spustí sa background thread ktorý každých 10 sekúnd skúša
+# TVH check (max 30 pokusov = 5 minút). Keď TVH naskočí, cache sa
+# silently obnoví na ok=True — ďalšia užívateľská navigácia uvidí
+# fungujúci plugin bez ručného retry.
+# FIX 0.50beta: pridaný _FAST_RECOVERY_LOCK na ochranu pred race
+# condition keď 2+ threads (napr. watchdog tick + user navigation)
+# zavolajú _maybe_start_fast_recovery_poll súčasne — predtým mohli
+# obaja prejsť `if not running` checkom a spustiť 2 paralelné poll
+# loops. V praxi vzácne (5min watchdog vs user interakcia), ale
+# stand-alone test scenárov to vyrobí.
+import threading as _threading_for_state
+_FAST_RECOVERY_STATE = {'running': False, 'thread': None}
+_FAST_RECOVERY_LOCK = _threading_for_state.Lock()
+_FAST_RECOVERY_INTERVAL_SEC = 10
+_FAST_RECOVERY_MAX_ATTEMPTS = 30   # 30 × 10s = 5 minút
 
 
 # --------------------------------------------------------------------------
@@ -73,7 +189,14 @@ _BOUQUET_REFRESH_STAMP = "/tmp/archivczsk_tvheadend_bouquet_refresh.stamp"
 # --------------------------------------------------------------------------
 
 def _maybe_cleanup_poster_cache():
-	"""Čistí starý poster cache – max raz za _POSTER_TTL_DAYS dní."""
+	"""Čistí starý poster cache – max raz za _POSTER_TTL_DAYS dní.
+
+	FIX 0.48: prísnejšia logika
+	  - maže LEN súbory s prefixom 'imagecache_' (plugin-ove ikony),
+	    nie iné súbory ktoré tam môžu byť (.stamp, .lock atď.)
+	  - vynechá súbory čerstvejšie ako TTL (predtým mazalo všetko)
+	  - vynechá '.tmp' rozpracované downloads, aby sa nepokazil prebiehajúci picon worker
+	"""
 	try:
 		if not os.path.isdir(_POSTER_CACHE_DIR):
 			return
@@ -86,11 +209,18 @@ def _maybe_cleanup_poster_cache():
 			pass
 		if last and (now - last) < ttl:
 			return
+		removed = 0
 		for fn in os.listdir(_POSTER_CACHE_DIR):
+			# Bezpečnostné filtre: maž len skutočne svoje cached ikony
+			if not fn.startswith('imagecache_'):
+				continue
+			if fn.endswith('.tmp'):
+				continue  # rozpracovaný download
 			fp = os.path.join(_POSTER_CACHE_DIR, fn)
 			try:
 				if os.path.isfile(fp) and (now - int(os.path.getmtime(fp))) >= ttl:
 					os.remove(fp)
+					removed += 1
 			except Exception:
 				pass
 		try:
@@ -98,6 +228,11 @@ def _maybe_cleanup_poster_cache():
 				f.write(str(now))
 		except Exception:
 			pass
+		if removed:
+			try:
+				print('[plugin.tvheadend] poster cache cleanup: removed %d stale files' % removed)
+			except Exception:
+				pass
 	except Exception:
 		pass
 
@@ -114,15 +249,1067 @@ def _get_dvr_finished_cached(tvh):
 	return result
 
 
-def _norm_name(s):
+# ============================================================================
+# FIX 0.49 (+revízia 0.49b): DVR klasifikácia s podžánrami a viacúrovňovou
+# heuristikou.
+# ============================================================================
+# Cieľ: namiesto vŕtania sa cez kanál → dátum → záznam ponúknuť žánrovú
+# navigáciu. Klasifikácia sa robí na klientovi z polí ktoré TVH posiela
+# v DVR entries.
+#
+# Aplikované signály (v poradí priority):
+#   1) Channel-based hint   — názov kanála (CT :D = deti, Sport = šport, ...)
+#                              prevažuje nad content_type lebo kanálové
+#                              značky sú spoľahlivejšie ako EIT meta.
+#   2) Series detection     — "X/Y" v subtitle (25/31), "(N)" sufix v title
+#                              kde N nie je rok (Otec Brown IV (1)), alebo
+#                              keyword "seriál"/"díl"/"epizoda" v popise.
+#   3) Content_type fixed   — DVB EIT main category (top nibble genre byte):
+#                              ct=2→News, ct=4→Sport, ct=5→Deti, atď.
+#   4) Keyword fallback     — pre ct=0/11 (undefined) prejde popis + title
+#                              cez Czech/Slovak žánrové keywords.
+#
+# Sub-žánre (len pre Filmy + Seriály):
+#   - DVB genre low nibble (keď je dostupný) — primary signal
+#   - Keyword scan v description + title       — secondary signal
+#   - 'Iné' ak žiadny nezmatchol               — fallback
+#
+# Cache: rovnaké 60s TTL ako DVR cache.
+
+import re as _re_dvr  # alias aby sa neprenášal _re v iných miestach
+import unicodedata as _unicodedata_dvr
+
+
+# FIX 0.49d: Helper na strippe diakritiky a lower-case textu pred regex match.
+# Slovenské/české keyword matching by inak failovalo na "spr[á]vy" vs "sprav"
+# (a vs á sú rôzne znaky aj s IGNORECASE flagom). Riešenie: pre matching
+# si text aj keywords ponechávame bez diakritiky. Pridanie diakritiky v
+# keywordoch (každý znak ako alternácia [aá]) by zložitosť regexov výrazne
+# zhoršilo. Strippe je O(n) a O(15µs) per call — zanedbateľné.
+def _strip_accents_lower(s):
+	"""Vráti text bez diakritiky a v lowercase. Pre regex match."""
 	if not s:
 		return ''
+	# NFD: 'á' → 'a' + combining acute
+	nfd = _unicodedata_dvr.normalize('NFD', s)
+	# Filter combining marks (category Mn = Mark, nonspacing)
+	stripped = ''.join(c for c in nfd if _unicodedata_dvr.category(c) != 'Mn')
+	return stripped.lower()
+
+
+# --------------------------------------------------------------------------
+# Regex patterns
+# --------------------------------------------------------------------------
+# "25/31 ..." v subtitle (CT/Nova OLD formát)
+_SUBTITLE_SERIES_PATTERN = _re_dvr.compile(r'^\s*\d+/\d+\b')
+
+# "(N)" alebo "(N) (XX)" na konci title — N je 1-9999 (epizoda alebo rok)
+_TITLE_EPISODE_PATTERN = _re_dvr.compile(
+	r'\((\d{1,4})\)\s*(?:\([A-Z]{1,3}\))?\s*$'
+)
+
+# Technické markery na konci title alebo subtitle: (ST)=titulky, (HD), (AD)=audio
+# popis pre nevidiacich, (SS)=stereo, (3D), (UHD). Pri pre-procesingu sa
+# odstránia aby nezmárili episode detection.
+_TECH_MARKER_PATTERN = _re_dvr.compile(
+	r'\s*\(\s*(?:ST|HD|AD|SS|3D|UHD|DD|DTS)\s*\)\s*', _re_dvr.IGNORECASE
+)
+
+
+def _strip_tech_markers(text):
+	"""Odstráni '(ST)', '(HD)', '(AD)' atď. z textu."""
+	if not text:
+		return ''
+	return _TECH_MARKER_PATTERN.sub(' ', text).strip()
+
+
+def _has_episode_suffix(title):
+	"""True ak title končí '(N)' a N je epizoda (nie rok 1900-2099)."""
+	clean = _strip_tech_markers(title)
+	m = _TITLE_EPISODE_PATTERN.search(clean)
+	if not m:
+		return False
 	try:
-		s = unicodedata.normalize('NFKD', s)
-		s = ''.join(c for c in s if not unicodedata.combining(c))
+		n = int(m.group(1))
+	except (ValueError, TypeError):
+		return False
+	# Rok výroby filmu (typicky 1900-2099) → toto nie je epizoda
+	if 1900 <= n <= 2099:
+		return False
+	# Inak (1-1899, 2100+) → epizoda
+	if 1 <= n <= 9999:
+		return True
+	return False
+
+
+def _series_canonical_title(title):
+	"""Strip episode suffix + tech markers — aby sa epizódy toho istého seriálu
+	dali grupovať pod jeden názov.
+
+	"Otec Brown IV (1)"   → "Otec Brown IV"
+	"Otec Brown IV (2)"   → "Otec Brown IV"
+	"Cesty domů II (31) (ST)" → "Cesty domů II"
+	"Casablanca (1942)"   → "Casablanca (1942)"  (rok, nie epizoda)
+	"""
+	if not title:
+		return ''
+	clean = _strip_tech_markers(title).strip()
+	m = _TITLE_EPISODE_PATTERN.search(clean)
+	if m:
+		try:
+			n = int(m.group(1))
+			# Strip iba ak N NIE JE rok výroby
+			if not (1900 <= n <= 2099):
+				clean = clean[:m.start()].strip()
+		except (ValueError, TypeError):
+			pass
+	return clean
+
+
+# --------------------------------------------------------------------------
+# Top-level kategórie
+# --------------------------------------------------------------------------
+_CAT_FILM           = 'film'
+_CAT_SERIAL         = 'serial'
+_CAT_SPRAVODAJSTVO  = 'spravodajstvo'
+_CAT_SHOW           = 'show'
+_CAT_SPORT          = 'sport'
+_CAT_DETSKE         = 'detske'
+_CAT_HUDBA          = 'hudba'
+_CAT_UMENIE         = 'umenie'
+_CAT_DOKUMENTY      = 'dokumenty'
+_CAT_HOBBY          = 'hobby'
+_CAT_INE            = 'ine'
+
+# DVB EIT content_type (top nibble) → naša kategória.
+_CT_TO_CAT_BASE = {
+	2:  _CAT_SPRAVODAJSTVO,
+	3:  _CAT_SHOW,
+	4:  _CAT_SPORT,
+	5:  _CAT_DETSKE,
+	6:  _CAT_HUDBA,
+	7:  _CAT_UMENIE,
+	8:  _CAT_SHOW,            # Social/Political magazíny → spojené so Show
+	9:  _CAT_DOKUMENTY,
+	10: _CAT_HOBBY,
+	# 0, 1, 11 sa riešia inde:
+	#   1  = film vs seriál heuristika
+	#   0, 11 = keyword fallback
+}
+
+# Poradie a slovenské label-y. FIX 0.49b: bez počtu (užívateľ chcel počty preč)
+_CAT_LABELS_ORDER = (
+	(_CAT_FILM,           'Filmy'),
+	(_CAT_SERIAL,         'Seriály'),
+	(_CAT_SPORT,          'Šport'),
+	(_CAT_SPRAVODAJSTVO,  'Spravodajstvo'),
+	(_CAT_SHOW,           'Šou / Relácie'),
+	(_CAT_DETSKE,         'Detské'),
+	(_CAT_HUDBA,          'Hudba'),
+	(_CAT_UMENIE,         'Umenie / Kultúra'),
+	(_CAT_DOKUMENTY,      'Dokumenty / Vzdelávacie'),
+	(_CAT_HOBBY,          'Voľný čas / Hobby'),
+	(_CAT_INE,            'Nezaradené'),
+)
+
+
+# --------------------------------------------------------------------------
+# Podžánre (sub-categories) pre Filmy a Seriály
+# --------------------------------------------------------------------------
+_MV_AKCNY       = 'mv_akcny'
+_MV_DRAMA       = 'mv_drama'
+_MV_KOMEDIA     = 'mv_komedia'
+_MV_KRIMI       = 'mv_krimi'
+_MV_SCIFI       = 'mv_scifi'
+_MV_ROMANTIKA   = 'mv_romantika'
+_MV_HOROR       = 'mv_horor'
+_MV_DOBRODR     = 'mv_dobrodruzny'
+_MV_ANIMAK      = 'mv_animovany'
+_MV_HISTORICKY  = 'mv_historicky'
+_MV_WESTERN     = 'mv_western'
+_MV_INE         = 'mv_ine'
+
+_MOVIE_SUBCAT_LABELS = (
+	(_MV_AKCNY,      'Akčné'),
+	(_MV_KOMEDIA,    'Komédia'),
+	(_MV_KRIMI,      'Krimi / Thriller / Detektívka'),
+	(_MV_DRAMA,      'Drama'),
+	(_MV_SCIFI,      'Sci-fi / Fantasy'),
+	(_MV_ROMANTIKA,  'Romantické'),
+	(_MV_HOROR,      'Horor'),
+	(_MV_DOBRODR,    'Dobrodružné'),
+	(_MV_ANIMAK,     'Animované'),
+	(_MV_HISTORICKY, 'Historické / Vojnové'),
+	(_MV_WESTERN,    'Western'),
+	(_MV_INE,        'Iné'),
+)
+
+# DVB genre byte → sub-kategória (ak je dostupný v entry.genre)
+_DVB_GENRE_TO_SUBCAT = {
+	# 0x10 (16) = Movie/drama general — bez ďalšieho upresnenia → keyword fallback
+	0x11: _MV_KRIMI,       # Detective/Thriller
+	0x12: _MV_DOBRODR,     # Adventure/Western/War
+	0x13: _MV_SCIFI,       # SF/Fantasy/Horror
+	0x14: _MV_KOMEDIA,     # Comedy
+	0x15: _MV_DRAMA,       # Soap/Melodrama/Folkloric
+	0x16: _MV_ROMANTIKA,   # Romance
+	0x17: _MV_HISTORICKY,  # Serious/Classical/Historical
+	0x18: _MV_DRAMA,       # Adult — drama
+}
+
+# Keyword regex → sub-kategória. PORADIE má význam: high-specificity first
+# (krimi pred drama atď.).
+# FIX 0.49d: keywords sú bez diakritiky a lowercase — match sa robí proti
+# strippnutemu textu (cez _strip_accents_lower). re.IGNORECASE flag tým
+# pádom nepotrebujeme.
+_KEYWORD_TO_SUBCAT = (
+	(_re_dvr.compile(r'\b(detektiv|kriminal|krimi|thriller|vraz|policajn|vysetrov)'),
+	 _MV_KRIMI),
+	(_re_dvr.compile(r'\b(sci-?fi|sci\.\s?fi|fantasy|vedeckofant|vesmirn|mimozem|robot|kybern)'),
+	 _MV_SCIFI),
+	(_re_dvr.compile(r'\b(komedi|veselohra|humor|grotesk|sitcom)'),
+	 _MV_KOMEDIA),
+	(_re_dvr.compile(r'\b(horor|horror|desiv|hruz)'),
+	 _MV_HOROR),
+	(_re_dvr.compile(r'\b(romantick|milostn|romant)'),
+	 _MV_ROMANTIKA),
+	(_re_dvr.compile(r'\b(akcn|action|honic|prestrelk)'),
+	 _MV_AKCNY),
+	(_re_dvr.compile(r'\b(western|kovbo)'),
+	 _MV_WESTERN),
+	(_re_dvr.compile(r'\b(historick|valecn|vojensk|vojnov|histori)'),
+	 _MV_HISTORICKY),
+	(_re_dvr.compile(r'\b(dobrodruz|adventur|exped|cestopis)'),
+	 _MV_DOBRODR),
+	(_re_dvr.compile(r'\b(animovan|kreslen|animak|loutkov|cartoon|anime)'),
+	 _MV_ANIMAK),
+	(_re_dvr.compile(r'\b(drama|dramati)'),
+	 _MV_DRAMA),
+)
+
+
+# --------------------------------------------------------------------------
+# Sport sub-kategórie (FIX 0.49c)
+# --------------------------------------------------------------------------
+_SP_FUTBAL      = 'sp_futbal'
+_SP_HOKEJ       = 'sp_hokej'
+_SP_BASKETBAL   = 'sp_basketbal'
+_SP_TENIS       = 'sp_tenis'
+_SP_VOLEJBAL    = 'sp_volejbal'
+_SP_HADZANA     = 'sp_hadzana'
+_SP_ATLETIKA    = 'sp_atletika'
+_SP_CYKLISTIKA  = 'sp_cyklistika'
+_SP_MOTORSPORT  = 'sp_motorsport'
+_SP_BOJOVE      = 'sp_bojove'
+_SP_ZIMNE       = 'sp_zimne'
+_SP_VODNE       = 'sp_vodne'
+_SP_NEWS        = 'sp_news'
+_SP_INE         = 'sp_ine'
+
+_SPORT_SUBCAT_LABELS = (
+	(_SP_FUTBAL,      'Futbal'),
+	(_SP_HOKEJ,       'Hokej'),
+	(_SP_BASKETBAL,   'Basketbal'),
+	(_SP_TENIS,       'Tenis'),
+	(_SP_VOLEJBAL,    'Volejbal'),
+	(_SP_HADZANA,     'Hádzaná'),
+	(_SP_ATLETIKA,    'Atletika'),
+	(_SP_CYKLISTIKA,  'Cyklistika'),
+	(_SP_MOTORSPORT,  'Motorsport'),
+	(_SP_BOJOVE,      'Bojové športy'),
+	(_SP_ZIMNE,       'Zimné športy'),
+	(_SP_VODNE,       'Vodné športy'),
+	(_SP_NEWS,        'Športové spravodajstvo'),
+	(_SP_INE,         'Iné'),
+)
+
+# Keyword → sport sub-cat. PORADIE má význam:
+#   - Sport news najprv (lebo "Sportovní noviny" by mohli matchovať aj iné)
+#   - Pak explicitné názvy športov (Basketbal:, Volejbal:, Hádzaná:)
+#   - Pak ligy a značky (UEFA, NHL, IIHF, MONACObet, ...)
+#   - Najmenej špecifické na koniec
+# FIX 0.49d: keywords bez diakritiky — text sa normalizuje pred match
+_SPORT_KEYWORD_TO_SUBCAT = (
+	# Sport news — high priority pred individual sport keywords
+	(_re_dvr.compile(r'\b(sportovni\s+noviny|sportove\s+noviny|sport\s+news|'
+	                 r'spravy\s+zo\s+sportu|sportovni\s+studio|sports?\s+report|'
+	                 r'polední\s+sport|odpoledni\s+sport)'),
+	 _SP_NEWS),
+	# Hokej — IIHF, NHL, KHL, hokej, hockey, ZOH hokej
+	(_re_dvr.compile(r'\b(hokej|hockey|nhl|iihf|khl|hokejov)'),
+	 _SP_HOKEJ),
+	# Bojové športy pred futbalom kvôli "UFC"
+	(_re_dvr.compile(r'\b(ufc|mma|oktagon|kickbox|k-1|judo|karate|wrestl|'
+	                 r'zapas|sumo|taekwon|grappling)'),
+	 _SP_BOJOVE),
+	(_re_dvr.compile(r'\bbox(er|ing|u|y)?\b'),
+	 _SP_BOJOVE),
+	# Futbal — UEFA, MONACObet, Niké liga, Premier League, Bundesliga, La Liga
+	(_re_dvr.compile(r'\b(futbal|football|uefa|monacobet|nike\s+liga|niké\s+liga|'
+	                 r'tipsport\s+liga|fortuna\s+liga|premier\s+league|bundesliga|'
+	                 r'la\s+liga|champion(s)?\s+league|europa\s+league|conference\s+league|'
+	                 r'ligue\s+1|serie\s+a\b|el\s+uefa|cl\s+uefa)'),
+	 _SP_FUTBAL),
+	# Basketbal
+	(_re_dvr.compile(r'\b(basketbal|basketbol|nba|euroliga\s+basketbal|sbl|wnba)'),
+	 _SP_BASKETBAL),
+	# Volejbal
+	(_re_dvr.compile(r'\b(volejbal|volleyball)'),
+	 _SP_VOLEJBAL),
+	# Hádzaná
+	(_re_dvr.compile(r'\b(hadzana|handball)'),
+	 _SP_HADZANA),
+	# Tenis
+	(_re_dvr.compile(r'\b(tenis|tennis|atp|wta|wimbledon|roland\s+garros|'
+	                 r'us\s+open|australian\s+open|french\s+open)'),
+	 _SP_TENIS),
+	# Cyklistika
+	(_re_dvr.compile(r'\b(cyklist|tour\s+de\s+france|giro\s+d|vuelta)'),
+	 _SP_CYKLISTIKA),
+	# Motorsport
+	(_re_dvr.compile(r'\b(formula|formule|f1\b|motogp|wrc|rally|nascar|'
+	                 r'moto2|moto3|velka\s+cena|grand\s+prix)'),
+	 _SP_MOTORSPORT),
+	# Zimné športy — ZOH, lyžovanie, biatlon, snowboard, Cortina
+	(_re_dvr.compile(r'\b(zoh|olympi.*zimn|zimn.*olympi|lyzov|lyziarsk|'
+	                 r'biatlon|snowboard|sjazd|slalom|krasokorcul|cortina\s+2026|'
+	                 r'milano\s+cortina)'),
+	 _SP_ZIMNE),
+	# Vodné športy
+	(_re_dvr.compile(r'\b(kanoistik|plavan|plav(ec|ky)|jachting|surf|veslov|'
+	                 r'kayaking|swimming|vodn[ey]\s+polo|vodne\s+slalom|'
+	                 r'rychlostna\s+kanoistik)'),
+	 _SP_VODNE),
+	# Atletika
+	(_re_dvr.compile(r'\b(atletik|atletic|athletics|maraton|marathon|'
+	                 r'beh\s+na|skok\s+do|hod\s+ostepom|dialk)'),
+	 _SP_ATLETIKA),
+)
+
+
+# FIX 0.50beta: pred 0.50 mal každý sub-žáner top kategórie (Šport,
+# Spravodajstvo, Šou, Detské, Hudba, Umenie, Dokumenty, Hobby) vlastnú
+# 9-riadkovú funkciu _XYZ_subgenre(entry) s úplne identickou body
+# logikou (compose text → strip_accents_lower → regex iter → return).
+# Celkom 9 takmer identických definícií, ~80 riadkov boilerplate-u.
+# FIX 0.50beta: nahradené factory funkciou `_make_subgenre_fn(patterns,
+# default)`, ktorá vráti closure s identickou semantikou. Public mená
+# funkcií (_sport_subgenre, _news_subgenre, ...) ostávajú zachované —
+# používame ich v _SUBCAT_REGISTRY a v UI flow.
+def _make_subgenre_fn(patterns, default_subcat):
+	"""Vyrobí subgenre-classifier closure pre dané keyword patterns +
+	fallback subcat. Text na klasifikáciu sa skladá z disp_title +
+	disp_subtitle + disp_description + channelname, normalizuje sa
+	bez diakritiky a lowercase, pak iteruje cez regex patterns
+	v poradí (poradie = priorita)."""
+	def _classify(entry):
+		text = ((entry.get('disp_title') or '') + ' ' +
+		        (entry.get('disp_subtitle') or '') + ' ' +
+		        (entry.get('disp_description') or '') + ' ' +
+		        (entry.get('channelname') or ''))
+		if not text.strip():
+			return default_subcat
+		text = _strip_accents_lower(text)
+		for pattern, subcat in patterns:
+			if pattern.search(text):
+				return subcat
+		return default_subcat
+	return _classify
+
+
+_sport_subgenre = _make_subgenre_fn(_SPORT_KEYWORD_TO_SUBCAT, _SP_INE)
+
+
+# ==========================================================================
+# FIX 0.49d: Podžánre pre ostatné top kategórie
+# (Spravodajstvo, Šou/Relácie, Detské, Hudba, Umenie, Dokumenty, Voľný čas)
+# ==========================================================================
+# Pre tieto kategórie nepotrebujeme DVB genre mapovanie (nie je definované
+# pre sub-žánre v týchto top-cat-och) ani channel-based hints (môžu prísť
+# z hociakého kanála). Použijeme len keyword scan v title + subtitle +
+# description + channelname. PORADIE keywordov má význam — specific najprv.
+# ==========================================================================
+
+# -------- Spravodajstvo (News) --------
+_NW_HLAVNE      = 'nw_hlavne'        # Hlavné správy bulletinu
+_NW_POLITIKA    = 'nw_politika'      # Politické diskusie, komentáre
+_NW_KRIMI       = 'nw_krimi'         # Krimi noviny, investigatíva
+_NW_MAGAZINY    = 'nw_magaziny'      # Spravodajské magazíny
+_NW_POCASIE     = 'nw_pocasie'       # Počasie
+_NW_INE         = 'nw_ine'
+
+_NEWS_SUBCAT_LABELS = (
+	(_NW_HLAVNE,    'Hlavné správy'),
+	(_NW_POLITIKA,  'Politika / Diskusie'),
+	(_NW_KRIMI,     'Krimi / Reportáže'),
+	(_NW_MAGAZINY,  'Magazíny / Lifestyle'),
+	(_NW_POCASIE,   'Počasie'),
+	(_NW_INE,       'Iné'),
+)
+
+_NEWS_KEYWORD_TO_SUBCAT = (
+	(_re_dvr.compile(r'\b(pocasi|predpoved|predpovid)'),
+	 _NW_POCASIE),
+	(_re_dvr.compile(r'\b(krimi\s+noviny|reporter|reportaz|investigativ|'
+	                 r'tajomstv|kriminal(ne)?\s+sprav|cernin)'),
+	 _NW_KRIMI),
+	(_re_dvr.compile(r'\b(politik|diskusia|diskuse|debata|otazk|otazky\s+vaclava|'
+	                 r'studio\s+6|o\s+5\s+minut\s+12|polemika|interview\s+plus|'
+	                 r'partia|sobotne\s+dial)'),
+	 _NW_POLITIKA),
+	(_re_dvr.compile(r'\b(magazin|spravodajsky\s+magazin|reflex\b|'
+	                 r'7\s+dni|plus\s+7|fokus|profil|lifestyle)'),
+	 _NW_MAGAZINY),
+	(_re_dvr.compile(r'\b(noviny|sprav[yi]|udalosti|hlavni\s+sprav|hlavne\s+sprav|'
+	                 r'tv\s+noviny|112\b|noviny\s+plus|teleráno|telerano|'
+	                 r'spravy\s+rtvs|sledovanie\s+spravodajstv|spravodajstv)'),
+	 _NW_HLAVNE),
+)
+
+
+_news_subgenre = _make_subgenre_fn(_NEWS_KEYWORD_TO_SUBCAT, _NW_INE)
+
+
+# -------- Šou / Relácie (Show) --------
+_SH_REALITY     = 'sh_reality'       # Reality show — Farmer, Survivor
+_SH_TALK        = 'sh_talk'          # Talk show
+_SH_SUTAZ       = 'sh_sutaz'         # Súťažné show — talent, X Factor
+_SH_KUCHARSKE   = 'sh_kucharske'     # Kuchárske — MasterChef, Ano šéfe
+_SH_ZABAVA      = 'sh_zabava'        # Humor, satira, estráda
+_SH_MAGAZINY    = 'sh_magaziny'      # Magazíny ako Klíč, Reflex
+_SH_INE         = 'sh_ine'
+
+_SHOW_SUBCAT_LABELS = (
+	(_SH_REALITY,    'Reality show'),
+	(_SH_SUTAZ,      'Súťažné show / Talenty'),
+	(_SH_KUCHARSKE,  'Kuchárske show'),
+	(_SH_TALK,       'Talk show'),
+	(_SH_ZABAVA,     'Zábava / Humor'),
+	(_SH_MAGAZINY,   'Magazíny'),
+	(_SH_INE,        'Iné'),
+)
+
+_SHOW_KEYWORD_TO_SUBCAT = (
+	# Kuchárske najprv (lebo "show" v texte by ich zachytilo)
+	(_re_dvr.compile(r'\b(kucharsk|masterchef|hell\'?s\s+kitchen|'
+	                 r'ano,?\s+sefe|jamie\s+oliver|recept|kuchar|kucharka|'
+	                 r'gordon\s+ramsay)'),
+	 _SH_KUCHARSKE),
+	# Reality show
+	(_re_dvr.compile(r'\b(reality\s?show|farmer|farma\b|survivor|big\s+brother|'
+	                 r'rande|love\s+island|vyzva\b|prezit|hlada\s+sa|holky\s+z|'
+	                 r'mama\s+ja\s+chcem)'),
+	 _SH_REALITY),
+	# Súťažné show / talenty
+	(_re_dvr.compile(r'\b(talent\b|x\s?factor|got\s+talent|the\s+voice|'
+	                 r'superstar|tvoja\s+tvar|hviezda|dancing\s+with|'
+	                 r'cesko\s+slovenska|stardance|let\'?s\s+dance)'),
+	 _SH_SUTAZ),
+	# Talk show
+	(_re_dvr.compile(r'\b(talk\s?show|show\s+jana\s+krausa|late\s+night|'
+	                 r'kraus\b|particka|cestou\s+necestou|vy(2|3|4)\s+show)'),
+	 _SH_TALK),
+	# Magazíny (vrátane Klíč, Reflex, lifestyle)
+	(_re_dvr.compile(r'\b(magazin|reflex\b|zivot\s+v\s+luxuse|'
+	                 r'plus\s+7\s+dni|5\s+proti\s+5|inkognito|klic|'
+	                 r'lifestyle|polopate)'),
+	 _SH_MAGAZINY),
+	# Zábava / humor
+	(_re_dvr.compile(r'\b(zabavn|humor|estrad|skecz|stand-?up|parodi|'
+	                 r'sranda|veselohra|kabaret|satira)'),
+	 _SH_ZABAVA),
+)
+
+
+_show_subgenre = _make_subgenre_fn(_SHOW_KEYWORD_TO_SUBCAT, _SH_INE)
+
+
+# -------- Detské (Children) --------
+_CH_ANIMAK      = 'ch_animak'        # Animované, kreslené
+_CH_ROZPRAVKY   = 'ch_rozpravky'     # Rozprávky, pohádky
+_CH_VZDELAVAC   = 'ch_vzdelavac'     # Vzdelávacie (Kouzelná školka)
+_CH_FILMY       = 'ch_filmy'         # Detské filmy
+_CH_INE         = 'ch_ine'
+
+_CHILDREN_SUBCAT_LABELS = (
+	(_CH_ANIMAK,     'Animované / Kreslené'),
+	(_CH_ROZPRAVKY,  'Rozprávky'),
+	(_CH_VZDELAVAC,  'Vzdelávacie'),
+	(_CH_FILMY,      'Filmy pre deti'),
+	(_CH_INE,        'Iné'),
+)
+
+_CHILDREN_KEYWORD_TO_SUBCAT = (
+	(_re_dvr.compile(r'\b(rozpravk|pohadk|princ\b|princezn|'
+	                 r'kralovstvo|carodej)'),
+	 _CH_ROZPRAVKY),
+	(_re_dvr.compile(r'\b(animovan|kreslen|loutkov|cartoon|anime|animak)'),
+	 _CH_ANIMAK),
+	(_re_dvr.compile(r'\b(kouzeln[aé]?\s+skolk|studio\s+kamar|vzdelavac|'
+	                 r'vyuka|naucn|edukacn|do\s+skoly)'),
+	 _CH_VZDELAVAC),
+	(_re_dvr.compile(r'\b(detsk[yi]\s+film|pre\s+deti\s+film|family\s+film|'
+	                 r'rodinny\s+film)'),
+	 _CH_FILMY),
+)
+
+
+_children_subgenre = _make_subgenre_fn(_CHILDREN_KEYWORD_TO_SUBCAT, _CH_INE)
+
+
+# -------- Hudba (Music) --------
+_MU_KLASIKA     = 'mu_klasika'       # Klasická hudba, opera
+_MU_KONCERT     = 'mu_koncert'       # Koncerty (pop/rock/jazz)
+_MU_HITY        = 'mu_hity'          # Hitparáda, popové show
+_MU_FOLK        = 'mu_folk'          # Folk, country, ľudovka
+_MU_MAGAZINY    = 'mu_magaziny'      # Hudobné magazíny
+_MU_INE         = 'mu_ine'
+
+_MUSIC_SUBCAT_LABELS = (
+	(_MU_KONCERT,   'Koncerty'),
+	(_MU_KLASIKA,   'Klasická hudba / Opera'),
+	(_MU_HITY,      'Hitparáda / Pop'),
+	(_MU_FOLK,      'Folk / Country / Ľudová'),
+	(_MU_MAGAZINY,  'Hudobné magazíny'),
+	(_MU_INE,       'Iné'),
+)
+
+_MUSIC_KEYWORD_TO_SUBCAT = (
+	(_re_dvr.compile(r'\b(klasick[ay]\s+hudb|opera|symfoni|filharmon|'
+	                 r'orchester|orchestr|arie|arij|koncert\s+klasick|smetanova|'
+	                 r'ma\s+vlast)'),
+	 _MU_KLASIKA),
+	(_re_dvr.compile(r'\b(koncert\b|live\s+concert|tour\s+(world|live)|'
+	                 r'mtv\s+live|unplugged)'),
+	 _MU_KONCERT),
+	(_re_dvr.compile(r'\b(folk\b|country|ludova\s+hudba|lidova\s+hudba|'
+	                 r'cimbal|ludovk|lidovk|ciganska\s+hudba|folklor)'),
+	 _MU_FOLK),
+	(_re_dvr.compile(r'\b(hitparad|top\s+\d+|chart|charts|pop\b|popmusic|'
+	                 r'pisnicky\s+z\s+obrazovky|videoklip)'),
+	 _MU_HITY),
+	(_re_dvr.compile(r'\b(hudobn[ye]\s+magaz|music\s+news|hudba\s+\d|hudobnik)'),
+	 _MU_MAGAZINY),
+)
+
+
+_music_subgenre = _make_subgenre_fn(_MUSIC_KEYWORD_TO_SUBCAT, _MU_INE)
+
+
+# -------- Umenie / Kultúra (Arts) --------
+_AR_DIVADLO     = 'ar_divadlo'       # Divadlo, opera
+_AR_FILM        = 'ar_film'          # Filmové umenie, dokumenty o filme
+_AR_VYTVARNE    = 'ar_vytvarne'      # Výtvarné umenie
+_AR_LITERATURA  = 'ar_literatura'    # Literatúra, knihy
+_AR_INE         = 'ar_ine'
+
+_ARTS_SUBCAT_LABELS = (
+	(_AR_DIVADLO,    'Divadlo'),
+	(_AR_FILM,       'Filmové umenie'),
+	(_AR_VYTVARNE,   'Výtvarné umenie / Maľba'),
+	(_AR_LITERATURA, 'Literatúra / Knihy'),
+	(_AR_INE,        'Iné'),
+)
+
+_ARTS_KEYWORD_TO_SUBCAT = (
+	(_re_dvr.compile(r'\b(divadl|theater|inscenace|cinohra|opera\s+plus|baletn|'
+	                 r'cinoherni)'),
+	 _AR_DIVADLO),
+	(_re_dvr.compile(r'\b(vytvarn|malba|maliarstv|socharst|galeri|'
+	                 r'umelci|umelec|art\s+(gallery|show)|vystav)'),
+	 _AR_VYTVARNE),
+	(_re_dvr.compile(r'\b(literatur|literar|knih[ay]|kniha\b|spisovate|'
+	                 r'roman\b|prozaik|poezi|basen|kniznic)'),
+	 _AR_LITERATURA),
+	(_re_dvr.compile(r'\b(filmov[ey]\s+umen|filmov[ya]\s+klasik|filmovi\s+tvorco|'
+	                 r'reziser|kameraman|filmari)'),
+	 _AR_FILM),
+)
+
+
+_arts_subgenre = _make_subgenre_fn(_ARTS_KEYWORD_TO_SUBCAT, _AR_INE)
+
+
+# -------- Dokumenty / Vzdelávacie (Documentaries) --------
+_DC_PRIRODA     = 'dc_priroda'       # Príroda, zvieratá
+_DC_HISTORIA    = 'dc_historia'      # História, archeológia
+_DC_VEDA        = 'dc_veda'          # Veda, technika, vesmír
+_DC_CESTOPIS    = 'dc_cestopis'      # Cestopis, geografia
+_DC_SPOLOCNOST  = 'dc_spolocnost'    # Spoločnosť, ekonomika, politika
+_DC_OSOBNOSTI   = 'dc_osobnosti'     # Biografie, portréty
+_DC_INE         = 'dc_ine'
+
+_DOCS_SUBCAT_LABELS = (
+	(_DC_PRIRODA,    'Príroda / Zvieratá'),
+	(_DC_HISTORIA,   'História / Archeológia'),
+	(_DC_VEDA,       'Veda / Technika / Vesmír'),
+	(_DC_CESTOPIS,   'Cestopisy / Geografia'),
+	(_DC_SPOLOCNOST, 'Spoločnosť / Politika'),
+	(_DC_OSOBNOSTI,  'Osobnosti / Biografie'),
+	(_DC_INE,        'Iné'),
+)
+
+_DOCS_KEYWORD_TO_SUBCAT = (
+	(_re_dvr.compile(r'\b(prirod|zviera|zvire|zivocich|zivocisn|'
+	                 r'fauna|flora|narodny\s+park|narodni\s+park|safari|'
+	                 r'ocean|dzungla|jerab|orel|sokol|tiger|delfin|velryba|'
+	                 r'animal\s+planet|kralovstvo\s+divociny|kralovstvi\s+divociny)'),
+	 _DC_PRIRODA),
+	(_re_dvr.compile(r'\b(histori|dejiny|stredovek|stredovek|archeo|'
+	                 r'antick|stara\s+civiliza|imperi|cisar|kral|'
+	                 r'pyramid|rimsk|grecka\s+civi|stredovek)'),
+	 _DC_HISTORIA),
+	(_re_dvr.compile(r'\b(veda|vedeck|fyzik|chemi|biolog|'
+	                 r'matematik|technika|technolog|vesmir|kozmos|'
+	                 r'planeta|nasa|esa\s+\w|raketa|vynalez|umela\s+inteligenci)'),
+	 _DC_VEDA),
+	(_re_dvr.compile(r'\b(cestopis|cesty|cestou\s+necestou|krajiny|cestovate|'
+	                 r'expedici|expedice|geografi|narody\s+sveta)'),
+	 _DC_CESTOPIS),
+	(_re_dvr.compile(r'\b(biografi|portret\s+osob|osobnost|zivotopis|zivot\s+a\s+dielo|'
+	                 r'pamati|memoare|spomienky\s+na|zivot\s+a\s+\w)'),
+	 _DC_OSOBNOSTI),
+	(_re_dvr.compile(r'\b(spoloc|spolecn|ekonom|politick[ay]\s+dokum|kapitalizm|'
+	                 r'globali|investigativ\s+dokum|chudoba|migra|trzn[ay]\s+ekonomik)'),
+	 _DC_SPOLOCNOST),
+)
+
+
+_docs_subgenre = _make_subgenre_fn(_DOCS_KEYWORD_TO_SUBCAT, _DC_INE)
+
+
+# -------- Voľný čas / Hobby --------
+_HB_ZAHRADA     = 'hb_zahrada'       # Záhrada
+_HB_BYVANIE     = 'hb_byvanie'       # Bývanie, renovácie
+_HB_VARENIE     = 'hb_varenie'       # Vaření (hobby — nie show)
+_HB_AUTO        = 'hb_auto'          # Auto, moto, technika
+_HB_CESTOVANIE  = 'hb_cestovanie'    # Cestovanie
+_HB_ZDRAVIE     = 'hb_zdravie'       # Zdravie, životospráva, fitness
+_HB_DIY         = 'hb_diy'           # DIY, kutilstvo
+_HB_INE         = 'hb_ine'
+
+_HOBBY_SUBCAT_LABELS = (
+	(_HB_ZAHRADA,    'Záhrada'),
+	(_HB_BYVANIE,    'Bývanie / Renovácie'),
+	(_HB_VARENIE,    'Vaření / Recepty'),
+	(_HB_AUTO,       'Auto / Moto'),
+	(_HB_CESTOVANIE, 'Cestovanie'),
+	(_HB_ZDRAVIE,    'Zdravie / Fitness'),
+	(_HB_DIY,        'Kutilstvo / DIY'),
+	(_HB_INE,        'Iné'),
+)
+
+_HOBBY_KEYWORD_TO_SUBCAT = (
+	(_re_dvr.compile(r'\b(zahrad|kvetin|sklenik|tri\s+v\s+zahrade|'
+	                 r'okrasn[ay]\s+rastlin)'),
+	 _HB_ZAHRADA),
+	(_re_dvr.compile(r'\b(byvan|interier|renovac|architektur|'
+	                 r'rekonstruk|nabytk|kuchyna\s+(snov|sna|dizajn)|bydleni)'),
+	 _HB_BYVANIE),
+	(_re_dvr.compile(r'\b(varen|recept|jedl[oa]|kuchar(stvo|ka|i)?|'
+	                 r'peciem|s\s+kuchar|kucharka|babickovy)'),
+	 _HB_VARENIE),
+	(_re_dvr.compile(r'\b(auto\b|moto\b|automobil|motorka|automotive|'
+	                 r'autosalon|garaz)'),
+	 _HB_AUTO),
+	(_re_dvr.compile(r'\b(cestovan|cestujeme|destinac|hotel\s+test|'
+	                 r'vylety|vylet\s+po|destination|on\s+the\s+road|cestopis|'
+	                 r'z\s+metropol)'),
+	 _HB_CESTOVANIE),
+	(_re_dvr.compile(r'\b(zdrav[ie]\s+|fitness|cvicen|wellness|'
+	                 r'beh\s+v\s+meste|zivotospravu|chudnut)'),
+	 _HB_ZDRAVIE),
+	(_re_dvr.compile(r'\b(kutil|diy\b|hand\s+made|vlastnorucn|svojpomocn|'
+	                 r'workshop|tvorime|dilna)'),
+	 _HB_DIY),
+)
+
+
+_hobby_subgenre = _make_subgenre_fn(_HOBBY_KEYWORD_TO_SUBCAT, _HB_INE)
+
+
+# --------------------------------------------------------------------------
+# Registry: mapuje top_cat → (labels, subgenre_fn)
+# Použité v archive_by_category na rozhodnutie či pridať podžánre menu
+# --------------------------------------------------------------------------
+_SUBCAT_REGISTRY = {
+	_CAT_FILM:           (_MOVIE_SUBCAT_LABELS,    None),   # špeciálne — viď archive
+	_CAT_SERIAL:         (_MOVIE_SUBCAT_LABELS,    None),   # špeciálne — viď archive
+	_CAT_SPORT:          (_SPORT_SUBCAT_LABELS,    _sport_subgenre),
+	_CAT_SPRAVODAJSTVO:  (_NEWS_SUBCAT_LABELS,     _news_subgenre),
+	_CAT_SHOW:           (_SHOW_SUBCAT_LABELS,     _show_subgenre),
+	_CAT_DETSKE:         (_CHILDREN_SUBCAT_LABELS, _children_subgenre),
+	_CAT_HUDBA:          (_MUSIC_SUBCAT_LABELS,    _music_subgenre),
+	_CAT_UMENIE:         (_ARTS_SUBCAT_LABELS,     _arts_subgenre),
+	_CAT_DOKUMENTY:      (_DOCS_SUBCAT_LABELS,     _docs_subgenre),
+	_CAT_HOBBY:          (_HOBBY_SUBCAT_LABELS,    _hobby_subgenre),
+}
+
+
+def _movie_subgenre(entry):
+	"""Vráti sub-kategóriu pre film/seriál.
+
+	Logika:
+	1. DVB genre byte (ak je dostupný) → primary signal
+	2. Keyword scan title + subtitle + description → secondary signal
+	3. Inak _MV_INE
+	"""
+	# 1) DVB genre check
+	for g in (entry.get('genre') or []):
+		try:
+			g = int(g)
+		except (ValueError, TypeError):
+			continue
+		sub = _DVB_GENRE_TO_SUBCAT.get(g)
+		if sub:
+			return sub
+
+	# 2) Keyword scan textu (normalizovaný — bez diakritiky, lowercase)
+	text = ((entry.get('disp_title') or '') + ' ' +
+	        (entry.get('disp_subtitle') or '') + ' ' +
+	        (entry.get('disp_description') or ''))
+	if not text.strip():
+		return _MV_INE
+	text = _strip_accents_lower(text)
+	for pattern, subcat in _KEYWORD_TO_SUBCAT:
+		if pattern.search(text):
+			return subcat
+	return _MV_INE
+
+
+# --------------------------------------------------------------------------
+# Channel-based hints (FIX 0.49b)
+# --------------------------------------------------------------------------
+# Niektoré kanály majú jednoznačnú orientáciu žánru — táto orientácia je
+# spoľahlivejšia ako DVB content_type ktorý broadcast environment občas
+# vypĺňa zle. Substring match v channelname (case-insensitive).
+_CHANNEL_TOP_HINTS = (
+	# Deti — CT :D, JOJ-ko, Disney, Nick atď.
+	('ct :d',       _CAT_DETSKE),
+	('ct d-art',    _CAT_DETSKE),
+	('ct d/art',    _CAT_DETSKE),
+	('decko',       _CAT_DETSKE),
+	('jojko',       _CAT_DETSKE),
+	('minimax',     _CAT_DETSKE),
+	('cartoon',     _CAT_DETSKE),
+	('disney',      _CAT_DETSKE),
+	('nick',        _CAT_DETSKE),
+	('boomerang',   _CAT_DETSKE),
+	('baby tv',     _CAT_DETSKE),
+	('duck tv',     _CAT_DETSKE),
+	# Šport — substring 'sport' chytí Premier Sport, Nova Sport, Eurosport...
+	('sport',       _CAT_SPORT),
+	('eurosport',   _CAT_SPORT),
+	('digi sport',  _CAT_SPORT),
+	('nova sport',  _CAT_SPORT),
+	('o2 sport',    _CAT_SPORT),
+	# Spravodajstvo
+	('cnn',         _CAT_SPRAVODAJSTVO),
+	('bbc news',    _CAT_SPRAVODAJSTVO),
+	('bbc world',   _CAT_SPRAVODAJSTVO),
+	('ta3',         _CAT_SPRAVODAJSTVO),
+	('ct24',        _CAT_SPRAVODAJSTVO),
+	('ct 24',       _CAT_SPRAVODAJSTVO),
+	('euronews',    _CAT_SPRAVODAJSTVO),
+	# Hudba
+	('ocko',        _CAT_HUDBA),
+	('now 80',      _CAT_HUDBA),
+	('now 90',      _CAT_HUDBA),
+	('now rock',    _CAT_HUDBA),
+	('mtv',         _CAT_HUDBA),
+	('vh1',         _CAT_HUDBA),
+	('mezzo',       _CAT_HUDBA),
+	('óčko',        _CAT_HUDBA),
+	# Krimi kanály — strong hint pre Filmy/Seriály sub-žáner
+	# (HANDLED v _channel_subgenre_hint nižšie, nie tu — to je sub override)
+)
+
+# Channel name → movie/serial sub-genre hint (silnejší než keyword scan)
+_CHANNEL_SUBCAT_HINTS = (
+	('krimi',       _MV_KRIMI),       # JOJ KRIMI, Nova Krimi, Prima Krimi
+	('action',      _MV_AKCNY),       # Nova Action
+	('romantica',   _MV_ROMANTIKA),   # Nova Romantica
+	('romantika',   _MV_ROMANTIKA),
+	('comedy',      _MV_KOMEDIA),     # Comedy Central
+	('cinema',      None),             # Nova Cinema, AXN Cinema — generic film
+	('horror',      _MV_HOROR),
+	('history',     _MV_HISTORICKY),
+)
+
+
+def _channel_top_hint(entry):
+	"""Vráti top-level kategóriu na základe channelname, alebo None."""
+	ch = (entry.get('channelname') or '').lower()
+	if not ch:
+		return None
+	for substring, cat in _CHANNEL_TOP_HINTS:
+		if substring in ch:
+			return cat
+	return None
+
+
+def _channel_subgenre_hint(entry):
+	"""Vráti sub-kategóriu na základe channelname, alebo None."""
+	ch = (entry.get('channelname') or '').lower()
+	if not ch:
+		return None
+	for substring, subcat in _CHANNEL_SUBCAT_HINTS:
+		if substring in ch:
+			return subcat
+	return None
+
+
+# --------------------------------------------------------------------------
+# Series detection (FIX 0.49b: rozšírené)
+# --------------------------------------------------------------------------
+# Keywords v description ktoré naznačujú seriál (Czech/Slovak)
+_SERIES_KEYWORDS = ('seriál', 'série', ' díl ', 'epizoda', 'epizóda',
+                    'season ', 'episode ')
+
+
+def _is_series_entry(entry):
+	"""True ak je entry seriálom (na základe akéhokoľvek dostupného signálu).
+
+	Detekuje 4 vzory:
+	  1) "25/31 ..." v subtitle (CT/Nova old format)
+	  2) "...(N)" sufix v title kde N nie je rok (Otec Brown IV (1))
+	  3) episode_disp non-empty (TVH má explicit episode info)
+	  4) keyword 'seriál'/'díl'/'epizoda' v description
+	"""
+	subtitle = (entry.get('disp_subtitle') or '').strip()
+	if _SUBTITLE_SERIES_PATTERN.match(subtitle):
+		return True
+
+	title = (entry.get('disp_title') or '').strip()
+	if _has_episode_suffix(title):
+		return True
+
+	if entry.get('episode_disp'):
+		return True
+
+	desc = ((entry.get('disp_description') or '') + ' ' + subtitle).lower()
+	for kw in _SERIES_KEYWORDS:
+		if kw in desc:
+			return True
+
+	return False
+
+
+# --------------------------------------------------------------------------
+# Fallback keyword guess pre Nezaradené (ct=0 alebo 11)
+# --------------------------------------------------------------------------
+_FALLBACK_KEYWORD_TO_TOP = (
+	# Šport
+	(_re_dvr.compile(r'\b(futbal|hokej|tenis|golf|formula|f1|oktagon|liga|'
+	                 r'majstrov|olympi|rally|cyklist|atletik|box|wrestlin|'
+	                 r'biatlon|lyzovan|sjazd)'),
+	 _CAT_SPORT),
+	# Spravodajstvo
+	(_re_dvr.compile(r'\b(spravodajstvo|sprav[yi]|udalosti|aktualn|reporter|noviny\s+tv|'
+	                 r'tv\s+noviny|pocasi|uvodnik)'),
+	 _CAT_SPRAVODAJSTVO),
+	# Detské
+	(_re_dvr.compile(r'\b(rozpravk|pohadk|detsk|pre\s+deti|pro\s+deti|kreslen|'
+	                 r'animovan|loutkov)'),
+	 _CAT_DETSKE),
+	# Hudba
+	(_re_dvr.compile(r'\b(koncert|hudba|hudobn|hudebni|spevok|zpevak|spevak|'
+	                 r'piesn|pisni|pop\s|rock\s|metal\s|klasick)'),
+	 _CAT_HUDBA),
+	# Šou
+	(_re_dvr.compile(r'\b(magazin|talk\s?show|\bshow\b|soutez|sutaz|'
+	                 r'reality\s?show|farmer|farma|zabavn|estrada|kucharsk)'),
+	 _CAT_SHOW),
+	# Dokumenty
+	(_re_dvr.compile(r'\b(dokument|documentary|prirod|history|'
+	                 r'vesmir|national\s+geographic|discovery)'),
+	 _CAT_DOKUMENTY),
+)
+
+
+def _guess_top_category_from_keywords(entry):
+	"""Pre záznamy s ct=0 alebo ct=11 (undefined) skús určiť top-level
+	kategóriu cez keywords v title + subtitle + description + channelname.
+	"""
+	text = ((entry.get('disp_title') or '') + ' ' +
+	        (entry.get('disp_subtitle') or '') + ' ' +
+	        (entry.get('disp_description') or '') + ' ' +
+	        (entry.get('channelname') or ''))
+	if not text.strip():
+		return _CAT_INE
+	text = _strip_accents_lower(text)
+	for pattern, cat in _FALLBACK_KEYWORD_TO_TOP:
+		if pattern.search(text):
+			return cat
+	return _CAT_INE
+
+
+# --------------------------------------------------------------------------
+# Hlavná klasifikačná funkcia
+# --------------------------------------------------------------------------
+def _classify_dvr_entry(entry):
+	"""Vráti (top_cat, sub_cat).
+
+	sub_cat môže byť None ak top_cat nemá podžánre. Inak je to jeden
+	z _MV_* / _SP_* / _NW_* / _SH_* / _CH_* / _MU_* / _AR_* / _DC_* / _HB_*
+	identifikátorov.
+
+	Priorita signálov (vyššie = silnejšie):
+	  1. Channel-based hint (deti/šport/hudba/spravodajstvo)
+	  2. Series detection (X/Y subtitle, (N) suffix v title, atď.)
+	  3. content_type fixed mapping
+	  4. Keyword fallback pre ct=0/11
+	"""
+	# Najprv urči top kategóriu
+	top = _determine_top_cat(entry)
+
+	if top == _CAT_FILM or top == _CAT_SERIAL:
+		# Channel hint má prednosť (Nova Krimi → krimi), inak movie subgenre
+		sub = _channel_subgenre_hint(entry) or _movie_subgenre(entry)
+		return top, sub
+
+	# FIX 0.49d: ostatné kategórie s podžánrami cez registry dispatch
+	entry_cfg = _SUBCAT_REGISTRY.get(top)
+	if entry_cfg and entry_cfg[1] is not None:
+		# entry_cfg = (labels, subgenre_fn)
+		sub = entry_cfg[1](entry)
+		return top, sub
+
+	# Kategórie bez podžánrov (napr. _CAT_INE)
+	return top, None
+
+
+def _determine_top_cat(entry):
+	"""Helper: vráti top-level kategóriu pre entry.
+
+	Použité v _classify_dvr_entry. Oddelené aby sa pridanie sub-žánrov
+	pre nové kategórie (napr. neskôr Show/Dokumenty) dalo robiť čisto.
+	"""
+	# 1. Channel hint — strong override (CT :D = deti aj keď ct=1)
+	channel_top = _channel_top_hint(entry)
+	if channel_top in (_CAT_DETSKE, _CAT_SPORT, _CAT_HUDBA, _CAT_SPRAVODAJSTVO):
+		return channel_top
+
+	# 2. Series detection (any content_type)
+	if _is_series_entry(entry):
+		return _CAT_SERIAL
+
+	# 3. content_type fixed mapping
+	try:
+		ct = int(entry.get('content_type') or 0)
 	except Exception:
-		pass
-	return s.lower()
+		ct = 0
+
+	if ct == 1:
+		return _CAT_FILM
+
+	if ct in _CT_TO_CAT_BASE:
+		return _CT_TO_CAT_BASE[ct]
+
+	# 4. Fallback keyword guess pre ct=0 alebo ct=11
+	return _guess_top_category_from_keywords(entry)
+
+
+def _dedup_dvr_entries(entries):
+	"""Vráti deduplikované entries — najnovší z každej (title, subtitle) skupiny.
+
+	TVH 7x24 autorec môže nahrať tú istú epizódu viackrát počas dňa
+	(napr. Pension pro svobodné pány 3× za pár hodín). Pre menu chceme
+	ukázať len jeden záznam. Kľúč: (disp_title, disp_subtitle[:80]).
+	Z duplikátov ostane ten s najvyšším _ts (najnovšie nahranie).
+	"""
+	by_key = {}
+	for e in entries:
+		title = (e.get('disp_title') or '').strip()
+		if not title:
+			continue
+		sub = (e.get('disp_subtitle') or '')[:80]
+		key = (title, sub)
+		prev = by_key.get(key)
+		if prev is None or _ts(e) > _ts(prev):
+			by_key[key] = e
+	return list(by_key.values())
+
+
+# Cache pre klasifikáciu (60s TTL — rovnaké ako DVR cache)
+_DVR_CLASSIFY_CACHE = {'ts': 0, 'data': None}
+_DVR_CLASSIFY_TTL_SEC = 60
+
+
+def _invalidate_classify_cache():
+	_DVR_CLASSIFY_CACHE['ts'] = 0
+	_DVR_CLASSIFY_CACHE['data'] = None
+
+
+def _get_classified_dvr(tvh):
+	"""Vráti tuple s klasifikovanými dátami pre menu rendering.
+
+	Returns:
+	    entries_by_top: {top_cat: [entry, ...]}  flat lists pre non-Filmy/Seriály
+	    entries_by_subcat: {(top_cat, sub_cat): [entry, ...]}  pre Filmy detail
+	    counts: {top_cat: int}  pre rozhodovanie či pridať položku do root
+	    series_by_canonical: {canonical_title: [entry, ...]}  pre Seriály detail
+	    series_subcat_titles: {(top_cat, sub_cat): set(canonical_title)}
+	                          pre filtrovanie zoznamu sérií v sub-žánre
+
+	Sort: všetky listy newest-first (key=_ts, reverse=True).
+	Cache: 60s.
+	"""
+	now = int(time.time())
+	cached = _DVR_CLASSIFY_CACHE
+	if cached['data'] and (now - cached['ts']) < _DVR_CLASSIFY_TTL_SEC:
+		return cached['data']
+
+	entries = _get_dvr_finished_cached(tvh)
+	entries = _dedup_dvr_entries(entries)
+
+	entries_by_top = {}
+	entries_by_subcat = {}
+	series_by_canonical = {}
+	series_subcat_titles = {}
+
+	for e in entries:
+		top, sub = _classify_dvr_entry(e)
+		entries_by_top.setdefault(top, []).append(e)
+		if sub is not None:
+			entries_by_subcat.setdefault((top, sub), []).append(e)
+
+		if top == _CAT_SERIAL:
+			title = (e.get('disp_title') or '').strip()
+			if title:
+				canonical = _series_canonical_title(title)
+				if canonical:
+					series_by_canonical.setdefault(canonical, []).append(e)
+					if sub is not None:
+						series_subcat_titles.setdefault(
+							(top, sub), set()).add(canonical)
+
+	# Sort: newest first
+	for k in entries_by_top:
+		entries_by_top[k].sort(key=_ts, reverse=True)
+	for k in entries_by_subcat:
+		entries_by_subcat[k].sort(key=_ts, reverse=True)
+	for t in series_by_canonical:
+		series_by_canonical[t].sort(key=_ts, reverse=True)
+
+	counts = {cat: len(entries_by_top[cat]) for cat in entries_by_top}
+	data = (entries_by_top, entries_by_subcat, counts,
+	        series_by_canonical, series_subcat_titles)
+
+	cached['ts'] = now
+	cached['data'] = data
+	return data
+# ============================================================================
+# end FIX 0.49 classification helpers
+# ============================================================================
+
+
+def _norm_name(s):
+	# FIX 0.48c: používa centrálny _strip_accents_compat (tools_archivczsk
+	# helper s fallback-om) namiesto duplicitnej implementácie cez unicodedata.
+	if not s:
+		return ''
+	return _strip_accents_compat(s).lower()
 
 
 def _ts(e):
@@ -154,84 +1341,560 @@ def _tag_sort_key(tag):
 
 class TvheadendContentProvider(CommonContentProvider):
 
-	# Tieto atribúty zabezpečia automatické volanie login() pri zmene nastavení
-	login_settings_names = (
+	# login_settings_names = tuple() je DÔLEŽITÉ:
+	#
+	# Framework's process_login() pri prázdnom value v login_settings_names
+	# vráti False BEZ ZOBRAZENIA DIALÓGU a NEZAVOLÁ login() ani root().
+	# Tým by sa plugin otvoril prázdny ale bez informácie pre používateľa.
+	#
+	# Preto necháme tuple() (vždy povolíme volanie login/root) a dialóg
+	# "nie je nakonfigurované" zobrazíme z root() vyhodením
+	# AddonErrorException — framework ho zachytí v run() cez:
+	#     except AddonErrorException as e:
+	#         client.showError(str(e))
+	# a zobrazí "Chyba" dialóg s našou správou. Po stlačení OK sa plugin
+	# otvorí prázdny.
+	#
+	# login_optional_settings_names je len pre notification: framework zavolá
+	# login_data_changed() keď user zmení niektorú z týchto settings.
+	login_settings_names = tuple()
+	login_optional_settings_names = (
 		'host', 'port', 'use_https',
 		'username', 'password',
 		'http_auth_mode', 'use_ticket_url',
 		'profile', 'loading_timeout',
+		'enable_m3u_source', 'm3u_url', 'm3u_epg_url',
 	)
-	login_optional_settings_names = tuple()
 
 	def __init__(self, *args, **kwargs):
 		CommonContentProvider.__init__(self, *args, **kwargs)
 		self.tvh = Tvheadend(self)
 		self._bouquet_gen = None
+		self._m3u_manager = None
 
 	# ------------------------------------------------------------------
 	# login() – volá sa automaticky pri štarte aj po zmene nastavení
 	# ------------------------------------------------------------------
 
 	def login(self, silent=False):
-		# Python 2 – upozorní užívateľa zmysluplnou správou namiesto pádu
+		# Python 2 – best-effort beh, len jednorazové upozornenie do logu
 		if sys.version_info[0] < 3:
-			msg = (
-				"Tvheadend addon vyžaduje Python 3.x.\n"
-				"Tvoje image používa Python 2.7 – doplnok nemôže bežať."
-			)
-			if silent:
-				return False
-			raise AddonErrorException(msg)
+			if not getattr(self, '_py2_warned', False):
+				try:
+					print("[plugin.video.tvheadend] WARNING: running on "
+					      "Python 2.x — best-effort mode")
+				except Exception:
+					pass
+				self._py2_warned = True
 
 		# Vyčistenie poster cache (max raz za týždeň) – tu, nie v __init__
-		_maybe_cleanup_poster_cache()
-
-		if not self.tvh.is_configured():
-			if silent:
-				return False
-			raise AddonErrorException(
-				self._('Please fill in the addon settings first: host, username and password.')
-			)
-
 		try:
-			self.tvh.check_login()
-		except Exception:
-			if silent:
-				return False
-			raise AddonErrorException(
-				self._('Tvheadend login failed. Check username/password and account permissions.')
-			)
-
-		# Lazy inicializácia generátora bouquetu
-		if self._bouquet_gen is None and TvheadendBouquetXmlEpgGenerator is not None:
-			try:
-				self._bouquet_gen = TvheadendBouquetXmlEpgGenerator(self)
-			except Exception:
-				self._bouquet_gen = None
-
-		# Spustiť picon download na pozadí (non-blocking)
-		try:
-			self.tvh.init_picons_async()
+			_maybe_cleanup_poster_cache()
 		except Exception:
 			pass
 
-		# Export bouquet/EPG na pozadí s TTL ochranou
-		if self._bouquet_gen is not None:
-			self._maybe_trigger_exports(silent=bool(silent))
+		# FIX 0.48: invalid-uj login cache pri každom login() volaní cez
+		# settings change. (Framework volá login_data_changed → login(silent=True)
+		# po zmene credentials.)
+		self._invalidate_tvh_login_cache()
+		try:
+			self.tvh.invalidate_auth_cache()
+		except Exception:
+			pass
 
-		# Auto-refresh bouquetu podľa nastaveného intervalu
-		self._maybe_auto_refresh_bouquet()
+		# Test TVH connectivity (without raising — neúspech nezablokuje plugin,
+		# Settings menu + M3U source ostanú prístupné aj keď TVH nie je nastavené)
+		tvh_ok = False
+		if self.tvh.is_configured():
+			try:
+				self.tvh.check_login()
+				tvh_ok = True
+			except Exception:
+				tvh_ok = False
+		# Aktualizuj cache aby _check_tvh_silent() nešiel hneď znova na server
+		_TVH_LOGIN_CACHE['ts'] = int(time.time())
+		_TVH_LOGIN_CACHE['ok'] = tvh_ok
 
+		# TVH-related background work len pri funkčnom spojení
+		if tvh_ok:
+			# Lazy inicializácia generátora bouquetu
+			if self._bouquet_gen is None and TvheadendBouquetXmlEpgGenerator is not None:
+				try:
+					self._bouquet_gen = TvheadendBouquetXmlEpgGenerator(self)
+				except Exception:
+					self._bouquet_gen = None
+
+			# Spustiť picon download na pozadí (non-blocking)
+			try:
+				self.tvh.init_picons_async()
+			except Exception:
+				pass
+
+			# Export bouquet/EPG na pozadí s TTL ochranou
+			if self._bouquet_gen is not None:
+				try:
+					self._maybe_trigger_exports(silent=bool(silent))
+				except Exception:
+					pass
+
+			# Auto-refresh bouquetu podľa nastaveného intervalu
+			try:
+				self._maybe_auto_refresh_bouquet()
+			except Exception:
+				pass
+
+			# FIX 0.48e: nezávislý EPG auto-inject podľa tvh_epg_inject_interval
+			# (typicky častejšie ako bouquet refresh — EPG sa mení denne)
+			try:
+				self._maybe_auto_inject_epg()
+			except Exception:
+				pass
+
+		# ----- External M3U playlist source (nezávislý od TVH loginu) -----
+		# Pozn.: aj keď je M3U vypnuté, _maybe_init_m3u_manager() môže
+		# vykonať one-shot cleanup zostatkov.
+		try:
+			self._maybe_init_m3u_manager()
+		except Exception:
+			pass
+
+		# FIX 0.48g: paralelný EPG auto-inject pre M3U side (s vlastným
+		# intervalom m3u_epg_inject_interval, default 4h). Beží len ak
+		# je M3U source zapnutý.
+		try:
+			self._maybe_auto_inject_m3u_epg()
+		except Exception:
+			pass
+
+		# FIX 0.48: watchdog timer — spustí sa raz pri prvom login()
+		# (preload="yes" v addon.xml znamená že login beží pri boot-e E2).
+		# Pravidelne (5 min) volá _check_tvh_silent(force=True), a keď
+		# detekuje OFFLINE → ONLINE prechod, automaticky spustí bouquet
+		# refresh + picon download. Tým sa odstráni potreba manuálne
+		# otvoriť plugin po reštarte TVH servera.
+		try:
+			self._maybe_start_watchdog()
+		except Exception:
+			pass
+
+		# Pozn.: Dialóg "Plugin nie je nakonfigurovaný" sa zobrazí z root()
+		# vyhodením AddonErrorException — framework ho v run() zachytí cez
+		# `except AddonErrorException: client.showError(str(e))`. Tu v login()
+		# nezobrazujeme nič (vždy vrátime True), aby framework dostal kontrolu
+		# nad volaním root().
+
+		# Vždy vracia True aby framework načítal root() - bez ohľadu na TVH stav.
+		# Jednotlivé root() / live_root() / archive_channels() si overia
+		# TVH login podľa potreby cez _check_tvh_silent().
 		return True
 
-	def _check_login_silent(self):
+	def _quick_login_for_http_handler(self):
+		"""FIX 0.48: light-weight login pre HTTP handler.
+
+		Predtým HTTP handler `get_url_by_channel_key()` volal plný `login(silent=True)`,
+		ktorý pri každom playback-u kanála spravil:
+		  - _maybe_cleanup_poster_cache (rýchle, ale beží)
+		  - lazy init bouquet generator
+		  - init_picons_async (spawn threadu zakaždým — _picon_worker_lock
+		    zabráni paralelnému downloadu, ale stále zbytočný thread overhead)
+		  - _maybe_init_m3u_manager (kompletná inicializácia M3U manager-a
+		    + možné re-schedule eTimera)
+		  - _maybe_trigger_exports + _maybe_auto_refresh_bouquet
+
+		Pre HTTP handler stačí overiť TVH konektivitu cez cache.
+		Bouquet refresh / picon download spustí watchdog alebo plný login().
+		"""
+		if not self.tvh.is_configured():
+			return False
 		try:
-			return bool(self.login(silent=True))
+			# Použi cache (default 30s) — pri streamovaní mnoho channels
+			# za sekundu by sme inak hammerovali TVH /api/serverinfo.
+			return self._check_tvh_silent()
 		except Exception:
 			return False
 
+	def _maybe_start_watchdog(self):
+		"""Spustí periodický watchdog timer ktorý detekuje návrat TVH online.
+
+		FIX 0.48: bez tohto musel užívateľ po reštarte TVH servera buď
+		otvoriť plugin v GUI alebo počkať na ďalší pokus o stream.
+		Watchdog beží na pozadí (eTimer + fallback threading) a:
+		  - každých 5 minút volá _check_tvh_silent(force=True)
+		  - ak detekuje OFFLINE→ONLINE prechod, spustí na pozadí:
+		      a) bouquet refresh (cez existujúci _bouquet_gen)
+		      b) picon download (cez init_picons_async)
+		  - ak je ONLINE, ešte navyše kontroluje či nezbehol auto-refresh
+		    bouquet interval (užitočné keď používateľ ROZHODNE neotvára
+		    plugin v GUI a HTTP handler sa tiež nepoužíva)
+		"""
+		if _WATCHDOG_STATE['started']:
+			return
+
+		def _tick():
+			try:
+				prev = _WATCHDOG_STATE.get('last_state')
+				now_ok = self._check_tvh_silent(force=True)
+				_WATCHDOG_STATE['last_state'] = now_ok
+
+				if now_ok and prev is False:
+					# OFFLINE → ONLINE prechod
+					try:
+						print('[plugin.tvheadend] watchdog: TVH back online — '
+						      'triggering bouquet + picon refresh')
+					except Exception:
+						pass
+					# Lazy-init bouquet gen ak ešte nie je
+					if self._bouquet_gen is None and TvheadendBouquetXmlEpgGenerator is not None:
+						try:
+							self._bouquet_gen = TvheadendBouquetXmlEpgGenerator(self)
+						except Exception:
+							pass
+					# Background refresh (non-blocking)
+					if self._bouquet_gen is not None:
+						try:
+							self._bouquet_gen.refresh_userbouquet_start()
+							with open(_BOUQUET_REFRESH_STAMP, 'w') as f:
+								f.write(str(int(time.time())))
+						except Exception:
+							pass
+					try:
+						self.tvh.init_picons_async()
+					except Exception:
+						pass
+
+				# Pravidelná kontrola auto-refresh aj keď user neotvoril plugin
+				if now_ok and self._bouquet_gen is not None:
+					try:
+						self._maybe_auto_refresh_bouquet()
+					except Exception:
+						pass
+					# FIX 0.48e: aj EPG auto-inject (typicky kratší interval)
+					try:
+						self._maybe_auto_inject_epg()
+					except Exception:
+						pass
+				# FIX 0.48g: M3U EPG auto-inject (nezávislý od TVH stavu —
+				# M3U source nemusí byť TVH-based)
+				try:
+					self._maybe_auto_inject_m3u_epg()
+				except Exception:
+					pass
+			except Exception as e:
+				try:
+					print('[plugin.tvheadend] watchdog error: %s' % e)
+				except Exception:
+					pass
+
+		# Skús enigma eTimer, fallback threading
+		try:
+			from enigma import eTimer
+			t = eTimer()
+			try:
+				del t.callback[:]
+			except Exception:
+				pass
+			t.callback.append(_tick)
+			# False = opakovaný timer (nie singleshot)
+			t.start(_WATCHDOG_INTERVAL_MS, False)
+			_WATCHDOG_STATE['timer'] = t
+			_WATCHDOG_STATE['started'] = True
+			try:
+				print('[plugin.tvheadend] watchdog started '
+				      '(eTimer, interval=%d min)' % (_WATCHDOG_INTERVAL_MS // 60000))
+			except Exception:
+				pass
+		except ImportError:
+			# Fallback: daemon thread + Event.wait
+			import threading as _th
+			ev = _th.Event()
+			_WATCHDOG_STATE['stop_event'] = ev
+			interval_sec = _WATCHDOG_INTERVAL_MS // 1000
+
+			def _loop():
+				while not ev.wait(interval_sec):
+					_tick()
+
+			th = _th.Thread(target=_loop, name='TVHWatchdog')
+			th.daemon = True
+			th.start()
+			_WATCHDOG_STATE['timer'] = th
+			_WATCHDOG_STATE['started'] = True
+
+	def _check_tvh_silent(self, force=False):
+		"""Vráti True ak TVH server je nakonfigurovaný a prihlásenie funguje.
+
+		FIX 0.48: TTL cache.
+		FIX 0.48h: asymetrické TTL (30s pri úspechu, 5s pri zlyhaní) — keď
+		TVH transient failne, ďalší pokus zbehne čoskoro. + 'reason' tracking
+		('not_configured' / 'unreachable' / 'ok') pre rozlíšenie chybových
+		stavov v root().
+		FIX 0.48i:
+		  - pri prvom zlyhaní okamžitý retry s force_reauth=True (handluje
+		    digest auth nonce expiry — TVH server občas odhodí nonce po
+		    niekoľkých minútach idle, requests knižnica si občas nestihne
+		    obnoviť stav medzi thread-mi)
+		  - keď check stále zlyhá, spustí sa background fast-recovery poll
+		    cez _maybe_start_fast_recovery_poll() — užívateľ nebude musieť
+		    tlačiť retry manuálne; po naskočení TVH sa cache aktualizuje
+		    ticho a ďalšia navigácia zafunguje
+
+		Volajúci môže zistiť dôvod cez get_tvh_state() metódu nižšie.
+
+		FIX 0.50beta: zdieľaný core (_do_tvh_login_check) s
+		_check_tvh_silent_no_recurse_for_poll — eliminuje DRY violation
+		ktorá vyžadovala udržiavať dve takmer identické kópie tej istej
+		logiky (oba volajú check_login + force_reauth retry + cache
+		update). Verzia bez recurse je iba flag `start_recovery_on_fail`.
+		"""
+		now = int(time.time())
+		c = _TVH_LOGIN_CACHE
+		if not force:
+			ttl = _TVH_LOGIN_CACHE_TTL_OK if c['ok'] else _TVH_LOGIN_CACHE_TTL_FAIL
+			if (now - c['ts']) < ttl:
+				return c['ok']
+		return self._do_tvh_login_check(start_recovery_on_fail=True)
+
+	def _do_tvh_login_check(self, start_recovery_on_fail):
+		"""FIX 0.50beta: zdieľaný core pre _check_tvh_silent +
+		_check_tvh_silent_no_recurse_for_poll.
+
+		Vykoná dvojfázový check (prvý pokus + force_reauth retry),
+		aktualizuje module-level _TVH_LOGIN_CACHE, a (ak je
+		start_recovery_on_fail=True) pri zlyhaní spustí background
+		fast-recovery poll cez _maybe_start_fast_recovery_poll.
+
+		Vráti True/False.
+		"""
+		now = int(time.time())
+		c = _TVH_LOGIN_CACHE
+
+		if not self.tvh.is_configured():
+			c['ts'] = now
+			c['ok'] = False
+			c['reason'] = 'not_configured'
+			c['last_error'] = ''
+			return False
+
+		# Dvojfázový check: prvý pokus na existujúcom auth state,
+		# druhý pokus s freshým HTTPDigestAuth (force_reauth=True)
+		# rieši digest auth nonce expiry po idle period.
+		err = ''
+		ok = False
+		try:
+			self.tvh.check_login()
+			ok = True
+		except Exception as e:
+			err = str(e)
+			try:
+				time.sleep(0.3)  # malé čakanie na sieťovú stabilizáciu
+				self.tvh.check_login(force_reauth=True)
+				ok = True
+				err = ''
+				try:
+					print('[plugin.tvheadend] check_login: recovered on retry '
+					      'with force_reauth (was: %s)' % e)
+				except Exception:
+					pass
+			except Exception as e2:
+				err = str(e2)
+
+		c['ts'] = now
+		c['ok'] = ok
+		c['reason'] = 'ok' if ok else 'unreachable'
+		c['last_error'] = err
+
+		if not ok and start_recovery_on_fail:
+			try:
+				self._maybe_start_fast_recovery_poll()
+			except Exception:
+				pass
+
+		return ok
+
+	def get_tvh_state(self):
+		"""FIX 0.48h: vráti tuple (ok, reason, last_error) pre nadradenú logiku."""
+		c = _TVH_LOGIN_CACHE
+		return (c['ok'], c.get('reason'), c.get('last_error') or '')
+
+	def _invalidate_tvh_login_cache(self):
+		"""Vynúti čerstvý check pri ďalšom _check_tvh_silent()."""
+		_TVH_LOGIN_CACHE['ts'] = 0
+
+	def _maybe_start_fast_recovery_poll(self):
+		"""FIX 0.48i: spustí background poll thread ktorý každých 10s skúša
+		TVH check, kým TVH neobnovuje. Max 5 minút (30 pokusov), potom sa
+		zastaví — watchdog tick (každých 5 min) obnoví normálny cyklus.
+
+		Cieľ: užívateľ nemusí ručne stláčať Retry po TVH transient failure.
+		Po naskočení TVH sa cache silently aktualizuje na ok=True a ďalšia
+		navigácia uvidí všetko v poriadku.
+
+		Idempotentné: ak už beží, druhé volanie nič nespraví.
+
+		FIX 0.50beta: check-and-set chránený _FAST_RECOVERY_LOCK proti
+		race condition keď 2+ threads zavolajú túto metódu súčasne.
+		"""
+		import threading as _th
+		# FIX 0.50beta: atomic check-and-set namiesto zraniteľnej
+		# kombinácie `if not running: ... running = True`
+		with _FAST_RECOVERY_LOCK:
+			if _FAST_RECOVERY_STATE.get('running'):
+				return  # už beží
+			ev_stop = _th.Event()
+			_FAST_RECOVERY_STATE['stop_event'] = ev_stop
+			_FAST_RECOVERY_STATE['running'] = True
+
+		def _poll_loop():
+			try:
+				print('[plugin.tvheadend] fast-recovery poll started '
+				      '(every %ds, max %d attempts)' %
+				      (_FAST_RECOVERY_INTERVAL_SEC, _FAST_RECOVERY_MAX_ATTEMPTS))
+			except Exception:
+				pass
+			for attempt in range(_FAST_RECOVERY_MAX_ATTEMPTS):
+				# Event.wait s timeout — kedykoľvek možno cancelnúť cez set()
+				if ev_stop.wait(_FAST_RECOVERY_INTERVAL_SEC):
+					break  # cancelled
+				try:
+					# force=True aby sme obišli TTL cache (5s je ešte v platnosti)
+					ok = self._check_tvh_silent_no_recurse_for_poll()
+					if ok:
+						try:
+							print('[plugin.tvheadend] fast-recovery: TVH back '
+							      'online after %d attempts (%ds total)' %
+							      (attempt + 1,
+							       (attempt + 1) * _FAST_RECOVERY_INTERVAL_SEC))
+						except Exception:
+							pass
+						break
+				except Exception:
+					pass
+			# FIX 0.50beta: reset running flag pod lockom, rovnaký lock
+			# ako check-and-set v _maybe_start_fast_recovery_poll, aby
+			# následné volanie videlo running=False atomicky
+			with _FAST_RECOVERY_LOCK:
+				_FAST_RECOVERY_STATE['running'] = False
+			try:
+				print('[plugin.tvheadend] fast-recovery poll ended')
+			except Exception:
+				pass
+
+		t = _th.Thread(target=_poll_loop, name='TVHFastRecovery')
+		t.daemon = True
+		_FAST_RECOVERY_STATE['thread'] = t
+		t.start()
+
+	def _check_tvh_silent_no_recurse_for_poll(self):
+		"""FIX 0.48i: variant _check_tvh_silent ktorý sa NEZAVOLÁVA
+		fast-recovery (lebo my SME fast-recovery). Pomáha vyhnúť sa
+		rekurzii / opakovanému spawnu thread-ov.
+
+		FIX 0.50beta: namiesto duplicitnej kópie celej _check_tvh_silent
+		logiky (auth retry, cache update, ...) volá zdieľaný core
+		_do_tvh_login_check(start_recovery_on_fail=False).
+		"""
+		return self._do_tvh_login_check(start_recovery_on_fail=False)
+
+	def _maybe_init_m3u_manager(self):
+		"""
+		Inicializuje M3U refresh manager pre externý playlist (ak je zapnutý
+		v settings). Beží paralelne s TVH zdrojom, nemodifikuje TVH bouquet.
+		Generuje samostatný userbouquet so service refmi type=1 (native DVB)
+		pre podporu DVB titulkov.
+
+		Ak je M3U vypnuté ale existujú zostatkové súbory z predošlého
+		zapnutia (userbouquet, bouquets.tv záznam, epgimport súbory), tak
+		ich vyčistí jednorazovo (one-shot cleanup stamp).
+		"""
+		if M3URefreshManager is None:
+			return
+		try:
+			if self._m3u_manager is None:
+				def _m3u_log(*parts):
+					try:
+						msg = ' '.join(str(p) for p in parts)
+						print('[plugin.tvheadend.m3u] ' + msg)
+					except Exception:
+						pass
+
+				def _settings_get(key, default=None):
+					try:
+						val = self.get_setting(key)
+						return default if val is None else val
+					except Exception:
+						return default
+
+				self._m3u_manager = M3URefreshManager(
+					settings_getter=_settings_get,
+					log=_m3u_log,
+					tvh_client=self.tvh,
+				)
+
+			if not self._m3u_manager.is_enabled():
+				# M3U je vypnuté — ak existujú zostatkové artefakty z minulého
+				# zapnutia, jednorazovo ich vyčistíme.
+				try:
+					self._maybe_cleanup_disabled_m3u()
+				except Exception:
+					pass
+				return
+
+			# Prvý refresh asynchronne, aby login() nezablokoval
+			self._m3u_manager.refresh_async()
+
+			# Periodický refresh cez enigma2 eTimer (alebo threading.Timer fallback)
+			try:
+				from enigma import eTimer
+				self._m3u_manager.schedule(etimer_class=eTimer)
+			except ImportError:
+				self._m3u_manager.schedule(etimer_class=None)
+		except Exception as e:
+			try:
+				print('[plugin.tvheadend.m3u] init failed:', e)
+			except Exception:
+				pass
+
+	def _maybe_cleanup_disabled_m3u(self):
+		"""
+		Ak je M3U vypnuté v settings ale na disku existuje userbouquet alebo
+		záznam v bouquets.tv, zavolá cleanup. Idempotentné: keď nič nie je,
+		nič neurobí. Vykoná sa pri každom login() — operácia je O(1) keď nie
+		je čo mazať.
+		"""
+		if self._m3u_manager is None:
+			return
+		prefix = M3U_BOUQUET_PREFIX  # FIX 0.48f: hardcoded
+		ub_path = '/etc/enigma2/userbouquet.{}.tv'.format(prefix)
+		bq_index = '/etc/enigma2/bouquets.tv'
+
+		need_cleanup = os.path.isfile(ub_path)
+		if not need_cleanup and os.path.isfile(bq_index):
+			try:
+				with open(bq_index, 'r') as f:
+					content = f.read()
+				if ('userbouquet.%s.tv' % prefix) in content:
+					need_cleanup = True
+			except Exception:
+				pass
+
+		if need_cleanup:
+			try:
+				print('[plugin.tvheadend.m3u] cleanup: M3U is disabled but '
+				      'bouquet artefacts exist — removing them')
+			except Exception:
+				pass
+			self._m3u_manager.cleanup()
+
 	def _maybe_auto_refresh_bouquet(self):
-		"""Automaticky refreshne bouquet ak uplynul nastavený interval."""
+		"""Automaticky refreshne bouquet ak uplynul nastavený interval.
+
+		FIX 0.48: stamp sa zapíše AŽ po úspešnom spustení refreshu.
+		Predtým sa zapísal pred volaním, takže pri zlyhaní (TVH dočasne
+		nedostupný) sa nasledujúci pokus odložil o celý interval —
+		bouquet ostal "navždy" zastaraný. Teraz pri zlyhaní zapíšeme
+		"retry stamp" s krátkym intervalom (5 minút), takže auto-retry
+		zbehne čoskoro keď sa TVH vráti.
+		"""
 		if self._bouquet_gen is None:
 			return
 		try:
@@ -244,15 +1907,193 @@ class TvheadendContentProvider(CommonContentProvider):
 				last = int(os.path.getmtime(_BOUQUET_REFRESH_STAMP))
 			except Exception:
 				pass
+			# Pri retry stamp-e (mtime v budúcnosti vďaka touch trickom by sme
+			# museli komplikovať — držíme to jednoducho: posledný mtime + interval).
 			if last and (now - last) < interval:
 				return
-			# Zapisat stamp pred refreshom
-			try:
-				with open(_BOUQUET_REFRESH_STAMP, 'w') as f:
-					f.write(str(now))
-			except Exception:
+
+			# Skontroluj TVH PRED volaním refreshu — keď je TVH down,
+			# zmazaj len logically a skús o 5 minút.
+			if not self._check_tvh_silent():
+				# nastav stamp tak, aby ďalší pokus bol o 5 min
+				retry_at = now - interval + 300
+				try:
+					os.utime(_BOUQUET_REFRESH_STAMP, (retry_at, retry_at))
+				except Exception:
+					try:
+						with open(_BOUQUET_REFRESH_STAMP, 'w') as f:
+							f.write(str(retry_at))
+					except Exception:
+						pass
 				return
-			self._bouquet_gen.refresh_userbouquet_start()
+
+			# Spusti refresh — task beží na pozadí
+			try:
+				self._bouquet_gen.refresh_userbouquet_start()
+				# úspešne naplánované → stamp je teraz
+				try:
+					with open(_BOUQUET_REFRESH_STAMP, 'w') as f:
+						f.write(str(now))
+				except Exception:
+					pass
+			except Exception as e:
+				try:
+					print('[plugin.tvheadend] auto-refresh bouquet failed: %s' % e)
+				except Exception:
+					pass
+				# retry za 5 min
+				retry_at = now - interval + 300
+				try:
+					with open(_BOUQUET_REFRESH_STAMP, 'w') as f:
+						f.write(str(retry_at))
+					os.utime(_BOUQUET_REFRESH_STAMP, (retry_at, retry_at))
+				except Exception:
+					pass
+		except Exception:
+			pass
+
+	def _maybe_auto_inject_epg(self):
+		"""FIX 0.48e: nezávislý EPG auto-inject podľa tvh_epg_inject_interval.
+
+		Beží OKREM bouquet refresh-u (ten injektuje EPG ako vedľajší produkt).
+		Tým môže mať EPG refresh kratší interval než bouquet refresh —
+		typicky bouquet 24h (kanály sa nemenia tak často), EPG 4-12h
+		(programy sa menia denne).
+
+		Logika:
+		  - Zisti `tvh_epg_inject_interval` zo settings (sekundy, 0 = vypnuté)
+		  - Skontroluj `_EPG_INJECT_STAMP` (zapisuje sa po každej úspešnej
+		    injekcii, či už cez bouquet refresh _post() alebo cez nás)
+		  - Ak je rozdiel >= interval, spusti injekciu na pozadí
+		  - Pri zlyhaní nastaví retry stamp 5 min v budúcnosti (rovnaká
+		    logika ako _maybe_auto_refresh_bouquet)
+		"""
+		if self._bouquet_gen is None:
+			return
+		try:
+			interval = 0
+			try:
+				interval = int(self._bouquet_gen.get_setting('tvh_epg_inject_interval') or 0)
+			except Exception:
+				interval = 0
+			if interval <= 0:
+				return  # vypnuté
+
+			now = int(time.time())
+			last = 0
+			try:
+				last = int(os.path.getmtime(_EPG_INJECT_STAMP))
+			except Exception:
+				pass
+
+			if last and (now - last) < interval:
+				return  # interval ešte neuplynul
+
+			# Skontroluj TVH konektivitu
+			if not self._check_tvh_silent():
+				retry_at = now - interval + 300
+				try:
+					if os.path.isfile(_EPG_INJECT_STAMP):
+						os.utime(_EPG_INJECT_STAMP, (retry_at, retry_at))
+					else:
+						with open(_EPG_INJECT_STAMP, 'w') as f:
+							f.write(str(retry_at))
+						os.utime(_EPG_INJECT_STAMP, (retry_at, retry_at))
+				except Exception:
+					pass
+				return
+
+			# Spusti injekciu na pozadí — XMLTV fetch + parse trvá desiatky sekúnd
+			import threading as _th
+
+			def _runner():
+				try:
+					ok = self._bouquet_gen.inject_tvh_epg_into_enigma()
+					if not ok:
+						# inject_tvh_epg sám zapíše stamp len pri úspechu;
+						# pri zlyhaní nastavíme retry-at-5min
+						# FIX 0.50beta: použiť aktuálny čas, nie captured `now`
+						# zo spustenia metódy (môže byť o desiatky sekúnd starší)
+						_now_fail = int(time.time())
+						retry_at = _now_fail - interval + 300
+						try:
+							with open(_EPG_INJECT_STAMP, 'w') as f:
+								f.write(str(retry_at))
+							os.utime(_EPG_INJECT_STAMP, (retry_at, retry_at))
+						except Exception:
+							pass
+				except Exception as e:
+					try:
+						print('[plugin.tvheadend] auto-inject EPG failed: %s' % e)
+					except Exception:
+						pass
+
+			t = _th.Thread(target=_runner, name='TVHEPGAutoInject')
+			t.daemon = True
+			t.start()
+		except Exception:
+			pass
+
+	def _maybe_auto_inject_m3u_epg(self):
+		"""FIX 0.48g: paralelný EPG auto-inject pre M3U side (analógia
+		s _maybe_auto_inject_epg pre TVH).
+
+		Beží OKREM m3u refresh-u (ten injektuje EPG ako vedľajší produkt).
+		Tým môže M3U EPG refresh bežať s kratším intervalom než celý
+		M3U refresh — typicky M3U bouquet 24h, EPG 4h.
+
+		Logika identická s _maybe_auto_inject_epg, len pre M3U:
+		  - Setting: m3u_epg_inject_interval (0 = vypnuté)
+		  - Stamp: _EPG_INJECT_STAMP_M3U
+		  - Volaná metóda: self._m3u_manager.inject_epg_only()
+		"""
+		if self._m3u_manager is None:
+			return
+		if not self._bool_setting('enable_m3u_source'):
+			return
+		try:
+			try:
+				interval = int(self.get_setting('m3u_epg_inject_interval') or 0)
+			except Exception:
+				interval = 0
+			if interval <= 0:
+				return
+
+			now = int(time.time())
+			last = 0
+			try:
+				last = int(os.path.getmtime(_EPG_INJECT_STAMP_M3U))
+			except Exception:
+				pass
+
+			if last and (now - last) < interval:
+				return
+
+			# Spusti na pozadí — fetch M3U + XMLTV + parse môže trvať 10-30s
+			import threading as _th
+
+			def _runner():
+				try:
+					ok = self._m3u_manager.inject_epg_only()
+					if not ok:
+						# FIX 0.50beta: použiť aktuálny čas, nie captured `now`
+						_now_fail = int(time.time())
+						retry_at = _now_fail - interval + 300
+						try:
+							with open(_EPG_INJECT_STAMP_M3U, 'w') as f:
+								f.write(str(retry_at))
+							os.utime(_EPG_INJECT_STAMP_M3U, (retry_at, retry_at))
+						except Exception:
+							pass
+				except Exception as e:
+					try:
+						print('[plugin.tvheadend] M3U auto-inject EPG failed: %s' % e)
+					except Exception:
+						pass
+
+			t = _th.Thread(target=_runner, name='M3UEPGAutoInject')
+			t.daemon = True
+			t.start()
 		except Exception:
 			pass
 
@@ -308,8 +2149,791 @@ class TvheadendContentProvider(CommonContentProvider):
 	# ------------------------------------------------------------------
 
 	def root(self):
-		self.add_dir(self._("Live TV"),  cmd=self.live_root,        info_labels={'title': self._("Live TV")})
-		self.add_dir(self._("Archive"),  cmd=self.archive_channels, info_labels={'title': self._("Archive")})
+		"""Root menu - kontextové:
+		- Nič nakonfigurované       → zobrazí sa "Chyba" dialóg, plugin sa
+		                              otvorí ÚPLNE PRÁZDNY (užívateľ pôjde
+		                              cez modré tlačidlo Nastavenia)
+		- TVH dočasne nedostupný    → krátka chybová hláška + Retry položka
+		                              (FIX 0.48h)
+		- Len M3U zapnuté           → zobrazí sa len Settings folder
+		- TVH login OK + M3U on/off → Live TV + Archive + Settings
+		"""
+		tvh_ok = self._check_tvh_silent()
+		_, tvh_reason, tvh_err = self.get_tvh_state()
+		m3u_enabled = self._bool_setting('enable_m3u_source')
+
+		# FIX 0.48h: rozlíšenie stavov.
+		# Predtým: pri akomkoľvek tvh_ok=False (či už chýbali credentials
+		# alebo TVH transient failne) → "Plugin is not configured" dialóg
+		# + return → prázdny plugin. Užívateľ to interpretoval ako "prihlasenie
+		# vypršalo" hoci credentials boli vyplnené.
+		# Teraz:
+		#  - not_configured (reason): klasická hláška + return
+		#  - unreachable (reason): krátka info hláška + Retry položka
+		#    + Settings + (ak je) M3U Settings folder
+		if not tvh_ok and not m3u_enabled:
+			if tvh_reason == 'unreachable':
+				# TVH credentials sú vyplnené ale check_login zlyhal.
+				# FIX 0.48i: namiesto modálneho dialógu (ktorý blokoval GUI
+				# 3s) pridáme informačné položky priamo do menu — užívateľ
+				# uvidí podstatu chyby (multi-line) a vie hneď tlačiť retry.
+				self.add_dir(self._("⟳ Retry TVH connection"),
+				             cmd=self.action_retry_tvh_root,
+				             info_labels={'title': self._("Retry")})
+				self.add_dir(self._("TVH temporarily unreachable. "
+				                    "Auto-recovery polling in background."),
+				             cmd=self.action_retry_tvh_root,
+				             info_labels={'title': self._("TVH status")})
+				self._render_tvh_error_lines(tvh_err)
+				self.add_dir(self._("Settings"),
+				             cmd=self.settings_menu,
+				             info_labels={'title': self._("Settings")})
+				return
+
+			# not_configured (alebo None reason) → klasika
+			try:
+				self.show_error(
+				    self._("Plugin is not configured.\n\n"
+				           "Fill in TVH server (host, username, password) "
+				           "OR enable External M3U playlist in plugin "
+				           "settings (blue 'Nastavenia' button)."),
+				    noexit=True,
+				    timeout=3   # FIX 0.48h: znížené z 10s
+				)
+			except Exception as e:
+				# Fallback: pri starších verziách tools_archivczsk
+				# kde show_error nemá noexit alebo neexistuje
+				print('[plugin.tvheadend] show_error failed: %s' % e)
+			return
+
+		if tvh_ok:
+			self.add_dir(self._("Live TV"),
+			             cmd=self.live_root,
+			             info_labels={'title': self._("Live TV")})
+			self.add_dir(self._("Archive"),
+			             cmd=self.archive_channels,
+			             info_labels={'title': self._("Archive")})
+
+			# FIX 0.49 / 0.49b: Top-level kategórie (Filmy/Seriály/Šport/...)
+			# Položka sa pridá len ak je v kategórii aspoň 1 záznam.
+			# FIX 0.49b: počty v zátvorke ODSTRÁNENÉ z labelov (užívateľ
+			# nechcel vidieť "(1417)" v menu).
+			try:
+				_, _, _counts, _, _ = _get_classified_dvr(self.tvh)
+				for cat_id, label_base in _CAT_LABELS_ORDER:
+					n = _counts.get(cat_id, 0)
+					if n <= 0:
+						continue
+					self.add_dir(self._(label_base),
+					             info_labels={'title': self._(label_base)},
+					             cmd=self.archive_by_category,
+					             cat_id=cat_id)
+			except Exception as _e:
+				try:
+					print('[plugin.tvheadend] root: dvr classify '
+					      'failed (skipping categories): %s' % _e)
+				except Exception:
+					pass
+		elif tvh_reason == 'unreachable':
+			# FIX 0.48h: aj pri M3U-only setup-e ukáž retry ak má užívateľ
+			# vyplnené TVH credentials ale práve teraz nejde (transient)
+			self.add_dir(self._("⟳ Retry TVH connection (currently unreachable)"),
+			             cmd=self.action_retry_tvh_root,
+			             info_labels={'title': self._("Retry TVH")})
+
+		# Settings folder len ak je niečo nakonfigurované (TVH alebo M3U).
+		# Pri úplne prázdnej konfigurácii sme sa už vrátili vyššie cez return.
+		self.add_dir(self._("Settings"),
+		             cmd=self.settings_menu,
+		             info_labels={'title': self._("Settings")})
+
+	def action_retry_tvh_root(self):
+		"""FIX 0.48h: užívateľský retry — invaliduj cache + re-render root.
+
+		Volaná z root() retry položky a z live_root() pri transient failures.
+		Po stlačení sa nasleduje ďalšie volanie root() ktoré spraví fresh
+		check_login (cache=0 po invalidate).
+
+		FIX 0.48i: aj zruší prípadný bežiaci fast-recovery poll (lebo
+		urobíme manuálny check teraz, netreba zbytočne paralelne).
+		"""
+		try:
+			self._invalidate_tvh_login_cache()
+			# Vlastný TVH auth cache (separátny od _TVH_LOGIN_CACHE) tiež reset
+			self.tvh.invalidate_auth_cache()
+		except Exception:
+			pass
+		# FIX 0.48i: cancel fast-recovery poll ak beží
+		try:
+			ev = _FAST_RECOVERY_STATE.get('stop_event')
+			if ev is not None and _FAST_RECOVERY_STATE.get('running'):
+				ev.set()
+		except Exception:
+			pass
+		# Re-render root menu — pridá nové items do tej istej "stránky"
+		# (framework si ich vyberie ako návratový obsah z action_*)
+		self.root()
+
+	def _bool_setting(self, key, default=False):
+		"""Helper - read a boolean setting safely."""
+		try:
+			v = self.get_setting(key)
+		except Exception:
+			return default
+		if isinstance(v, bool):
+			return v
+		if v is None:
+			return default
+		s = str(v).strip().lower()
+		return s in ('1', 'true', 'yes', 'on', 'áno', 'ano')
+
+	# ------------------------------------------------------------------
+	# Settings menu - ručné akcie (refresh M3U/EPG/picons, status, atď.)
+	# ------------------------------------------------------------------
+
+	def settings_menu(self):
+		"""Hlavné menu Nastavenia - kontextové:
+		- M3U sekcia: len ak M3U source je zapnutý v settings
+		- TVH sekcia: len ak TVH credentials sú vyplnené a prihlasenie funguje
+		- Diagnose M3U EPG: len ak M3U je zapnutý
+		"""
+		tvh_ok = self._check_tvh_silent()
+		m3u_enabled = self._bool_setting('enable_m3u_source')
+
+		# --- Status sekcia (vždy) ---
+		for line in self._build_status_lines():
+			self.add_dir(line, cmd=self.settings_menu,
+			             info_labels={'title': line})
+
+		# --- M3U sekcia (len ak je zapnuté) ---
+		if m3u_enabled:
+			self.add_dir("─" * 32, cmd=self.settings_menu,
+			             info_labels={'title': self._("M3U Playlist Actions")})
+
+			self.add_dir(self._("Refresh M3U playlist + EPG now"),
+			             cmd=self.action_m3u_refresh,
+			             info_labels={'title': self._("Refresh M3U now")})
+			self.add_dir(self._("Refresh M3U playlist (background)"),
+			             cmd=self.action_m3u_refresh_async,
+			             info_labels={'title': self._("Refresh M3U background")})
+			self.add_dir(self._("Download M3U picons now"),
+			             cmd=self.action_m3u_picons,
+			             info_labels={'title': self._("M3U picons")})
+		else:
+			# M3U je vypnuté — ak existujú zostatkové súbory (napr. user
+			# práve vypol M3U), ponúkneme manuálny cleanup.
+			prefix = M3U_BOUQUET_PREFIX  # FIX 0.48f: hardcoded
+			ub_path = '/etc/enigma2/userbouquet.{}.tv'.format(prefix)
+			if os.path.isfile(ub_path):
+				self.add_dir("─" * 32, cmd=self.settings_menu,
+				             info_labels={'title': self._("M3U cleanup")})
+				self.add_dir(self._("✗ Remove leftover M3U bouquet now"),
+				             cmd=self.action_m3u_cleanup,
+				             info_labels={'title': self._("Remove M3U bouquet")})
+
+		# --- TVH sekcia (len ak je TVH nakonfigurované a prihlásené) ---
+		if tvh_ok:
+			self.add_dir("─" * 32, cmd=self.settings_menu,
+			             info_labels={'title': self._("Tvheadend Actions")})
+
+			self.add_dir(self._("Refresh TVH bouquet + XML EPG now"),
+			             cmd=self.action_tvh_bouquet_refresh,
+			             info_labels={'title': self._("Refresh TVH bouquet")})
+			# FIX 0.48d: manuálne spustenie direct EPG injection do Enigma2
+			self.add_dir(self._("Inject EPG into Enigma2 now (no epgimport)"),
+			             cmd=self.action_tvh_inject_epg,
+			             info_labels={'title': self._("Inject EPG now")})
+			self.add_dir(self._("Download TVH picons now"),
+			             cmd=self.action_tvh_picons,
+			             info_labels={'title': self._("TVH picons")})
+			# FIX 0.48b: tlačidlo na vyčistenie 404 negatívnej cache.
+			# Užitočné keď user opraví broken ikony v TVH webUI a chce
+			# okamžitý retry namiesto čakania 1h na auto-expire.
+			self.add_dir(self._("Clear 404 picon cache (retry broken icons)"),
+			             cmd=self.action_clear_picon_404_cache,
+			             info_labels={'title': self._("Clear 404 cache")})
+			self.add_dir(self._("Invalidate TVH channel cache"),
+			             cmd=self.action_tvh_invalidate_cache,
+			             info_labels={'title': self._("Clear TVH cache")})
+			self.add_dir(self._("Test TVH login / connection"),
+			             cmd=self.action_tvh_test_login,
+			             info_labels={'title': self._("Test login")})
+
+		# --- Diagnostika (vždy ale relevantné položky) ---
+		self.add_dir("─" * 32, cmd=self.settings_menu,
+		             info_labels={'title': self._("Diagnostics")})
+
+		# Diagnose M3U EPG matching - len ak M3U je zapnutý
+		if m3u_enabled:
+			self.add_dir(self._("Diagnose M3U EPG matching"),
+			             cmd=self.action_diagnose_m3u_epg,
+			             info_labels={'title': self._("Diagnose EPG")})
+
+		# Show paths - vždy užitočné
+		self.add_dir(self._("Show paths and generated files"),
+		             cmd=self.action_show_paths,
+		             info_labels={'title': self._("Paths")})
+
+	# ------------------------------------------------------------------
+	# Status info pre Settings menu
+	# ------------------------------------------------------------------
+
+	def _build_status_lines(self):
+		"""Vráti zoznam status riadkov pre úvod Settings menu."""
+		lines = []
+
+		def _fmt_age(stamp_path):
+			try:
+				t = int(os.path.getmtime(stamp_path))
+				dt = datetime.fromtimestamp(t).strftime('%d.%m.%Y %H:%M')
+				age = int(time.time()) - t
+				if age < 60:
+					age_s = "%ds" % age
+				elif age < 3600:
+					age_s = "%dm" % (age // 60)
+				elif age < 86400:
+					age_s = "%dh %dm" % (age // 3600, (age % 3600) // 60)
+				else:
+					age_s = "%dd" % (age // 86400)
+				return "%s (%s ago)" % (dt, age_s)
+			except Exception:
+				return self._("never")
+
+		tvh_ok = self._check_tvh_silent()
+		m3u_enabled = self._bool_setting('enable_m3u_source')
+
+		# TVH connection - len ak je nakonfigurované
+		if tvh_ok:
+			try:
+				host = self.get_setting('host') or '127.0.0.1'
+				port = self.get_setting('port') or '9981'
+				lines.append("◆ %s: %s:%s" %
+				             (self._("TVH server"), host, port))
+			except Exception:
+				pass
+
+			# TVH bouquet refresh stamp
+			try:
+				lines.append("◆ %s: %s" %
+				             (self._("Last TVH bouquet refresh"),
+				              _fmt_age(_BOUQUET_REFRESH_STAMP)))
+			except Exception:
+				pass
+
+			# FIX 0.48e: EPG inject status — len ak je zapnuté (interval > 0)
+			try:
+				if self._bouquet_gen is not None:
+					interval = int(self._bouquet_gen.get_setting(
+						'tvh_epg_inject_interval') or 0)
+					if interval > 0:
+						# Format interval ako human-readable
+						if interval >= 86400:
+							iv = "%dd" % (interval // 86400)
+						else:
+							iv = "%dh" % (interval // 3600)
+						lines.append("◆ %s: %s (every %s)" %
+						             (self._("Last EPG inject"),
+						              _fmt_age(_EPG_INJECT_STAMP), iv))
+			except Exception:
+				pass
+
+			# FIX 0.48b: pocet broken-icon channels (404 cache)
+			try:
+				from .tvheadend import _picon_404_count
+				cnt = _picon_404_count()
+				if cnt > 0:
+					lines.append("◆ %s: %d" %
+					             (self._("Picons with broken icons (404 cache)"),
+					              cnt))
+			except Exception:
+				pass
+
+		# M3U status - len ak je zapnuté
+		if m3u_enabled:
+			m3u_url = self.get_setting('m3u_url') or ''
+			short = m3u_url
+			if len(short) > 40:
+				short = short[:37] + '...'
+			lines.append("◆ %s: %s" % (self._("M3U source"),
+			                            short or '(not set)'))
+
+			try:
+				# FIX 0.48j: použiť persistent stamp namiesto /tmp
+				stamp = data_path('m3u_last_refresh.stamp')
+				lines.append("◆ %s: %s" %
+				             (self._("Last M3U refresh"), _fmt_age(stamp)))
+			except Exception:
+				pass
+
+			# FIX 0.48g: M3U EPG inject status — len ak je zapnuté
+			try:
+				interval = int(self.get_setting('m3u_epg_inject_interval') or 0)
+				if interval > 0:
+					if interval >= 86400:
+						iv = "%dd" % (interval // 86400)
+					else:
+						iv = "%dh" % (interval // 3600)
+					lines.append("◆ %s: %s (every %s)" %
+					             (self._("Last M3U EPG inject"),
+					              _fmt_age(_EPG_INJECT_STAMP_M3U), iv))
+			except Exception:
+				pass
+
+			st = self.get_setting('m3u_service_type') or '1'
+			lines.append("◆ %s: %s" %
+			             (self._("M3U service type"), st))
+
+		# Ak nič nie je nakonfigurované, ukáž aspoň hint
+		if not tvh_ok and not m3u_enabled:
+			lines.append("◆ %s" %
+			             self._("Configure TVH credentials or enable External M3U in plugin settings"))
+
+		return lines
+
+	# ------------------------------------------------------------------
+	# Action callbacks
+	# ------------------------------------------------------------------
+
+	def action_m3u_refresh(self):
+		"""Synchrónne spustí M3U refresh, zobrazí výsledok."""
+		if self._m3u_manager is None or not self._m3u_manager.is_enabled():
+			self.add_dir(self._("✗ M3U source is not enabled"),
+			             cmd=self.settings_menu)
+			return
+		try:
+			ok = self._m3u_manager.refresh_now()
+			if ok:
+				self.add_dir(self._("✓ M3U refresh completed successfully"),
+				             cmd=self.settings_menu)
+			else:
+				self.add_dir(self._("✗ M3U refresh failed - check log"),
+				             cmd=self.settings_menu)
+		except Exception as e:
+			self.add_dir(self._("✗ Error: ") + str(e),
+			             cmd=self.settings_menu)
+		self.add_dir(self._("« Back"), cmd=self.settings_menu)
+
+	def action_m3u_refresh_async(self):
+		"""Spustí M3U refresh na pozadí, okamžite sa vráti."""
+		if self._m3u_manager is None or not self._m3u_manager.is_enabled():
+			self.add_dir(self._("✗ M3U source is not enabled"),
+			             cmd=self.settings_menu)
+			return
+		try:
+			self._m3u_manager.refresh_async()
+			self.add_dir(self._("✓ M3U refresh started in background"),
+			             cmd=self.settings_menu)
+			self.add_dir(self._("Check 'Last M3U refresh' in status "
+			                    "after ~30 seconds"),
+			             cmd=self.settings_menu)
+		except Exception as e:
+			self.add_dir(self._("✗ Error: ") + str(e),
+			             cmd=self.settings_menu)
+		self.add_dir(self._("« Back"), cmd=self.settings_menu)
+
+	def action_m3u_picons(self):
+		"""Iba picon download (bez bouquet write)."""
+		if self._m3u_manager is None or not self._m3u_manager.is_enabled():
+			self.add_dir(self._("✗ M3U source is not enabled"),
+			             cmd=self.settings_menu)
+			return
+		try:
+			# Trick: temporarily forc-write but only the picon stage.
+			# Easiest path: just call full refresh — it includes picons
+			# and is fast on subsequent runs (most cached).
+			self._m3u_manager.refresh_async()
+			self.add_dir(self._("✓ Picon download started "
+			                    "(via full refresh on background)"),
+			             cmd=self.settings_menu)
+		except Exception as e:
+			self.add_dir(self._("✗ Error: ") + str(e),
+			             cmd=self.settings_menu)
+		self.add_dir(self._("« Back"), cmd=self.settings_menu)
+
+	def action_m3u_cleanup(self):
+		"""
+		Manuálne zmaže M3U bouquet zo systému (userbouquet, záznam
+		v bouquets.tv, epgimport súbory). Užitočné keď user vypol M3U
+		a nechce čakať na ďalší login plugin-u.
+		"""
+		# Manager je inicializovaný v _maybe_init_m3u_manager aj keď je
+		# M3U vypnuté (vďaka novej logike), takže by tu mal existovať.
+		if self._m3u_manager is None:
+			# Fallback: vytvorme jednorazový manager len pre cleanup
+			try:
+				self._maybe_init_m3u_manager()
+			except Exception:
+				pass
+
+		if self._m3u_manager is None:
+			self.add_dir(self._("✗ M3U manager not available"),
+			             cmd=self.settings_menu)
+			self.add_dir(self._("« Back"), cmd=self.settings_menu)
+			return
+
+		try:
+			stats = self._m3u_manager.cleanup()
+			if stats:
+				self.add_dir(self._("✓ M3U bouquet cleanup done"),
+				             cmd=self.settings_menu)
+				self.add_dir("  bouquets.tv updated: %s" %
+				             ("yes" if stats.get('bouquets_tv_updated') else "no"),
+				             cmd=self.settings_menu)
+				self.add_dir("  userbouquet deleted: %s" %
+				             ("yes" if stats.get('userbouquet_deleted') else "no"),
+				             cmd=self.settings_menu)
+				self.add_dir("  epgimport files deleted: %d" %
+				             stats.get('epgimport_deleted', 0),
+				             cmd=self.settings_menu)
+				self.add_dir("  Enigma2 reloaded: %s" %
+				             ("yes" if stats.get('reloaded') else "no"),
+				             cmd=self.settings_menu)
+			else:
+				self.add_dir(self._("✗ Cleanup returned no stats"),
+				             cmd=self.settings_menu)
+		except Exception as e:
+			self.add_dir(self._("✗ Error: ") + str(e),
+			             cmd=self.settings_menu)
+		self.add_dir(self._("« Back"), cmd=self.settings_menu)
+
+	def action_tvh_bouquet_refresh(self):
+		"""Manuálne spustí TVH bouquet + XML EPG refresh."""
+		if not self._check_tvh_silent():
+			self.add_dir(self._("✗ TVH login failed - check settings"),
+			             cmd=self.settings_menu)
+			return
+		if self._bouquet_gen is None:
+			self.add_dir(self._("✗ Bouquet generator not initialised"),
+			             cmd=self.settings_menu)
+			return
+		try:
+			# Zmaž stamp aby refresh prebehol bez TTL gate
+			try:
+				if os.path.exists(_BOUQUET_REFRESH_STAMP):
+					os.remove(_BOUQUET_REFRESH_STAMP)
+			except Exception:
+				pass
+			self._bouquet_gen.refresh_userbouquet_start()
+			# Zapíš nový stamp
+			try:
+				with open(_BOUQUET_REFRESH_STAMP, 'w') as f:
+					f.write(str(int(time.time())))
+			except Exception:
+				pass
+			self.add_dir(self._("✓ TVH bouquet refresh triggered"),
+			             cmd=self.settings_menu)
+		except Exception as e:
+			self.add_dir(self._("✗ Error: ") + str(e),
+			             cmd=self.settings_menu)
+		self.add_dir(self._("« Back"), cmd=self.settings_menu)
+
+	def action_tvh_picons(self):
+		"""Manuálne spustí stiahnutie TVH piconov."""
+		if not self._check_tvh_silent():
+			self.add_dir(self._("✗ TVH login failed - check settings"),
+			             cmd=self.settings_menu)
+			return
+		try:
+			self.tvh.init_picons_async()
+			self.add_dir(self._("✓ TVH picon download started in background"),
+			             cmd=self.settings_menu)
+			# FIX 0.48j: logy idú cez print() do /tmp/archivCZSK.log,
+			# nie do vlastného súboru
+			self.add_dir(self._("Progress: see /tmp/archivCZSK.log "
+			                    "(filter '[plugin.tvheadend')"),
+			             cmd=self.settings_menu)
+		except Exception as e:
+			self.add_dir(self._("✗ Error: ") + str(e),
+			             cmd=self.settings_menu)
+		self.add_dir(self._("« Back"), cmd=self.settings_menu)
+
+	def action_tvh_inject_epg(self):
+		"""FIX 0.48d: manuálne spustí direct EPG injection do Enigma2 eEPGCache.
+
+		Funguje aj keď epgimport plugin nie je nainštalovaný. Použiteľné
+		po pridaní nových kanálov v TVH, na rýchle naplnenie EPG bez
+		čakania na ďalší bouquet refresh.
+		"""
+		if not self._check_tvh_silent():
+			self.add_dir(self._("✗ TVH login failed - check settings"),
+			             cmd=self.settings_menu)
+			self.add_dir(self._("« Back"), cmd=self.settings_menu)
+			return
+		if self._bouquet_gen is None:
+			self.add_dir(self._("✗ Bouquet generator not initialised"),
+			             cmd=self.settings_menu)
+			self.add_dir(self._("« Back"), cmd=self.settings_menu)
+			return
+
+		# Spusti injection na pozadí, lebo XMLTV fetch + parse môže trvať
+		# desiatky sekúnd pre veľký EPG (500+ kanálov × 7 dní = MB súbor).
+		import threading as _th
+
+		def _runner():
+			try:
+				self._bouquet_gen.inject_tvh_epg_into_enigma()
+			except Exception as e:
+				try:
+					print('[plugin.tvheadend] inject_tvh_epg failed: %s' % e)
+				except Exception:
+					pass
+
+		try:
+			t = _th.Thread(target=_runner, name='TVHEPGInject')
+			t.daemon = True
+			t.start()
+			self.add_dir(self._("✓ EPG injection started in background"),
+			             cmd=self.settings_menu)
+			# FIX 0.48j: logy idú cez print() do /tmp/archivCZSK.log
+			self.add_dir(self._("Progress: see /tmp/archivCZSK.log "
+			                    "(filter 'inject_epg')"),
+			             cmd=self.settings_menu)
+		except Exception as e:
+			self.add_dir(self._("✗ Error: ") + str(e),
+			             cmd=self.settings_menu)
+		self.add_dir(self._("« Back"), cmd=self.settings_menu)
+
+	def action_tvh_invalidate_cache(self):
+		"""Zmaže TVH channel cache - užitočné po pridaní/zmene kanálov v TVH."""
+		try:
+			self.tvh.invalidate_channels_cache()
+			# FIX 0.49: zruš aj DVR klasifikačnú cache (jej obsah by inak
+			# 60s ostal stale aj keď kanály sa zmenili)
+			try:
+				_invalidate_classify_cache()
+			except Exception:
+				pass
+			self.add_dir(self._("✓ TVH channel cache cleared"),
+			             cmd=self.settings_menu)
+			self.add_dir(self._("Next channel listing will fetch fresh data"),
+			             cmd=self.settings_menu)
+		except Exception as e:
+			self.add_dir(self._("✗ Error: ") + str(e),
+			             cmd=self.settings_menu)
+		self.add_dir(self._("« Back"), cmd=self.settings_menu)
+
+	def action_clear_picon_404_cache(self):
+		"""FIX 0.48b: Vyčistí 404 negatívnu cache pre picony.
+
+		Použiteľné keď užívateľ v TVH webUI opraví broken kanál icony
+		a chce ich teraz znova stiahnuť bez čakania na 1h auto-expire.
+		"""
+		try:
+			from .tvheadend import _picon_404_clear, _picon_404_count
+			before = _picon_404_count()
+			_picon_404_clear()
+			self.add_dir(self._("✓ 404 picon cache cleared (was: %d entries)")
+			             % before, cmd=self.settings_menu)
+			self.add_dir(self._("Next picon refresh will retry all broken icons"),
+			             cmd=self.settings_menu)
+			# Hneď spusti retry na pozadí
+			try:
+				self.tvh.init_picons_async()
+				self.add_dir(self._("✓ Picon download retry triggered in background"),
+				             cmd=self.settings_menu)
+			except Exception:
+				pass
+		except Exception as e:
+			self.add_dir(self._("✗ Error: ") + str(e),
+			             cmd=self.settings_menu)
+		self.add_dir(self._("« Back"), cmd=self.settings_menu)
+
+	def action_tvh_test_login(self):
+		"""Otestuje TVH login + zobrazí informáciu o serveri."""
+		try:
+			self.tvh.check_login()
+			# Pokus o get_channels pre overenie permissions
+			chs = self.tvh.get_channels(force=True)
+			tags = self.tvh.get_tags()
+			self.add_dir(self._("✓ TVH login successful"),
+			             cmd=self.settings_menu)
+			self.add_dir(self._("Channels: ") + str(len(chs or [])),
+			             cmd=self.settings_menu)
+			self.add_dir(self._("Tags: ") + str(len(tags or [])),
+			             cmd=self.settings_menu)
+		except Exception as e:
+			self.add_dir(self._("✗ Login failed: ") + str(e),
+			             cmd=self.settings_menu)
+		self.add_dir(self._("« Back"), cmd=self.settings_menu)
+
+	def action_diagnose_m3u_epg(self):
+		"""
+		Stiahne TVH XMLTV, porovná IDs s M3U channels.xml,
+		ukáže koľko kanálov sa nájde v XMLTV (a teda bude mať EPG).
+		"""
+		self.add_dir(self._("Diagnosing M3U EPG matching..."),
+		             cmd=self.settings_menu)
+
+		# Step 1: where's our channels.xml?
+		prefix = M3U_BOUQUET_PREFIX  # FIX 0.48f: hardcoded
+		channels_xml_path = '/etc/epgimport/{}.channels.xml'.format(prefix)
+		if not os.path.exists(channels_xml_path):
+			self.add_dir(self._("✗ channels.xml not found: ") + channels_xml_path,
+			             cmd=self.settings_menu)
+			self.add_dir(self._("Run 'Refresh M3U playlist' first"),
+			             cmd=self.settings_menu)
+			self.add_dir(self._("« Back"), cmd=self.settings_menu)
+			return
+
+		# Step 2: parse channels.xml -> collect tvg-ids we expect
+		try:
+			tree = _et_parse(channels_xml_path)
+			our_ids = set()
+			for c in tree.getroot().findall('channel'):
+				cid = c.get('id')
+				if cid:
+					our_ids.add(cid.lower())
+			self.add_dir(self._("M3U channels.xml has %d <channel> entries")
+			             % len(our_ids),
+			             cmd=self.settings_menu)
+		except Exception as e:
+			self.add_dir(self._("✗ channels.xml parse failed: ") + str(e),
+			             cmd=self.settings_menu)
+			self.add_dir(self._("« Back"), cmd=self.settings_menu)
+			return
+
+		# Step 3: figure out EPG source URL
+		epg_url = (self.get_setting('m3u_epg_url') or '').strip()
+		if not epg_url:
+			try:
+				from .m3u_tvh_enricher import derive_tvh_xmltv_url
+				epg_url = derive_tvh_xmltv_url(self.tvh) or ''
+			except Exception:
+				epg_url = ''
+		if not epg_url:
+			self.add_dir(self._("✗ No EPG URL configured or derivable"),
+			             cmd=self.settings_menu)
+			self.add_dir(self._("« Back"), cmd=self.settings_menu)
+			return
+
+		self.add_dir(self._("EPG source: ") + epg_url[:50],
+		             cmd=self.settings_menu)
+
+		# Step 4: fetch XMLTV, extract channel ids
+		try:
+			req = Request(epg_url)
+			req.add_header('User-Agent', 'Tvheadend-plugin/diag')
+			resp = urlopen(req, timeout=30)
+			data = resp.read()
+			resp.close()
+		except Exception as e:
+			self.add_dir(self._("✗ EPG fetch failed: ") + str(e),
+			             cmd=self.settings_menu)
+			self.add_dir(self._("« Back"), cmd=self.settings_menu)
+			return
+
+		# Decompress if needed
+		try:
+			if data[:2] == b'\x1f\x8b':
+				data = gzip.decompress(data) if hasattr(gzip, 'decompress') \
+					else gzip.GzipFile(fileobj=io.BytesIO(data)).read()
+			elif data[:6] == b'\xfd7zXZ\x00' and lzma is not None:
+				data = lzma.decompress(data)
+		except Exception:
+			pass
+
+		# Parse XMLTV channel ids (stream to handle large files).
+		# IMPORTANT: cElementTree on Py2 rejects unicode event names with
+		# "invalid event tuple" — `from __future__ import unicode_literals`
+		# makes all string literals in this module unicode. We must convert
+		# event names to native str (bytes on Py2, text on Py3) via str().
+		xmltv_ids = set()
+		try:
+			for event, elem in _et_iterparse(io.BytesIO(data),
+			                                 events=(str('start'),)):
+				if elem.tag == 'channel':
+					cid = elem.get('id')
+					if cid:
+						xmltv_ids.add(cid.lower())
+				elif elem.tag == 'programme':
+					break
+		except Exception as e:
+			self.add_dir(self._("✗ XMLTV parse failed: ") + str(e),
+			             cmd=self.settings_menu)
+			self.add_dir(self._("« Back"), cmd=self.settings_menu)
+			return
+
+		self.add_dir(self._("XMLTV source has %d <channel id> entries")
+		             % len(xmltv_ids),
+		             cmd=self.settings_menu)
+
+		# Step 5: compute intersection
+		matched = our_ids & xmltv_ids
+		missed_from_m3u = our_ids - xmltv_ids
+		extra_in_xmltv = xmltv_ids - our_ids
+
+		self.add_dir(self._("✓ Matched: %d / %d") %
+		             (len(matched), len(our_ids)),
+		             cmd=self.settings_menu)
+		self.add_dir(self._("M3U ids not in XMLTV: %d") % len(missed_from_m3u),
+		             cmd=self.settings_menu)
+		self.add_dir(self._("XMLTV ids not in M3U: %d") % len(extra_in_xmltv),
+		             cmd=self.settings_menu)
+
+		# Show samples
+		if missed_from_m3u:
+			self.add_dir(self._("--- Sample M3U IDs missing in XMLTV ---"),
+			             cmd=self.settings_menu)
+			for mid in list(missed_from_m3u)[:5]:
+				self.add_dir("  " + mid[:60], cmd=self.settings_menu)
+
+		if extra_in_xmltv:
+			self.add_dir(self._("--- Sample XMLTV IDs not in M3U ---"),
+			             cmd=self.settings_menu)
+			for xid in list(extra_in_xmltv)[:5]:
+				self.add_dir("  " + xid[:60], cmd=self.settings_menu)
+
+		self.add_dir(self._("« Back"), cmd=self.settings_menu)
+
+	def action_show_paths(self):
+		"""Zobrazí cesty k vygenerovaným súborom + ich veľkosti."""
+		paths_to_check = [
+			('/etc/enigma2/bouquets.tv', self._("Bouquets index")),
+			('/etc/enigma2/userbouquet.{}.tv'.format(
+				M3U_BOUQUET_PREFIX),  # FIX 0.48f: hardcoded
+				self._("M3U bouquet")),
+			('/etc/epgimport/{}.channels.xml'.format(
+				M3U_BOUQUET_PREFIX),  # FIX 0.48f: hardcoded
+				self._("M3U epgimport channels")),
+			('/etc/epgimport/{}.sources.xml'.format(
+				M3U_BOUQUET_PREFIX),  # FIX 0.48f: hardcoded
+				self._("M3U epgimport sources")),
+			('/usr/share/enigma2/picon', self._("Picon directory")),
+			# FIX 0.48j: stampy sú teraz v persistent data dir-u, nie v /tmp
+			(data_path('m3u_last_refresh.stamp'),
+				self._("M3U refresh stamp")),
+			(data_path('tvh_bouquet_refresh.stamp'),
+				self._("TVH refresh stamp")),
+			# Plugin data adresár — ukáže prehľad
+			(get_data_dir(), self._("Plugin data dir")),
+			# ArchivCZSK common log
+			('/tmp/archivCZSK.log', self._("ArchivCZSK log")),
+		]
+		for path, label in paths_to_check:
+			if os.path.exists(path):
+				try:
+					if os.path.isdir(path):
+						count = sum(1 for _ in os.listdir(path)
+						            if not _.startswith('.'))
+						info = "%s (%d items)" % (path, count)
+					else:
+						sz = os.path.getsize(path)
+						if sz > 1024 * 1024:
+							sz_str = "%.1fMB" % (sz / 1024.0 / 1024.0)
+						elif sz > 1024:
+							sz_str = "%.1fKB" % (sz / 1024.0)
+						else:
+							sz_str = "%dB" % sz
+						info = "%s (%s)" % (path, sz_str)
+					self.add_dir("✓ " + label + ": " + info,
+					             cmd=self.settings_menu)
+				except Exception:
+					self.add_dir("? " + label + ": " + path,
+					             cmd=self.settings_menu)
+			else:
+				self.add_dir("✗ " + label + ": " + path + self._(" (missing)"),
+				             cmd=self.settings_menu)
+		self.add_dir(self._("« Back"), cmd=self.settings_menu)
 
 	# ------------------------------------------------------------------
 	# LIVE
@@ -331,15 +2955,57 @@ class TvheadendContentProvider(CommonContentProvider):
 			pass
 		return info
 
+	def _render_tvh_error_lines(self, err, max_lines=3, max_chars=150):
+		"""FIX 0.48i: rozdelí multi-line error string a pridá ho ako 1-3
+		add_dir položky. Cieľ: aby užívateľ videl aj underlying error
+		(typicky druhý riadok z api_get wrapper-a), nie len wrapper text
+		"Tvheadend API request failed.".
+
+		Volajúci je zodpovedný za pridanie retry položky pred týmto.
+		"""
+		if not err:
+			return
+		# Rozdeľ na riadky, vyfiltruj prázdne, oreže každý na max_chars
+		parts = [p.strip() for p in err.split('\n') if p.strip()]
+		for i, part in enumerate(parts[:max_lines]):
+			prefix = "✗ " if i == 0 else "  → "
+			title = self._("Last error") if i == 0 else self._("Detail")
+			self.add_dir(prefix + part[:max_chars],
+			             cmd=self.action_retry_tvh_root,
+			             info_labels={'title': title})
+
 	def live_root(self):
-		if not self._check_login_silent():
+		if not self._check_tvh_silent():
+			# FIX 0.48h: rozlíšenie stavov + retry položka pri transient failure
+			_, reason, err = self.get_tvh_state()
+			if reason == 'unreachable':
+				self.add_dir(
+					self._("⟳ TVH temporarily unreachable — tap to retry"),
+					cmd=self.action_retry_tvh_root,
+					info_labels={'title': self._("Retry TVH")})
+				# FIX 0.48i: full multi-line error namiesto len err[:80]
+				self._render_tvh_error_lines(err)
+			else:
+				self.add_dir(
+					self._("✗ Tvheadend server not configured. Open Settings to fill in host, username, password."),
+					cmd=self.settings_menu,
+					info_labels={'title': self._("TVH not configured")})
 			return
 
 		self.add_dir(self._("All"), cmd=self.live_channels, cat_id='')
 
 		try:
 			tags = self.tvh.get_tags()
-		except Exception:
+		except Exception as e:
+			# FIX 0.48h: nezostať s len "All" tichom — invaliduj cache (lebo
+			# get_tags zlyhalo aj keď check_login pred chvíľou OK) a ponúkni retry
+			try:
+				self._invalidate_tvh_login_cache()
+			except Exception:
+				pass
+			self.add_dir(self._("⟳ Failed to load categories — tap to retry"),
+			             cmd=self.action_retry_tvh_root,
+			             info_labels={'title': self._("Retry")})
 			return
 
 		tags = sorted(tags, key=lambda t: (_tag_sort_key(t), _norm_name(t.get('name') or '')))
@@ -352,12 +3018,29 @@ class TvheadendContentProvider(CommonContentProvider):
 			self.add_dir(name, cmd=self.live_channels, cat_id=uuid)
 
 	def live_channels(self, cat_id=''):
-		if not self._check_login_silent():
+		if not self._check_tvh_silent():
+			# FIX 0.48h: namiesto tichého prázdneho zoznamu ponúkni retry
+			_, reason, err = self.get_tvh_state()
+			if reason == 'unreachable':
+				self.add_dir(
+					self._("⟳ TVH unreachable — tap to retry"),
+					cmd=self.action_retry_tvh_root,
+					info_labels={'title': self._("Retry TVH")})
+				# FIX 0.48i: zobraz aj underlying error pre diagnostiku
+				self._render_tvh_error_lines(err)
 			return
 
 		try:
 			channels = self.tvh.get_channels_by_tag(cat_id) if cat_id else self.tvh.get_channels()
 		except Exception:
+			# FIX 0.48h: rovnaký pattern — invaliduj cache + ponúkni retry
+			try:
+				self._invalidate_tvh_login_cache()
+			except Exception:
+				pass
+			self.add_dir(self._("⟳ Failed to load channels — tap to retry"),
+			             cmd=self.action_retry_tvh_root,
+			             info_labels={'title': self._("Retry")})
 			return
 
 		def _num(x):
@@ -416,7 +3099,7 @@ class TvheadendContentProvider(CommonContentProvider):
 			)
 
 	def play_live(self, channel_uuid, service_uuid='', channel_title=None):
-		if not self._check_login_silent():
+		if not self._check_tvh_silent():
 			return
 
 		url = self.tvh.make_live_stream_url(
@@ -487,13 +3170,35 @@ class TvheadendContentProvider(CommonContentProvider):
 		return info
 
 	def archive_channels(self):
-		if not self._check_login_silent():
+		if not self._check_tvh_silent():
+			# FIX 0.48h: rozlíšenie stavov + retry pri transient
+			_, reason, err = self.get_tvh_state()
+			if reason == 'unreachable':
+				self.add_dir(
+					self._("⟳ TVH unreachable — tap to retry"),
+					cmd=self.action_retry_tvh_root,
+					info_labels={'title': self._("Retry TVH")})
+				# FIX 0.48i: zobraz aj underlying error
+				self._render_tvh_error_lines(err)
+			else:
+				self.add_dir(
+					self._("✗ Tvheadend server not configured. Open Settings to fill in host, username, password."),
+					cmd=self.settings_menu,
+					info_labels={'title': self._("TVH not configured")})
 			return
 
 		try:
 			entries  = _get_dvr_finished_cached(self.tvh)
 			channels = self.tvh.get_channels()
 		except Exception:
+			# FIX 0.48h: namiesto tichého empty → retry
+			try:
+				self._invalidate_tvh_login_cache()
+			except Exception:
+				pass
+			self.add_dir(self._("⟳ Failed to load archive — tap to retry"),
+			             cmd=self.action_retry_tvh_root,
+			             info_labels={'title': self._("Retry")})
 			return
 
 		ch_info = {}
@@ -545,7 +3250,10 @@ class TvheadendContentProvider(CommonContentProvider):
 		items.sort(key=lambda x: (x[0] if x[0] > 0 else 999999, x[1]))
 
 		for num, _, cid, name, icon, cnt, day_cnt in items:
-			label = '%s (%d)' % (name, num) if num > 0 else name
+			# FIX 0.48h: zobrazuj len názov kanála bez čísla v zátvorke.
+			# Poradie zoznamu sa naďalej riadi `num` (sort key vyššie),
+			# len label sa neformátuje s "(num)". Day count ('- 8 dní') ostáva.
+			label = name
 			if day_cnt > 0:
 				label = '%s - %d %s' % (label, day_cnt, self._('days'))
 			self.add_dir(
@@ -554,12 +3262,30 @@ class TvheadendContentProvider(CommonContentProvider):
 			)
 
 	def archive_dates(self, channel_id, channel_name=None):
-		if not self._check_login_silent():
+		# FIX 0.50beta: namiesto tichého empty zoznamu pri TVH transient
+		# failure ukáž retry položku (paralela s archive_channels).
+		# Predtým: user klikne na kanál v Archíve, TVH momentálne nedostupný,
+		# zobrazí sa len ".." (parent) — vyzeralo to ako prázdny archív.
+		if not self._check_tvh_silent():
+			_, reason, err = self.get_tvh_state()
+			if reason == 'unreachable':
+				self.add_dir(self._("⟳ TVH unreachable — tap to retry"),
+				             cmd=self.action_retry_tvh_root,
+				             info_labels={'title': self._("Retry TVH")})
+				self._render_tvh_error_lines(err)
 			return
 
 		try:
 			entries = _get_dvr_finished_cached(self.tvh)
 		except Exception:
+			# FIX 0.50beta: tiež retry namiesto tichého empty
+			try:
+				self._invalidate_tvh_login_cache()
+			except Exception:
+				pass
+			self.add_dir(self._("⟳ Failed to load archive — tap to retry"),
+			             cmd=self.action_retry_tvh_root,
+			             info_labels={'title': self._("Retry")})
 			return
 
 		entries = [e for e in entries if (e.get('channel') or '') == channel_id]
@@ -578,7 +3304,7 @@ class TvheadendContentProvider(CommonContentProvider):
 			self.add_dir(label, info_labels={'title': label}, cmd=self.archive_day, channel_id=channel_id, date=d)
 
 	def archive_day(self, channel_id, date):
-		if not self._check_login_silent():
+		if not self._check_tvh_silent():
 			return
 
 		try:
@@ -601,8 +3327,268 @@ class TvheadendContentProvider(CommonContentProvider):
 				cmd=self.play_dvr, entry=e, download=False
 			)
 
+	# ------------------------------------------------------------------
+	# FIX 0.49 (+0.49b): Top-level kategorizácia DVR
+	# ------------------------------------------------------------------
+	def archive_by_category(self, cat_id):
+		"""Top-level otvorenie kategórie.
+
+		FIX 0.49b:
+		- Pre Filmy a Seriály ukáže najprv podžánre (Drama/Sci-fi/Komédia/...)
+		- Pre ostatné kategórie priamo plochý zoznam záznamov
+		- Pre Seriály v "Iné" zachová pôvodné správanie (zoznam sérií)
+		"""
+		if not self._check_tvh_silent():
+			# FIX 0.48h: rozlíšenie stavov + retry pri transient
+			_, reason, err = self.get_tvh_state()
+			if reason == 'unreachable':
+				self.add_dir(
+					self._("⟳ TVH unreachable — tap to retry"),
+					cmd=self.action_retry_tvh_root,
+					info_labels={'title': self._("Retry TVH")})
+				self._render_tvh_error_lines(err)
+			else:
+				self.add_dir(
+					self._("✗ Tvheadend server not configured."),
+					cmd=self.settings_menu,
+					info_labels={'title': self._("TVH not configured")})
+			return
+
+		try:
+			by_top, by_subcat, _counts, series_by_canonical, series_subcat_titles \
+				= _get_classified_dvr(self.tvh)
+		except Exception:
+			try:
+				self._invalidate_tvh_login_cache()
+			except Exception:
+				pass
+			self.add_dir(self._("⟳ Failed to load archive — tap to retry"),
+			             cmd=self.action_retry_tvh_root,
+			             info_labels={'title': self._("Retry")})
+			return
+
+		# Filmy → ukáž podžánre
+		if cat_id == _CAT_FILM:
+			for sub_id, sub_label in _MOVIE_SUBCAT_LABELS:
+				entries = by_subcat.get((_CAT_FILM, sub_id), [])
+				if not entries:
+					continue
+				self.add_dir(self._(sub_label),
+				             info_labels={'title': self._(sub_label)},
+				             cmd=self.archive_movie_subgenre,
+				             sub_id=sub_id)
+			return
+
+		# Seriály → ukáž podžánre seriálov
+		if cat_id == _CAT_SERIAL:
+			for sub_id, sub_label in _MOVIE_SUBCAT_LABELS:
+				titles = series_subcat_titles.get((_CAT_SERIAL, sub_id))
+				if not titles:
+					continue
+				self.add_dir(self._(sub_label),
+				             info_labels={'title': self._(sub_label)},
+				             cmd=self.archive_series_subgenre,
+				             sub_id=sub_id)
+			return
+
+		# FIX 0.49c/d: Ostatné kategórie s podžánrami cez registry
+		# (Šport, Spravodajstvo, Šou, Detské, Hudba, Umenie, Dokumenty, Hobby)
+		cfg = _SUBCAT_REGISTRY.get(cat_id)
+		if cfg and cfg[1] is not None:
+			labels = cfg[0]
+			for sub_id, sub_label in labels:
+				entries = by_subcat.get((cat_id, sub_id), [])
+				if not entries:
+					continue
+				self.add_dir(self._(sub_label),
+				             info_labels={'title': self._(sub_label)},
+				             cmd=self.archive_generic_subgenre,
+				             top_cat=cat_id, sub_id=sub_id)
+			return
+
+		# Kategórie bez podžánrov (napr. Nezaradené) — plochý zoznam
+		entries = by_top.get(cat_id) or []
+		for e in entries:
+			self._add_dvr_entry_item(e)
+
+	def archive_movie_subgenre(self, sub_id):
+		"""FIX 0.49b: Plochý zoznam filmov v sub-žánre (napr. Filmy → Akčné)."""
+		if not self._check_tvh_silent():
+			return
+
+		try:
+			_by_top, by_subcat, _, _, _ = _get_classified_dvr(self.tvh)
+		except Exception:
+			self.add_dir(self._("⟳ Failed to load — tap to retry"),
+			             cmd=self.action_retry_tvh_root,
+			             info_labels={'title': self._("Retry")})
+			return
+
+		entries = by_subcat.get((_CAT_FILM, sub_id)) or []
+		for e in entries:
+			self._add_dvr_entry_item(e)
+
+	def archive_sport_subgenre(self, sub_id):
+		"""FIX 0.49c: Plochý zoznam športových záznamov v podžánre
+		(napr. Šport → Futbal). Zachované pre backward compat — interne
+		volá archive_generic_subgenre.
+		"""
+		self.archive_generic_subgenre(top_cat=_CAT_SPORT, sub_id=sub_id)
+
+	def archive_generic_subgenre(self, top_cat, sub_id):
+		"""FIX 0.49d: Generická metóda na zobrazenie záznamov v podžánre
+		ktoréhokoľvek top kategórie (Spravodajstvo, Šou, Detské, Hudba,
+		Umenie, Dokumenty, Hobby, aj Šport).
+
+		Pre Filmy a Seriály ostávajú samostatné metódy (archive_movie_subgenre,
+		archive_series_subgenre) lebo Seriály ukazujú zoznam titulov nie
+		zoznam epizód.
+		"""
+		if not self._check_tvh_silent():
+			return
+
+		try:
+			_by_top, by_subcat, _, _, _ = _get_classified_dvr(self.tvh)
+		except Exception:
+			self.add_dir(self._("⟳ Failed to load — tap to retry"),
+			             cmd=self.action_retry_tvh_root,
+			             info_labels={'title': self._("Retry")})
+			return
+
+		entries = by_subcat.get((top_cat, sub_id)) or []
+		for e in entries:
+			self._add_dvr_entry_item(e)
+
+	def archive_series_subgenre(self, sub_id):
+		"""FIX 0.49b: Zoznam sérií v rámci sub-žánru (napr. Seriály → Krimi).
+
+		Po kliku na sériu sa otvorí zoznam jej epizód.
+		"""
+		if not self._check_tvh_silent():
+			return
+
+		try:
+			_, _, _, series_by_canonical, series_subcat_titles \
+				= _get_classified_dvr(self.tvh)
+		except Exception:
+			self.add_dir(self._("⟳ Failed to load — tap to retry"),
+			             cmd=self.action_retry_tvh_root,
+			             info_labels={'title': self._("Retry")})
+			return
+
+		titles = series_subcat_titles.get((_CAT_SERIAL, sub_id)) or set()
+		# Sort: najnovšia epizoda desc
+		sorted_titles = sorted(
+			titles,
+			key=lambda t: _ts(series_by_canonical[t][0])
+			              if series_by_canonical.get(t) else 0,
+			reverse=True
+		)
+		for title in sorted_titles:
+			eps = series_by_canonical.get(title) or []
+			# Ikona z najnovšej epizódy
+			icon = None
+			if eps:
+				try:
+					icon = self.tvh.make_icon_url(
+						eps[0].get('channel_icon') or None)
+				except Exception:
+					pass
+			# FIX 0.49b: bez počtu epizód v zátvorke
+			self.add_dir(title, img=icon,
+			             info_labels={'title': title},
+			             cmd=self.archive_series,
+			             series_title=title)
+
+	def archive_series(self, series_title):
+		"""Zobrazí epizódy konkrétneho seriálu, najnovšie prvé.
+
+		FIX 0.49b: series_title je teraz canonical title (bez "(N)" sufixu).
+		"""
+		if not self._check_tvh_silent():
+			return
+
+		try:
+			_, _, _, series_by_canonical, _ = _get_classified_dvr(self.tvh)
+		except Exception:
+			self.add_dir(self._("⟳ Failed to load — tap to retry"),
+			             cmd=self.action_retry_tvh_root,
+			             info_labels={'title': self._("Retry")})
+			return
+
+		eps = series_by_canonical.get(series_title) or []
+		if not eps:
+			self.add_dir(self._("(no episodes found)"),
+			             cmd=self.root,
+			             info_labels={'title': series_title})
+			return
+
+		for e in eps:
+			self._add_dvr_entry_item(e, episode_format=True)
+
+	def _add_dvr_entry_item(self, e, episode_format=False):
+		"""Pomocný helper — pridá jednu položku DVR záznamu do menu.
+
+		Spoločný kód pre archive_by_category, archive_movie_subgenre,
+		archive_series. episode_format=True dáva inu form-u labelu
+		(prefer X/Y vs full title).
+		"""
+		title = e.get('disp_title') or e.get('title') or self._("Recording")
+		sub = (e.get('disp_subtitle') or '').strip()
+		ts = _ts(e)
+		dstr = datetime.fromtimestamp(ts).strftime('%d.%m. %H:%M') if ts > 0 else ''
+		ch = e.get('channelname') or ''
+
+		if episode_format:
+			# Vnútri seriálu — preferuj "X/Y" alebo "(N)" prefix
+			m = _SUBTITLE_SERIES_PATTERN.match(sub)
+			if m:
+				ep_part = sub[:m.end()].strip()
+				rest = sub[m.end():].strip()[:60]
+				if rest:
+					label = '%s · %s · %s · %s' % (ep_part, rest, dstr, ch)
+				else:
+					label = '%s · %s · %s' % (ep_part, dstr, ch)
+			else:
+				# Skús extrahovat "(N)" z title (Otec Brown IV (1)).
+				# FIX 0.50beta: strippe tech markery z konca title PRED
+				# regex search-om. Predtým "(1) (ST) (HD)" zlyhalo na
+				# _TITLE_EPISODE_PATTERN (regex chce \s*(?:\([A-Z]{1,3}\))?\s*$
+				# = max 1 tech marker, ale tu sú 2). Po strippe ostáva "(1)"
+				# čisté a regex match funguje.
+				clean_title = _strip_tech_markers(title)
+				m2 = _TITLE_EPISODE_PATTERN.search(clean_title)
+				if m2:
+					ep_n = m2.group(1)
+					try:
+						if not (1900 <= int(ep_n) <= 2099):
+							short_sub = sub[:50] if sub else ''
+							if short_sub:
+								label = '(%s) · %s · %s · %s' % (
+									ep_n, short_sub, dstr, ch)
+							else:
+								label = '(%s) · %s · %s' % (ep_n, dstr, ch)
+						else:
+							label = '%s · %s · %s' % (dstr, sub[:60] or title, ch)
+					except ValueError:
+						label = '%s · %s · %s' % (dstr, sub[:60] or title, ch)
+				else:
+					short_sub = sub[:60] if sub else title
+					label = '%s · %s · %s' % (dstr, short_sub, ch)
+		else:
+			# Vonku (Filmy, Dokumenty, atď.) — "datum · title · channel"
+			parts = [p for p in (dstr, title, ch) if p]
+			label = ' · '.join(parts)
+
+		icon = self.tvh.make_icon_url(e.get('channel_icon') or None)
+		self.add_video(
+			label, img=icon,
+			info_labels=self._dvr_info_labels(label, e),
+			cmd=self.play_dvr, entry=e, download=False
+		)
+
 	def play_dvr(self, entry):
-		if not self._check_login_silent():
+		if not self._check_tvh_silent():
 			return
 
 		url   = self.tvh.make_dvr_url(entry.get('url') or '')
@@ -614,7 +3600,12 @@ class TvheadendContentProvider(CommonContentProvider):
 	# ------------------------------------------------------------------
 
 	def get_url_by_channel_key(self, key):
-		self.login(silent=True)
+		# FIX 0.48: light-weight login namiesto plného login(silent=True).
+		# Plný login zbytočne spúšťa cleanup, picon worker, M3U manager
+		# init a auto-refresh check — to všetko pri každom playback-u.
+		if not self._quick_login_for_http_handler():
+			# TVH momentálne neodpovedá → zatvor HTTP handler s 404
+			raise AddonErrorException('Tvheadend not reachable')
 
 		if not key:
 			raise AddonErrorException('Missing key')

@@ -10,6 +10,7 @@ Kompatibilita: Python 2.7 + Python 3.x
 
 import os
 import re
+import io
 import time
 import threading
 
@@ -61,18 +62,68 @@ except Exception:
 
 from tools_archivczsk.contentprovider.exception import AddonErrorException
 
+# FIX 0.48j: persistent data dir pre stamp súbory
+from ._paths import data_path
+
 
 # --------------------------------------------------------------------------
 # Konštanty
 # --------------------------------------------------------------------------
 _PICON_TTL_DAYS = 7
-_PICON_STAMP = "/tmp/archivczsk_tvheadend_img.picon.stamp"
+# FIX 0.48j: stamp v persistent data dir-u, nie v /tmp
+_PICON_STAMP = data_path("tvh_picon.stamp")
 _PICON_MAX_WORKERS = 6
 _picon_worker_lock = threading.Lock()
 
 # threading.Event – signalizuje že picon worker dobehol
 # bouquet._post() čaká na tento event namiesto sleep slučky
 _picon_ready_event = threading.Event()
+
+# FIX 0.48b: NEGATÍVNA CACHE pre 404 picony.
+# Problém: niektoré channels v TVH majú icon_public_url='imagecache/NNNN'
+# kde TVH samotný vracia 404 (broken upstream icon, lazy-load failed,
+# kanál nebol nedávno "dotknutý" v TVH webUI atď.). Plugin to skúšal
+# znova a znova pri každom login()/refresh-i a generoval log spam +
+# zbytočnú záťaž na TVH server.
+# Riešenie: zapamätáme si URL ktoré dali 404 a 1 hodinu ich nezačneme
+# znova ťahať. Po hodine sa skúsi raz (kanál sa medzitým mohol opraviť),
+# ak opäť 404 → ďalšia hodina tichá. Cache je modul-level, žije počas
+# behu pluginu (resp. do reštartu E2).
+_PICON_404_CACHE = {}     # url -> timestamp prvého 404
+_PICON_404_LOCK = threading.Lock()
+_PICON_404_TTL = 3600     # 1 hodina
+
+def _picon_url_in_404_cache(url):
+	"""Je toto URL v negatívnej cache a ešte platné?"""
+	if not url:
+		return False
+	with _PICON_404_LOCK:
+		ts = _PICON_404_CACHE.get(url)
+		if ts is None:
+			return False
+		now = int(time.time())
+		if (now - ts) >= _PICON_404_TTL:
+			# expirované — vymaž a daj možnosť znova skúsiť
+			_PICON_404_CACHE.pop(url, None)
+			return False
+		return True
+
+def _picon_mark_404(url):
+	"""Zaznamenaj že URL vrátilo 404."""
+	if not url:
+		return
+	with _PICON_404_LOCK:
+		_PICON_404_CACHE[url] = int(time.time())
+
+def _picon_404_count():
+	"""Počet aktívne-cached 404 URL (pre status / diagnostiku)."""
+	with _PICON_404_LOCK:
+		return len(_PICON_404_CACHE)
+
+def _picon_404_clear():
+	"""Manuálne vyčisti 404 cache (užívateľské Settings menu)."""
+	with _PICON_404_LOCK:
+		_PICON_404_CACHE.clear()
 
 
 class Tvheadend(object):
@@ -102,6 +153,16 @@ class Tvheadend(object):
 				os.makedirs(self._img_cache_dir)
 		except Exception:
 			pass
+		# FIX 0.48: thread-safe auth handling
+		# _apply_auth_to_session() mutuje sess.auth. Background tasky
+		# (picon worker, bouquet generator, EPG generator) sa môžu križovať
+		# s GUI volaniami a meniť auth medzi requestami => 401/403 race.
+		# Riešenie:
+		#  - per-Tvheadend lock (self._req_lock) chráni primárnu session
+		#  - _auth_sig kešuje aktuálne nastavenie, _apply_auth_to_session()
+		#    sa nemusí volať pred každým requestom — len keď sa zmení
+		self._req_lock = threading.RLock()
+		self._auth_sig = None
 		# picon inicializácia sa spúšťa lazily – nie v __init__ aby neblokovala GUI
 
 	# ------------------------------------------------------------------
@@ -132,13 +193,45 @@ class Tvheadend(object):
 		scheme = 'https' if use_https else 'http'
 		return '%s://%s:%s' % (scheme, host, port)
 
-	def _apply_auth_to_session(self, sess=None):
-		"""Nastaví autentifikáciu na session (default self.req)."""
-		if sess is None:
+	def _auth_signature(self):
+		"""Vráti tuple identifikujúci aktuálne auth nastavenia.
+		Použité na cache invalidation v _apply_auth_to_session()."""
+		try:
+			return (
+				(self.cp.get_setting('username') or '').strip(),
+				(self.cp.get_setting('password') or ''),
+				(self.cp.get_setting('http_auth_mode') or 'auto').strip().lower(),
+			)
+		except Exception:
+			return None
+
+	def _apply_auth_to_session(self, sess=None, force=False):
+		"""Nastaví autentifikáciu na session (default self.req).
+
+		FIX 0.48: keď cieľová session je self.req (zdieľaná), idempotentne
+		— ak sa auth signature nezmenila, nič nerobíme. Toto + RLock chráni
+		pred race conditions z paralelných background tasks.
+		"""
+		if sess is None or sess is self.req:
 			sess = self.req
-		user = (self.cp.get_setting('username') or '').strip()
-		pwd  = (self.cp.get_setting('password') or '')
-		mode = (self.cp.get_setting('http_auth_mode') or 'auto').strip().lower()
+			with self._req_lock:
+				sig = self._auth_signature()
+				if not force and sig == self._auth_sig and self._auth_sig is not None:
+					return
+				self._do_apply_auth(sess, sig)
+				self._auth_sig = sig
+			return
+
+		# Externá session (napr. picon worker) — nezdieľaná, neriešime cache
+		sig = self._auth_signature()
+		self._do_apply_auth(sess, sig)
+
+	def _do_apply_auth(self, sess, sig):
+		"""Skutočné nastavenie .auth na session-e."""
+		if sig is None:
+			user, pwd, mode = '', '', 'auto'
+		else:
+			user, pwd, mode = sig
 
 		if not user or mode == 'none':
 			sess.auth = None
@@ -152,24 +245,75 @@ class Tvheadend(object):
 		path = (path or '').lstrip('/')
 		return self.base_url().rstrip('/') + '/' + path
 
+	def invalidate_auth_cache(self):
+		"""Volaj keď zmeníš nastavenia (login_data_changed) — vynúti
+		re-apply pri ďalšom api_get."""
+		with self._req_lock:
+			self._auth_sig = None
+
 	# ------------------------------------------------------------------
 	# API volania
 	# ------------------------------------------------------------------
 
-	def api_get(self, path, params=None):
-		self._apply_auth_to_session()
+	# FIX 0.48: retry-with-backoff pre transient errors.
+	# Predtým: jeden 502/503 alebo TCP timeout → AddonErrorException →
+	# zlyhá celý refresh bouquetu / EPG / picon scan. Po novom skúsime
+	# 3× s exponenciálnym backoff (0.5s, 1s, 2s), čo prežije EPG-scan
+	# blip v Tvheadend bez dopadu na užívateľa.
+	_RETRY_ATTEMPTS = 3
+	_RETRY_BACKOFF_BASE = 0.5  # sekundy
+	_RETRY_STATUS_CODES = (500, 502, 503, 504, 408, 429)
+
+	def api_get(self, path, params=None, timeout_override=None):
+		"""HTTP GET na TVH API endpoint.
+
+		timeout_override: ak je zadaný, použije sa namiesto _timeout()
+		(setting 'loading_timeout', default 15s). Užitočné pre check_login
+		ktorý chce zlyhať rýchlo (FIX 0.48i: 5s namiesto 15s, recovery
+		zariadi background poll).
+		"""
 		url = self._url(path)
-		try:
-			resp = self.req.get(url, params=params or {}, timeout=self._timeout())
-			resp.raise_for_status()
-		except AddonErrorException:
-			raise
-		except Exception as e:
-			raise AddonErrorException('%s\n%s' % (self._("Tvheadend API request failed."), str(e)))
-		try:
-			return resp.json()
-		except Exception:
-			raise AddonErrorException(self._("Tvheadend returned invalid JSON."))
+		last_err = None
+		req_timeout = timeout_override if timeout_override is not None else self._timeout()
+		for attempt in range(self._RETRY_ATTEMPTS):
+			# Auth + request musia byť pod jedným lockom — inak iný thread
+			# môže prepnúť auth medzi _apply_auth a self.req.get
+			with self._req_lock:
+				self._apply_auth_to_session()
+				try:
+					resp = self.req.get(url, params=params or {},
+					                    timeout=req_timeout)
+				except Exception as e:
+					last_err = e
+					resp = None
+
+			if resp is not None:
+				status = getattr(resp, 'status_code', 0)
+				if status == 200:
+					try:
+						return resp.json()
+					except Exception:
+						raise AddonErrorException(
+							self._("Tvheadend returned invalid JSON."))
+				if status not in self._RETRY_STATUS_CODES:
+					# 401/403/404 atď. — retry nemá zmysel
+					try:
+						resp.raise_for_status()
+					except Exception as e:
+						raise AddonErrorException('%s\n%s' % (
+							self._("Tvheadend API request failed."), str(e)))
+				last_err = Exception("HTTP %s for %s" % (status, url))
+
+			# retry s backoff
+			if attempt < self._RETRY_ATTEMPTS - 1:
+				try:
+					time.sleep(self._RETRY_BACKOFF_BASE * (2 ** attempt))
+				except Exception:
+					pass
+
+		raise AddonErrorException('%s\n%s' % (
+			self._("Tvheadend API request failed."),
+			str(last_err) if last_err else 'unknown error'))
 
 	def api_get_all(self, path, params=None, page_limit=500):
 		"""Automatické stránkovanie – vracia všetky záznamy."""
@@ -210,10 +354,67 @@ class Tvheadend(object):
 		pwd  = (self.cp.get_setting('password') or '')
 		return bool(host and user and pwd)
 
-	def check_login(self):
-		"""Overí spojenie volaním /api/serverinfo. Vyhodí výnimku pri chybe."""
-		self.api_get('api/serverinfo', params={})
+	# FIX 0.48i: krátky timeout pre check_login (5s). Pre nečinný TVH
+	# server chceme zlyhať rýchlo (žiadne 15s GUI hangy) — recovery
+	# zariadi background poll v provider._maybe_start_fast_recovery_poll.
+	_CHECK_LOGIN_TIMEOUT = 5
+
+	def check_login(self, force_reauth=False):
+		"""Overí spojenie volaním /api/serverinfo. Vyhodí výnimku pri chybe.
+
+		FIX 0.48i: force_reauth=True invaliduje auth signature pred volaním,
+		takže _apply_auth_to_session() re-inštanciuje HTTPDigestAuth.
+		Použité v provider._check_tvh_silent pri auto-retry po prvom zlyhaní —
+		rieši digest auth nonce expiry (TVH server odhodí nonce po N minútach
+		idle, požaduje re-negotiation; requests knižnica to vie ale občas
+		state ostane stale medzi thread-mi).
+		"""
+		if force_reauth:
+			try:
+				self.invalidate_auth_cache()
+			except Exception:
+				pass
+		self.api_get('api/serverinfo', params={},
+		             timeout_override=self._CHECK_LOGIN_TIMEOUT)
 		return True
+
+	# FIX 0.48d: helper na fetch XMLTV z TVH /xmltv/channels endpointu.
+	# Použité pre direct EPG injection do Enigma2 eEPGCache (nezávisle od
+	# epgimport pluginu). TVH endpoint vracia plain XML, niekedy gzipped
+	# podľa Accept-Encoding — requests session to handluje transparentne.
+	def fetch_xmltv_bytes(self, timeout=60, retries=2):
+		"""Stiahne XMLTV z TVH ako bytes. Pri chybe vyhodí AddonErrorException.
+
+		Vstup:
+		    timeout: timeout v sekundách (default 60 lebo XMLTV pri 600+
+		             kanáloch × 5 dní môže mať 10-50 MB)
+		    retries: koľkokrát skúsiť pri network failure
+		"""
+		url = self._url('xmltv/channels')
+		last_err = None
+		for attempt in range(retries + 1):
+			with self._req_lock:
+				self._apply_auth_to_session()
+				try:
+					resp = self.req.get(url, timeout=timeout)
+				except Exception as e:
+					last_err = e
+					resp = None
+
+			if resp is not None:
+				status = getattr(resp, 'status_code', 0)
+				if status == 200:
+					return resp.content
+				last_err = Exception("HTTP %s for %s" % (status, url))
+
+			if attempt < retries:
+				try:
+					time.sleep(1.0 * (attempt + 1))
+				except Exception:
+					pass
+
+		raise AddonErrorException('XMLTV fetch failed: %s' %
+		                           (str(last_err) if last_err else 'unknown'))
 
 	# ------------------------------------------------------------------
 	# Stream URL
@@ -333,11 +534,13 @@ class Tvheadend(object):
 		t.start()
 
 	def _log_picon(self, msg):
+		"""FIX 0.48j: log cez print() namiesto vlastného súboru. ArchivCZSK
+		framework presmeruje stdout do /tmp/archivCZSK.log, takže príspevky
+		s prefixom '[plugin.tvheadend.picons]' sú dohľadateľné cez:
+		    grep '\\[plugin.tvheadend.picons\\]' /tmp/archivCZSK.log
+		"""
 		try:
-			import time as _t
-			ts = _t.strftime('%Y-%m-%d %H:%M:%S')
-			with open('/tmp/archivczsk_tvheadend_picons.log', 'a') as f:
-				f.write('[%s] %s\n' % (ts, msg))
+			print('[plugin.tvheadend.picons] %s' % msg)
 		except Exception:
 			pass
 
@@ -345,9 +548,17 @@ class Tvheadend(object):
 		# Zabráň paralelným behom – len jeden worker naraz
 		if not _picon_worker_lock.acquire(False):
 			return
+		# FIX 0.48c: clear() event PRED behom workera, set() až na konci.
+		# Predtým bol event set forever po prvom behu — _post() v bouquet.py
+		# pri ďalšom refreshi nečakal a picon copy bežal PRED tým ako sa
+		# nové ikony stiahli (race condition pri pridaní nových kanálov v TVH).
+		_picon_ready_event.clear()
 		try:
 			self._init_picons_worker_inner()
 		finally:
+			# Set sa volá aj z _init_picons_worker_inner pri early-return
+			# cestách. Tu len garancia že sa to NEZABUDNE pri exception.
+			_picon_ready_event.set()
 			_picon_worker_lock.release()
 
 	def _init_picons_worker_inner(self):
@@ -356,9 +567,13 @@ class Tvheadend(object):
 			ttl = int(_PICON_TTL_DAYS) * 24 * 3600
 
 			cache_has_files = False
+			cached_imagecache_count = 0
 			try:
 				if os.path.isdir(self._img_cache_dir):
-					cache_has_files = len(os.listdir(self._img_cache_dir)) > 0
+					for f in os.listdir(self._img_cache_dir):
+						if f.startswith('imagecache_') and not f.endswith('.tmp'):
+							cached_imagecache_count += 1
+					cache_has_files = cached_imagecache_count > 0
 			except Exception:
 				pass
 
@@ -381,7 +596,8 @@ class Tvheadend(object):
 					pass
 
 			# Stamp pre kopírovanie – zmaž ak je picon adresár prázdny
-			_PICON_COPY_STAMP = '/tmp/archivczsk_tvheadend_picon_copy.stamp'
+			# FIX 0.48j: persistent data dir
+			_PICON_COPY_STAMP = data_path('tvh_picon_copy.stamp')
 			if picon_dir_empty:
 				try:
 					if os.path.isfile(_PICON_COPY_STAMP):
@@ -390,12 +606,64 @@ class Tvheadend(object):
 				except Exception:
 					pass
 
-			if last and (now - last) < ttl and cache_has_files and not picon_dir_empty:
+			# FIX 0.48: porovnaj počet cached súborov s počtom kanálov ktoré majú
+			# imagecache ikonu. Ak je expected významne väčšie ako have, znamená to:
+			#  a) TVH pridal nové kanály od posledného download-u
+			#  b) cached súbory boli manuálne zmazané z /tmp
+			# V oboch prípadoch ignoruj TTL stamp a spusti download — tým sa
+			# rieši "po pridaní nového kanála v TVH treba reštart pluginu".
+			channels_preview = None
+			try:
+				channels_preview = self.get_channels()
+			except Exception:
+				channels_preview = None
+
+			expected_count = 0
+			expected_404_known = 0  # FIX 0.48b: koľko z "expected" je v 404 cache
+			if channels_preview is not None:
+				try:
+					for ch in channels_preview:
+						ipu = (ch.get('icon_public_url') or '').lstrip('/')
+						if ipu.startswith('imagecache/'):
+							expected_count += 1
+							if _picon_url_in_404_cache(ch.get('icon_public_url') or ''):
+								expected_404_known += 1
+				except Exception:
+					expected_count = 0
+					expected_404_known = 0
+
+			# FIX 0.48b: dosažiteľné expected = bez tých čo sú permanente 404.
+			# Bez tohto pri 116 broken-iconoch by sa "force download" triggroval
+			# pri každom login()-e do nekonečna.
+			effective_expected = expected_count - expected_404_known
+
+			# Pomer "máme dosť" — 5% tolerancia na racing
+			significantly_missing = (
+				effective_expected > 0 and
+				cached_imagecache_count < int(effective_expected * 0.95)
+			)
+			if significantly_missing:
+				self._log_picon(
+					'Cache incomplete: expected=%d (known-404=%d, effective=%d) '
+					'have=%d — forcing download (ignoring TTL stamp)' %
+					(expected_count, expected_404_known, effective_expected,
+					 cached_imagecache_count))
+				# zmaž stamp → nasledujúca časť detekuje fresh required
+				last = 0
+			elif expected_404_known > 0:
+				self._log_picon('Note: %d channels have known-broken icons '
+				                '(in 404 cache) — will retry after 1h' %
+				                expected_404_known)
+
+			if last and (now - last) < ttl and cache_has_files and not picon_dir_empty and not significantly_missing:
 				self._log_picon('Picon cache is fresh (last=%d, ttl=%d), skipping' % (last, ttl))
 				_picon_ready_event.set()
 				return
 
-			self._log_picon('Starting picon download (cache_has_files=%s, last=%d)' % (cache_has_files, last))
+			self._log_picon('Starting picon download (cache_has_files=%s, last=%d, '
+			                'expected=%d, effective=%d, have=%d)' %
+			                (cache_has_files, last, expected_count,
+			                 effective_expected, cached_imagecache_count))
 
 			try:
 				if not os.path.isdir(self._img_cache_dir):
@@ -403,15 +671,20 @@ class Tvheadend(object):
 			except Exception:
 				pass
 
-			try:
-				channels = self.get_channels()
-			except Exception as e:
-				self._log_picon('get_channels failed: %s' % e)
-				return
+			# FIX 0.48: reuse channels už načítané vyššie (cache to aj tak vyrieši,
+			# ale lepšie sa to číta)
+			channels = channels_preview
+			if channels is None:
+				try:
+					channels = self.get_channels()
+				except Exception as e:
+					self._log_picon('get_channels failed: %s' % e)
+					return
 
 			jobs = []
 			skipped = 0
 			no_icon = 0
+			pre_404_skipped = 0  # FIX 0.48b: kanály ktoré skipujeme vďaka 404 cache
 			for ch in channels:
 				icon = ch.get('icon_public_url') or ''
 				if not icon:
@@ -428,10 +701,15 @@ class Tvheadend(object):
 						continue
 				except Exception:
 					pass
+				# FIX 0.48b: ak je v 404 cache, ani ho neskúšaj
+				if _picon_url_in_404_cache(icon):
+					pre_404_skipped += 1
+					continue
 				jobs.append((icon, dst))
 
-			self._log_picon('Channels: %d, no_icon: %d, cached: %d, to_download: %d' % (
-				len(channels), no_icon, skipped, len(jobs)))
+			self._log_picon('Channels: %d, no_icon: %d, cached: %d, '
+			                'skipped_404_cache: %d, to_download: %d' % (
+				len(channels), no_icon, skipped, pre_404_skipped, len(jobs)))
 
 			if not jobs:
 				self._write_stamp(_PICON_STAMP, now)
@@ -441,6 +719,27 @@ class Tvheadend(object):
 
 			ok_count = [0]
 			err_count = [0]
+			err_404_count = [0]  # FIX 0.48b: tracknúť 404 zvlášť
+			# Per-thread logujeme len prvých 5 FAIL-ov, zvyšok len count
+			_LOG_FAIL_LIMIT = 5
+			err_log_lock = threading.Lock()
+
+			def _record_fail(icon, exc):
+				err_count[0] += 1
+				msg = str(exc) or ''
+				# negative-cache miss kvôli 404 vyzerá takto:
+				if '404' in msg or 'in 404 negative cache' in msg:
+					err_404_count[0] += 1
+					# zaznamenaj do negatívnej cache aj zvonku (poistka,
+					# _download_image to už urobí ale pri 'in 404 negative cache'
+					# exception sa do _download_image vôbec nedostane)
+					_picon_mark_404(icon)
+				with err_log_lock:
+					if err_count[0] <= _LOG_FAIL_LIMIT:
+						self._log_picon('FAIL %s: %s' % (icon, exc))
+					elif err_count[0] == _LOG_FAIL_LIMIT + 1:
+						self._log_picon('... (suppressing further per-file '
+						                'FAIL logs; summary at end)')
 
 			if _queue_mod is None:
 				for icon, dst in jobs:
@@ -448,8 +747,7 @@ class Tvheadend(object):
 						self._download_image(icon, dst)
 						ok_count[0] += 1
 					except Exception as e:
-						err_count[0] += 1
-						self._log_picon('FAIL %s: %s' % (icon, e))
+						_record_fail(icon, e)
 			else:
 				q = _queue_mod.Queue()
 				for item in jobs:
@@ -469,8 +767,7 @@ class Tvheadend(object):
 							self._download_image(icon, dst, session=sess)
 							ok_count[0] += 1
 						except Exception as e:
-							err_count[0] += 1
-							self._log_picon('FAIL %s: %s' % (icon, e))
+							_record_fail(icon, e)
 						finally:
 							try:
 								q.task_done()
@@ -487,7 +784,12 @@ class Tvheadend(object):
 					pass
 
 			self._write_stamp(_PICON_STAMP, now)
-			self._log_picon('Done: ok=%d, err=%d' % (ok_count[0], err_count[0]))
+			# FIX 0.48b: sumár s rozdelením 404 vs ostatné
+			other_err = err_count[0] - err_404_count[0]
+			self._log_picon('Done: ok=%d, err=%d (404=%d, other=%d). '
+			                '404 cache size: %d' %
+			                (ok_count[0], err_count[0], err_404_count[0],
+			                 other_err, _picon_404_count()))
 		except Exception as e:
 			self._log_picon('Worker exception: %s' % e)
 		finally:
@@ -624,14 +926,23 @@ class Tvheadend(object):
 		Stiahne obrázok a uloží do dst_path.
 
 		Kľúčová logika:
-		1. Zistí skutočný formát z Content-Type + magic bytes
-		2. Ak je PIL dostupný → konvertuje na RGBA PNG (transparentnosť!)
-		3. Ak PIL nie je → uloží so správnou príponou (NIKDY JPEG ako .png)
-		4. dst_path sa môže zmeniť (ak skutočná prípona != požadovaná)
+		1. FIX 0.48b: skontroluj negatívnu cache — ak sme nedávno (< 1h) dostali
+		   404 pre toto URL, ani sa nepokúšaj a vyhoď okamžite (chráni TVH server
+		   pred zbytočnými requestmi + odstraňuje log spam pre permanente
+		   chýbajúce imagecache záznamy).
+		2. Zistí skutočný formát z Content-Type + magic bytes
+		3. Ak je PIL dostupný → konvertuje na RGBA PNG (transparentnosť!)
+		4. Ak PIL nie je → uloží so správnou príponou (NIKDY JPEG ako .png)
+		5. dst_path sa môže zmeniť (ak skutočná prípona != požadovaná)
 		   → vracia skutočnú cestu uloženého súboru
 		"""
 		if not icon_public_url or not dst_path:
 			raise AddonErrorException("Missing icon_public_url/dst_path")
+
+		# FIX 0.48b: krátka cesta cez negatívnu cache
+		if _picon_url_in_404_cache(icon_public_url):
+			raise AddonErrorException("Image %s in 404 negative cache (skipped)"
+			                           % icon_public_url)
 
 		sess = session if session is not None else self.req
 		if session is None:
@@ -646,6 +957,7 @@ class Tvheadend(object):
 				pass
 
 		last_err = None
+		got_404_on_all_candidates = True  # FIX 0.48b: budeme tracknúť či VŠETKY varianty zlyhali na 404
 		for rel in self._candidate_image_paths(icon_public_url):
 			url = self._url(rel)
 			# Retry pri dočasných chybách (5xx, timeout) – max 3 pokusy
@@ -660,11 +972,14 @@ class Tvheadend(object):
 						time.sleep(0.5 * (attempt + 1))
 						continue
 			if r is None:
+				got_404_on_all_candidates = False  # network failure, nie 404
 				continue
 			if r.status_code == 404:
 				# 404 = obrázok neexistuje, nema zmysel opakovať
 				last_err = Exception("HTTP 404 for %s" % url)
 				continue
+			# Tu sme dostali non-404 odpoveď (či už 200, 500, čokoľvek)
+			got_404_on_all_candidates = False
 			if r.status_code >= 500:
 				# 5xx = dočasná chyba servera, skús znova
 				for attempt in range(2):
@@ -702,8 +1017,7 @@ class Tvheadend(object):
 			# --- PIL dostupný: konvertuj na RGBA PNG → transparentnosť v Enigma2 ---
 			if _PIL_OK:
 				try:
-					import io as _io_mod
-					img = _PIL_Image.open(_io_mod.BytesIO(raw))
+					img = _PIL_Image.open(io.BytesIO(raw))
 					# Zachovaj transparentnosť: RGBA alebo P (palette s transparentnosťou)
 					if img.mode == 'P' and 'transparency' in img.info:
 						img = img.convert('RGBA')
@@ -758,6 +1072,12 @@ class Tvheadend(object):
 				except Exception:
 					pass
 				continue
+
+		# FIX 0.48b: ak všetky varianty vrátili 404, zapíš do negatívnej cache
+		# aby sme to ďalšiu hodinu neopakovali. Tým sa rieši log spam pri
+		# kanáloch ktorých icon_public_url je trvalo broken na TVH strane.
+		if got_404_on_all_candidates:
+			_picon_mark_404(icon_public_url)
 
 		raise AddonErrorException("Image download failed: %s" % (str(last_err) if last_err else "unknown"))
 

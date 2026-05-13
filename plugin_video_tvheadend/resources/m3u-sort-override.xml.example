@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Example mapping override file for the M3U source.
+   Compatible with e2m3u2bouquet's mapping XML format.
+
+   Skopíruj ako: /etc/enigma2/m3u-sort-override.xml
+   Potom v settings zaškrtni "Use mapping override XML".
+
+   Bez tohto súboru:
+     - Kategórie sa objavia v poradí ako v M3U
+     - Všetky kanály enabled, mená nezmenené
+     - tvg-id sa použije ako-is pre EPG mapovanie
+
+   S týmto súborom môžeš:
+     - Preusporiadať kategórie (XML poradie vyhráva)
+     - Skryť kategórie (enabled="false")
+     - Premenovať kategórie (nameOverride="...")
+     - Skryť/premenovať konkrétne kanály
+     - Presunúť kanál do inej kategórie (categoryOverride="...")
+     - Vynútiť DVB EPG service ref (serviceRef="...") pre kanál
+       (užitočné pri mapovaní IPTV kanála na satelitné EPG)
+-->
+<mapping>
+
+	<categories>
+		<category name="Slovenské" nameOverride="🇸🇰 Slovenské" enabled="true"/>
+		<category name="České"     nameOverride="🇨🇿 České"     enabled="true"/>
+		<category name="Spravodajstvo" nameOverride="📰 Spravodajstvo" enabled="true"/>
+		<category name="Šport"     nameOverride="⚽ Šport"      enabled="true"/>
+		<category name="Filmy"     nameOverride="🎬 Filmy"      enabled="true"/>
+		<category name="Dokumenty" nameOverride="📚 Dokumenty"  enabled="true"/>
+		<category name="Detské"    nameOverride="👶 Detské"     enabled="true"/>
+		<category name="Hudba"     nameOverride="🎵 Hudba"      enabled="true"/>
+
+		<category name="Adult" enabled="false"/>
+		<category name="XXX"   enabled="false"/>
+	</categories>
+
+	<channels>
+		<channel name="JEDNOTKA HD" nameOverride="Jednotka HD"
+		         category="Slovenské" enabled="true"/>
+
+		<channel name="Test Channel 1" enabled="false" category="Slovenské"/>
+
+		<channel name="TA3" category="Slovenské"
+		         categoryOverride="Spravodajstvo" enabled="true"/>
+
+		<!-- Force DVB EPG mapping na existujúce satelitné EPG: -->
+		<channel name="Markiza HD" tvg-id="markiza.sk"
+		         category="Slovenské" enabled="true"
+		         serviceRef="1:0:19:6E:7:85:C00000:0:0:0"/>
+	</channels>
+
+</mapping>

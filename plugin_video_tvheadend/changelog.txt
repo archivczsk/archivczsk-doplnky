@@ -1,25 +1,342 @@
-0.13 - 12.05.2026
-- oprava automatického sťahovania piconov po čistej inštalácii prijímača
+0.50beta - 13.05.2026
+═════════════════════════════════════════════════════════════════════════════
+BETA TEST RELEASE — konsolidácia 0.11 → 0.49d + nové cleanupy/optimalizácie.
 
-0.12 - 11.05.2026
-- oprava zobrazovania zoznamu zmien
+Tento changelog zhŕňa kompletnú funkčnosť doplnku do verzie 0.50beta
+v dvoch častiach:
+  ► ČASŤ A — Nové zmeny v 0.50beta (cleanup, bugfixy, optimalizácie)
+  ► ČASŤ B — Súhrn funkcionality nazbieranej od verzie 0.11
 
-0.11 - 11.05.2026
-- prvá verzia doplnku pre Tvheadend DVR server
-- živé vysielanie kanálov cez Tvheadend HTTP API
-- prehrávanie archívu (DVR nahrávky)
-- podpora EPG (aktuálny a nasledujúci program)
-- automatické generovanie userbouquetu (TV + Rádio)
-- sťahovanie piconov z Tvheadend imagecache (SRP aj SNP formát)
-- export XML EPG pre epgimport plugin
-- priame vkladanie EPG do Enigma2
-- podpora kategórií v userbouquete
-- vlastný názov bouquetu pre TV a Rádio
-- nastaviteľný interval automatického obnovenia bouquetu
-- výber TVH stream profilu (pass/mpegts/matroska/htsp)
-- podpora HTTP Digest/Basic autentifikácie
-- zmysluplné hlásenie chyby pri použití Python 2
-- cache pre kanály a DVR záznamy (ExpiringLRUCache)
-- opakované pokusy pri sťahovaní ikoniek (3x pri timeout, 2x pri chybe servera)
-- efektívna synchronizácia picon workera cez threading.Event
-- slovenský a český preklad
+═════════════════════════════════════════════════════════════════════════════
+ČASŤ A — NOVÉ ZMENY V 0.50beta
+═════════════════════════════════════════════════════════════════════════════
+
+1) REFACTOR: subgenre klasifikátory cez factory.
+   Pred 0.50 mal každý sub-žáner top kategórie (Šport, Spravodajstvo, Šou,
+   Detské, Hudba, Umenie, Dokumenty, Hobby) vlastnú 9-riadkovú funkciu
+   `_XYZ_subgenre(entry)` s úplne identickou body logikou:
+       compose text → strip_accents_lower → regex iter → return.
+   Celkom 8 takmer identických definícií, ~80 riadkov boilerplate-u.
+   Nahradené factory funkciou `_make_subgenre_fn(patterns, default)`
+   ktorá vráti closure s identickou semantikou. Verejné mená funkcií
+   (`_sport_subgenre`, `_news_subgenre`, ...) ostávajú zachované —
+   používame ich v `_SUBCAT_REGISTRY` aj v UI flow.
+   Žiadna zmena v správaní, len menšia údržbárska zaťaž.
+
+2) REFACTOR: DRY violation v `_check_tvh_silent_no_recurse_for_poll`.
+   FIX 0.48i pridal túto metódu ako variant `_check_tvh_silent` bez
+   spustenia fast-recovery poll-u (volajúci JE poll → infinite recursion
+   ochrana). Implementovaná bola ale ako copy-paste, čo znamenalo dva
+   takmer identické bloky kódu pre auth retry + cache update. Pri každej
+   zmene v `_check_tvh_silent` (TTL tweak, retry policy, log format)
+   bolo treba zmeniť OBE kópie.
+   FIX 0.50beta: vyextraktovaný zdieľaný core `_do_tvh_login_check(
+   start_recovery_on_fail=bool)`. Verzia bez recurse je iba
+   `start_recovery_on_fail=False`.
+
+3) RACE CONDITION FIX: lazy-init module-level locks.
+   Dva locky v bouquet.py boli inicializované lazy v rámci prvého
+   callu funkcie:
+       global _DOWNLOAD_PICONS_LOCK
+       if _DOWNLOAD_PICONS_LOCK is None:
+           _DOWNLOAD_PICONS_LOCK = threading.Lock()
+   Pri 2+ thready prešli `None` kontrolou a obaja vytvorili lock, druhý
+   prepísal prvého. Debounce stratil atomicitu — nemali sme garantované
+   že len jeden tick prejde naraz.
+   FIX 0.50beta: locky inicializované eagerly pri importe modulu
+   (`threading.Lock() if threading is not None else None`). O(1) pri
+   štarte, deterministické.
+   Dotknuté: `_DOWNLOAD_PICONS_LOCK`, `_POST_CALLBACK_LOCK` v bouquet.py.
+
+4) RACE CONDITION FIX: `_maybe_start_fast_recovery_poll` check-and-set.
+   Module-level `_FAST_RECOVERY_STATE` dict bol mutovaný bez locku.
+   Sekvencia `if not running: ...; running = True` mohla mať race kde
+   2 thready (napr. watchdog tick + user navigation s vlastným retry)
+   prešli oba `if not running` checkom a obaja spustili poll threads —
+   2 paralelné poll loops na pozadí. Vzácne ale možné.
+   FIX 0.50beta: pridaný `_FAST_RECOVERY_LOCK` (`threading.Lock`),
+   check-and-set + reset chránený pod lockom.
+
+5) BUG FIX: `_runner` background thread closures používali captured
+   `now` z výzvy parent metódy, namiesto aktuálneho času.
+       def _maybe_auto_inject_epg():
+           now = int(time.time())
+           ...
+           def _runner():
+               ...
+               retry_at = now - interval + 300  # !!! starý `now`
+   Pri inject_tvh_epg ktorý môže trvať desiatky sekúnd, `retry_at`
+   bol vypočítaný zo času spustenia thread-u (predtým), nie zo času
+   keď reálne zlyhal. Drobná logická nepresnosť — retry mohol prísť
+   o pár sekúnd skôr ako sa očakávalo. Nemalo to vplyv na korektnosť,
+   len na presnosť timings.
+   FIX 0.50beta: `_runner` interne urobí `int(time.time())` pri
+   zlyhaní. Dotknuté: `_maybe_auto_inject_epg`, `_maybe_auto_inject_m3u_epg`.
+
+6) UX FIX: `archive_dates` ukáže retry položku pri TVH transient failure.
+   Pred 0.50 FIX 0.48h pridal retry položky do `archive_channels`,
+   `live_root` a iné. `archive_dates` (čo sa otvorí keď klikne na kanál
+   v Archíve) ale zostal s tichým `return` pri zlyhaní. User videl
+   prázdny zoznam (len ".." parent) a nevedel či archív je naozaj prázdny
+   alebo TVH nie je dostupný.
+   FIX 0.50beta: rovnaký pattern ako archive_channels — pri 'unreachable'
+   stave sa zobrazí retry položka + multi-line error.
+
+7) BUG FIX: tech-marker strip pri detekcii epizódy v `_add_dvr_entry_item`.
+   Pre title formátu "(1) (ST) (HD)" (epizoda 1 + dva tech markery)
+   regex `_TITLE_EPISODE_PATTERN` zlyhal — regex pripúšťa max 1 optional
+   tech marker za `(N)`, takže pri dvoch sa nepripojí na koniec `\s*$`
+   a search vráti None. Dôsledok: epizoda label nemal "(1)" prefix
+   v episode_format režime.
+   FIX 0.50beta: pred regex search-om sa zavolá `_strip_tech_markers`
+   (rovnaký helper ako pre top-level klasifikáciu) ktorý odstráni
+   všetky `(ST|HD|AD|SS|3D|UHD|DD|DTS)` markery. Konsistentné s
+   `_has_episode_suffix` a `_series_canonical_title` ktoré strip
+   už robili.
+
+8) VERZIA: addon.xml bumped na "0.50beta".
+
+LINE DELTAS:
+   provider.py: 3658 → 3637 (-21 riadkov)
+   bouquet.py:  1646 → 1647 (+1 riadok, eager lock init)
+   Celkom: -20 riadkov, žiadne breaking changes v API/settings.
+
+
+═════════════════════════════════════════════════════════════════════════════
+ČASŤ B — SÚHRN FUNKCIONALITY (verzie 0.11 → 0.49d)
+═════════════════════════════════════════════════════════════════════════════
+Doplnok je IPTV/EPG klient pre Tvheadend server a paralelne podporuje
+externý M3U playlist ako sekundárny zdroj. Bežné nasadenie: OpenATV na
+prijímači (Enigma2), TVH server lokálne alebo na inej krabičke v sieti.
+
+──────────────────────────────────────────────────────────────────────────
+A. ZÁKLADNÁ FUNKCIONALITA (TVH side)
+──────────────────────────────────────────────────────────────────────────
+• Živé vysielanie kanálov cez Tvheadend HTTP API (REST, port 9981/9982)
+  - profily: pass, mpegts, matroska, htsp, webtv-h264-aac-*
+  - HTTP Basic/Digest autentifikácia (auto/digest/basic/none)
+  - voliteľná HTTPS varianta
+  - voliteľný "ticket URL" (recommended pre Digest)
+
+• Prehrávanie DVR archívu (nahrávky)
+  - navigácia: Archív → kanál → dátum → záznam
+  - cache 60s (ExpiringLRUCache)
+  - limity: dvr_limit (max items) a archive_days_limit (max dní)
+
+• EPG
+  - aktuálny + nasledujúci program pri každom kanáli (now/next badge)
+  - direct injection do Enigma2 eEPGCache cez `importEvent()`
+    (bez závislosti na epgimport plugine)
+  - alternatívne XMLTV export pre epgimport plugin (kompatibilita)
+
+• Userbouquet generátor
+  - automatický export TV + Rádio bouquetov
+  - kategorizácia podľa TVH channel tagov
+  - custom display name pre TV a Rádio bouquet
+  - automatický refresh interval (4h–7d, default 24h)
+  - vlastný EPG inject interval (4h–7d, default 4h) nezávislý od bouquet refresh
+  - rozdelenie radio kanálov do `.radio` súborov + bouquets.radio
+  - auto-reload Enigma2 cez `eDVBDB.reloadBouquets()` + OpenWebif fallback
+    (bez nutnosti reštartovať E2)
+
+• Piconov (logá kanálov)
+  - automatický download z TVH `imagecache/N` endpointu
+  - viacvláknový (6 workers), retry-with-backoff pri 5xx
+  - kópia do `/usr/share/enigma2/picon/` v správnom service-ref formáte (SRP)
+    + bonus kópia podľa názvu kanála (SNP)
+  - PIL konverzia na transparentnú RGBA PNG (ak je PIL dostupný)
+  - magic-bytes detection formátu (JPG/PNG/GIF/WebP/SVG)
+  - negatívna 404 cache (1h TTL) — chráni log a TVH server pred zbytočnými
+    retry pre channels s broken imagecache na TVH strane
+  - manuálny "Clear 404 cache" v Settings menu
+
+──────────────────────────────────────────────────────────────────────────
+B. EXTERNAL M3U + XMLTV (paralelný bouquet)
+──────────────────────────────────────────────────────────────────────────
+• External M3U URL ako sekundárny zdroj kanálov vedľa TVH bouquetu
+  - generuje samostatný `userbouquet.m3u_iptv.tv` s service_type=1
+    (fake DVB) — podpora DVB titulkov v OpenATV
+  - voliteľne 4097/5001/5002 service type pre kompatibilitu s playermi
+  - bouquet display name configurable
+  - refresh interval 4h–7d (eTimer scheduler)
+  - one-shot cleanup ak je M3U vypnuté ale zostali súbory na disku
+
+• TVH enrichment chain (priorita):
+  1. Primary TVH client (host+username+password) — najlepšie
+  2. Auth-token API client (?auth=TOKEN na /api/*) — ak ticket má API perms
+  3. URL-based tags (/playlist/tags/auth?auth=TOKEN) — funguje bez API perms
+  4. Bez enrichmentu → Uncategorized
+
+• Channel matching M3U ↔ TVH cez stream URL ID alebo channel name
+  - dopĺňa group-title (z TVH tagov), tvg-id (TVH UUID), tvg-logo
+  - viacero alias IDs per kanál (UUID, numeric, name, slug)
+
+• XMLTV EPG
+  - auto-derive EPG URL z M3U URL (ak ticka obsahuje TVH auth token)
+  - direct injection do Enigma2 eEPGCache
+  - vlastný inject interval (default 4h)
+  - podpora gzip/xz komprimovaného XMLTV
+  - DIAGNOSE položka v Settings menu — porovná M3U channels.xml s XMLTV
+
+• Picon download pre M3U kanály z `tvg-logo` URL
+  - auto-pripojí TVH auth token ak je logo z TVH /imagecache/
+
+• Mapping override (e2m3u2bouquet kompatibilný XML)
+  - rename/reorder/disable kategórií aj kanálov
+  - cesta configurable (default /etc/enigma2/m3u-sort-override.xml)
+
+──────────────────────────────────────────────────────────────────────────
+C. DVR ARCHÍV S KATEGORIZÁCIOU (top-level menu, FIX 0.49)
+──────────────────────────────────────────────────────────────────────────
+Pred 0.49 sa k záznamu dostávalo iba cez Archív → kanál → dátum → záznam.
+Pri 6000+ záznamoch v archíve nepraktické pre hľadanie "nejaký dobrý film".
+Verzia 0.49 pridala paralelnú žánrovú navigáciu v root menu.
+
+V root menu sa pri každej kategórii s aspoň 1 záznamom zobrazí položka:
+  ├── Filmy                       (s podžánrami)
+  ├── Seriály                     (s podžánrami)
+  ├── Šport                       (s podžánrami)
+  ├── Spravodajstvo               (s podžánrami)
+  ├── Šou / Relácie               (s podžánrami)
+  ├── Detské                      (s podžánrami)
+  ├── Hudba                       (s podžánrami)
+  ├── Umenie / Kultúra            (s podžánrami)
+  ├── Dokumenty / Vzdelávacie     (s podžánrami)
+  ├── Voľný čas / Hobby           (s podžánrami)
+  └── Nezaradené                  (záznamy bez metadát)
+
+PODŽÁNRE — príklady:
+  Šport: Futbal | Hokej | Basketbal | Tenis | Volejbal | Hádzaná |
+         Atletika | Cyklistika | Motorsport | Bojové športy |
+         Zimné športy | Vodné športy | Športové spravodajstvo | Iné
+  Spravodajstvo: Hlavné správy | Politika/Diskusie | Krimi/Reportáže |
+         Magazíny/Lifestyle | Počasie | Iné
+  Detské: Animované/Kreslené | Rozprávky | Vzdelávacie |
+         Filmy pre deti | Iné
+  Filmy/Seriály: Akčné | Komédia | Krimi/Thriller | Drama |
+         Sci-fi/Fantasy | Romantické | Horor | Dobrodružné |
+         Animované | Historické/Vojnové | Western | Iné
+
+KLASIFIKAČNÁ HEURISTIKA (priorita signálov):
+  1. Channel-based hint — názov kanála (CT :D = deti, *Sport* = šport,
+     CNN/BBC = spravodajstvo, MTV/OCKO = hudba) — spoľahlivejšie ako EIT
+  2. Series detection — "25/31" v subtitle, "(N)" sufix v title kde N
+     nie je rok výroby (1900-2099), explicit episode_disp z TVH, alebo
+     keyword "seriál"/"díl"/"epizoda" v description
+  3. DVB EIT content_type fixed mapping (ct=2/3/4/5/6/7/8/9/10)
+  4. Keyword fallback pre ct=0/11 (undefined) — Czech/Slovak žánrové
+     keywords v title+subtitle+description+channelname
+
+DIAKRITIKA-INSENSITIVE MATCHING (FIX 0.49d):
+  Pred 0.49d regex `\bsprav` nematchol text "správy" (a vs á — Python re
+  to neberie ako rovnaký znak ani pri re.IGNORECASE). Riešenie: nová
+  pomocná funkcia `_strip_accents_lower()` ktorá normalizuje text cez
+  `unicodedata.normalize('NFD')` a odfiltruje combining marks (Mn).
+  Keywords v regex-och prepísané bez diakritiky.
+
+DEDUPLIKÁCIA 7x24 autorec duplikátov:
+  TVH 7x24 archiv môže nahrať tú istú epizódu viackrát (rôzne timeslot
+  opakovania). Kľúč: (disp_title, disp_subtitle[:80]). Z duplikátov ostane
+  jeden najnovší. Počty v menu sú teda unikátne eventy, nie raw recordings.
+
+CACHE: 60s TTL pre klasifikovanú DVR mapu, zdieľaná s DVR cache. Pri
+6000+ entries klasifikácia trvá ~50-100ms, cache zabezpečí že opakované
+otvorenia root() neflickerujú.
+
+──────────────────────────────────────────────────────────────────────────
+D. STABILITA / SELF-HEALING
+──────────────────────────────────────────────────────────────────────────
+• Watchdog timer (5 min interval, FIX 0.48)
+  Pravidelný force-check TVH stavu cez eTimer (alebo daemon thread
+  fallback). Pri OFFLINE → ONLINE prechode automaticky spustí bouquet
+  refresh + picon download. Žiadne manuálne otváranie pluginu po
+  reštarte TVH servera nie je potrebné.
+
+• Fast-recovery poll (FIX 0.48i)
+  Keď `_check_tvh_silent` definitívne zlyhá, spustí sa background thread
+  ktorý každých 10s skúša TVH check po dobu max 5 minút (30 pokusov).
+  Keď TVH naskočí, cache sa silently aktualizuje na ok=True. User
+  nemusí manuálne stláčať Retry — ďalšia navigácia uvidí všetko OK.
+
+• Auto re-auth retry (FIX 0.48i)
+  `_check_tvh_silent` pri prvom zlyhaní hneď skúsi znova s
+  `force_reauth=True` — invaliduje HTTPDigestAuth cache, re-instantiate
+  s freshým nonce. Rieši "digest auth nonce expirovala po idle period".
+
+• Retry-with-backoff v `api_get` (FIX 0.48)
+  3× retry s exponenciálnym backoff (0.5s, 1s, 2s) pre 5xx/408/429/timeout.
+  Single blip počas EPG-scan v TVH už nezhodí refresh bouquetu.
+
+• Asymetrická TTL cache `_check_tvh_silent` (FIX 0.48h)
+  Pozitívny check 30s (znižuje GUI lag), negatívny 5s (rýchla recovery
+  po transient failure). Plus 'reason' tracking (`not_configured` vs
+  `unreachable`) pre rozlíšenie chybových hlášok.
+
+• Auto-reload Enigma2 po bouquet refresh-e (FIX 0.48)
+  `eDVBDB.reloadBouquets()` + `reloadServicelist()` + OpenWebif
+  `/servicelistreload?mode=2` fallback. Bez reštartu E2.
+
+• Thread-safe auth handling (FIX 0.48)
+  `requests.Session` sa zdieľa medzi GUI a background tasks. RLock chráni
+  primárnu session pred race conditions z paralelných requestov.
+
+• `_picon_ready_event` clear/set lifecycle (FIX 0.48c)
+  Event sa správne čistí pri ZAČIATKU worker-a a set-uje na exit
+  cestách. Predtým bol set forever po prvom behu — `_post()` callback
+  v bouquet.py pri ďalšom refreshi nečakal a picon copy bežal PRED
+  stiahnutím nových ikon.
+
+• `_post()` debounce 30s (FIX 0.48c)
+  Framework BouquetXmlEpgGenerator volá `refresh_userbouquet_start`
+  raz pre 'tv' a raz pre 'radio' channel_type. Bez debouncu by celý
+  `_post()` (radio fix + reloadBouquets + OpenWebif HTTP) bežal 2×.
+
+• Negatívna 404 cache pre picon (FIX 0.48b)
+  Channels s broken `icon_public_url` na TVH strane (404 z TVH) sa
+  zapamätajú a hodinu nepokúšajú znova. Predtým 116 broken-iconoch
+  generovalo 250-500 riadkov log spamu pri každom plugin open.
+
+──────────────────────────────────────────────────────────────────────────
+E. KOMPATIBILITA / UX
+──────────────────────────────────────────────────────────────────────────
+• Python 2.7 + Python 3.x best-effort kompatibilita
+  - žiadne f-strings, walrus :=, async, type hints v podpisoch
+  - urllib.request / urllib.parse / urllib2 / urlparse fallback
+  - `os.replace` fallback na `os.rename` pre Py2
+  - `gzip.decompress` fallback na `GzipFile(fileobj=...)`
+  - `lzma` voliteľný s `is not None` guardom
+  - cElementTree iterparse: `events=(str('start'),)` konverzia
+    (Py2 cElementTree odmieta unicode event names s "invalid event tuple")
+  - `_to_native_str` / `_to_text` helpery v m3u_epg_injector pre
+    eEPGCache C++ API (Py2 vyžaduje bytes, Py3 text)
+
+• Persistent state v writable data dir-u (FIX 0.48j)
+  Stamp súbory (refresh timing gates) sa už neukladajú do /tmp (tmpfs
+  sa pri reboote E2 maže) ale do persistent adresára:
+       1. `/usr/lib/enigma2/python/Plugins/Extensions/archivCZSK/
+           resources/data/plugin.video.tvheadend/` (preferovaná)
+       2. `/etc/archivczsk/plugin.video.tvheadend/`
+       3. `/etc/enigma2/plugin.video.tvheadend/`
+       4. `/tmp` (fallback ak nič iné nie je writable)
+  Cache obrázkov (picons) ostáva v /tmp — regenerovateľná, tmpfs rýchle.
+
+• Slovenské a české preklady
+  Plný preklad UI: Settings menu, akcie, diagnostika, status, error
+  messages, settings labels. Korektné úvodzovky („..." namiesto
+  amerických).
+
+• Kontextové menu
+  Root menu položky (Live TV, Archive, kategórie) sa zobrazia LEN ak
+  je TVH login OK. Settings folder LEN ak je TVH OK ALEBO M3U zapnuté.
+  Pri úplne prázdnej konfigurácii: dialóg "Plugin nie je nakonfigurovaný"
+  (cez `AddonErrorException`) + plugin sa otvorí prázdny.
+  Settings menu sub-sekcie (M3U Actions, TVH Actions) sa zobrazia
+  podľa toho čo je práve aktívne.
+
+• Settings UI
+  Tri kategórie: Userbouquet, External M3U, Archive (+ globálne TVH
+  connection settings: host, port, username, password, profile, ...).
+
+═════════════════════════════════════════════════════════════════════════════
+KONIEC CHANGELOGU 0.50beta
+═════════════════════════════════════════════════════════════════════════════
