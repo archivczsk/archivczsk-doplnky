@@ -147,6 +147,76 @@ _EPG_INJECT_STAMP = data_path("tvh_epg_inject.stamp")
 # Zapisuje sa z m3u_manager.refresh_now() aj inject_epg_only().
 _EPG_INJECT_STAMP_M3U = data_path("m3u_epg_inject.stamp")
 
+# FIX 0.52beta: persistent JSON storage pre "posledné sledované" history.
+# Plugin sleduje ktoré DVR entries užívateľ otvoril a v ktorom čase,
+# aby sa dali zobraziť v root() menu ako rýchly shortcut "Posledné sledované".
+# Štruktúra: {'<entry_uuid>': {'ts': <epoch>, 'title': '...', ...}, ...}
+# Limit: 50 najnovších entries (FIFO discard). Pri reštarte E2 stav prežíva.
+_WATCHED_HISTORY_PATH = data_path("watched_history.json")
+_WATCHED_HISTORY_MAX = 50
+
+def _load_watched_history():
+	"""Načítaj JSON s watched history. Pri chybe vráti prázdny dict."""
+	try:
+		import json
+		if not os.path.isfile(_WATCHED_HISTORY_PATH):
+			return {}
+		with open(_WATCHED_HISTORY_PATH, 'r') as f:
+			data = json.load(f)
+		if not isinstance(data, dict):
+			return {}
+		return data
+	except Exception:
+		return {}
+
+
+def _save_watched_history(history):
+	"""Atomic write JSON s watched history. Silent fail (TVH plugin nemá
+	hlásiť chyby pri tracking-u — to je nepriamy feature)."""
+	try:
+		import json
+		tmp = _WATCHED_HISTORY_PATH + '.tmp'
+		with open(tmp, 'w') as f:
+			json.dump(history, f, ensure_ascii=False)
+		if hasattr(os, 'replace'):
+			os.replace(tmp, _WATCHED_HISTORY_PATH)
+		else:
+			if os.path.exists(_WATCHED_HISTORY_PATH):
+				os.remove(_WATCHED_HISTORY_PATH)
+			os.rename(tmp, _WATCHED_HISTORY_PATH)
+	except Exception:
+		pass
+
+
+def _track_watched(entry):
+	"""FIX 0.52beta: zapíš DVR entry do watched history. Volaná z
+	play_dvr() pri každom otvorení nahrávky.
+
+	Idempotent — ak entry už v history, len aktualizuje timestamp. Limit
+	50 najnovších; staršie sa odstránia pri saved keď dict prekročí limit.
+	"""
+	uuid = entry.get('uuid')
+	if not uuid:
+		return
+	try:
+		history = _load_watched_history()
+		history[uuid] = {
+			'ts': int(time.time()),
+			'title': entry.get('disp_title') or '',
+			'subtitle': entry.get('disp_subtitle') or '',
+			'channelname': entry.get('channelname') or '',
+			'start_real': entry.get('start_real') or 0,
+		}
+		# Trim na _WATCHED_HISTORY_MAX najnovších
+		if len(history) > _WATCHED_HISTORY_MAX:
+			sorted_items = sorted(history.items(),
+			                      key=lambda kv: kv[1].get('ts', 0),
+			                      reverse=True)
+			history = dict(sorted_items[:_WATCHED_HISTORY_MAX])
+		_save_watched_history(history)
+	except Exception:
+		pass
+
 # FIX 0.48: TTL cache pre _check_tvh_silent() — zabraňuje N×/sec HTTP requestom
 # na /api/serverinfo počas navigácie v menu.
 # FIX 0.48h: asymetrické TTL — pozitívny check 30s (znižuje GUI lag),
@@ -2218,6 +2288,30 @@ class TvheadendContentProvider(CommonContentProvider):
 			return
 
 		if tvh_ok:
+			# FIX 0.52beta (iter 5): vrátený framework default `add_search_dir()`.
+			# Predchádzajúci 1-click priamy-keyboard cez action_dvr_search()
+			# síce eliminoval medzistránku, ale stratil **história hľadaní**.
+			# Framework search_list ukáže:
+			#   [Nové hľadanie - lupa]      ← 1 click → keyboard popup
+			#   Markíza                     ← predošlé hľadanie, 1 click → priamy search
+			#   Doktor Martin               ← bez znovuzadávania
+			#   Na noze
+			#   ...
+			# Default 10 history entries (config 'keep-searches'). Framework
+			# spravuje add/remove/edit predošlých — žiadny vlastný kód netreba.
+			# Trade-off: 2-click na nový search (lupa → "Nové hľadanie" →
+			# keyboard). Pre opakované hľadania (typický use-case) 1-click.
+			try:
+				dvr_entries_count = len(_get_dvr_finished_cached(self.tvh) or [])
+				if dvr_entries_count > 0:
+					self.add_search_dir(
+						title=self._("Hľadať v archíve"))
+			except Exception as _e:
+				try:
+					print('[plugin.tvheadend] add_search_dir failed: %s' % _e)
+				except Exception:
+					pass
+
 			self.add_dir(self._("Live TV"),
 			             cmd=self.live_root,
 			             info_labels={'title': self._("Live TV")})
@@ -2245,6 +2339,20 @@ class TvheadendContentProvider(CommonContentProvider):
 					      'failed (skipping categories): %s' % _e)
 				except Exception:
 					pass
+
+			# FIX 0.52beta: "Posledné sledované" — shortcut k naposledy
+			# otvoreným DVR nahrávkam (max 50). Sleduje sa cez play_dvr()
+			# hook. Položka sa zobrazí len ak history má aspoň 1 entry.
+			# Umiestnenie: za žánrové kategórie a pred Nastavenia
+			# (logické miesto pre "rýchly skok do nedávno sledovaného").
+			try:
+				_wh = _load_watched_history()
+				if _wh:
+					self.add_dir(self._("Posledné sledované"),
+					             cmd=self.recently_watched,
+					             info_labels={'title': self._("Posledné sledované")})
+			except Exception:
+				pass
 		elif tvh_reason == 'unreachable':
 			# FIX 0.48h: aj pri M3U-only setup-e ukáž retry ak má užívateľ
 			# vyplnené TVH credentials ale práve teraz nejde (transient)
@@ -3331,6 +3439,193 @@ class TvheadendContentProvider(CommonContentProvider):
 				cmd=self.archive_dates, channel_id=cid, channel_name=name
 			)
 
+	def recently_watched(self):
+		"""FIX 0.52beta: Render zoznamu posledne sledovaných DVR nahrávok.
+
+		Načíta `_load_watched_history()` (JSON v data dir-u, persistent
+		cez reboot E2), pre každý UUID hľadá aktuálnu DVR entry v cache.
+		Ak entry už neexistuje (user ju vymazal v TVH), preskočí ju.
+		Zoradenie podľa naposledy otvoreného (ts desc).
+
+		Plus pridáva kontextové menu "Vymazať históriu" na vyčistenie
+		zoznamu (cez ArchivCZSK menu/INFO tlačidlo... ale to je nice-to-have,
+		pre teraz necháme bez clear akcie — user môže zmazať data dir
+		manuálne ak chce reset).
+		"""
+		if not self._check_tvh_silent():
+			_, reason, err = self.get_tvh_state()
+			if reason == 'unreachable':
+				self.add_dir(
+					self._("⟳ TVH unreachable — tap to retry"),
+					cmd=self.action_retry_tvh_root,
+					info_labels={'title': self._("Retry TVH")})
+				hint = self._guess_tvh_error_hint(err)
+				if hint:
+					self.add_dir(hint,
+					             cmd=self.settings_menu,
+					             info_labels={'title': self._("Open settings")})
+			return
+
+		history = _load_watched_history()
+		if not history:
+			self.add_dir(
+				self._("History is empty — start watching something."),
+				info_labels={'title': self._("Posledné sledované")})
+			return
+
+		try:
+			entries = _get_dvr_finished_cached(self.tvh) or []
+		except Exception:
+			self.add_dir(
+				self._("⟳ Failed to load archive — tap to retry"),
+				cmd=self.action_retry_tvh_root,
+				info_labels={'title': self._("Retry")})
+			return
+
+		# Index aktuálnych entries cez UUID pre rýchly lookup
+		by_uuid = {}
+		for e in entries:
+			uuid = e.get('uuid')
+			if uuid:
+				by_uuid[uuid] = e
+
+		# Sortuj history podľa naposledy otvoreného (ts desc)
+		sorted_history = sorted(history.items(),
+		                        key=lambda kv: kv[1].get('ts', 0),
+		                        reverse=True)
+
+		shown = 0
+		stale = 0
+		for uuid, hist_entry in sorted_history:
+			fresh_entry = by_uuid.get(uuid)
+			if fresh_entry is None:
+				# Entry bola vymazaná z TVH archívu — preskoč.
+				# Mohli by sme ju aj odstrániť z history JSON, ale
+				# uložené dáta sú malé a možno sa entry obnoví neskôr.
+				stale += 1
+				continue
+			# Render rovnaký formát ako iné DVR menu
+			self._add_dvr_entry_item(fresh_entry, episode_format=False)
+			shown += 1
+
+		if shown == 0:
+			# Všetky entries v history boli medzitým zmazané z TVH
+			self.add_dir(
+				self._("Watched entries no longer exist in DVR archive."),
+				info_labels={'title': self._("Posledné sledované")})
+
+	def search(self, keyword=None, search_id=''):
+		"""FIX 0.52beta: Vyhľadávanie v DVR archíve podľa názvu (bez diakritiky).
+
+		ArchivCZSK framework volá túto metódu po tom, čo používateľ klikol
+		na položku pridanú cez `add_search_dir()` a zadal text v keyboard
+		popup-e. Signature `(keyword, search_id)` musí presne sedieť — inak
+		framework hodí TypeError.
+
+		Match je case-insensitive a diacritic-insensitive — typing 'Na noze'
+		nájde 'Na nože', 'Markiza' nájde 'Markíza', atď. Pomocná funkcia
+		_strip_accents_lower (modul-level) normalizuje text cez NFD + Mn
+		filter, rovnaký mechanizmus ako pri klasifikácii DVR entries.
+
+		Match scope: 'disp_title' + 'disp_subtitle'. Description sa
+		nematchuje aby sa user nedostal k záplave false-positive výsledkov.
+
+		Deduplikácia kľúčom (title, subtitle[:80]) — 7×24 autorec
+		duplikáty sa zoskupia do jedného výsledku.
+
+		Limit: 200 výsledkov (UI by sa pri tisíckach položiek stalo
+		nepoužiteľným). Pri overflow sa zobrazí info že je limit.
+		"""
+		if not self._check_tvh_silent():
+			_, reason, err = self.get_tvh_state()
+			if reason == 'unreachable':
+				self.add_dir(
+					self._("⟳ TVH unreachable — tap to retry"),
+					cmd=self.action_retry_tvh_root,
+					info_labels={'title': self._("Retry TVH")})
+				hint = self._guess_tvh_error_hint(err)
+				if hint:
+					self.add_dir(hint,
+					             cmd=self.settings_menu,
+					             info_labels={'title': self._("Open settings")})
+			else:
+				self.add_dir(
+					self._("✗ Tvheadend server not configured."),
+					cmd=self.settings_menu,
+					info_labels={'title': self._("TVH not configured")})
+			return
+
+		if not keyword or len(keyword.strip()) < 2:
+			self.add_dir(
+				self._("Please type at least 2 characters."),
+				info_labels={'title': self._("Search")})
+			return
+
+		query = _strip_accents_lower(keyword.strip())
+
+		try:
+			entries = _get_dvr_finished_cached(self.tvh) or []
+		except Exception as e:
+			try:
+				self._invalidate_tvh_login_cache()
+			except Exception:
+				pass
+			self.add_dir(
+				self._("⟳ Failed to load archive — tap to retry"),
+				cmd=self.action_retry_tvh_root,
+				info_labels={'title': self._("Retry")})
+			return
+
+		# Match + dedup + collect timestamps pre triedenie podľa recency
+		seen = set()
+		matches = []
+		for e in entries:
+			title = e.get('disp_title') or ''
+			subtitle = e.get('disp_subtitle') or ''
+			if not title and not subtitle:
+				continue
+			norm_t = _strip_accents_lower(title)
+			norm_s = _strip_accents_lower(subtitle)
+			if query not in norm_t and query not in norm_s:
+				continue
+			# Dedup kľúč (rovnaký ako _get_classified_dvr 7x24 dedup)
+			key = (norm_t, norm_s[:80])
+			if key in seen:
+				continue
+			seen.add(key)
+			matches.append(e)
+
+		if not matches:
+			self.add_dir(
+				self._("✗ Nothing found for: %s") % keyword,
+				info_labels={
+					'title': self._("Search"),
+					'plot': self._("Try a shorter or simpler query. "
+					               "Diacritics are ignored.")
+				})
+			return
+
+		# Sortuj podľa najnovších záznamov (start_real desc)
+		matches.sort(key=lambda e: e.get('start_real') or 0, reverse=True)
+
+		# Limit + info ak je overflow
+		LIMIT = 200
+		total = len(matches)
+		if total > LIMIT:
+			self.add_dir(
+				self._("Found %d results — showing first %d (most recent). "
+				       "Refine the search for fewer results.") % (total, LIMIT),
+				info_labels={'title': self._("Search")})
+			matches = matches[:LIMIT]
+		else:
+			self.add_dir(
+				self._("Found %d result(s) for: %s") % (total, keyword),
+				info_labels={'title': self._("Search")})
+
+		# Render results — rovnaký formát ako iné DVR menu (date · sub · channel)
+		for e in matches:
+			self._add_dvr_entry_item(e, episode_format=False)
+
 	def archive_dates(self, channel_id, channel_name=None):
 		# FIX 0.50beta: namiesto tichého empty zoznamu pri TVH transient
 		# failure ukáž retry položku (paralela s archive_channels).
@@ -3660,6 +3955,12 @@ class TvheadendContentProvider(CommonContentProvider):
 	def play_dvr(self, entry):
 		if not self._check_tvh_silent():
 			return
+
+		# FIX 0.52beta: track open into watched history (root menu shortcut)
+		try:
+			_track_watched(entry)
+		except Exception:
+			pass
 
 		url   = self.tvh.make_dvr_url(entry.get('url') or '')
 		title = entry.get('disp_title') or entry.get('channelname') or self._("DVR")

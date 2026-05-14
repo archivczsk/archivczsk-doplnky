@@ -1,3 +1,67 @@
+0.52beta - 14.05.2026
+═════════════════════════════════════════════════════════════════════════════
+BETA TEST — pridané vyhľadávanie v DVR archíve + history naposledy
+sledovaných. Žiadne breaking changes, žiadne zmeny v existujúcich
+nastaveniach.
+
+1) NOVÉ: Vyhľadávanie v DVR archíve podľa názvu seriálu / filmu
+   + história predošlých hľadaní.
+
+   Pri 6000+ záznamoch v archíve je listovanie cez kanál → dátum → záznam
+   alebo cez žánrovú navigáciu zdĺhavé keď používateľ vie KONKRÉTNE čo
+   hľadá.
+
+   Aktivácia:
+   - root() menu → "Hľadať v archíve" ako PRVÁ položka (po `..` parent)
+   - Klik → search_list stránka s "Nové hľadanie" hore + posledných
+     10 hľadaní (history). Klik na "Nové hľadanie" otvorí klávesnicu,
+     klik na predošlý dopyt priamo spustí search bez znovuzadávania
+   - Implementované cez ArchivCZSK framework `add_search_dir()` —
+     framework spravuje history (add/remove/edit) automaticky, plugin
+     iba override-uje `search(self, keyword, search_id='')` ktorá
+     renderne výsledky cez `_add_dvr_entry_item()`
+
+   Mechanika matching-u:
+   - case-insensitive + diakritika-insensitive cez existujúci
+     _strip_accents_lower() (NFD + Mn filter)
+       * 'Na noze' nájde aj 'Na nože' (Markíza relácia)
+       * 'markiza' nájde 'Markíza', 'Markiza HD', 'Markíza Klasik'
+       * 'doktor' nájde 'Doktor Martin', 'Dr. House', 'Doctor Who'
+   - match scope: disp_title + disp_subtitle (NIE description —
+     bránime sa záplave false positives kde slovo padlo v popise
+     nesúvisiacej relácie)
+   - deduplikácia kľúčom (title, subtitle[:80]) — 7×24 autorec
+     duplikáty sa zoskupia do jedného výsledku
+   - výsledky zoradené podľa najnovších záznamov (start_real desc)
+   - limit 200 výsledkov (UI by sa pri tisíckach položiek stalo
+     nepoužiteľné); pri overflow sa zobrazí info že je limit
+   - render rovnaký ako iné DVR menu: 'datum · subtitle · channel'
+
+   Minimálna dĺžka query 2 znaky (kratšie by matchlo skoro všetko).
+
+2) NOVÉ: "Posledné sledované" — shortcut k naposledy otvoreným DVR
+   nahrávkam priamo v root() menu.
+
+   Sleduje sa cez hook v `play_dvr()` — pri každom otvorení nahrávky sa
+   entry zapíše do persistent JSON storage (`watched_history.json`
+   v plugin data dir-u). Limit 50 najnovších, FIFO discard.
+
+   V root() menu sa za žánrovými kategóriami (Filmy, Seriály...) zobrazí
+   položka "Posledné sledované" ak history obsahuje aspoň 1 entry. Klik
+   načíta JSON, retrieves aktuálne DVR entries z TVH cache, zoradí podľa
+   ts desc a renderne ako klasické DVR menu.
+
+   Defenzívne handling:
+   - entry vymazaná z TVH archívu → preskočí sa (stale skip)
+   - prázdna history → "História je prázdna — pozri si najprv niečo"
+   - všetky stale → "Položky histórie už neexistujú v DVR archíve"
+
+   Persistent storage prežíva reboot E2. Stratí sa len pri reinštalácii
+   pluginu alebo manuálnom delete `watched_history.json`.
+
+3) i18n: 16 nových SK + CZ prekladov pre search + watched UI hlášky.
+
+═════════════════════════════════════════════════════════════════════════════
 0.51beta - 14.05.2026
 ═════════════════════════════════════════════════════════════════════════════
 BETA TEST — UX/i18n iterácia po 0.50beta. Žiadne breaking changes,
