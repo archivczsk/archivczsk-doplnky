@@ -1,3 +1,108 @@
+0.51beta - 14.05.2026
+═════════════════════════════════════════════════════════════════════════════
+BETA TEST — UX/i18n iterácia po 0.50beta. Žiadne breaking changes,
+žiadne API zmeny. Iba bugfixy + drobné UX zlepšenia + nová voľba pre
+úsporu disku.
+
+1) NOVÁ VOĽBA: "Ukladať picony aj v SRP formáte" (Settings → Userbouquet).
+
+   Plugin štandardne ukladá každý picon v dvoch variantoch súčasne:
+     - SRP (Service Reference Pattern): '1_0_1_SID_TSID_ONID_0_0_0_0.png'
+     - SNP (Service Name Pattern):       'jednotkahd.png'
+   OpenATV/OpenPLI skiny zvyčajne hľadajú SNP ako prvé, ale niektoré
+   skiny preferujú SRP. Default je preto ON pre max kompatibilitu.
+
+   PRE PRIJÍMAČE S MALÝM FLASH MIESTOM:
+   Ak vieš že tvoj skin používa len SNP, môžeš toto nastavenie vypnúť:
+     - šetríš približne polovicu picon adresára (~9 MB → ~4-5 MB pri 600 ch)
+     - pri ďalšom refresh-i sa staré SRP súbory automaticky zmažú
+     - SNP picons (jednotkahd.png, markizahd.png, ...) ostávajú
+
+   Týka sa oboch zdrojov — TVH bouquet aj externý M3U bouquet.
+
+2) BUGFIX: SNP picons sa nevytvárali pri fallback downloade.
+
+   OpenATV/OpenPLI skiny hľadajú picons primárne podľa Service Name
+   Pattern (SNP) — 'jednotkahd.png', 'markizahd.png' — nie podľa
+   Service Reference Pattern (SRP) '1_0_1_1_533b_3dd2_0_0_0_0.png'.
+
+   Bug 1: bouquet.py:download_picons_from_bouquets — tri vetvy spracovania:
+       a) cached + same size → kopíroval SRP aj SNP ✓
+       b) cached + nová kópia → kopíroval SRP aj SNP ✓
+       c) fallback _download_image (TVH API direct) → len SRP ✗
+   Pri prvom behu po reštarte/flash boxa keď /tmp cache je prázdne, všetky
+   picons išli cez vetvu (c) a SNP súbory sa nikdy nevytvorili — skin
+   ich nezobrazil aj keď SRP súbory na disku boli.
+
+   Bug 2: m3u_bouquet.py:download_picons — vôbec negeneroval SNP, len SRP.
+   Picons pre M3U kanály sa síce stiahli z tvg-logo URL, ale OpenATV
+   skin ich nedokázal priradiť ku kanálom v bouquete.
+
+   FIX:
+   - bouquet.py: po fallback _download_image vytvor SNP kópiou stiahnutého
+     súboru (paralelne s SRP).
+   - m3u_bouquet.py: nový helper _picon_filename_from_channel_name() — port
+     OpenATV Picon.py konvencie (NFD normalize, lowercase, '+' → 'plus',
+     '&' → 'and', '*' → 'star', remove non-[a-z0-9]). download_picons()
+     teraz pri každom úspešnom downloade píše OBE varianty.
+   - Catch-up: pre už-existujúce SRP súbory sa pri ďalšom refresh-i
+     dotvorí chýbajúci SNP variant (bez nutnosti full picon delete).
+
+3) UX: user-friendly hint pri chybe pripojenia k TVH.
+
+   Predtým: ak používateľ zadal zlú URL/host/credentials, root() ukázal
+   iba "⟳ Retry TVH connection (currently unreachable)" v angličtine bez
+   detailu prečo. User nevedel či ide o zlú URL, port, alebo credentials.
+
+   Nový helper provider._guess_tvh_error_hint() — z technickej chybovej
+   hlášky requests/urllib odhadne dôvod a vráti user-friendly hint:
+       * "Name or service not known" / "gaierror"
+         → "⚠ Meno servera nenájdené — skontroluj 'host' v Nastaveniach"
+       * "Connection refused"
+         → "⚠ Pripojenie odmietnuté — zlý port alebo TVH nebeží"
+       * "timed out"
+         → "⚠ Časový limit vypršal — skontroluj IP/host, sieť, firewall"
+       * "401" / "Unauthorized"
+         → "⚠ Prihlásenie zlyhalo — skontroluj meno a heslo"
+       * "403" / "Forbidden"
+         → "⚠ Zakázané — TVH užívateľ nemá API oprávnenia"
+       * "404" → "⚠ API endpoint nenájdený — zlá verzia TVH alebo cesta?"
+       * "No route to host" → "⚠ Žiadna trasa k serveru — skontroluj sieť"
+       * "SSL/certificate" → "⚠ SSL/certifikát chyba"
+
+   Poradie zobrazenia v root() / live_root():
+     [Retry tlačidlo] → [user-friendly hint] → (raw error LEN ak žiadny
+     hint nematchol)
+   Ak hint matchol, raw anglický error sa NESKRYVA — user vidí čistú
+   slovenskú vetu, žiadny "403 Client Error: Forbidden for url:..." spam.
+   Power user si full traceback vie pozrieť cez Settings → "Otestovať
+   TVH login / spojenie".
+
+   Hint položky sú klikateľné — vedú priamo do Settings menu na opravu.
+
+4) i18n: 28 nových SK + CZ prekladov (z 160 na 188 stringov v každom jazyku).
+
+   Predtým mali Nastavenia menu mix-language UI — niektoré položky boli
+   v slovenčine, iné v angličtine ("Last EPG inject", "Picons with broken
+   icons (404 cache)", "Inject EPG into Enigma2 now (no epgimport)",
+   "(not set)", "Clear 404 cache", "Retry TVH", ...). + Všetky nové hint
+   stringy z bodu 3.
+
+   Bonus: prirodzenejšia slovenčina v hlavných hláškách.
+   Pôvodne: "⟳ Skúsiť pripojenie k TVH (momentálne nedostupný)" — krkolomné.
+   Teraz: "⟳ TVH momentálne nedostupný — skúsiť znova" — prirodzenejšie
+   poradie (stav → akcia).
+
+5) METADATA: kratší addon description.
+
+   Pred:  detailný 413-znakový popis s watchdog, M3U, auto-recovery, ...
+   Po:    1-vetový jednoduchý popis ako majú ostatné archivczsk addony
+          ("Klient pre Tvheadend server na sledovanie živej TV, rádia
+           a prehrávanie DVR archívu.")
+   Detail-y o feature-och su v changelog-u + na fork stránke GitHubu.
+
+
+═════════════════════════════════════════════════════════════════════════════
 0.50beta - 13.05.2026
 ═════════════════════════════════════════════════════════════════════════════
 BETA TEST RELEASE — konsolidácia 0.11 → 0.49d + nové cleanupy/optimalizácie.

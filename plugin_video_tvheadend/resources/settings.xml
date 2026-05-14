@@ -44,6 +44,15 @@
 		<setting label="Automatically download picons when exporting userbouquet"
 				 id="enable_picons" type="bool" default="false" />
 
+		<!-- FIX 0.50beta: voliteľný toggle pre SRP picons.
+		     SRP = '1_0_1_SID_TSID_ONID_0_0_0_0.png' (Service Reference Pattern)
+		     SNP = 'jednotkahd.png' (Service Name Pattern)
+		     OpenATV/OpenPLI hľadajú primárne SNP, ale niektoré skiny preferujú SRP.
+		     Default true = max kompatibilita. Vypni iba ak máš málo miesta
+		     (cca polovica picon adresára) a tvoj skin používa len SNP. -->
+		<setting label="Also save picons in SRP format (more compatibility, ~2x disk space)"
+				 id="picon_save_srp" type="bool" default="true" />
+
 		<setting label="For how many days to keep Enigma2 EPG history"
 				 id="enigmaepg_days" type="enum" lvalues="1|2|3|4|5|6|7|14" default="7"/>
 
@@ -85,6 +94,13 @@
 
 		<setting label="Download picons from tvg-logo URLs"
 				 id="m3u_picons_from_logo" type="bool" default="true"/>
+
+		<!-- FIX 0.51beta: rovnaký toggle ako v sekcii Userbouquet.
+		     Setting id="picon_save_srp" je zdielané — zmena na ľubovoľnom
+		     z dvoch miest sa prejaví aj v druhom. Reprodukcia tu pre user
+		     comfort (M3U picon nastavenia sú v tejto sekcii). -->
+		<setting label="Also save picons in SRP format (more compatibility, ~2x disk space)"
+				 id="picon_save_srp" type="bool" default="true" />
 
 		<!-- FIX 0.48g: m3u_write_epgimport + m3u_inject_epg_to_enigma odstránené.
 		     Nahradené samostatným EPG injection intervalom (analógia s TVH 0.48e).

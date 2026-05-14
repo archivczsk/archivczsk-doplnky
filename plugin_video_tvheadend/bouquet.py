@@ -953,6 +953,11 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 			self._log("enable_userbouquet=false and enable_userbouquet_radio=false -> skip")
 			return
 
+		# FIX 0.50beta: voliteľný toggle pre SRP picons. Default True
+		# (max kompatibilita). False = po SNP kópii zmaž SRP variant na
+		# ušetrenie disku (~polovica picon priestoru). User-controlled.
+		save_srp = bool(self.get_setting("picon_save_srp"))
+
 		# FIX 0.48b: DEBOUNCE — BouquetXmlEpgGenerator framework volá _post()
 		# pri každom channel_type ('tv' + 'radio'), takže táto funkcia by
 		# bežala 2× za sebou. Zaveďme min interval 30 sekúnd medzi behmi.
@@ -1079,6 +1084,12 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 							dst_name = os.path.join(picon_dir, name_picon)
 							if not self._same_size_kb(src, dst_name):
 								self._copy_if_newer(src, dst_name)
+						# FIX 0.50beta: ak user nechce SRP, zmaž ho po SNP kópii
+						if not save_srp and os.path.exists(dst) and name_picon:
+							try:
+								os.remove(dst)
+							except Exception:
+								pass
 						last_service_ref = None
 						continue
 
@@ -1089,6 +1100,12 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 						if name_picon:
 							dst_name = os.path.join(picon_dir, name_picon)
 							self._copy_if_newer(src, dst_name)
+						# FIX 0.50beta: ak user nechce SRP, zmaž ho po SNP kópii
+						if not save_srp and os.path.exists(dst) and name_picon:
+							try:
+								os.remove(dst)
+							except Exception:
+								pass
 						last_service_ref = None
 						continue
 
@@ -1108,6 +1125,37 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 						except Exception:
 							pass
 						total_downloaded += 1
+						# FIX 0.50beta: SNP fallback v 3. vetve.
+						# Predtým sa v cestách 1 (same-size skip) a 2 (cache copy)
+						# kopíroval picon AJ pod menom kanála (SNP) — napr.
+						# 'jednotkahd.png' — lebo väčšina OpenATV/OpenPLI
+						# skinov hľadá picons primárne podľa Service Name
+                       # Pattern, nie podľa Service Reference Pattern.
+						# ALE v tretej vetve (fallback _download_image — keď
+						# /tmp cache je prázdna, napr. po reboote alebo flash)
+						# SNP kópia chýbala. Po flash boxa alebo `rm -rf
+						# /tmp/archivczsk_tvheadend_img/` všetko išlo cez túto
+						# cestu a SNP picons sa nikdy nevytvorili — skin v
+						# E2 picons nevidel a kanály v bouquete sa zobrazovali
+						# bez ikon.
+						# Fix: po úspešnom downloade do dst (SRP) skopíruj
+						# rovnaký súbor aj pod SNP menom.
+						snp_written = False
+						try:
+							name_picon = self._channel_name_to_picon_name(name)
+							if name_picon:
+								dst_name = os.path.join(picon_dir, name_picon)
+								if dst_name != dst and not self._same_size_kb(dst, dst_name):
+									self._copy_if_newer(dst, dst_name)
+									snp_written = True
+						except Exception:
+							pass
+						# FIX 0.50beta: ak user nechce SRP, zmaž ho po SNP kópii
+						if not save_srp and snp_written and os.path.exists(dst):
+							try:
+								os.remove(dst)
+							except Exception:
+								pass
 					except Exception as _e:
 						# Log len prvých 5 fallback failures, zvyšok len count
 						total_fallback_failed += 1

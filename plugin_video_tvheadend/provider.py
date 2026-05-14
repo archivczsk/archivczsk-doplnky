@@ -2177,6 +2177,10 @@ class TvheadendContentProvider(CommonContentProvider):
 				# FIX 0.48i: namiesto modálneho dialógu (ktorý blokoval GUI
 				# 3s) pridáme informačné položky priamo do menu — užívateľ
 				# uvidí podstatu chyby (multi-line) a vie hneď tlačiť retry.
+				# FIX 0.50beta: + user-friendly hint pre typické chyby
+				# FIX 0.50beta (iter 3): ak hint matchol, NEUKAZUJ raw error
+				# detail — duplicita ktorá mätie užívateľa. Raw error je
+				# dostupný cez Settings → "Otestovať TVH login / spojenie".
 				self.add_dir(self._("⟳ Retry TVH connection"),
 				             cmd=self.action_retry_tvh_root,
 				             info_labels={'title': self._("Retry")})
@@ -2184,7 +2188,14 @@ class TvheadendContentProvider(CommonContentProvider):
 				                    "Auto-recovery polling in background."),
 				             cmd=self.action_retry_tvh_root,
 				             info_labels={'title': self._("TVH status")})
-				self._render_tvh_error_lines(tvh_err)
+				hint = self._guess_tvh_error_hint(tvh_err)
+				if hint:
+					self.add_dir(hint,
+					             cmd=self.settings_menu,
+					             info_labels={'title': self._("Open settings")})
+				else:
+					# Žiadny hint nematchol → ukáž raw multi-line error
+					self._render_tvh_error_lines(tvh_err)
 				self.add_dir(self._("Settings"),
 				             cmd=self.settings_menu,
 				             info_labels={'title': self._("Settings")})
@@ -2237,9 +2248,18 @@ class TvheadendContentProvider(CommonContentProvider):
 		elif tvh_reason == 'unreachable':
 			# FIX 0.48h: aj pri M3U-only setup-e ukáž retry ak má užívateľ
 			# vyplnené TVH credentials ale práve teraz nejde (transient)
+			# FIX 0.50beta: + user-friendly hint
+			# FIX 0.50beta (iter 3): hint → skip raw error (čistejšie UI)
 			self.add_dir(self._("⟳ Retry TVH connection (currently unreachable)"),
 			             cmd=self.action_retry_tvh_root,
 			             info_labels={'title': self._("Retry TVH")})
+			hint = self._guess_tvh_error_hint(tvh_err)
+			if hint:
+				self.add_dir(hint,
+				             cmd=self.settings_menu,
+				             info_labels={'title': self._("Open settings")})
+			else:
+				self._render_tvh_error_lines(tvh_err)
 
 		# Settings folder len ak je niečo nakonfigurované (TVH alebo M3U).
 		# Pri úplne prázdnej konfigurácii sme sa už vrátili vyššie cez return.
@@ -2955,6 +2975,49 @@ class TvheadendContentProvider(CommonContentProvider):
 			pass
 		return info
 
+	def _guess_tvh_error_hint(self, err):
+		"""FIX 0.50beta: z technickej chybovej hlášky requests/urllib odhadne
+		user-friendly hint čo má užívateľ skontrolovať v Nastaveniach.
+
+		Pokrýva typické dôvody zlyhania pripojenia na TVH:
+		- DNS chyba (Name or service not known, gaierror, getaddrinfo failed)
+		  → "Server name not found — check 'host' in Settings"
+		- Connection refused (TVH neštartol alebo zlý port)
+		  → "Connection refused — wrong port or TVH not running"
+		- Timeout (sieťová routovacia chyba alebo blokovaný firewall)
+		  → "Connection timeout — check IP/host and firewall"
+		- 401 Unauthorized (zlé credentials)
+		  → "Authentication failed — check username/password"
+		- 403 Forbidden (user nemá oprávnenia)
+		  → "Forbidden — TVH user lacks permissions"
+		- 404 Not Found (zlá API cesta — neštandardný TVH build?)
+		  → "API endpoint not found — wrong TVH version?"
+		- Iné: vráti None (volajúci ukáže len raw error riadok)
+		"""
+		if not err:
+			return None
+		e = str(err).lower()
+		# Poradie matters — niektoré errors môžu mať viacero kľúčových slov
+		if ('name or service not known' in e or 'gaierror' in e or
+		    'getaddrinfo failed' in e or 'temporary failure in name resolution' in e or
+		    'nodename nor servname' in e):
+			return self._("⚠ Server name not found — check 'host' field in Settings")
+		if 'connection refused' in e or 'econnrefused' in e:
+			return self._("⚠ Connection refused — wrong port, or TVH server not running")
+		if 'timed out' in e or 'timeout' in e:
+			return self._("⚠ Connection timeout — check IP/host, network and firewall")
+		if '401' in e or 'unauthorized' in e or 'authentication failed' in e:
+			return self._("⚠ Authentication failed — check username and password")
+		if '403' in e or 'forbidden' in e:
+			return self._("⚠ Forbidden — TVH user lacks API permissions")
+		if '404' in e or 'not found' in e:
+			return self._("⚠ API endpoint not found — wrong TVH version or path?")
+		if 'no route to host' in e or 'ehostunreach' in e or 'network is unreachable' in e:
+			return self._("⚠ No route to host — check network connection")
+		if 'ssl' in e or 'certificate' in e:
+			return self._("⚠ SSL/certificate error — try disabling HTTPS or fix cert")
+		return None
+
 	def _render_tvh_error_lines(self, err, max_lines=3, max_chars=150):
 		"""FIX 0.48i: rozdelí multi-line error string a pridá ho ako 1-3
 		add_dir položky. Cieľ: aby užívateľ videl aj underlying error
@@ -2983,8 +3046,15 @@ class TvheadendContentProvider(CommonContentProvider):
 					self._("⟳ TVH temporarily unreachable — tap to retry"),
 					cmd=self.action_retry_tvh_root,
 					info_labels={'title': self._("Retry TVH")})
-				# FIX 0.48i: full multi-line error namiesto len err[:80]
-				self._render_tvh_error_lines(err)
+				# FIX 0.50beta: hint → skip raw error (čistejšie UI)
+				hint = self._guess_tvh_error_hint(err)
+				if hint:
+					self.add_dir(hint,
+					             cmd=self.settings_menu,
+					             info_labels={'title': self._("Open settings")})
+				else:
+					# FIX 0.48i: full multi-line error namiesto len err[:80]
+					self._render_tvh_error_lines(err)
 			else:
 				self.add_dir(
 					self._("✗ Tvheadend server not configured. Open Settings to fill in host, username, password."),
