@@ -1,3 +1,118 @@
+0.53beta - 16.05.2026
+═════════════════════════════════════════════════════════════════════════════
+BETA TEST — port klasifikačných vylepšení z Kodi pluginu (1.0.4 → 1.0.7).
+Žiadne breaking changes, žiadne API zmeny, žiadne zmeny v existujúcich
+nastaveniach. Iba presnejšia kategorizácia DVR archívu.
+
+═════════════════════════════════════════════════════════════════════════════
+1) NOVÉ: Title corpus pre podžánre filmov a seriálov.
+
+   Hand-curated zoznam ~1940 titulov (slovenské + české + medzinárodné
+   franchise + populárne sitcomy) v resources/title_genre_corpus.json.
+   Klasifikátor sa pýta corpus-u PRED keyword scan-om — title-based match
+   je spoľahlivejší ako "drama" keyword v opise.
+
+   Lazy načítanie: corpus sa číta raz pri prvom volaní klasifikátora,
+   cache-uje sa pre celý život procesu. Ak corpus chýba alebo je chybný,
+   plugin pokračuje s pôvodnou keyword-based logikou (graceful fallback).
+
+   Tituly ktoré predtým padali do Filmy/Iné alebo Seriály/Iné a teraz
+   sa správne klasifikujú: Elysium, 300, Anakonda, Bohemian Rhapsody,
+   Hrabě Monte Christo, Kung Fu Panda, Kdopak by se Shreka bál, 9-1-1,
+   A-Team, Dva a pol chlapa, Teória veľkého tresku, Cesty domů, Ulice,
+   Mr. Bean, Inga Lindström, M.A.S.H., Susedia, Oteckovia, Panelák,
+   Mafstory, Police Modrava, Polda, Rapl, a ďalších cca 1900.
+
+   Validácia (na Kodi plugine z ktorého je port): film+seriál podžánrová
+   accuracy stúpla z ~55% na ~97% na 11643-entry archíve, 0 regresií.
+
+═════════════════════════════════════════════════════════════════════════════
+2) NOVÉ: Sci-fi/fantasy franchise override.
+
+   38 anchored regex patternov pre známe franchise tituly: Duna, Star Wars,
+   Star Trek, Matrix, Avatar, Terminator, Blade Runner, Alien, Predator,
+   Avengers, Transformers, Spider-Man, X-Men, Hunger Games, Maze Runner,
+   Jurassic, Interstellar, Inception, Tenet, Mad Max, Godzilla, Batman/
+   Dark Knight, Superman, Deadpool, Doctor Strange, Guardians of the Galaxy,
+   Justice League, Wonder Woman, Harry Potter, Hobit, Pán prsteňov.
+
+   Broadcasters často opisujú tieto filmy ako "válečnou stezku pomsty" alebo
+   "family drama" bez sci-fi keyword-u — title override má prednosť pred
+   keyword scan-om aj pred channel subgenre hint-om. Konkrétny prípad ktorý
+   to motivoval: Duna: Část druhá padala do Historické/Vojnové cez slovo
+   "válečnou" v opise.
+
+   Patterns anchored ku title-pozícii (start-of-title alebo po dvojbodke)
+   pre dvojzmyselné mená (Batman, Tenet, Gravity, Iron Man, …) aby
+   nevznikali false positives na dokumentoch mythológie/histórie.
+
+═════════════════════════════════════════════════════════════════════════════
+3) NOVÉ: Dokumentárne channel hints.
+
+   Broadcasters routinely mistagujú obsah na dokumentárnych kanáloch ako
+   Movie/Drama (ct=1) alebo News (ct=2). Nový doc channel hint override-uje
+   tieto mislabels pre ct=0/1/2/9 a routne obsah do Dokumenty kde patrí.
+
+   Pre ct=3-10 (Šport/Šou/Hudba/Arts/Edu/Hobby) doc hint NEvyhráva —
+   športové news alebo hudobný koncert explicitne tagovaný na dokumentárnom
+   kanále je špeciálny program, nie dokument.
+
+═════════════════════════════════════════════════════════════════════════════
+4) ZLEPŠENÉ: DVB-SI dôveryhodnejší než channel hint.
+
+   Pre ct=2-10 (explicit DVB Level 1 tag) plugin teraz dôveruje broadcasterovi
+   namiesto channel name hint-u. Predtým channel name overpowered DVB tag —
+   varné show na detskom kanále padali do "Detské" namiesto Lifestyle/Hobby;
+   klasické koncerty na detskom kanále padali do "Detské" namiesto Hudba.
+
+   Channel hint sa používa len pre ambiguous content (ct=0/1/5 alebo
+   undefined) — detský animovaný kanál stále vyhrá nad ct=1 (generic Movie).
+
+═════════════════════════════════════════════════════════════════════════════
+5) OPRAVENÉ: Horror a Detské false-positives.
+
+   Horror keyword pattern predtým matchol opis "hrůza války" a mislabel-oval
+   vojnové filmy ako Horor. Teraz vyžaduje horror keyword v title only
+   (nie subtitle/description), a špecifickejšie žánre (krimi, sci-fi,
+   historické) majú prednosť v keyword poradí.
+
+   Detské keyword fallback už nematchne generické slovo "detský" v opise
+   reality home renovation shows — patternov "rozpravk|pohadk|kreslen|
+   animovan|pre deti|pro deti" zachytí len reálne detské programy.
+
+═════════════════════════════════════════════════════════════════════════════
+6) ZLEPŠENÉ: DVB Level 2 nibble decoding pripravené.
+
+   Štruktúra pripravená na rozšírenie sub-žánrov pre Šport/Hudba/Arts/Doc/
+   Hobby z full 8-bit DVB genre kódov (Level 2 nibble). Aktuálne sa
+   používa pre Filmy/Seriály cez _DVB_GENRE_TO_SUBCAT (0x11-0x18).
+
+═════════════════════════════════════════════════════════════════════════════
+7) NOVÉ: Menej entries v "Nezaradené".
+
+   Rozšírený keyword fallback pre nahrávky bez DVB tagu (ct=0). Nové Show
+   patterny pre sk/cz reality formáty (~30 patternov): Zámena manželiek,
+   Nebezpečné vztahy, Jak to dopadlo, Intim s Heidi Janků, Prima Pauza:
+   Partička, Najlepšie virálne videá, V siedmom nebi, Extrémne prípady,
+   Dokonalý šéf, Utajený šéf, Spřízněné duše, Top Gear, MasterChef,
+   Babicovy tipy, Vaříme s..., Receptář prima nápadů, Babica vs. Sapík,
+   Aféry, Exkluziv, Záchranáři, U tebe nebo u mě.
+
+   Nový Hobby pattern pre home/garden/design programmes: Nové bývanie,
+   Nová záhrada, Nové bývanie - dizajn, Jak se staví sen, Na chalupe.
+
+   Rozšírené Detské patterny: Byl jednou jeden rok, Fidlibumove pokusy,
+   Zázračný miniateliér, Trpaslíci, Labková patrola.
+
+═════════════════════════════════════════════════════════════════════════════
+8) NOVÉ: Corpus-based top promotion ine → film.
+
+   Ak ct=0 entry skončí v Nezaradené keyword fallback-u ale jej titul je
+   v title corpuse, povýši sa na Filmy s príslušným podžánrom z corpusu.
+   Fixuje napr. "Návrat do Modré laguny" (broadcaster taguje ct=0 bez
+   channel hint) — predtým Nezaradené, teraz správne Filmy/Romantické.
+
+═════════════════════════════════════════════════════════════════════════════
 0.52beta - 14.05.2026
 ═════════════════════════════════════════════════════════════════════════════
 BETA TEST — pridané vyhľadávanie v DVR archíve + history naposledy

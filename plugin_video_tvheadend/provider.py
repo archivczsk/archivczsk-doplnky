@@ -18,6 +18,7 @@ from __future__ import absolute_import, unicode_literals, print_function
 import os
 import sys
 import io
+import json
 import time
 import gzip
 import base64
@@ -527,11 +528,31 @@ _DVB_GENRE_TO_SUBCAT = {
 	0x18: _MV_DRAMA,       # Adult — drama
 }
 
+# DVB Level 2 nibble decoding (FIX 0.53beta — z Kodi 1.0.4 portu).
+# Keď je dostupný full 8-bit DVB genre kód (cca 6.5% entries), Level 2
+# nibble priamo určuje sub-kategóriu pre non-film/serial kategórie —
+# šport (0x40-0x4b), hudba (0x60-0x6b), arts (0x70-0x7b), dokumenty
+# (0x90-0x9f), hobby (0xa0-0xaf). Funkcie _dvb_l2_sport_subgenre atď.
+# použijú tieto mappingy pred keyword fallback-om (riešené v subgenre_fn
+# pre každú kategóriu).
+
 # Keyword regex → sub-kategória. PORADIE má význam: high-specificity first
 # (krimi pred drama atď.).
 # FIX 0.49d: keywords sú bez diakritiky a lowercase — match sa robí proti
 # strippnutemu textu (cez _strip_accents_lower). re.IGNORECASE flag tým
 # pádom nepotrebujeme.
+# Horror keyword pattern — checkuje SAMOSTATNE proti title (FIX 0.53beta).
+# Predtým bol horor v _KEYWORD_TO_SUBCAT spolu s ostatnými a matchol aj v
+# description ("hrůza války" → war film padol do Horor). Teraz: horor patrí
+# k filmu len ak slovo "horor/horror/desiv/hruz" je v title (nie subtitle,
+# nie description). Ostatné podžánre matchujú proti celému textu — sú menej
+# náchylné na false positives lebo "kriminálnik" v opise znamená naozaj krimi.
+_HORROR_TITLE_PATTERN = _re_dvr.compile(r'\b(horor|horror|desiv|hruz)')
+
+# Re-ordered _KEYWORD_TO_SUBCAT bez horor patternu (presunutý hore — FIX 0.53beta).
+# Tiež: specifickejšie žánre majú prednosť pred genericky horor — historické,
+# krimi, sci-fi, animované first. (Anyway, horor je teraz handled separately
+# in _movie_subgenre cez _HORROR_TITLE_PATTERN.)
 _KEYWORD_TO_SUBCAT = (
 	(_re_dvr.compile(r'\b(detektiv|kriminal|krimi|thriller|vraz|policajn|vysetrov)'),
 	 _MV_KRIMI),
@@ -539,8 +560,6 @@ _KEYWORD_TO_SUBCAT = (
 	 _MV_SCIFI),
 	(_re_dvr.compile(r'\b(komedi|veselohra|humor|grotesk|sitcom)'),
 	 _MV_KOMEDIA),
-	(_re_dvr.compile(r'\b(horor|horror|desiv|hruz)'),
-	 _MV_HOROR),
 	(_re_dvr.compile(r'\b(romantick|milostn|romant)'),
 	 _MV_ROMANTIKA),
 	(_re_dvr.compile(r'\b(akcn|action|honic|prestrelk)'),
@@ -609,7 +628,7 @@ _SPORT_KEYWORD_TO_SUBCAT = (
 	(_re_dvr.compile(r'\b(hokej|hockey|nhl|iihf|khl|hokejov)'),
 	 _SP_HOKEJ),
 	# Bojové športy pred futbalom kvôli "UFC"
-	(_re_dvr.compile(r'\b(ufc|mma|oktagon|kickbox|k-1|judo|karate|wrestl|'
+	(_re_dvr.compile(r'\b(ufc|mma|oktagon|pml|kickbox|k-1|judo|karate|wrestl|'
 	                 r'zapas|sumo|taekwon|grappling)'),
 	 _SP_BOJOVE),
 	(_re_dvr.compile(r'\bbox(er|ing|u|y)?\b'),
@@ -999,6 +1018,173 @@ _hobby_subgenre = _make_subgenre_fn(_HOBBY_KEYWORD_TO_SUBCAT, _HB_INE)
 
 
 # --------------------------------------------------------------------------
+# Title-based sci-fi/fantasy franchise override (FIX 0.53beta — z Kodi 1.0.5)
+# --------------------------------------------------------------------------
+# Známe sci-fi/fantasy franchise tituly — keyword scan v opise nezachytí,
+# lebo distributori opisujú plot (vojna, pomsta, drama), nie žáner. Napr.
+# Duna: Část druhá má v oficiálnom opise len "válečnou stezku pomsty" — bez
+# slova sci-fi. Title-based override má prednosť pred keyword scan-om aj pred
+# channel subgenre hint-om.
+# Patterns anchored ku konkrétnym title-pozíciám (začiatok alebo s ":") pre
+# dvojzmyselné mená (Batman, Hulk, Tenet, atď.) ktoré inak môžu byť v opise
+# dokumentov mythológie/histórie.
+_TITLE_SCIFI_PATTERNS = (
+	_re_dvr.compile(r'^duna\b|\bduna\s*:|dune\b'),       # Duna / Dune
+	_re_dvr.compile(r'\bstar\s*wars\b'),                 # Star Wars
+	_re_dvr.compile(r'\bhvezdne\s*valky\b'),             # Hvězdné války
+	_re_dvr.compile(r'\bstar\s*trek\b'),                 # Star Trek
+	_re_dvr.compile(r'\bmatrix\b'),                      # Matrix
+	_re_dvr.compile(r'^avatar\b|\bavatar\s*:'),          # Avatar
+	_re_dvr.compile(r'\bterminator|\bterminat'),         # Terminátor
+	_re_dvr.compile(r'\bblade\s*runner\b'),              # Blade Runner
+	_re_dvr.compile(r'^pan\s+prsten|^pan\s+prstenu'),    # Pán prstenů / prsteňov
+	_re_dvr.compile(r'^(hobit|hobbit)\b|:\s*(hobit|hobbit)\b'),  # Hobit
+	_re_dvr.compile(r'\b(vetrelec|alien)\b'),            # Vetřelec / Alien
+	_re_dvr.compile(r'\b(predator|predátor)\b'),         # Predator
+	_re_dvr.compile(r'\btransformers\b'),                # Transformers
+	_re_dvr.compile(r'\bspider-?man\b'),                 # Spider-Man
+	_re_dvr.compile(r'^iron\s*man\b|\biron\s*man\s*:'),  # Iron Man (anchored)
+	_re_dvr.compile(r'\bavengers\b'),                    # Avengers
+	_re_dvr.compile(r'\bx-?men\b'),                      # X-Men
+	_re_dvr.compile(r'\bhunger\s*games\b'),              # Hunger Games
+	_re_dvr.compile(r'\bmaze\s*runner\b'),               # Maze Runner
+	_re_dvr.compile(r'\bjurassic\b|\bjursk'),            # Jurassic / Jurský
+	_re_dvr.compile(r'\binterstellar\b'),                # Interstellar
+	_re_dvr.compile(r'\binception\b'),                   # Inception
+	_re_dvr.compile(r'^tenet\b'),                        # Tenet (anchored - tenet=slovo)
+	_re_dvr.compile(r'\bmen\s+in\s+black\b'),            # Men In Black
+	_re_dvr.compile(r'\bmad\s+max\b'),                   # Mad Max
+	_re_dvr.compile(r'\bedge\s+of\s+tomorrow\b'),        # Edge of Tomorrow
+	_re_dvr.compile(r'\boblivion\b'),                    # Oblivion
+	_re_dvr.compile(r'^gravity\b'),                      # Gravity (anchored)
+	_re_dvr.compile(r'^ender|\bender.?s\s+game\b'),      # Ender's Game
+	_re_dvr.compile(r'\bgodzilla\b|^king\s*kong\b|\bking\s*kong\s*:'),  # Godzilla / King Kong
+	_re_dvr.compile(r'^superman\b|\bsuperman\s*:'),      # Superman (anchored)
+	_re_dvr.compile(r'^batman\b|\bbatman\s*:|the\s+batman\b|\bdark\s+knight\b'),  # Batman
+	_re_dvr.compile(r'\bdeadpool\b'),                    # Deadpool
+	_re_dvr.compile(r'\bdoctor\s*strange\b'),            # Doctor Strange
+	_re_dvr.compile(r'\bguardians\s+of\s+the\s+galax'),  # Guardians of the Galaxy
+	_re_dvr.compile(r'\bjustice\s*league\b'),            # Justice League
+	_re_dvr.compile(r'\bwonder\s*woman\b'),              # Wonder Woman
+	_re_dvr.compile(r'\bharry\s*potter\b'),              # Harry Potter — fantasy override
+)
+
+
+def _title_franchise_scifi_match(entry):
+	"""Vráti True ak title obsahuje známy sci-fi/fantasy franchise."""
+	title = entry.get('disp_title') or ''
+	if not title:
+		return False
+	title_only = _strip_accents_lower(title)
+	for pat in _TITLE_SCIFI_PATTERNS:
+		if pat.search(title_only):
+			return True
+	return False
+
+
+# --------------------------------------------------------------------------
+# Title corpus (FIX 0.53beta — z Kodi 1.0.6)
+# --------------------------------------------------------------------------
+# Statický corpus filmov a seriálov v každom žánri + lokalizované sk/cs
+# preklady. Klasifikátor sa pýta corpus-u PRED keyword scan-om — title-based
+# match je spoľahlivejší ako "drama" keyword v opise.
+#
+# Corpus súbor: resources/title_genre_corpus.json relatívne k provider.py.
+# Lazy načítanie pri prvom volaní. Bez I/O ak corpus chýba (graceful fallback).
+_CORPUS_CODE_TO_SUBCAT = {
+	'ak': _MV_AKCNY,
+	'ko': _MV_KOMEDIA,
+	'kr': _MV_KRIMI,
+	'dr': _MV_DRAMA,
+	'sf': _MV_SCIFI,
+	'ro': _MV_ROMANTIKA,
+	'ho': _MV_HOROR,
+	'do': _MV_DOBRODR,
+	'an': _MV_ANIMAK,
+	'hi': _MV_HISTORICKY,
+	'we': _MV_WESTERN,
+}
+
+_CORPUS_STATE = {
+	'loaded': False,
+	'titles': {},    # normalized_title → subcat constant
+	'load_error': None,
+	'meta': None,
+}
+
+
+def _corpus_path():
+	"""Vráti absolútnu cestu k corpus JSON súboru.
+
+	provider.py je v plugin_video_tvheadend/, corpus je v
+	plugin_video_tvheadend/resources/.
+	"""
+	here = os.path.dirname(os.path.abspath(__file__))
+	return os.path.join(here, 'resources', 'title_genre_corpus.json')
+
+
+def _load_corpus_if_needed():
+	"""Lazy načítanie corpus-u. Idempotentné — volá sa pred každým lookup-om."""
+	if _CORPUS_STATE['loaded']:
+		return
+	_CORPUS_STATE['loaded'] = True  # set early — jeden pokus o load, no retry loop
+	path = _corpus_path()
+	try:
+		with io.open(path, 'r', encoding='utf-8') as f:
+			data = json.load(f)
+	except (IOError, OSError):
+		_CORPUS_STATE['load_error'] = 'corpus file not found: %s' % path
+		return
+	except (ValueError,) as e:
+		_CORPUS_STATE['load_error'] = 'corpus load failed: %s' % e
+		return
+
+	raw_titles = (data.get('titles') if isinstance(data, dict) else None) or {}
+	out = {}
+	for k, code in raw_titles.items():
+		sub = _CORPUS_CODE_TO_SUBCAT.get(code)
+		if sub is None or not isinstance(k, str):
+			continue
+		if k:
+			out[k] = sub
+	_CORPUS_STATE['titles'] = out
+	_CORPUS_STATE['meta'] = data.get('_meta') if isinstance(data, dict) else None
+
+	try:
+		print('[plugin.tvheadend] title corpus loaded: %d entries' % len(out))
+	except Exception:
+		pass
+
+
+# Regex na odstránenie "(YYYY)" suffixu — corpus tituly tento suffix nemajú.
+_TITLE_YEAR_SUFFIX = _re_dvr.compile(r'\s*\(\s*(?:19|20)\d{2}\s*\)\s*$')
+
+
+def _canonical_title_for_corpus(title):
+	"""Normalizuje title pre corpus lookup. Musí ladiť s normalizáciou
+	použitou pri tvorbe corpus JSON-u."""
+	if not title:
+		return ''
+	t = _strip_tech_markers(title)
+	t = _series_canonical_title(t)
+	t = _TITLE_YEAR_SUFFIX.sub('', t).strip()
+	return _strip_accents_lower(t)
+
+
+def _corpus_subgenre_match(entry):
+	"""Vráti subcat constant ak title match-ne v corpuse, inak None."""
+	_load_corpus_if_needed()
+	titles = _CORPUS_STATE['titles']
+	if not titles:
+		return None
+	title = entry.get('disp_title') or ''
+	key = _canonical_title_for_corpus(title)
+	if not key:
+		return None
+	return titles.get(key)
+
+
+# --------------------------------------------------------------------------
 # Registry: mapuje top_cat → (labels, subgenre_fn)
 # Použité v archive_by_category na rozhodnutie či pridať podžánre menu
 # --------------------------------------------------------------------------
@@ -1019,10 +1205,15 @@ _SUBCAT_REGISTRY = {
 def _movie_subgenre(entry):
 	"""Vráti sub-kategóriu pre film/seriál.
 
-	Logika:
+	Logika (od 0.53beta — z Kodi 1.0.4/1.0.5/1.0.6 portu):
 	1. DVB genre byte (ak je dostupný) → primary signal
-	2. Keyword scan title + subtitle + description → secondary signal
-	3. Inak _MV_INE
+	2. Title-based sci-fi franchise override (Duna, Star Wars, Matrix, …)
+	   — keyword scan nezachytí lebo distributor opisuje plot, nie žáner
+	3. Title corpus match (~1940 hand-curated titulov) → confident sub-genre
+	4. Keyword scan title + subtitle + description → secondary signal
+	5. Horror — len v title (FIX 0.53beta: bez tohto matchol aj v opise
+	   "hrůza války" → war film padol do Horor)
+	6. Inak _MV_INE
 	"""
 	# 1) DVB genre check
 	for g in (entry.get('genre') or []):
@@ -1034,7 +1225,19 @@ def _movie_subgenre(entry):
 		if sub:
 			return sub
 
-	# 2) Keyword scan textu (normalizovaný — bez diakritiky, lowercase)
+	# 2) Title franchise sci-fi override (Duna, Star Wars, Matrix, …)
+	title = entry.get('disp_title') or ''
+	title_only = _strip_accents_lower(title)
+	for pat in _TITLE_SCIFI_PATTERNS:
+		if pat.search(title_only):
+			return _MV_SCIFI
+
+	# 3) Title corpus lookup
+	corpus_sub = _corpus_subgenre_match(entry)
+	if corpus_sub is not None:
+		return corpus_sub
+
+	# 4) Specifickejšie keyword scan
 	text = ((entry.get('disp_title') or '') + ' ' +
 	        (entry.get('disp_subtitle') or '') + ' ' +
 	        (entry.get('disp_description') or ''))
@@ -1044,6 +1247,11 @@ def _movie_subgenre(entry):
 	for pattern, subcat in _KEYWORD_TO_SUBCAT:
 		if pattern.search(text):
 			return subcat
+
+	# 5) Horror — len v title
+	if _HORROR_TITLE_PATTERN.search(title_only):
+		return _MV_HOROR
+
 	return _MV_INE
 
 
@@ -1090,6 +1298,30 @@ _CHANNEL_TOP_HINTS = (
 	('vh1',         _CAT_HUDBA),
 	('mezzo',       _CAT_HUDBA),
 	('óčko',        _CAT_HUDBA),
+	# Dokumentárne kanály (FIX 0.53beta — z Kodi 1.0.4 portu).
+	# Broadcasters často taggujú obsah na týchto kanáloch ako ct=1
+	# (Movie/Drama) alebo ct=2 (News), čo nie je presné — drvivá väčšina
+	# obsahu je documentary. Pre ct=0/1/2/9 doc channel hint vyhráva
+	# (riešené v _determine_top_cat). Pre ct=3-10 explicit DVB tag
+	# (Šport/Hudba/Šou) zostáva — športové news na doc kanáli má zmysel
+	# klasifikovať podľa DVB tagu, nie ako documentary.
+	('discovery',         _CAT_DOKUMENTY),
+	('viasat history',    _CAT_DOKUMENTY),
+	('viasat explore',    _CAT_DOKUMENTY),
+	('viasat nature',     _CAT_DOKUMENTY),
+	('viasat true crime', _CAT_DOKUMENTY),
+	('national geographic', _CAT_DOKUMENTY),
+	('nat geo',           _CAT_DOKUMENTY),
+	('spektrum',          _CAT_DOKUMENTY),
+	('animal planet',     _CAT_DOKUMENTY),
+	('history channel',   _CAT_DOKUMENTY),
+	('history hd',        _CAT_DOKUMENTY),
+	('bbc earth',         _CAT_DOKUMENTY),
+	('bbc knowledge',     _CAT_DOKUMENTY),
+	('love nature',       _CAT_DOKUMENTY),
+	('docubox',           _CAT_DOKUMENTY),
+	('crime+investigation', _CAT_DOKUMENTY),
+	('crime + investigation', _CAT_DOKUMENTY),
 	# Krimi kanály — strong hint pre Filmy/Seriály sub-žáner
 	# (HANDLED v _channel_subgenre_hint nižšie, nie tu — to je sub override)
 )
@@ -1167,29 +1399,55 @@ def _is_series_entry(entry):
 
 # --------------------------------------------------------------------------
 # Fallback keyword guess pre Nezaradené (ct=0 alebo 11)
+# FIX 0.53beta — z Kodi 1.0.4 + 1.0.7 portu:
+#   - Detské: odstránený generický "detsk" pattern (matchol slovo "detský" v
+#     opisoch home renovation shows). Iba explicitné detské markery zostávajú.
+#   - Show: rozšírené o ~30 sk/cz reality/talk/cooking patternov ktoré
+#     padali do _CAT_INE — Zámena manželiek, Top Gear, MasterChef atď.
+#   - Hobby: nový pattern pre home/garden/design programmes
+#     (Nové bývanie, Nová záhrada, Jak se staví sen).
 # --------------------------------------------------------------------------
 _FALLBACK_KEYWORD_TO_TOP = (
 	# Šport
 	(_re_dvr.compile(r'\b(futbal|hokej|tenis|golf|formula|f1|oktagon|liga|'
 	                 r'majstrov|olympi|rally|cyklist|atletik|box|wrestlin|'
-	                 r'biatlon|lyzovan|sjazd)'),
+	                 r'biatlon|lyzovan|sjazd|mma|ufc|pml)'),
 	 _CAT_SPORT),
 	# Spravodajstvo
 	(_re_dvr.compile(r'\b(spravodajstvo|sprav[yi]|udalosti|aktualn|reporter|noviny\s+tv|'
 	                 r'tv\s+noviny|pocasi|uvodnik)'),
 	 _CAT_SPRAVODAJSTVO),
-	# Detské
-	(_re_dvr.compile(r'\b(rozpravk|pohadk|detsk|pre\s+deti|pro\s+deti|kreslen|'
-	                 r'animovan|loutkov)'),
+	# Detské (FIX 0.53beta — odstránený generický 'detsk' ktorý matchol
+	# "detský domov" v krimi reportáži, "detskú izbu" v design show, atď.
+	# Iba explicitné detské markery zostávajú + konkrétne show formáty.)
+	(_re_dvr.compile(r'\b(rozpravk|pohadk|pre\s+deti|pro\s+deti|pre\s+najmens|'
+	                 r'kreslen[ay]|animovan[ay]|loutkov[ay]|'
+	                 r'byl\s+jednou\s+jeden|fidlibum|miniatel|trpaslic|'
+	                 r'labkov[aá]\s+patrol)'),
 	 _CAT_DETSKE),
 	# Hudba
 	(_re_dvr.compile(r'\b(koncert|hudba|hudobn|hudebni|spevok|zpevak|spevak|'
 	                 r'piesn|pisni|pop\s|rock\s|metal\s|klasick)'),
 	 _CAT_HUDBA),
-	# Šou
+	# Šou (FIX 0.53beta — rozšírené o sk/cz reality/talk/cooking formáty)
 	(_re_dvr.compile(r'\b(magazin|talk\s?show|\bshow\b|soutez|sutaz|'
-	                 r'reality\s?show|farmer|farma|zabavn|estrada|kucharsk)'),
+	                 r'reality\s?show|farmer|farma|zabavn|estrada|kucharsk|'
+	                 r'zamena\s+manzeliek|nebezpecne\s+vztahy|jak\s+to\s+dopadl|'
+	                 r'intim\s+s\s|prima\s+pauza|najlepsie\s+viraln|'
+	                 r'extremne\s+pripad|dokonaly\s+sef|utajeny\s+sef|spriznene\s+duse|'
+	                 r'v\s+siedmom\s+nebi|poklad\s+z\s+pud|jak\s+se\s+stavi\s+sen|'
+	                 r'ano\s+sefe|top\s+gear|masterchef|babicovy\s+tip|'
+	                 r'varime\s+s|vareni\s+s|recept[aá]r|recepta?\s+prima|'
+	                 r'babica\s+vs|co\s+bude\s+dnes\s+k\s+vecer|nase\s+zlepsovak|'
+	                 r'afery\s+-?\s*neuver|rodinna\s+firma|vip\s+svet|na\s+plac|'
+	                 r'exkluziv|zachranari|u\s+tebe\s+nebo\s+u\s+me|'
+	                 r'nedorucena\s+tajemstv)'),
 	 _CAT_SHOW),
+	# Hobby (FIX 0.53beta — nový pattern pre home/garden/design)
+	(_re_dvr.compile(r'\b(byvani[ae]?|byvanie|zahrad[ay]|zahradka|'
+	                 r'navrhar|dizajn\s+|design\s+interier|'
+	                 r'remeselni|stolarsk|truhlarsk|rybarsk[ay])'),
+	 _CAT_HOBBY),
 	# Dokumenty
 	(_re_dvr.compile(r'\b(dokument|documentary|prirod|history|'
 	                 r'vesmir|national\s+geographic|discovery)'),
@@ -1224,17 +1482,28 @@ def _classify_dvr_entry(entry):
 	z _MV_* / _SP_* / _NW_* / _SH_* / _CH_* / _MU_* / _AR_* / _DC_* / _HB_*
 	identifikátorov.
 
-	Priorita signálov (vyššie = silnejšie):
-	  1. Channel-based hint (deti/šport/hudba/spravodajstvo)
-	  2. Series detection (X/Y subtitle, (N) suffix v title, atď.)
-	  3. content_type fixed mapping
-	  4. Keyword fallback pre ct=0/11
+	Priorita signálov pre Filmy/Seriály subcat (od 0.53beta):
+	  1. Title franchise sci-fi override (Duna, Star Wars, …) — vyhráva
+	     aj nad channel subgenre hint-om (Duna na akčnom kanáli ostane sci-fi)
+	  2. Title corpus match (~1940 titulov)
+	  3. Channel sub-genre hint (Nova Krimi → krimi)
+	  4. DVB genre byte + keyword scan (_movie_subgenre)
 	"""
 	# Najprv urči top kategóriu
 	top = _determine_top_cat(entry)
 
 	if top == _CAT_FILM or top == _CAT_SERIAL:
-		# Channel hint má prednosť (Nova Krimi → krimi), inak movie subgenre
+		# FIX 0.53beta: franchise override beats channel hint (Duna na
+		# action kanáli = sci-fi, nie akčný).
+		if _title_franchise_scifi_match(entry):
+			return top, _MV_SCIFI
+
+		# Title corpus beats channel hint (známy titul = silný signál).
+		corpus_sub = _corpus_subgenre_match(entry)
+		if corpus_sub is not None:
+			return top, corpus_sub
+
+		# Channel hint má prednosť pred DVB/keyword scan
 		sub = _channel_subgenre_hint(entry) or _movie_subgenre(entry)
 		return top, sub
 
@@ -1252,32 +1521,63 @@ def _classify_dvr_entry(entry):
 def _determine_top_cat(entry):
 	"""Helper: vráti top-level kategóriu pre entry.
 
-	Použité v _classify_dvr_entry. Oddelené aby sa pridanie sub-žánrov
-	pre nové kategórie (napr. neskôr Show/Dokumenty) dalo robiť čisto.
+	Logika (od 0.53beta — z Kodi 1.0.4 portu):
+	- content_type je explicitný DVB-SI Level 1 signál z broadcaster-a —
+	  má prednosť pred channel hint pre ct=2-10 (DVB tag presnejší než
+	  channel name pre Šport/Hudba/News/Show/Arts/Edu/Hobby).
+	- Pre dokumentárne kanály (Discovery, Viasat, NG, …) doc hint vyhráva
+	  aj nad ct=0/1/2/9 lebo broadcasters routinely mistagujú obsah ako
+	  Movie/Drama alebo News na týchto kanáloch.
+	- Pre ct=1 (Movie/Drama) a ct=0/5/11: channel hint a series detection
+	  majú zmysel — children's animated series channel by mal override-nuť
+	  generic Movie tag.
+	- Vrátí tuple (top_cat, reason_str) ak je diagnostika ON, inak iba top_cat.
 	"""
-	# 1. Channel hint — strong override (CT :D = deti aj keď ct=1)
-	channel_top = _channel_top_hint(entry)
-	if channel_top in (_CAT_DETSKE, _CAT_SPORT, _CAT_HUDBA, _CAT_SPRAVODAJSTVO):
-		return channel_top
-
-	# 2. Series detection (any content_type)
-	if _is_series_entry(entry):
-		return _CAT_SERIAL
-
-	# 3. content_type fixed mapping
 	try:
 		ct = int(entry.get('content_type') or 0)
 	except Exception:
 		ct = 0
 
+	channel_top = _channel_top_hint(entry)
+
+	# 1) Dokumentárne kanály overrideujú aj ct=0/1/2/9 — broadcasters mistagujú
+	#    obsah ako Movie/Drama (ct=1) alebo News (ct=2). Pre ct=3-10 doc hint
+	#    NEvyhráva (Šport/Hudba/Šou explicitne tagované je spec. program).
+	if channel_top == _CAT_DOKUMENTY and ct in (0, 1, 2, 9):
+		return _CAT_DOKUMENTY
+
+	# 2) Explicit DVB-SI Level 1 (ct=2-10) — broadcaster vie čo nahral, dôveruj.
+	if ct in (2, 3, 4, 6, 7, 8, 9, 10):
+		return _CT_TO_CAT_BASE[ct]
+
+	# 3) Channel hint pre kategórie kde channel name je presný signál
+	#    (detský/športový/hudobný/spravodajský kanál).
+	if channel_top in (_CAT_DETSKE, _CAT_SPORT, _CAT_HUDBA, _CAT_SPRAVODAJSTVO):
+		return channel_top
+
+	# 4) Series detection pred ct=1/5/0 — seriál môže mať ct=1 (Movie/Drama).
+	if _is_series_entry(entry):
+		return _CAT_SERIAL
+
+	# 5) ct=1 Movie/Drama → film
 	if ct == 1:
 		return _CAT_FILM
 
-	if ct in _CT_TO_CAT_BASE:
-		return _CT_TO_CAT_BASE[ct]
+	# 6) ct=5 Children → detské
+	if ct == 5:
+		return _CAT_DETSKE
 
-	# 4. Fallback keyword guess pre ct=0 alebo ct=11
-	return _guess_top_category_from_keywords(entry)
+	# 7) Keyword fallback pre ct=0/11 (undefined)
+	guessed = _guess_top_category_from_keywords(entry)
+
+	# 7b) Corpus-based top promotion (FIX 0.53beta — z Kodi 1.0.7).
+	# Ak by entry skončila v _CAT_INE, ale titul je v title corpuse,
+	# povýši sa na _CAT_FILM (corpus pozná film/seriál sub-genre).
+	if guessed == _CAT_INE:
+		if _corpus_subgenre_match(entry) is not None:
+			return _CAT_FILM
+
+	return guessed
 
 
 def _dedup_dvr_entries(entries):
