@@ -149,12 +149,36 @@ _EPG_INJECT_STAMP = data_path("tvh_epg_inject.stamp")
 _EPG_INJECT_STAMP_M3U = data_path("m3u_epg_inject.stamp")
 
 # FIX 0.52beta: persistent JSON storage pre "posledné sledované" history.
-# Plugin sleduje ktoré DVR entries užívateľ otvoril a v ktorom čase,
-# aby sa dali zobraziť v root() menu ako rýchly shortcut "Posledné sledované".
-# Štruktúra: {'<entry_uuid>': {'ts': <epoch>, 'title': '...', ...}, ...}
+# FIX 0.55beta: rozšírené o resume position + duration tracking (sosáč-style).
+# Plugin sleduje ktoré DVR entries užívateľ otvoril, kedy, a kde skončil
+# v prehrávaní — aby mohol pokračovať od poslednej pozície a zobraziť
+# hviezdičkový marker pri už pozretých nahrávkach v archive listing-u.
+#
+# Štruktúra (0.55beta forward-compatible upgrade z 0.52beta):
+#   {'<entry_uuid>': {
+#       'ts':          <epoch>,    # kedy bola entry naposledy otvorená
+#       'title':       '...',
+#       'subtitle':    '...',
+#       'channelname': '...',
+#       'start_real':  <epoch>,
+#       'position':    <int seconds>,  # 0.55beta: kde sa playback zastavil
+#       'duration':    <int seconds>,  # 0.55beta: celková dĺžka
+#     }, ...}
+#
+# Pre entries z 0.52-0.54beta (bez position/duration) sa polia doplnia
+# pri prvom save a chýbajúce keys vrátia None — žiadne dáta sa nezahodia,
+# žiadny migration step required.
+#
 # Limit: 50 najnovších entries (FIFO discard). Pri reštarte E2 stav prežíva.
 _WATCHED_HISTORY_PATH = data_path("watched_history.json")
 _WATCHED_HISTORY_MAX = 50
+
+# 0.55beta thresholds (sosáč-style):
+#   _WATCHED_MARK_PCT — pri ≥80 % pozretia zobraz hviezdičku v listingu
+#   _WATCHED_AUTO_CLEAR_DEFAULT_PCT — pri ≥95 % auto-clear position (film
+#     dohraný, pri ďalšom play sa pustí od začiatku, ale marker zostane)
+_WATCHED_MARK_PCT = 80
+_WATCHED_AUTO_CLEAR_DEFAULT_PCT = 95
 
 def _load_watched_history():
 	"""Načítaj JSON s watched history. Pri chybe vráti prázdny dict."""
@@ -193,20 +217,28 @@ def _track_watched(entry):
 	"""FIX 0.52beta: zapíš DVR entry do watched history. Volaná z
 	play_dvr() pri každom otvorení nahrávky.
 
-	Idempotent — ak entry už v history, len aktualizuje timestamp. Limit
-	50 najnovších; staršie sa odstránia pri saved keď dict prekročí limit.
+	Idempotent — ak entry už v history, len aktualizuje timestamp (a
+	zachová existujúce position/duration ak boli zaznamenané pri
+	predošlom skončení playback-u). Limit 50 najnovších; staršie sa
+	odstránia pri save keď dict prekročí limit.
 	"""
 	uuid = entry.get('uuid')
 	if not uuid:
 		return
 	try:
 		history = _load_watched_history()
+		# Forward-compatible: zachovaj existujúce position/duration ak sú
+		existing = history.get(uuid, {}) if isinstance(history.get(uuid), dict) else {}
 		history[uuid] = {
 			'ts': int(time.time()),
 			'title': entry.get('disp_title') or '',
 			'subtitle': entry.get('disp_subtitle') or '',
 			'channelname': entry.get('channelname') or '',
 			'start_real': entry.get('start_real') or 0,
+			# 0.55beta — zachovaj predošlú resume pozíciu, ak nie je
+			# žiadna tak None
+			'position': existing.get('position'),
+			'duration': existing.get('duration'),
 		}
 		# Trim na _WATCHED_HISTORY_MAX najnovších
 		if len(history) > _WATCHED_HISTORY_MAX:
@@ -217,6 +249,107 @@ def _track_watched(entry):
 		_save_watched_history(history)
 	except Exception:
 		pass
+
+
+def _get_watched_position(uuid):
+	"""FIX 0.55beta: vráti (position, duration) pre entry, alebo
+	(None, None) ak entry nie je v history alebo nemá zaznamenanú
+	pozíciu. Position a duration sú v sekundách (int) alebo None.
+	"""
+	if not uuid:
+		return (None, None)
+	try:
+		history = _load_watched_history()
+		rec = history.get(uuid)
+		if not isinstance(rec, dict):
+			return (None, None)
+		return (rec.get('position'), rec.get('duration'))
+	except Exception:
+		return (None, None)
+
+
+def _set_watched_position(entry, position, duration):
+	"""FIX 0.55beta: zapíš resume position pre entry. Volaná z stats()
+	handler-a pri end/next playback eventu.
+
+	Auto-clear semantika: ak position prekročí _WATCHED_AUTO_CLEAR_DEFAULT_PCT
+	z duration, position sa vynuluje (film dohraný, nemá zmysel resume-ovať
+	posledné 5 % titulkov/credits). Marker v listingu zostane lebo ide nad
+	_WATCHED_MARK_PCT threshold.
+
+	Position-only persist (žiadny title/subtitle update) — to robí
+	_track_watched pri play_dvr() otvorení.
+	"""
+	uuid = entry.get('uuid') if isinstance(entry, dict) else None
+	if not uuid:
+		return
+	try:
+		pos = int(position) if position else 0
+		dur = int(duration) if duration else 0
+	except (TypeError, ValueError):
+		return
+	try:
+		history = _load_watched_history()
+		rec = history.get(uuid)
+		if not isinstance(rec, dict):
+			# Entry nebola v history — vytvor minimálny záznam aby sa pri
+			# ďalšom play vedelo, že existuje resume pozícia.
+			rec = {
+				'ts': int(time.time()),
+				'title': entry.get('disp_title') or '',
+				'subtitle': entry.get('disp_subtitle') or '',
+				'channelname': entry.get('channelname') or '',
+				'start_real': entry.get('start_real') or 0,
+			}
+			history[uuid] = rec
+		# Auto-clear ak >= 95 % (film dohraný) — pozícia 0, ale duration
+		# si zachováme aby _is_fully_watched mohla vrátiť True a marker
+		# v listingu sa zobrazil.
+		if dur > 0 and pos >= (dur * _WATCHED_AUTO_CLEAR_DEFAULT_PCT) // 100:
+			rec['position'] = 0
+		else:
+			rec['position'] = pos
+		rec['duration'] = dur if dur > 0 else rec.get('duration')
+		# Aktualizuj timestamp aby entry vyplávala v recently_watched
+		rec['ts'] = int(time.time())
+		_save_watched_history(history)
+	except Exception:
+		pass
+
+
+def _is_fully_watched(uuid):
+	"""FIX 0.55beta: vráti True ak entry má position alebo duration
+	naznačujúcu že bola pozretá nad _WATCHED_MARK_PCT (default 80 %)
+	hranicu — používa sa pre hviezdičkový marker v listingu.
+
+	Špeciál: ak position == 0 ale duration > 0 (auto-cleared after 95 %),
+	entry je tiež považovaná za pozretú (marker sa zobrazí).
+	"""
+	if not uuid:
+		return False
+	try:
+		history = _load_watched_history()
+		rec = history.get(uuid)
+		if not isinstance(rec, dict):
+			return False
+		pos = rec.get('position')
+		dur = rec.get('duration')
+		if not dur or dur <= 0:
+			return False
+		# Auto-cleared (95 %+) → marker show
+		if pos == 0 and rec.get('ts'):
+			# Heuristika: position==0 a record existuje s duration → bola
+			# auto-cleared (a teda dosiahla 95 %+). True positive.
+			# (Pred 0.55beta entries nemajú duration, dostane sa sem
+			# len keď bol playback zaznamenaný v 0.55beta+ formáte.)
+			return True
+		if pos is None:
+			return False
+		return pos >= (dur * _WATCHED_MARK_PCT) // 100
+	except Exception:
+		return False
+
+
 
 # FIX 0.48: TTL cache pre _check_tvh_silent() — zabraňuje N×/sec HTTP requestom
 # na /api/serverinfo počas navigácie v menu.
@@ -3872,8 +4005,11 @@ class TvheadendContentProvider(CommonContentProvider):
 				# uložené dáta sú malé a možno sa entry obnoví neskôr.
 				stale += 1
 				continue
-			# Render rovnaký formát ako iné DVR menu
-			self._add_dvr_entry_item(fresh_entry, episode_format=False)
+			# Render rovnaký formát ako iné DVR menu (0.55beta:
+			# show_resume=True pridá " (▶ MM:SS)" sufix ak entry má
+			# zaznamenanú resume pozíciu).
+			self._add_dvr_entry_item(fresh_entry, episode_format=False,
+			                          show_resume=True)
 			shown += 1
 
 		if shown == 0:
@@ -4259,12 +4395,16 @@ class TvheadendContentProvider(CommonContentProvider):
 		for e in eps:
 			self._add_dvr_entry_item(e, episode_format=True)
 
-	def _add_dvr_entry_item(self, e, episode_format=False):
+	def _add_dvr_entry_item(self, e, episode_format=False, show_resume=False):
 		"""Pomocný helper — pridá jednu položku DVR záznamu do menu.
 
 		Spoločný kód pre archive_by_category, archive_movie_subgenre,
 		archive_series. episode_format=True dáva inu form-u labelu
 		(prefer X/Y vs full title).
+
+		FIX 0.55beta: show_resume=True pridá "▶ MM:SS" sufix za labelom
+		ak entry má zaznamenanú resume pozíciu. Default False — používa
+		sa len v recently_watched() aby user vedel kde môže pokračovať.
 		"""
 		title = e.get('disp_title') or e.get('title') or self._("Recording")
 		sub = (e.get('disp_subtitle') or '').strip()
@@ -4313,6 +4453,34 @@ class TvheadendContentProvider(CommonContentProvider):
 			parts = [p for p in (dstr, title, ch) if p]
 			label = ' · '.join(parts)
 
+		# FIX 0.55beta: hviezdičkový marker pre už pozreté entries
+		# (≥80 % duration). Sosáč-style sufix ' *' za labelom — diakritika-
+		# safe, žiadne Unicode glyph dependencies, fungujú na všetkých
+		# E2 skinoch a fontoch.
+		try:
+			if _is_fully_watched(e.get('uuid')):
+				label = label + ' *'
+		except Exception:
+			pass
+
+		# FIX 0.55beta: resume marker "▶ MM:SS" v recently_watched listingu —
+		# user na prvý pohľad vidí kde môže pokračovať. Show_resume parameter
+		# je default False; zapína sa len v recently_watched() handler-i.
+		if show_resume:
+			try:
+				pos, _dur = _get_watched_position(e.get('uuid'))
+				if pos and pos >= 30:  # pod 30s nemá zmysel zobrazovať
+					mins = int(pos) // 60
+					secs = int(pos) % 60
+					if mins >= 60:
+						hrs = mins // 60
+						mins = mins % 60
+						label = label + ' (▶ %d:%02d:%02d)' % (hrs, mins, secs)
+					else:
+						label = label + ' (▶ %d:%02d)' % (mins, secs)
+			except Exception:
+				pass
+
 		icon = self.tvh.make_icon_url(e.get('channel_icon') or None)
 		self.add_video(
 			label, img=icon,
@@ -4332,7 +4500,83 @@ class TvheadendContentProvider(CommonContentProvider):
 
 		url   = self.tvh.make_dvr_url(entry.get('url') or '')
 		title = entry.get('disp_title') or entry.get('channelname') or self._("DVR")
-		self.add_play(title, url, info_labels={'title': title}, settings=self._player_settings(), live=False, download=True)
+
+		# FIX 0.55beta: resume playback od poslednej pozície (sosáč-style).
+		# Ak má entry zaznamenanú position z predošlého stop event-u a
+		# user má toggle 'save_last_play_pos' zapnutý (default ON), pošli
+		# resume_time_sec do framework streamer-a — ArchivCZSK ho prevezme
+		# z settings a streamer začne od tej sekundy.
+		#
+		# Nepokračuj ak position == 0 (entry už dokončená / auto-cleared
+		# nad 95 %) alebo ak position je menšia ako 30s (príliš začiatok,
+		# nemá zmysel resume-ovať pár sekúnd).
+		settings = self._player_settings() or {}
+		try:
+			save_resume = self.get_setting('save_last_play_pos')
+			save_resume = bool(save_resume) if isinstance(save_resume, bool) \
+				else str(save_resume).strip().lower() in ('true', '1', 'yes')
+		except Exception:
+			save_resume = True  # default ON
+
+		if save_resume:
+			try:
+				pos, _dur = _get_watched_position(entry.get('uuid'))
+				if pos and pos >= 30:
+					settings['resume_time_sec'] = int(pos)
+			except Exception:
+				pass
+
+		# 0.55beta: send data_item=entry so stats() callback (volaný
+		# frameworkom pri end/next playback eventu) môže correlate
+		# position s konkrétnou DVR entry.
+		self.add_play(
+			title, url,
+			info_labels={'title': title},
+			data_item=entry,
+			settings=settings,
+			live=False,
+			download=True,
+		)
+
+	def stats(self, data_item, action, duration=None, position=None, **extra_params):
+		"""FIX 0.55beta: ArchivCZSK framework callback po skončení
+		playback-u. Pri action=='end' / 'next' framework dáva position
+		(sekundy kde sa playback zastavil) a duration (celková dĺžka).
+
+		Uložíme do watched_history.json aby _is_fully_watched()
+		vedela označiť entry hviezdičkou v archive listing-u, a
+		_get_watched_position() vedela ponúknuť resume pri ďalšom play.
+
+		Auto-clear: ak position prekročí 95 % z duration, _set_watched_position
+		vynuluje position (film dohraný, pri ďalšom play sa pustí od
+		začiatku — ale hviezdičkový marker zostane lebo duration sa
+		zachovala).
+		"""
+		try:
+			if not isinstance(data_item, dict):
+				return
+			action_lower = (action or '').lower()
+			if action_lower not in ('end', 'next'):
+				return
+			# Skontroluj setting (user môže mať tracking úplne vypnutý)
+			try:
+				save_resume = self.get_setting('save_last_play_pos')
+				save_resume = bool(save_resume) if isinstance(save_resume, bool) \
+					else str(save_resume).strip().lower() in ('true', '1', 'yes')
+			except Exception:
+				save_resume = True
+			if not save_resume:
+				return
+			_set_watched_position(data_item, position, duration)
+		except Exception:
+			# Defensive — stats() callback nesmie nikdy crashnúť plugin,
+			# je to ne-kritická feature.
+			try:
+				import logging as _logging
+				_logging.getLogger('plugin.video.tvheadend.provider').warning(
+					'stats() callback failed (silently): %s', sys.exc_info()[1])
+			except Exception:
+				pass
 
 	# ------------------------------------------------------------------
 	# get_url_by_channel_key – volané z HTTP handlera a bouquet generátora

@@ -124,6 +124,14 @@
 		<setting label="Archive: max items from DVR" type="text" id="dvr_limit" default="0"/>
 		<setting label="Archive: max number of days (0=no limit)" type="text" id="archive_days_limit" default="0"/>
 
+		<!-- FIX 0.55beta: Resume playback + watched marker (sosáč-style).
+		     Default ON. Tracking position pri end playback eventu cez
+		     ArchivCZSK stats() framework callback; pri ďalšom play_dvr()
+		     sa resume_time_sec naplní z watched_history.json. Hviezdička
+		     ' *' v archive listingu pre entries pozreté nad 80 % duration. -->
+		<setting label="Continue playback (remember last position)"
+				 id="save_last_play_pos" type="bool" default="true"/>
+
 		<!-- FIX 0.54beta (z Kodi 1.0.9): optional IMDb GraphQL lookup as
 		     last-resort fallback for recordings the keyword fallback would
 		     route to "Iné" / "mv_ine". Opt-in only; no outbound HTTP unless

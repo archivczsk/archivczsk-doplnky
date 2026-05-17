@@ -1,3 +1,65 @@
+0.55beta - 17.05.2026
+═════════════════════════════════════════════════════════════════════════════
+NEW: Resume playback + watched marker pre DVR archív (sosáč-style).
+
+═════════════════════════════════════════════════════════════════════════════
+1) NOVÉ: Continue playback — pamätanie poslednej pozície.
+
+   Pri zastavení DVR nahrávky uprostred plugin zapíše position+duration do
+   watched_history.json. Pri ďalšom otvorení tej istej nahrávky sa playback
+   automaticky obnoví od poslednej pozície.
+
+   Implementácia:
+     - Nová stats() metóda v TvheadendContentProvider — ArchivCZSK framework
+       ju volá pri end/next playback eventu s position (sec) a duration (sec).
+     - play_dvr() pošle resume_time_sec v settings dict cez add_play() —
+       streamer framework prevezme a začne od tej sekundy.
+     - watched_history.json formát rozšírený o 'position' a 'duration'
+       fields (forward-compatible — entries z 0.52-0.54beta sa zachovajú
+       a doplnia sa pri prvom novom save).
+
+   Settings: "Continue playback (remember last position)" v záložke Archive.
+   Default ON. Resume sa neaktivuje pre pozície pod 30 sekúnd (príliš
+   začiatok, nemá zmysel).
+
+   Auto-clear: ak position prekročí 95 % duration (film dohraný), position
+   sa vynuluje. Pri ďalšom play_dvr sa pustí od začiatku — ale hviezdičkový
+   marker zostane (duration sa zachováva).
+
+2) NOVÉ: Watched marker v DVR listingu.
+
+   Nahrávky pozreté nad 80 % duration dostanú " *" sufix za labelom
+   v archive listing-u (Filmy, Seriály, Dokumenty, atď.). Marker sa
+   zobrazí aj pre auto-cleared entries (95 %+ — film bol dohraný).
+
+   Default visible. Užívateľ chtiac nechtiac vidí v archíve čo už pozrel
+   a čo ešte nie.
+
+3) NOVÉ: Resume marker v Recently Watched.
+
+   V root menu "Posledné sledované" sa za labelom nahrávky zobrazí
+   "(▶ MM:SS)" alebo "(▶ H:MM:SS)" pre tituly s uloženou resume pozíciou —
+   user na prvý pohľad vidí kde môže pokračovať bez toho aby otvoril
+   entry.
+
+═════════════════════════════════════════════════════════════════════════════
+TECHNICAL NOTES
+
+Storage: watched_history.json v ArchivCZSK plugin data dir (perzistentný
+cez reboot E2). Limit 50 najnovších entries (FIFO discard). Atomic write
+cez .tmp file + os.replace.
+
+Žiadne breaking changes oproti 0.54beta — len addition. Existujúce
+watched_history.json (z 0.52-0.54beta) si plugin prevezme a postupne ho
+upgraduje field-by-field pri každom save.
+
+Logging: nová stats() metóda chytá všetky výnimky cez logging.warning —
+plugin nikdy nezhasne kvôli tracking-u (je to ne-kritická feature).
+
+i18n: 2 nové stringy (setting label "Continue playback (remember last
+position)" a marker fragmenty) — SK + CZ preklady doplnené.
+
+
 0.54beta - 17.05.2026
 ═════════════════════════════════════════════════════════════════════════════
 BETA TEST — port voliteľného IMDb lookup-u z Kodi pluginu (1.0.9). Žiadne
