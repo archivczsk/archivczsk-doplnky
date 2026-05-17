@@ -123,6 +123,13 @@
 	<category label="Archive">
 		<setting label="Archive: max items from DVR" type="text" id="dvr_limit" default="0"/>
 		<setting label="Archive: max number of days (0=no limit)" type="text" id="archive_days_limit" default="0"/>
+
+		<!-- FIX 0.54beta (z Kodi 1.0.9): optional IMDb GraphQL lookup as
+		     last-resort fallback for recordings the keyword fallback would
+		     route to "Iné" / "mv_ine". Opt-in only; no outbound HTTP unless
+		     this toggle is ON. -->
+		<setting label="Look up unknown titles on IMDb (background, opt-in)"
+				 id="online_metadata_lookup" type="bool" default="false"/>
 	</category>
 
 </settings>

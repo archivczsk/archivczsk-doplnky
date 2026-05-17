@@ -1504,7 +1504,20 @@ def _classify_dvr_entry(entry):
 			return top, corpus_sub
 
 		# Channel hint má prednosť pred DVB/keyword scan
-		sub = _channel_subgenre_hint(entry) or _movie_subgenre(entry)
+		sub = _channel_subgenre_hint(entry)
+		if sub is None:
+			sub = _movie_subgenre(entry)
+			# FIX 0.54beta (z Kodi 1.0.9): ak movie_subgenre vrátil
+			# mv_ine, skús IMDb lookup ako posledný fallback. Default
+			# OFF cez settings toggle "online_metadata_lookup".
+			if sub == _MV_INE:
+				try:
+					from . import imdb_lookup as _imdb
+					_, imdb_sub = _imdb.lookup(entry)
+					if imdb_sub is not None:
+						sub = imdb_sub
+				except Exception:
+					pass
 		return top, sub
 
 	# FIX 0.49d: ostatné kategórie s podžánrami cez registry dispatch
@@ -1577,7 +1590,36 @@ def _determine_top_cat(entry):
 		if _corpus_subgenre_match(entry) is not None:
 			return _CAT_FILM
 
+		# 7c) FIX 0.54beta (z Kodi 1.0.9): IMDb GraphQL lookup ako
+		# posledný safety net pred _CAT_INE. Default OFF cez settings
+		# toggle "online_metadata_lookup". Ak je zapnutý a IMDb vráti
+		# top override (Reality-TV/Documentary/News/Sport/Music/
+		# Talk-Show/Game-Show), použij. Inak ak vráti film sub-žáner,
+		# povýš top na CAT_FILM. Inak → ine.
+		try:
+			from . import imdb_lookup as _imdb
+			imdb_top, imdb_sub = _imdb.lookup(entry)
+			if imdb_top is not None and imdb_top in _IMDB_TOP_TO_CAT:
+				return _IMDB_TOP_TO_CAT[imdb_top]
+			if imdb_sub is not None:
+				return _CAT_FILM
+		except Exception:
+			pass  # graceful — never crash classification on network problem
+
 	return guessed
+
+
+# Map IMDb-derived top names to our _CAT_* constants. Kept here (not in
+# imdb_lookup.py) to avoid a circular import between the two modules.
+# Order matches Kodi 1.0.9: Shows / Documentaries / News / Sports / Music.
+_IMDB_TOP_TO_CAT = {
+	'show':           _CAT_SHOW,
+	'dokumenty':      _CAT_DOKUMENTY,
+	'spravodajstvo':  _CAT_SPRAVODAJSTVO,
+	'sport':          _CAT_SPORT,
+	'hudba':          _CAT_HUDBA,
+	'detske':         _CAT_DETSKE,
+}
 
 
 def _dedup_dvr_entries(entries):
@@ -1762,6 +1804,32 @@ class TvheadendContentProvider(CommonContentProvider):
 			_maybe_cleanup_poster_cache()
 		except Exception:
 			pass
+
+		# FIX 0.54beta: sync IMDb lookup feature flag s aktuálnym
+		# setting. Volá sa pri každom login() — toggle v Settings sa
+		# prejaví bez reštartu (framework volá login() po zmene
+		# settingov cez login_data_changed).
+		try:
+			import logging as _logging
+			_lg = _logging.getLogger('plugin.video.tvheadend.provider')
+			from . import imdb_lookup as _imdb
+			raw = self.get_setting('online_metadata_lookup')
+			# ArchivCZSK vracia bool pre type="bool" settings, ale pre
+			# istotu akceptujeme aj "true"/"1"/True/1.
+			if isinstance(raw, bool):
+				enabled = raw
+			else:
+				enabled = str(raw).strip().lower() in ('true', '1', 'yes')
+			_imdb.set_enabled(enabled)
+			_lg.info('IMDb lookup setting raw=%r resolved=%s',
+			          raw, 'ON' if enabled else 'OFF')
+		except Exception as _e:
+			try:
+				import logging as _logging
+				_logging.getLogger('plugin.video.tvheadend.provider').warning(
+					'IMDb lookup setup failed: %s', _e)
+			except Exception:
+				pass
 
 		# FIX 0.48: invalid-uj login cache pri každom login() volaní cez
 		# settings change. (Framework volá login_data_changed → login(silent=True)

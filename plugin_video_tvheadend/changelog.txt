@@ -1,3 +1,64 @@
+0.54beta - 17.05.2026
+═════════════════════════════════════════════════════════════════════════════
+BETA TEST — port voliteľného IMDb lookup-u z Kodi pluginu (1.0.9). Žiadne
+breaking changes, žiadne API zmeny. Predvolene VYPNUTÉ, plugin nerobí
+žiadne sieťové volania kým toggle nie je v Settings zapnutý.
+
+═════════════════════════════════════════════════════════════════════════════
+1) NOVÉ: Voliteľný IMDb metadata lookup pre neznáme tituly.
+
+   Posledný záchranný mechanizmus pre nahrávky, ktoré:
+     - nemajú DVB-SI žánrový tag (ct=0/11),
+     - nie sú v lokálnom title corpuse (~1940 titulov),
+     - keyword fallback ich nezachytí — padli by do "Iné" alebo "Filmy/Iné".
+
+   Pri zapnutí v Settings → Online metadata → "Look up unknown titles on IMDb":
+
+     a) Klasifikátor pri detekcii takého entry odošle titul na background
+        worker thread (queue, max 500 entries) ktorý dotazuje IMDb GraphQL
+        endpoint (1 request/sek, 5s timeout).
+     b) Výsledok sa cachuje lokálne v imdb_cache.json v plugin data
+        adresári (prežíva reboot Enigma2).
+     c) Pri ďalšom otvorení archívu (po expirácii klasifikačnej cache,
+        ~60s) sa entry zaradí podľa IMDb žánru.
+
+   Žánrové mapovanie:
+     - IMDb film žánre → plugin podžánre:
+         Action → mv_akcny, Comedy → mv_komedia,
+         Crime/Mystery/Thriller → mv_krimi, Drama → mv_drama,
+         Sci-Fi/Fantasy → mv_scifi, Romance → mv_romantika,
+         Horror → mv_horor, Adventure/Family → mv_dobrodruzny,
+         Animation → mv_animovany,
+         Biography/History/War → mv_historicky, Western → mv_western
+     - IMDb top-category override:
+         Reality-TV / Talk-Show / Game-Show → Šou
+         Documentary → Dokumenty
+         News → Spravodajstvo
+         Sport → Šport
+         Musical / Music → Hudba
+
+   Bezpečnosť:
+     - Plne opt-in. Default OFF; toggle v Settings.
+     - 5s timeout na request, 1s rate limit medzi volaniami.
+     - Všetky výnimky odchytené — pri sieťovej chybe alebo IMDb schema
+       zmene sa plugin ticho degraduje na pôvodný keyword fallback,
+       nikdy nezhasne kvôli IMDb.
+     - Negative cache (tituly ktoré IMDb nenašiel) expiruje po 30 dňoch,
+       aby novo-indexované tituly dostali druhú šancu.
+     - Žiadne osobné dáta odosielané — len normalizovaný titul nahrávky.
+
+   Implementácia:
+     - Nový modul: imdb_lookup.py (~570 riadkov)
+     - Provider číta toggle v login() metóde (refresh pri zmene settingu
+       bez reštartu).
+     - Volania zo dvoch miest v classifier-i:
+       * _determine_top_cat: keď keyword fallback by skončil v _CAT_INE
+         a corpus tiež nič nevrátil → IMDb môže buď top-override (Šou,
+         Dokumenty, …), alebo s film sub-žánrom povýšiť na _CAT_FILM.
+       * _classify_dvr_entry: keď _movie_subgenre vrátil _MV_INE pre
+         film/seriál → IMDb môže nahradiť _MV_INE konkrétnym podžánrom.
+
+
 0.53beta - 16.05.2026
 ═════════════════════════════════════════════════════════════════════════════
 BETA TEST — port klasifikačných vylepšení z Kodi pluginu (1.0.4 → 1.0.7).
