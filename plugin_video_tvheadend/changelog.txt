@@ -1,3 +1,58 @@
+0.56beta - 17.05.2026
+═════════════════════════════════════════════════════════════════════════════
+HOTFIX: episode grouping pre nahrávky s kombinovanými tech flagmi v
+jednej zátvorke (napr. "(AD,ST)", "(HD, DD5.1)").
+
+═════════════════════════════════════════════════════════════════════════════
+PROBLÉM
+
+V 0.55beta a starších verziách E2 pluginu nahrávky s tech flagmi
+formátu "(AD,ST)" (čiarkou oddelené tokeny v jednej zátvorke)
+nedávali do common episode grupy so zvyšnými epizódami toho istého
+seriálu. Príklad: archív obsahoval 22 epizód seriálu, 19 z nich
+malo tech flagy "(AD) (ST)" (dve samostatné zátvorky) — tieto sa
+correctly zgrupovali. Zvyšné 3 epizódy mali "(AD,ST)" (jedna
+zátvorka s čiarkou) a vystúpili v listingu ako separate samostatné
+items vedľa hlavnej zložky.
+
+PRÍČINA
+
+_TECH_MARKER_PATTERN regex hľadal "(SINGLE_TOKEN)" — len jeden marker
+v zátvorke. Vstup "(AD,ST)" sa regex-om nezachytil, takže
+_strip_tech_markers() ho ponechal v title. _series_canonical_title()
+následne videl "Simpsonovi XXI (20) (AD,ST)" ako iný kľúč než
+"Simpsonovi XXI (20)" (po správnom stripping-u) a grouping ich rozdelil.
+
+═════════════════════════════════════════════════════════════════════════════
+RIEŠENIE
+
+Backport fixu z Kodi 1.0.2: rozšírený regex pattern ktorý zachytí
+viacero tech markerov v jednej zátvorke, oddelených čiarkou alebo
+lomkou (s alebo bez whitespace). Plus rozšírený whitelist tech tokenov
+o ďalšie štandardné označenia: DD5.1, DTS-HD, DTS-MA, 5.1, 7.1, TT, P
+(predtým len ST, HD, AD, SS, 3D, UHD, DD, DTS).
+
+Rieši napríklad:
+  "(AD,ST)"          - comma separated, no space
+  "(AD, ST)"         - comma separated, with space
+  "(HD, DD5.1)"      - mix tech + audio formát
+  "(AD/ST)"          - slash separator
+  "(AD, ST, HD)"     - 3+ markery v jednej zátvorke
+
+Episodové markery typu "(1)", "(2)", … a roky výroby typu "(1942)"
+ostávajú nedotknuté — pattern striktne whitelistuje známe tech tokeny.
+
+Príklad výsledku pred / po:
+   PRED:
+     Simpsonovi XXI (folder, 19 epizód)
+     Simpsonovi XXI (20) (AD,ST)
+     Simpsonovi XXI (19) (AD,ST)
+     Simpsonovi XXI (18) (AD,ST)
+     ...
+   PO:
+     Simpsonovi XXI (folder, všetky epizódy zgrupované dohromady)
+
+
 0.55beta - 17.05.2026
 ═════════════════════════════════════════════════════════════════════════════
 NEW: Resume playback + watched marker pre DVR archív (sosáč-style).

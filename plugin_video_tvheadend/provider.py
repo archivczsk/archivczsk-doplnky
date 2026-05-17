@@ -512,16 +512,27 @@ _TITLE_EPISODE_PATTERN = _re_dvr.compile(
 	r'\((\d{1,4})\)\s*(?:\([A-Z]{1,3}\))?\s*$'
 )
 
-# Technické markery na konci title alebo subtitle: (ST)=titulky, (HD), (AD)=audio
-# popis pre nevidiacich, (SS)=stereo, (3D), (UHD). Pri pre-procesingu sa
-# odstránia aby nezmárili episode detection.
+# Single tech/audio/subtitle marker — rozšír ak narazíš na ďalší.
+# Pozn.: DTS-HD musí byť pred DTS aby alternace zachytila dlhšiu variantu.
+_TECH_MARKER = (
+	r'(?:DD5\.1|DTS-HD|DTS-MA|UHD|DTS|5\.1|7\.1|ST|HD|AD|SS|3D|DD|TT|P)'
+)
+# FIX 0.56beta (backport Kodi 1.0.2 fix): parens s 1+ tech markermi v
+# jednej zátvorke, oddelenými čiarkou alebo lomkou (s alebo bez whitespace).
+# Predtým regex match-oval len single token v zátvorke — kombinácie ako
+# "(AD,ST)" alebo "(HD, DD5.1)" nezachytil, ich rozdielne stripping
+# narúšalo episode grouping (rovnaký seriál s rôznymi tech flagmi
+# končil ako separate "samostatné" entries vedľa hlavnej skupiny).
+# Rieši napr.: "(AD,ST)", "(HD, DD5.1)", "(AD/ST)", "(AD, ST, HD)".
 _TECH_MARKER_PATTERN = _re_dvr.compile(
-	r'\s*\(\s*(?:ST|HD|AD|SS|3D|UHD|DD|DTS)\s*\)\s*', _re_dvr.IGNORECASE
+	r'\s*\(\s*' + _TECH_MARKER +
+	r'(?:\s*[,/]\s*' + _TECH_MARKER + r')*\s*\)\s*',
+	_re_dvr.IGNORECASE
 )
 
 
 def _strip_tech_markers(text):
-	"""Odstráni '(ST)', '(HD)', '(AD)' atď. z textu."""
+	"""Odstráni '(ST)', '(HD)', '(AD)', '(AD,ST)', '(HD, DD5.1)' atď. z textu."""
 	if not text:
 		return ''
 	return _TECH_MARKER_PATTERN.sub(' ', text).strip()
