@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<settings>
+
+	<!--
+	Root settings (bez <category> wrapper-a) → parser ich auto-zoskupí do
+	'general' category. Framework potom priloží svoje auto-injected settings
+	(auto_addon_order + auto_used_player) do tej istej category cez index
+	match (cat_order=0 == i=0). Result: jedna "Všeobecné" stránka.
+
+	NEPRIDÁVAJ <category label="General"> wrapper — vznikla by 2× kategória
+	(parser-auto 'general' + môj explicit 'General') a auto-injected settings
+	by išli do parser-auto category, moje URLs do explicit category.
+	-->
+
+	<setting label="M3U playlist URL"
+			 id="m3u_url" type="text" default=""/>
+
+	<setting label="XMLTV EPG URL (optional)"
+			 id="m3u_epg_url" type="text" default=""/>
+
+	<!-- Bouquet generation settings (antik-style) -->
+	<category label="Userbouquet">
+
+		<setting label="Automatically export channel list as userbouquet"
+				 id="enable_userbouquet" type="bool" default="true"/>
+
+		<setting label="M3U bouquet display name"
+				 id="m3u_bouquet_name" type="text" default="IPTV M3U"/>
+
+		<setting label="Refresh interval"
+				 id="m3u_refresh_interval" type="keyenum"
+				 values="0;Disabled|14400;4 hours|28800;8 hours|57600;16 hours|86400;24 hours|172800;2 days|604800;7 days"
+				 default="86400"/>
+
+		<setting label="Download picons from tvg-logo URLs"
+				 id="m3u_picons_from_logo" type="bool" default="true"/>
+
+		<setting label="Auto-inject EPG into Enigma2"
+				 id="m3u_epg_inject_interval" type="keyenum"
+				 values="0;Disabled|14400;4 hours|28800;8 hours|43200;12 hours|57600;16 hours|86400;24 hours|172800;2 days|604800;7 days"
+				 default="14400"/>
+
+		<setting label="Use mapping override XML"
+				 id="m3u_use_mapping" type="bool" default="false"/>
+
+		<setting label="Mapping override file path"
+				 id="m3u_mapping_file" type="text"
+				 default="/etc/enigma2/m3u-sort-override.xml"/>
+
+		<setting label="Enrich M3U channels using TVH API (only for TVH-hosted M3U)"
+				 id="m3u_enrich_from_tvh" type="bool" default="true"/>
+
+		<setting label="Player used for userbouquet" id="player_name" type="enum"
+				 lvalues="Default|gstplayer|exteplayer3|DVB (OE>=2.5)" default="0"/>
+
+	</category>
+
+</settings>

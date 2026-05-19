@@ -1,0 +1,82 @@
+Tvheadend plugin pre archivCZSK
+Verzia 0.58.2 (19.5.2026)
+================================================================
+
+Klient pre Tvheadend server na sledovanie živej TV, rádia
+a prehrávanie DVR archívu s vyhľadávaním.
+
+
+ČO PLUGIN PONÚKA
+----------------------------------------------------------------
+
+Živé TV a rádio:
+  - Streamovanie kanálov priamo z TVH servera cez HTTP/HTTPS
+  - Podpora HTTP Digest a Basic autentifikácie s auto-detekciou
+  - Ticket URL pre HLS-AES enkryptované streamy
+  - Výber stream profilu (pass, mpegts, matroska, htsp, webtv)
+  - Výber prehrávača: Default, gstplayer, exteplayer3
+
+DVR archív:
+  - Prehliadanie všetkých nahrávok na TVH serveri
+  - Pokračovanie prehrávania od poslednej pozície
+  - Hviezdičkový marker (★) pri pozretých nahrávkach (nad 80 %)
+  - Automatická kategorizácia (filmy, seriály, šport, dokumenty,
+    spravodajstvo, hudba, detské, archív)
+  - Voliteľné vyhľadávanie titulov cez IMDb (opt-in)
+  - Vyhľadávanie cez všetky nahrávky
+
+Vytvorenie userbouquet:
+  - Automatický export TVH kanálov do Enigma2 userbouquet
+  - Separátne bouquets pre TV a rádio s vlastnými názvami
+  - Konfigurovateľný interval automatickej obnovy
+  - Pridávanie názvov kategórií ako separátory
+
+Sťahovanie picons:
+  - Automatické sťahovanie picons z TVH servera
+  - SRP formát (Service Reference Pattern)
+  - Cache pre 404 (broken icons sa neretryjú zbytočne)
+
+Vkladanie EPG do Enigma2:
+  - Priame vkladanie EPG do Enigma2 (bez epgimport pluginu)
+  - Automatický refresh každé 4 hodiny + pri zmene nastavení
+  - Konfigurovateľný počet dní EPG histórie (1-14)
+
+Diagnostika:
+  - Test TVH prihlásenia a pripojenia
+  - Zobrazenie ciest (stamps, cache, picon directory)
+  - Manuálne spustenie obnovy bouquetu a EPG
+  - Vyčistenie 404 picon cache
+
+Watchdog:
+  - Automatické sledovanie offline → online prechodu TVH servera
+  - Pri detekcii online stavu spustí obnovu bouquetu a picons
+  - Netreba manuálne otvoriť plugin po reštarte TVH servera
+
+
+NOVINKY VO VERZII 0.58.2
+----------------------------------------------------------------
+
+  - Prechod na natívne framework EPG vkladanie cez
+    tools_archivczsk EnigmaEpgGenerator (~941 riadkov kódu
+    odstránených).
+
+  - Odstránené: vlastný XMLTV parser, vlastná logika výberu
+    service ref-ov z userbouquet súborov, menu položka
+    "Inject EPG into Enigma2 now".
+
+  - Premenované nastavenia:
+      tvh_epg_inject_interval (interval) → enable_xmlepg (zapnúť/vypnúť)
+      enigmaepg_days → xmlepg_days
+
+  - Pridaný slovenský preklad pre nastavenie "Automaticky
+    vkladať EPG do Enigma2".
+
+  - Opravené: pád pri generovaní bouquet-u kvôli chýbajúcej
+    _strip_accents metóde (AttributeError v lambde).
+
+
+VYŽADUJE
+----------------------------------------------------------------
+  - archivCZSK 3.5.0 alebo novší
+  - tools_archivczsk 3.4 alebo novší
+  - Tvheadend 4.0 alebo novší s povoleným HTTP/HTTPS prístupom

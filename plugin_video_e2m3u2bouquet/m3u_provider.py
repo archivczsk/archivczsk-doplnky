@@ -117,7 +117,6 @@ class M3UProvider(object):
 		self._channels = []          # list of dicts
 		self._categories = []        # ordered unique categories
 		self._epg_channel_ids = set()
-		self._last_fetch_time = 0
 		self._raw_m3u_bytes = b''
 		self._raw_epg_bytes = b''
 
@@ -176,8 +175,6 @@ class M3UProvider(object):
 				         (len(self._epg_channel_ids), time.time() - t1))
 			except Exception as e:
 				self.log('[M3U] EPG fetch/parse failed: %s' % e)
-
-		self._last_fetch_time = int(time.time())
 
 	# ------------------ Parsers ------------------
 
@@ -301,12 +298,6 @@ class M3UProvider(object):
 	def channel_count(self):
 		return len(self._channels)
 
-	def has_epg_for(self, tvg_id):
-		return bool(tvg_id) and tvg_id in self._epg_channel_ids
-
-	def last_fetch_time(self):
-		return self._last_fetch_time
-
 	def _auth_tvg_logos(self):
 		"""
 		Pre tvg-logo URL ktoré pochádzajú z rovnakého hosta ako M3U URL
@@ -403,21 +394,6 @@ class M3UProvider(object):
 		self._categories = new_categories
 
 		return updated
-
-	def save_raw_epg(self, path):
-		"""Persist raw (compressed) EPG bytes so epgimport can use them."""
-		if not self._raw_epg_bytes:
-			return False
-		tmp = path + '.tmp'
-		with open(tmp, 'wb') as f:
-			f.write(self._raw_epg_bytes)
-		if hasattr(os, 'replace'):
-			os.replace(tmp, path)
-		else:  # py2
-			if os.path.exists(path):
-				os.remove(path)
-			os.rename(tmp, path)
-		return True
 
 
 # -------------------------------------------------

@@ -1,0 +1,207 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_e2m3u2bouquet\n"
+"Language: sk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Refresh M3U playlist + EPG now"
+msgstr "Aktualizovať M3U playlist + EPG"
+
+msgid "Refresh M3U now"
+msgstr "Aktualizovať M3U"
+
+msgid "Refresh M3U playlist (background)"
+msgstr "Aktualizovať M3U playlist (na pozadí)"
+
+msgid "Refresh M3U background"
+msgstr "M3U na pozadí"
+
+msgid "Download M3U picons now"
+msgstr "Stiahnuť M3U picony"
+
+msgid "M3U picons"
+msgstr "M3U picony"
+
+msgid "✗ Remove M3U bouquet"
+msgstr "✗ Odstrániť M3U bouquet"
+
+msgid "Remove M3U bouquet"
+msgstr "Odstrániť M3U bouquet"
+
+msgid "Diagnose M3U EPG matching"
+msgstr "Diagnostika M3U EPG"
+
+msgid "Diagnose M3U EPG"
+msgstr "Diagnostika M3U EPG"
+
+msgid "Settings"
+msgstr "Nastavenia"
+
+msgid "M3U source is not configured. Open Settings to fill in M3U URL."
+msgstr "M3U zdroj nie je nakonfigurovaný. Otvor Nastavenia a vyplň M3U URL."
+
+msgid "M3U source is not configured."
+msgstr "M3U zdroj nie je nakonfigurovaný."
+
+msgid "✓ M3U refresh complete"
+msgstr "✓ Aktualizácia M3U dokončená"
+
+msgid "Channels: {}"
+msgstr "Kanály: {}"
+
+msgid "Bouquet: {}"
+msgstr "Bouquet: {}"
+
+msgid "EPG events: {}"
+msgstr "EPG udalostí: {}"
+
+msgid "M3U refresh failed: {}"
+msgstr "Aktualizácia M3U zlyhala: {}"
+
+msgid "✓ M3U refresh started in background"
+msgstr "✓ Aktualizácia M3U spustená na pozadí"
+
+msgid "✓ Downloaded {} M3U picons"
+msgstr "✓ Stiahnutých {} M3U piconov"
+
+msgid "Picon download failed: {}"
+msgstr "Sťahovanie piconov zlyhalo: {}"
+
+msgid "✓ Removed M3U bouquet files: {}"
+msgstr "✓ Odstránené M3U bouquet súbory: {}"
+
+msgid "No M3U bouquet files to remove"
+msgstr "Žiadne M3U bouquet súbory na odstránenie"
+
+msgid "Diagnostics failed: {}"
+msgstr "Diagnostika zlyhala: {}"
+
+# === Settings.xml translations ===
+
+msgid "M3U playlist URL"
+msgstr "URL M3U playlistu"
+
+msgid "XMLTV EPG URL (optional)"
+msgstr "URL XMLTV EPG (voliteľné)"
+
+msgid "Player used for userbouquet"
+msgstr "Prehrávač pre userbouquet"
+
+msgid "M3U bouquet display name"
+msgstr "Názov M3U bouquetu"
+
+msgid "Refresh interval"
+msgstr "Interval aktualizácie"
+
+msgid "Disabled"
+msgstr "Vypnuté"
+
+msgid "4 hours"
+msgstr "4 hodiny"
+
+msgid "8 hours"
+msgstr "8 hodín"
+
+msgid "12 hours"
+msgstr "12 hodín"
+
+msgid "16 hours"
+msgstr "16 hodín"
+
+msgid "24 hours"
+msgstr "24 hodín"
+
+msgid "2 days"
+msgstr "2 dni"
+
+msgid "7 days"
+msgstr "7 dní"
+
+msgid "Download picons from tvg-logo URLs"
+msgstr "Stiahnuť picony z tvg-logo URL"
+
+msgid "Auto-inject EPG into Enigma2"
+msgstr "Automaticky vložiť EPG do Enigma2"
+
+msgid "Use mapping override XML"
+msgstr "Použiť mapping override XML"
+
+msgid "Mapping override file path"
+msgstr "Cesta k mapping override súboru"
+
+msgid "Enrich M3U channels using TVH API (only for TVH-hosted M3U)"
+msgstr "Obohatiť M3U kanály cez TVH API (len pre TVH-hostované M3U)"
+
+msgid "Default"
+msgstr "Predvolený"
+
+msgid "Userbouquet"
+msgstr "Userbouquet"
+
+msgid "Automatically export channel list as userbouquet"
+msgstr "Automaticky exportovať zoznam kanálov ako userbouquet"
+
+msgid "M3U Actions"
+msgstr "M3U akcie"
+
+msgid "Diagnostics"
+msgstr "Diagnostika"
+
+msgid "Show paths and generated files"
+msgstr "Zobraziť cesty a vygenerované súbory"
+
+msgid "Paths"
+msgstr "Cesty"
+
+msgid "M3U URL"
+msgstr "URL M3U"
+
+msgid "XMLTV EPG URL"
+msgstr "URL XMLTV EPG"
+
+msgid "Userbouquet export"
+msgstr "Export do userbouquetu"
+
+msgid "enabled"
+msgstr "zapnuté"
+
+msgid "disabled"
+msgstr "vypnuté"
+
+msgid "Last M3U refresh"
+msgstr "Posledná aktualizácia M3U"
+
+msgid "never"
+msgstr "nikdy"
+
+msgid "Last EPG inject"
+msgstr "Posledné vloženie EPG"
+
+msgid "Bouquet file"
+msgstr "Bouquet súbor"
+
+msgid "M3U bouquet"
+msgstr "M3U bouquet"
+
+msgid "Last refresh stamp"
+msgstr "Posledná aktualizácia stamp"
+
+msgid "Last EPG inject stamp"
+msgstr "Posledné vloženie EPG stamp"
+
+msgid "⚠ Userbouquet export is disabled in settings"
+msgstr "⚠ Export do userbouquetu je vypnutý v nastaveniach"
+
+msgid "⚙ M3U URL not configured — open Settings (blue button)"
+msgstr "⚙ M3U URL nie je nakonfigurované — otvor Nastavenia (modré tlačidlo)"
+
+msgid "Configure M3U"
+msgstr "Nakonfigurovať M3U"
+
+msgid "To display content, you must enter M3U playlist URL in the addon settings"
+msgstr "Pre zobrazenie obsahu je potrebné zadať URL M3U playlistu v nastaveniach doplnku"
+
+msgid "To display content, you must enter TVH server (host, username, password) in the addon settings"
+msgstr "Pre zobrazenie obsahu je potrebné zadať TVH server (host, prihlasovacie meno, heslo) v nastaveniach doplnku"

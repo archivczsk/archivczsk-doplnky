@@ -1,0 +1,85 @@
+E2m3u2bouquet plugin pre archivCZSK
+Verzia 0.1.0 (19.5.2026)
+================================================================
+
+Konvertor IPTV M3U playlistu do Enigma2 bouquetu s XMLTV EPG
+injekciou. Automaticky vygeneruje userbouquet z akéhokoľvek
+M3U zdroja.
+
+
+ČO PLUGIN PONÚKA
+----------------------------------------------------------------
+
+Spracovanie M3U playlistu:
+  - Stiahnutie M3U playlistu z HTTP/HTTPS URL
+  - Parsovanie #EXTINF tagov s atribútmi tvg-id, tvg-name,
+    tvg-logo a group-title
+  - Podpora pre HLS (.m3u8), MPEG-TS a direct stream URL
+  - Deduplikácia kanálov a podpora aliasov
+
+Vytvorenie userbouquet:
+  - Automatický export do /etc/enigma2/userbouquet.m3u_iptv.tv
+  - Hlavný prepínač "Export do userbouquetu":
+      ZAPNUTÉ → generovanie + auto-refresh aktívne
+      VYPNUTÉ → vyčistenie userbouquet + odstránenie z bouquets.tv
+  - Konfigurovateľný interval automatickej obnovy
+  - Organizácia kategórií podľa group-title z M3U
+  - Vlastný názov bouquetu
+  - Automatická obnova pri zmene nastavení
+
+Vkladanie EPG do Enigma2:
+  - Stiahnutie XMLTV zo separátnej URL
+  - Priame vkladanie do Enigma2 eEPGCache
+  - Bez závislosti na epgimport plugine
+  - Caps-hex formát service ref (kompatibilita s Enigma2 picon)
+
+Sťahovanie picons:
+  - SRP formát (Service Reference Pattern, unikátny per kanál)
+  - Caps-hex namespace (zhodný s Enigma2 ServiceInfo)
+  - Cache pre 404 (broken logos sa neretryjú zbytočne)
+  - Zdroj: tvg-logo atribút z M3U
+
+Výber prehrávača:
+  - Default (servicemp3 / predvolený Enigma2 player)
+  - gstplayer
+  - exteplayer3
+  - DVB (OE>=2.5) — pre M3U streamy podporujúce DVB chain
+
+Voliteľné rozšírenia:
+  - TVH-based obohatenie kategórií (ak je dostupný TVH server)
+  - Vlastný mapping súbor (názov kanála → kategória override)
+
+Antik-style menu:
+  - Status linky (URL M3U, URL XMLTV, posledná aktualizácia)
+  - Akcie: Refresh M3U + EPG, Refresh na pozadí, Inject EPG only,
+    Remove bouquet
+  - Diagnostika: Show paths (kde sa ukladajú stamps a cache)
+
+
+NOVINKY VO VERZII 0.1.0
+----------------------------------------------------------------
+
+  - Prvé vydanie plugin-u.
+
+  - Extrahované z plugin.video.tvheadend ako samostatný doplnok
+    (skyjet PR #22 review #10/#11) — M3U logika nemá byť
+    súčasťou TVH plugin-u.
+
+  - Slovenský a český preklad (~50 textových reťazcov).
+
+  - Login pattern v disneyplus štýle: pri chýbajúcej M3U URL
+    plugin zobrazí informačnú notifikáciu namiesto chybového
+    hlásenia a otvorí menu — používateľ vidí čo treba nastaviť.
+
+  - Automatická obnova pri zmene nastavení cez framework
+    add_setting_change_notifier (pre m3u_url, m3u_epg_url,
+    enable_userbouquet, bouquet_name, picons_from_logo,
+    use_mapping, mapping_file, enrich_from_tvh, player_name).
+
+
+VYŽADUJE
+----------------------------------------------------------------
+  - archivCZSK 3.5.0 alebo novší
+  - tools_archivczsk 3.4 alebo novší
+  - M3U playlist URL (povinné)
+  - XMLTV EPG URL (voliteľne, ale odporúčané)

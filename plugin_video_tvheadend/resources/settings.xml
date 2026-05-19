@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+
+	<setting label="Server (IP/domain or URL)" type="text" id="host" default="127.0.0.1"/>
+	<setting label="Port" type="text" id="port" default="9981"/>
+	<setting label="Use HTTPS" type="bool" id="use_https" default="false"/>
+	<setting label="Username" type="text" id="username" default=""/>
+	<setting label="Password" type="password" id="password" default=""/>
+	<setting label="HTTP authentication" type="keyenum" id="http_auth_mode"
+			 values="auto;Auto|digest;Digest|basic;Basic|none;None" default="auto"/>
+	<setting label="Use ticket URL (recommended for Digest)" type="bool" id="use_ticket_url" default="true"/>
+	<setting label="TVH stream profile" type="keyenum" id="profile"
+			 values="pass;pass|mpegts;mpegts|matroska;matroska|htsp;htsp|webtv-h264-aac-matroska;webtv-h264-aac-matroska|webtv-h264-aac-mpegts;webtv-h264-aac-mpegts" default="pass"/>
+	<setting label="Timeout (seconds)" type="text" id="loading_timeout" default="15"/>
+
+	<category label="Userbouquet">
+		<setting label="Automatically export channel list as userbouquet"
+				 id="enable_userbouquet" type="bool" default="false" />
+
+		<setting label="Auto-refresh bouquet interval"
+				 id="bouquet_refresh_interval" type="keyenum"
+				 values="0;Disabled|14400;4 hours|28800;8 hours|57600;16 hours|86400;24 hours|172800;2 days|604800;7 days" default="86400"/>
+
+		<setting label="Allow creating userbouquet for radios"
+				 id="enable_userbouquet_radio" type="bool" default="false" />
+
+		<setting label="Add category names to userbouquet"
+				 id="userbouquet_categories" type="bool" default="false" />
+
+		<setting label="Custom bouquet display name (TV)"
+				 id="userbouquet_custom_name_tv" type="text" default="Tvheadend TV" />
+
+		<setting label="Custom bouquet display name (Radio)"
+				 id="userbouquet_custom_name_radio" type="text" default="Tvheadend Radio" />
+
+		<!-- FIX 0.58.2 (skyjet PR #22 review #11 follow-up):
+		     `tvh_epg_inject_interval` custom keyenum + `enigmaepg_days` boli
+		     nahradené framework default settings names:
+		     - `enable_xmlepg` (bool toggle, framework auto-triggeruje
+		       EnigmaEpgGenerator každé 4 hodiny + pri settings change)
+		     - `xmlepg_days` (počet dní EPG history)
+		     Custom `inject_tvh_epg_into_enigma()` + `epg_injector.py` modul
+		     odstránené — framework EnigmaEpgGeneratorTemplate to robí
+		     natívne cez `get_xmlepg_channels()` + `get_epg()` ktoré plugin
+		     už implementuje. -->
+		<setting label="Auto-inject EPG into Enigma2 (no epgimport plugin needed)"
+				 id="enable_xmlepg" type="bool" default="true"/>
+
+		<setting label="Automatically download picons when exporting userbouquet"
+				 id="enable_picons" type="bool" default="false" />
+
+		<!-- FIX 0.57.0 (skyjet PR #22 review #13): picon_save_srp toggle
+		     odstránený. Framework ukladá picons VŽDY v SRP formáte (Service
+		     Reference Pattern, unique per channel) — žiadny SNP duplicate.
+		     SNP picons by mohli prepísať picons od iných pluginov (Sat>IP,
+		     alternatívne providers). Aj OpenATV/OpenPLI hľadajú primárne SRP,
+		     potom fallback na SNP — SRP-only setup je vždy správny.
+		     Predtým 0.50beta-0.56beta mali toggle pre SRP-on-top-of-SNP. -->
+
+		<setting label="For how many days to keep Enigma2 EPG history"
+				 id="xmlepg_days" type="enum" lvalues="1|2|3|4|5|6|7|14" default="7"/>
+
+		<setting label="Player used for userbouquet"
+				 id="player_name" type="enum"
+				 lvalues="Default|gstplayer|exteplayer3" default="0"/>
+	</category>
+
+	<category label="Archive">
+		<setting label="Archive: max items from DVR" type="text" id="dvr_limit" default="0"/>
+		<setting label="Archive: max number of days (0=no limit)" type="text" id="archive_days_limit" default="0"/>
+
+		<!-- FIX 0.55beta: Resume playback + watched marker (sosáč-style).
+		     Default ON. Tracking position pri end playback eventu cez
+		     ArchivCZSK stats() framework callback; pri ďalšom play_dvr()
+		     sa resume_time_sec naplní z watched_history.json. Hviezdička
+		     ' *' v archive listingu pre entries pozreté nad 80 % duration. -->
+		<setting label="Continue playback (remember last position)"
+				 id="save_last_play_pos" type="bool" default="true"/>
+
+		<!-- FIX 0.54beta (z Kodi 1.0.9): optional IMDb GraphQL lookup as
+		     last-resort fallback for recordings the keyword fallback would
+		     route to "Iné" / "mv_ine". Opt-in only; no outbound HTTP unless
+		     this toggle is ON. -->
+		<setting label="Look up unknown titles on IMDb (background, opt-in)"
+				 id="online_metadata_lookup" type="bool" default="false"/>
+	</category>
+
+</settings>

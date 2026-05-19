@@ -143,10 +143,14 @@ def _ns_for_category(category_name):
 	"""
 	Deterministic TSID + ONID from category name.
 	Stable across refreshes => stable picon naming.
+
+	Vracia UPPERCASE hex (zhodne s framework tools_archivczsk.generator.bouquet
+	`build_service_ref` ktorý používa `{:X}` format). Enigma2 picon engine
+	hľadá súbor s rovnakým case ako service ref → caps zaisťuje match.
 	"""
 	h = hashlib.md5(category_name.encode('utf-8')).hexdigest()
-	tsid_hex = h[0:4]
-	onid_hex = h[4:8]
+	tsid_hex = h[0:4].upper()
+	onid_hex = h[4:8].upper()
 	return tsid_hex, onid_hex
 
 
@@ -179,7 +183,7 @@ class M3UBouquetWriter(object):
 
 	def _build_service_ref(self, idx, channel, category_name):
 		stype = str(self.s.get('service_type', '1')).strip() or '1'
-		sid_hex = format(idx, 'x')
+		sid_hex = format(idx, 'X')   # UPPERCASE hex (zhodne s framework)
 		tsid_hex, onid_hex = _ns_for_category(category_name)
 
 		# Build URL for stream. If channel has custom headers (User-Agent
@@ -316,50 +320,35 @@ class M3UBouquetWriter(object):
 	def _picon_filename_from_ref(self, service_ref):
 		"""
 		E2 picon naming convention (matches openatv/openpli):
-		Replace ':' with '_', lowercase, take first 10 fields (drop URL+name).
+		Replace ':' with '_', take first 10 fields (drop URL+name).
 		Toto je Service Reference Pattern (SRP).
+
+		DÔLEŽITÉ: NEROBIŤ .lower() — Enigma2 `getPiconName` (OpenATV
+		`Picon.py`) hľadá súbor s rovnakým case ako je v service ref:
+		`fields = serviceName.split(":", 10)[:10]; "_".join(fields)`.
+		Service ref vždy obsahuje CAPS hex (`533B`, `3DD2`) — picon
+		filename musí mať tiež CAPS aby Enigma2 ho našla.
 		"""
 		fields = service_ref.split(':')
 		# Service ref structure: type:flags:stype:sid:tsid:onid:ns:p1:p2:p3:url:name
 		# Picon uses fields 0..9 = type, flags, stype, sid, tsid, onid, ns, p1, p2, p3
 		picon_fields = fields[:10]
-		key = '_'.join(picon_fields).lower()
+		key = '_'.join(picon_fields)
 		return key + '.png'
 
-	def _picon_filename_from_channel_name(self, channel_name):
-		"""
-		FIX 0.50beta: Service Name Pattern (SNP) — OpenATV/OpenPLI skiny
-		hľadajú picons primárne podľa SNP, nie podľa SRP. Toto je port logiky
-		z OpenATV Picon.py:
-		  '+' → 'plus', '&' → 'and', '*' → 'star'
-		  potom odstrániť všetko okrem [a-z0-9]
-		  'JOJ +1 HD' → 'jojplus1hd.png'
-		  'Jednotka HD' → 'jednotkahd.png'
-		  'Markíza' → 'markiza.png' (diakritika cez NFD)
-		Bez SNP vetvy by skin v OpenATV 7.x nezobrazil picons pri M3U
-		kanáloch, aj keby SRP súbory boli na disku.
-		"""
-		if not channel_name:
-			return None
-		try:
-			import unicodedata as _ud
-			s = _ud.normalize('NFD', channel_name)
-			s = ''.join(c for c in s if _ud.category(c) != 'Mn')
-		except Exception:
-			s = channel_name
-		s = s.strip().lower()
-		s = s.replace('&', 'and').replace('+', 'plus').replace('*', 'star')
-		s = re.sub(r'[^a-z0-9]', '', s)
-		return (s + '.png') if s else None
-
 	def download_picons(self):
+		"""Stiahne picony cez SRP-only (service reference) cestu.
+
+		Skyjet PR #22 review #8: SNP cesta odstránená — picons sa ukladajú
+		LEN ako `<service_ref>.png` (napr. `5002_0_1_174_B366_1_7070000_0_0_0.png`),
+		nie ako `<channel_name_slug>.png` (napr. `beatv.png`). SNP cesta by
+		prepisovala picons iných providerov.
+
+		OpenATV/OpenPLI skiny default-uje hľadať picons SRP-first, SNP-fallback.
+		Pre M3U bouquet generovaný týmto plugin-om sú SRP picons dostatočné."""
 		if not bool(self.s.get('download_picons', True)):
 			return
 		picon_dir = self.s.get('picon_dir', DEFAULT_PICON_DIR)
-		# FIX 0.50beta: voliteľný toggle pre SRP picons.
-		# Default True = ulož oba varianty (SRP + SNP) pre max kompatibilitu.
-		# False = ulož len SNP (~polovica disk space, ale niektoré skiny picons neuvidia).
-		save_srp = bool(self.s.get('picon_save_srp', True))
 		if not os.path.isdir(picon_dir):
 			try:
 				os.makedirs(picon_dir)
@@ -370,8 +359,6 @@ class M3UBouquetWriter(object):
 		downloaded = 0
 		skipped = 0
 		failed = 0
-		snp_copied = 0
-		srp_removed = 0  # FIX 0.50beta: tracker pre cleanup ak user vypol SRP
 		for ch in self.provider.get_all_channels():
 			ref = ch.get('_service_ref')
 			logo = ch.get('tvg_logo')
@@ -379,40 +366,11 @@ class M3UBouquetWriter(object):
 				continue
 
 			srp_name = self._picon_filename_from_ref(ref)
-			snp_name = self._picon_filename_from_channel_name(ch.get('name'))
 			srp_path = os.path.join(picon_dir, srp_name)
-			snp_path = os.path.join(picon_dir, snp_name) if snp_name else None
 
-			# Primary target: ak user chce SRP → SRP; inak SNP (ak je dostupný)
-			# SNP je preferovaný primary pri save_srp=False lebo OpenATV ho hľadá ako prvý.
-			if save_srp:
-				primary = srp_path
-				secondary = snp_path  # bonus copy do SNP
-			else:
-				primary = snp_path or srp_path  # ak by SNP zlyhalo (prázdne meno), aspoň SRP
-				secondary = None
-				# FIX 0.50beta: cleanup starého SRP súboru ak existuje
-				# z minulých behov keď bol save_srp=True
-				if os.path.exists(srp_path) and srp_path != primary:
-					try:
-						os.remove(srp_path)
-						srp_removed += 1
-					except Exception:
-						pass
-
-			if os.path.exists(primary) and os.path.getsize(primary) > 0:
+			# Skip ak picon už existuje
+			if os.path.exists(srp_path) and os.path.getsize(srp_path) > 0:
 				skipped += 1
-				# Aj keď primary existuje, over že secondary (SNP keď save_srp=True)
-				# je tiež na mieste. Ak nie, vytvor ho zo primary.
-				if secondary and secondary != primary and not os.path.exists(secondary):
-					try:
-						with open(primary, 'rb') as fsrc:
-							data = fsrc.read()
-						with open(secondary, 'wb') as fdst:
-							fdst.write(data)
-						snp_copied += 1
-					except Exception:
-						pass
 				continue
 
 			try:
@@ -432,33 +390,23 @@ class M3UBouquetWriter(object):
 					failed += 1
 					continue
 
-				tmp = primary + '.tmp'
+				tmp = srp_path + '.tmp'
 				with open(tmp, 'wb') as f:
 					f.write(data)
 				if hasattr(os, 'replace'):
-					os.replace(tmp, primary)
+					os.replace(tmp, srp_path)
 				else:
-					if os.path.exists(primary):
-						os.remove(primary)
-					os.rename(tmp, primary)
+					if os.path.exists(srp_path):
+						os.remove(srp_path)
+					os.rename(tmp, srp_path)
 				downloaded += 1
-
-				# Secondary kópia (SNP pri save_srp=True)
-				if secondary and secondary != primary:
-					try:
-						with open(secondary, 'wb') as f:
-							f.write(data)
-						snp_copied += 1
-					except Exception:
-						pass
 			except Exception as e:
 				failed += 1
 				self.log('[M3U] Picon download failed for %s: %s' %
 				         (ch['name'], e))
 
-		self.log('[M3U] Picons: downloaded=%d skipped=%d failed=%d '
-		         'snp_copies=%d srp_removed=%d save_srp=%s' %
-		         (downloaded, skipped, failed, snp_copied, srp_removed, save_srp))
+		self.log('[M3U] Picons (SRP-only): downloaded=%d skipped=%d failed=%d'
+		         % (downloaded, skipped, failed))
 
 	# ------------------ epgimport integration ------------------
 

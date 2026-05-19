@@ -56,11 +56,25 @@ try:
 except ImportError:
 	requests = None
 
-# Module-level logger. ArchivCZSK configures root logger with a handler
-# that writes to /home/root/archivCZSK.log. Child loggers under
-# 'plugin.video.tvheadend.*' inherit that handler automatically. A plain
-# print() goes to /var/log/enigma2.log, which is harder to grep.
+# Module-level logger. Predtým: logging.getLogger('plugin.video.tvheadend.imdb_lookup')
+# — TIETO LOGY NEŠLI DO archivCZSK.log (framework zachytí len cp.log_info()).
+# FIX 0.57.0: callback pattern. Provider.py si pri __init__ nastaví callback
+# cez set_log_callback(self.log_info) a set_log_debug_callback(self.log_debug).
+# Info messages → vždy viditeľné. Debug messages → len v ArchivCZSK Debug mode.
 _LOGGER = logging.getLogger('plugin.video.tvheadend.imdb_lookup')
+_LOG_CALLBACK = None        # info-level (vždy viditeľné)
+_LOG_DEBUG_CALLBACK = None  # debug-level (len v Debug mode)
+
+def set_log_callback(callback):
+	"""Nastaviť log_info callback (provider.log_info). Pre warnings/info."""
+	global _LOG_CALLBACK
+	_LOG_CALLBACK = callback if callable(callback) else None
+
+def set_log_debug_callback(callback):
+	"""Nastaviť log_debug callback (provider.log_debug). Pre verbose tracing
+	ktoré sa zobrazuje len keď je v ArchivCZSK zapnutý Debug mode."""
+	global _LOG_DEBUG_CALLBACK
+	_LOG_DEBUG_CALLBACK = callback if callable(callback) else None
 
 # E2 / ArchivCZSK environment: persistent data dir via _paths helper,
 # logging via the standard logging module.
@@ -70,15 +84,29 @@ try:
 	_DATA_DIR = _data_path('')  # data dir root, no filename suffix
 
 	def _log(level, msg):
-		# level is the legacy Kodi xbmc.LOG* numeric constant. Map
-		# conservatively: warning and above go to logger.warning, the
-		# rest to logger.info. Errors caught from network/parse failure
-		# also use logger.warning since they are recoverable.
+		# level je legacy Kodi xbmc.LOG* numeric:
+		#   0=DEBUG, 1=INFO, 2=NOTICE, 3=WARNING, 4=ERROR, 5=FATAL
+		# Mapping (FIX 0.57.0):
+		#   level >= 3 (warning+) → log_info (vždy viditeľné)
+		#   level 0-2 (debug/info/notice) → log_debug (len v Debug mode)
+		# Plus prefix '[Tvheadend.imdb]' pre easy grep.
 		try:
 			if level and level >= 3:
+				prefix = '[Tvheadend.imdb] WARNING: '
+				if _LOG_CALLBACK is not None:
+					_LOG_CALLBACK(prefix + str(msg))
+					return
+				# Fallback: stdlib logger
 				_LOGGER.warning('%s', msg)
 			else:
-				_LOGGER.info('%s', msg)
+				prefix = '[Tvheadend.imdb] '
+				# Prefer debug callback (silenced in normal mode)
+				if _LOG_DEBUG_CALLBACK is not None:
+					_LOG_DEBUG_CALLBACK(prefix + str(msg))
+				elif _LOG_CALLBACK is not None:
+					_LOG_CALLBACK(prefix + str(msg))
+				else:
+					_LOGGER.info('%s', msg)
 		except Exception:
 			pass
 
@@ -107,8 +135,12 @@ try:
 			# Reset the one-shot log marker so the next classify call
 			# logs the new state once.
 			_SETTING_STATE_LOGGED = False
+			# Toggle je dôležitý info entry — cez log_info (vždy viditeľné)
+			# namiesto _log() ktorý by ho mapoval na debug level.
 			try:
-				_LOGGER.info('set_enabled: %s', 'ON' if new else 'OFF')
+				if _LOG_CALLBACK is not None:
+					_LOG_CALLBACK('[Tvheadend.imdb] set_enabled: %s' %
+					              ('ON' if new else 'OFF'))
 			except Exception:
 				pass
 except ImportError:

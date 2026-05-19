@@ -1,0 +1,762 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_tvheadend\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-05-12 06:00+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid " (missing)"
+msgstr " (chybí)"
+
+msgid "(not set)"
+msgstr "(nenastaveno)"
+
+msgid "16 hours"
+msgstr "16 hodin"
+
+msgid "2 days"
+msgstr "2 dny"
+
+msgid "24 hours"
+msgstr "24 hodin"
+
+msgid "4 hours"
+msgstr "4 hodiny"
+
+msgid "7 days"
+msgstr "7 dní"
+
+msgid "8 hours"
+msgstr "8 hodin"
+
+msgid "Add category names to userbouquet"
+msgstr "Přidat názvy kategorií do userbouquet"
+
+msgid "All"
+msgstr "Vše"
+
+msgid "Allow creating userbouquet for cameras"
+msgstr "Povolit vytvoření userbouquet pro kamery"
+
+msgid "Allow creating userbouquet for radios"
+msgstr "Povolit vytvoření userbouquet pro rádia"
+
+msgid "Auto-inject EPG into Enigma2 (no epgimport plugin needed)"
+msgstr "Automaticky vkládat EPG do Enigma2 (bez epgimport pluginu)"
+
+msgid "Also save picons in SRP format (more compatibility, ~2x disk space)"
+msgstr "Ukládat picony i v SRP formátu (větší kompatibilita, ~2× více místa)"
+
+msgid "Archive"
+msgstr "Archiv"
+
+msgid "Archive: max items from DVR"
+msgstr "Archiv: max. položek z DVR"
+
+msgid "Archive: max number of days (0=no limit)"
+msgstr "Archiv: max. počet dní (0=bez limitu)"
+
+msgid "Auto"
+msgstr "Auto"
+
+msgid "Auto-refresh bouquet interval"
+msgstr "Interval automatického obnovení bouquetu"
+
+msgid "Automatically download picons when exporting userbouquet"
+msgstr "Automaticky stahovat picony při exportu userbouquet"
+
+msgid "Automatically export channel list as userbouquet"
+msgstr "Automaticky exportovat seznam kanálů jako userbouquet"
+
+msgid "Basic"
+msgstr "Basic"
+
+msgid "Bouquets index"
+msgstr "Index bouquetů"
+
+msgid "Channels: "
+msgstr "Kanály: "
+
+msgid "Clear 404 cache"
+msgstr "Vymazat 404 cache"
+
+msgid "Clear 404 picon cache (retry broken icons)"
+msgstr "Vymazat cache rozbitých piconů (zkusit stáhnout znovu)"
+
+msgid "Clear TVH cache"
+msgstr "Vymazat TVH cache"
+
+msgid "Continue playback (remember last position)"
+msgstr "Pokračovat v přehrávání (pamatovat si poslední pozici)"
+
+msgid "Custom bouquet display name (Radio)"
+msgstr "Vlastní název přehledu (Rádio)"
+
+msgid "Custom bouquet display name (TV)"
+msgstr "Vlastní název přehledu (TV)"
+
+msgid "DVR"
+msgstr "DVR"
+
+msgid "Default"
+msgstr "Výchozí"
+
+msgid "Default player"
+msgstr "Výchozí přehrávač"
+
+msgid "Detail"
+msgstr "Detail"
+
+msgid "Diagnose EPG"
+msgstr "Diagnostika EPG"
+
+msgid "Diagnostics"
+msgstr "Diagnostika"
+
+msgid "Digest"
+msgstr "Digest"
+
+msgid "Directory for XML EPG data (need at least 20MB of free space)"
+msgstr "Adresář pro XML EPG data (potřebných min. 20MB volného místa)"
+
+msgid "Disabled"
+msgstr "Vypnuto"
+
+msgid "Download TVH picons now"
+msgstr "Stáhnout TVH picony"
+
+msgid "Download picons from tvg-logo URLs"
+msgstr "Stahovat picony z tvg-logo URL"
+
+msgid "EPG source: "
+msgstr "EPG zdroj: "
+
+msgid "Enable Enigma2 EPG injection (integrate ArchivCZSK into system EPG)"
+msgstr ""
+"Vkládat EPG přímo do Enigma2 (integrovat ArchivCZSK do systémového EPG)"
+
+msgid "Enable adult filter"
+msgstr "Zapnout filtr pro dospělé"
+
+msgid "For how many days to generate XML EPG"
+msgstr "Pro kolik dní generovat XML EPG"
+
+msgid "For how many days to keep Enigma2 EPG history"
+msgstr "Pro kolik dní uchovat historii Enigma2 EPG"
+
+msgid "Found %d result(s) for: %s"
+msgstr "Nalezeno %d výsledek(y) pro: %s"
+
+msgid ""
+"Found %d results — showing first %d (most recent). Refine the search for "
+"fewer results."
+msgstr ""
+"Nalezeno %d výsledků — zobrazuji prvních %d (nejnovější). Upřesni hledání "
+"pro méně výsledků."
+
+msgid "General"
+msgstr "Obecné"
+
+msgid "Generate XML EPG for epgimport plugin (if installed)"
+msgstr "Generovat XML EPG pro epgimport plugin (pokud je nainstalován)"
+
+msgid "HTTP authentication"
+msgstr "HTTP autentifikace"
+
+msgid "History is empty — start watching something."
+msgstr "Historie je prázdná — podívej se nejprve na něco."
+
+msgid "Hľadať v archíve"
+msgstr "Hledat v archivu"
+
+msgid "Inject EPG directly into Enigma2 (no epgimport needed)"
+msgstr "Vkládat EPG přímo do Enigma2 (epgimport není potřeba)"
+
+msgid "Inject EPG into Enigma2 now (no epgimport)"
+msgstr "Vložit EPG do Enigma2 nyní (bez epgimport)"
+
+msgid "Invalidate TVH channel cache"
+msgstr "Vymazat cache kanálů TVH"
+
+msgid "Last EPG inject"
+msgstr "Poslední vložení EPG"
+
+msgid "Last TVH bouquet refresh"
+msgstr "Poslední obnovení TVH bouquetu"
+
+msgid "Last error"
+msgstr "Poslední chyba"
+
+msgid "Live TV"
+msgstr "Živé vysílání"
+
+msgid "Live stream"
+msgstr "Živý stream"
+
+msgid "Look up unknown titles on IMDb (background, opt-in)"
+msgstr "Online vyhledat neznámé tituly na IMDb (na pozadí, opt-in)"
+
+msgid "Mapping override file path"
+msgstr "Cesta k mapping override souboru"
+
+msgid "Missing Tvheadend server address in settings."
+msgstr "V nastavení chybí adresa Tvheadend serveru."
+
+msgid "Missing channel/service identifier for streaming."
+msgstr "Chybí identifikátor kanálu/služby pro streamování."
+
+msgid "Native DVB (DVB subs)"
+msgstr "Nativní DVB (DVB titulky)"
+
+msgid "Next channel listing will fetch fresh data"
+msgstr "Další načtení kanálů stáhne čerstvá data"
+
+msgid "None"
+msgstr "Žádná"
+
+msgid "Open settings"
+msgstr "Otevřít nastavení"
+
+msgid "Password"
+msgstr "Heslo"
+
+msgid "Paths"
+msgstr "Cesty"
+
+msgid "Picon directory"
+msgstr "Adresář piconů"
+
+msgid "Picons with broken icons (404 cache)"
+msgstr "Picony s rozbitými ikonami (404 cache)"
+
+msgid "Player used for userbouquet"
+msgstr "Přehrávač pro userbouquet"
+
+msgid "Please fill in the addon settings first: host, username and password."
+msgstr "Nejprve vyplň nastavení doplňku: server, jméno a heslo."
+
+msgid "Please type at least 2 characters."
+msgstr "Zadej prosím alespoň 2 znaky."
+
+msgid ""
+"Plugin is not configured.\n"
+"\n"
+"Fill in TVH server (host, username, password) OR enable External M3U "
+"playlist in plugin settings (blue 'Nastavenia' button)."
+msgstr ""
+"Plugin není nakonfigurován.\n"
+"\n"
+"Vyplň TVH server (host, jméno, heslo) NEBO zapni External M3U playlist v "
+"nastavení pluginu (modré tlačítko „Nastavenia“)."
+
+msgid "Plugin not configured"
+msgstr "Plugin není nakonfigurován"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Posledné sledované"
+msgstr "Naposledy sledováno"
+
+msgid "Prihlásenie do Tvheadend zlyhalo. Skontroluj meno/heslo a práva účtu."
+msgstr "Přihlášení do Tvheadend selhalo. Zkontroluj jméno/heslo a práva účtu."
+
+msgid "Progress: /tmp/archivczsk_tvheadend_picons.log"
+msgstr "Průběh: /tmp/archivczsk_tvheadend_picons.log"
+
+msgid ""
+"Recently played DVR recordings (up to 50). Tap to resume or browse what "
+"you've watched."
+msgstr ""
+"Naposledy přehrané DVR nahrávky (max 50). Klikni pro obnovení nebo "
+"procházení nedávno sledovaných."
+
+msgid "Recording"
+msgstr "Nahrávání"
+
+msgid "Refresh TVH bouquet"
+msgstr "Obnovit TVH bouquet"
+
+msgid "Refresh TVH bouquet + XML EPG now"
+msgstr "Obnovit TVH bouquet + XML EPG"
+
+msgid "Refresh interval"
+msgstr "Interval obnovení"
+
+msgid "Retry"
+msgstr "Zkusit znovu"
+
+msgid "Retry TVH"
+msgstr "Zkusit znovu"
+
+msgid "Search"
+msgstr "Vyhledávání"
+
+msgid "Search archive"
+msgstr "Hledat v archivu"
+
+msgid ""
+"Search the DVR archive by title or subtitle. Diacritics are ignored — typing "
+"'Na noze' matches 'Na nože'."
+msgstr ""
+"Vyhledávání v DVR archivu podle názvu nebo podtitulu. Diakritika se ignoruje "
+"— text 'Na noze' najde i 'Na nože'."
+
+msgid ""
+"Search the DVR archive by title or subtitle. Diacritics are ignored — typing "
+"'Na noze' matches 'Na nože'. Previous searches are remembered (up to 10)."
+msgstr ""
+"Vyhledávání v DVR archivu podle názvu nebo podtitulu. Diakritika se ignoruje "
+"— text 'Na noze' najde i 'Na nože'. Posledních 10 hledání se pamatuje."
+
+msgid "Server (IP/domain or URL)"
+msgstr "Server (IP/doména nebo URL)"
+
+msgid "Service type (1 = native DVB, supports DVB subtitles)"
+msgstr "Typ služby (1 = nativní DVB, podporuje DVB titulky)"
+
+msgid "Settings"
+msgstr "Nastavení"
+
+msgid "Show paths and generated files"
+msgstr "Zobrazit cesty a vygenerované soubory"
+
+msgid "TVH picon log"
+msgstr "TVH picon log"
+
+msgid "TVH picons"
+msgstr "TVH picony"
+
+msgid "TVH profile (e.g. matroska)"
+msgstr "TVH profil (např. matroska)"
+
+msgid "TVH refresh stamp"
+msgstr "Stamp obnovení TVH"
+
+msgid "TVH server"
+msgstr "TVH server"
+
+msgid "TVH status"
+msgstr "Stav TVH"
+
+msgid "TVH stream profile"
+msgstr "TVH stream profil"
+
+msgid "TVH temporarily unreachable. Auto-recovery polling in background."
+msgstr "TVH dočasně nedostupný. Automatické obnovení běží na pozadí."
+
+msgid "Tags: "
+msgstr "Tagy: "
+
+msgid "Test TVH login / connection"
+msgstr "Otestovat TVH login / spojení"
+
+msgid "Test login"
+msgstr "Test loginu"
+
+msgid "Timeout (seconds)"
+msgstr "Časový limit (sekundy)"
+
+msgid "Try a shorter or simpler query. Diacritics are ignored."
+msgstr "Zkus kratší nebo jednodušší zadání. Diakritika se ignoruje."
+
+msgid "Tvheadend"
+msgstr "Tvheadend"
+
+msgid "Tvheadend API request failed."
+msgstr "Požadavek na Tvheadend API selhal."
+
+msgid "Tvheadend Actions"
+msgstr "Akce Tvheadend"
+
+msgid "Tvheadend returned invalid JSON."
+msgstr "Tvheadend vrátil neplatný JSON."
+
+msgid "Use HTTPS"
+msgstr "Použít HTTPS"
+
+msgid "Use mapping override XML"
+msgstr "Použít mapping override XML"
+
+msgid "Use ticket URL (recommended for Digest)"
+msgstr "Použít ticket URL (doporučeno pro Digest)"
+
+msgid "Userbouquet"
+msgstr "Userbouquet"
+
+msgid "Username"
+msgstr "Jméno"
+
+msgid "Watched entries no longer exist in DVR archive."
+msgstr "Položky historie už neexistují v DVR archivu."
+
+msgid "Write epgimport channels/sources files"
+msgstr "Vytvářet epgimport channels/sources soubory"
+
+msgid "XMLTV EPG URL (optional; leave empty to use TVH XMLTV)"
+msgstr "XMLTV EPG URL (volitelné; prázdné = použít TVH XMLTV)"
+
+msgid "XMLTV source has %d <channel id> entries"
+msgstr "XMLTV zdroj má %d <channel id> položek"
+
+msgid "days"
+msgstr "dní"
+
+msgid "disabled"
+msgstr "vypnuto"
+
+msgid "exteplayer3"
+msgstr "exteplayer3"
+
+msgid "gstplayer"
+msgstr "gstplayer"
+
+msgid "never"
+msgstr "nikdy"
+
+msgid "« Back"
+msgstr "« Zpět"
+
+msgid ""
+"⚙ Configure TVH credentials or enable External M3U (blue 'Nastavenia' button)"
+msgstr ""
+"⚙ Nastav TVH přihlašovací údaje nebo zapni External M3U (modré tlačítko "
+"„Nastavenia“)"
+
+msgid "⚠ API endpoint not found — wrong TVH version or path?"
+msgstr "⚠ API endpoint nenalezen — špatná verze TVH nebo cesta?"
+
+msgid "⚠ Authentication failed — check username and password"
+msgstr "⚠ Přihlášení selhalo — zkontroluj jméno a heslo"
+
+msgid "⚠ Connection refused — wrong port, or TVH server not running"
+msgstr "⚠ Připojení odmítnuto — špatný port nebo TVH server neběží"
+
+msgid "⚠ Connection timeout — check IP/host, network and firewall"
+msgstr "⚠ Časový limit vypršel — zkontroluj IP/host, síť a firewall"
+
+msgid "⚠ Forbidden — TVH user lacks API permissions"
+msgstr "⚠ Zakázáno — TVH uživatel nemá API oprávnění"
+
+msgid "⚠ No route to host — check network connection"
+msgstr "⚠ Žádná trasa k serveru — zkontroluj síťové připojení"
+
+msgid "⚠ SSL/certificate error — try disabling HTTPS or fix cert"
+msgstr "⚠ SSL/certifikát chyba — vypni HTTPS nebo oprav certifikát"
+
+msgid "⚠ Server name not found — check 'host' field in Settings"
+msgstr "⚠ Jméno serveru nenalezeno — zkontroluj pole 'host' v Nastavení"
+
+msgid "✓ Matched: %d / %d"
+msgstr "✓ Nalezeno: %d / %d"
+
+msgid "✓ Picon download started (via full refresh on background)"
+msgstr "✓ Stahování piconů spuštěno (přes plný refresh na pozadí)"
+
+msgid "✓ TVH bouquet refresh triggered"
+msgstr "✓ Obnovení TVH bouquetu spuštěno"
+
+msgid "✓ TVH channel cache cleared"
+msgstr "✓ Cache kanálů TVH vymazána"
+
+msgid "✓ TVH login successful"
+msgstr "✓ TVH login úspěšný"
+
+msgid "✓ TVH picon download started in background"
+msgstr "✓ Stahování TVH piconů spuštěno na pozadí"
+
+msgid "✗ Bouquet generator not initialised"
+msgstr "✗ Bouquet generátor není inicializován"
+
+msgid "✗ Cleanup returned no stats"
+msgstr "✗ Vyčištění nevrátilo statistiku"
+
+msgid "✗ EPG fetch failed: "
+msgstr "✗ Stažení EPG selhalo: "
+
+msgid "✗ Error: "
+msgstr "✗ Chyba: "
+
+msgid "✗ Login failed: "
+msgstr "✗ Login selhal: "
+
+msgid "✗ No EPG URL configured or derivable"
+msgstr "✗ Žádný EPG URL nakonfigurován ani odvoditelný"
+
+msgid "✗ Nothing found for: %s"
+msgstr "✗ Nic se nenašlo pro: %s"
+
+msgid "✗ TVH login failed - check settings"
+msgstr "✗ TVH login selhal - zkontroluj nastavení"
+
+msgid "✗ Tvheadend server not configured."
+msgstr "✗ Tvheadend server není nakonfigurován."
+
+msgid ""
+"✗ Tvheadend server not configured. Open Settings to fill in host, username, "
+"password."
+msgstr ""
+"✗ Tvheadend server není nakonfigurován. Otevři Nastavení a vyplň server, "
+"jméno a heslo."
+
+msgid "✗ XMLTV parse failed: "
+msgstr "✗ Parsování XMLTV selhalo: "
+
+msgid "✗ channels.xml not found: "
+msgstr "✗ channels.xml nenalezen: "
+
+msgid "✗ channels.xml parse failed: "
+msgstr "✗ Parsování channels.xml selhalo: "
+
+msgid "⟳ Failed to load archive — tap to retry"
+msgstr "⟳ Selhalo načtení archivu — klepnutím zkusit znovu"
+
+msgid "⟳ Retry TVH connection"
+msgstr "⟳ Zkusit znovu připojení k TVH"
+
+msgid "⟳ Retry TVH connection (currently unreachable)"
+msgstr "⟳ TVH momentálně nedostupný — zkusit znovu"
+
+msgid "⟳ TVH temporarily unreachable — tap to retry"
+msgstr "⟳ TVH dočasně nedostupný — klepnutím zkusit znovu"
+
+msgid "⟳ TVH unreachable — tap to retry"
+msgstr "⟳ TVH nedostupný — klepnutím zkusit znovu"
+
+msgid "🔍 Hľadať v archíve"
+msgstr "🔍 Hledat v archivu"
+
+# === FIX 0.57.0 (skyjet PR #22 review #15b): plugin i18n — category labels z classifier.py ===
+
+msgid "Movies"
+msgstr "Filmy"
+
+msgid "Series"
+msgstr "Seriály"
+
+msgid "Sport"
+msgstr "Sport"
+
+msgid "News"
+msgstr "Zpravodajství"
+
+msgid "Shows / Entertainment"
+msgstr "Show / Pořady"
+
+msgid "Children"
+msgstr "Dětské"
+
+msgid "Music"
+msgstr "Hudba"
+
+msgid "Arts / Culture"
+msgstr "Umění / Kultura"
+
+msgid "Documentaries / Educational"
+msgstr "Dokumenty / Vzdělávací"
+
+msgid "Leisure / Hobby"
+msgstr "Volný čas / Hobby"
+
+msgid "Uncategorized"
+msgstr "Nezařazené"
+
+msgid "Action"
+msgstr "Akční"
+
+msgid "Comedy"
+msgstr "Komedie"
+
+msgid "Crime / Thriller / Detective"
+msgstr "Krimi / Thriller / Detektivka"
+
+msgid "Drama"
+msgstr "Drama"
+
+msgid "Sci-fi / Fantasy"
+msgstr "Sci-fi / Fantasy"
+
+msgid "Romance"
+msgstr "Romantické"
+
+msgid "Horror"
+msgstr "Horor"
+
+msgid "Adventure"
+msgstr "Dobrodružné"
+
+msgid "Animation"
+msgstr "Animované"
+
+msgid "Historical / War"
+msgstr "Historické / Válečné"
+
+msgid "Western"
+msgstr "Western"
+
+msgid "Other"
+msgstr "Jiné"
+
+msgid "Football"
+msgstr "Fotbal"
+
+msgid "Hockey"
+msgstr "Hokej"
+
+msgid "Basketball"
+msgstr "Basketbal"
+
+msgid "Tennis"
+msgstr "Tenis"
+
+msgid "Volleyball"
+msgstr "Volejbal"
+
+msgid "Handball"
+msgstr "Házená"
+
+msgid "Athletics"
+msgstr "Atletika"
+
+msgid "Cycling"
+msgstr "Cyklistika"
+
+msgid "Motorsport"
+msgstr "Motorsport"
+
+msgid "Combat sports"
+msgstr "Bojové sporty"
+
+msgid "Winter sports"
+msgstr "Zimní sporty"
+
+msgid "Water sports"
+msgstr "Vodní sporty"
+
+msgid "Sports news"
+msgstr "Sportovní zpravodajství"
+
+msgid "Main news"
+msgstr "Hlavní zprávy"
+
+msgid "Politics / Discussion"
+msgstr "Politika / Diskuze"
+
+msgid "Crime / Reports"
+msgstr "Krimi / Reportáže"
+
+msgid "Magazines / Lifestyle"
+msgstr "Magazíny / Lifestyle"
+
+msgid "Weather"
+msgstr "Počasí"
+
+msgid "Reality show"
+msgstr "Reality show"
+
+msgid "Competition shows / Talents"
+msgstr "Soutěžní show / Talenty"
+
+msgid "Cooking shows"
+msgstr "Kuchařské show"
+
+msgid "Talk show"
+msgstr "Talk show"
+
+msgid "Entertainment / Comedy"
+msgstr "Zábava / Humor"
+
+msgid "Magazines"
+msgstr "Magazíny"
+
+msgid "Animated / Cartoons"
+msgstr "Animované / Kreslené"
+
+msgid "Fairy tales"
+msgstr "Pohádky"
+
+msgid "Educational"
+msgstr "Vzdělávací"
+
+msgid "Movies for children"
+msgstr "Filmy pro děti"
+
+msgid "Concerts"
+msgstr "Koncerty"
+
+msgid "Classical music / Opera"
+msgstr "Klasická hudba / Opera"
+
+msgid "Charts / Pop"
+msgstr "Hitparáda / Pop"
+
+msgid "Folk / Country / Traditional"
+msgstr "Folk / Country / Lidová"
+
+msgid "Music magazines"
+msgstr "Hudební magazíny"
+
+msgid "Theater"
+msgstr "Divadlo"
+
+msgid "Film art"
+msgstr "Filmové umění"
+
+msgid "Fine arts / Painting"
+msgstr "Výtvarné umění / Malba"
+
+msgid "Literature / Books"
+msgstr "Literatura / Knihy"
+
+msgid "Nature / Animals"
+msgstr "Příroda / Zvířata"
+
+msgid "History / Archaeology"
+msgstr "Historie / Archeologie"
+
+msgid "Science / Technology / Space"
+msgstr "Věda / Technika / Vesmír"
+
+msgid "Travel / Geography"
+msgstr "Cestopisy / Geografie"
+
+msgid "Society / Politics"
+msgstr "Společnost / Politika"
+
+msgid "Personalities / Biography"
+msgstr "Osobnosti / Biografie"
+
+msgid "Garden"
+msgstr "Zahrada"
+
+msgid "Living / Renovation"
+msgstr "Bydlení / Rekonstrukce"
+
+msgid "Cooking / Recipes"
+msgstr "Vaření / Recepty"
+
+msgid "Auto / Moto"
+msgstr "Auto / Moto"
+
+msgid "Travel"
+msgstr "Cestování"
+
+msgid "Health / Fitness"
+msgstr "Zdraví / Fitness"
+
+msgid "DIY / Crafts"
+msgstr "Kutilství / DIY"
+
+msgid "Recently watched"
+msgstr "Naposledy sledované"
+
+msgid "To display content, you must enter M3U playlist URL in the addon settings"
+msgstr "Pro zobrazení obsahu je nutné zadat URL M3U playlistu v nastavení doplnku"
+
+msgid "To display content, you must enter TVH server (host, username, password) in the addon settings"
+msgstr "Pro zobrazení obsahu je nutné zadat TVH server (host, přihlašovací jméno, heslo) v nastavení doplnku"

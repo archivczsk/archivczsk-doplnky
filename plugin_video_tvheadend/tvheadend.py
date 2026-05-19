@@ -479,12 +479,6 @@ class Tvheadend(object):
 		s = re.sub(r'[^a-zA-Z0-9_.-]+', '_', s)
 		return s[:80]
 
-	def _strip_query(self, p):
-		try:
-			return (p or '').split('?', 1)[0]
-		except Exception:
-			return p or ''
-
 	def _imagecache_id(self, icon_public_url):
 		"""Vráti čistý ID z imagecache/ID (bez prípony), alebo None."""
 		ipu = (icon_public_url or '').strip().lstrip('/')
@@ -498,11 +492,6 @@ class Tvheadend(object):
 				idpart = idpart[:-len(e)]
 				break
 		return self._sanitize_filename(idpart) or None
-
-	def _flat_imagecache_filename(self, icon_public_url, ext='.png'):
-		"""imagecache/1024 -> imagecache_1024.<ext>"""
-		cid = self._imagecache_id(icon_public_url)
-		return ('imagecache_%s%s' % (cid, ext)) if cid else None
 
 	def _picon_local_path(self, icon_public_url):
 		"""
@@ -534,13 +523,15 @@ class Tvheadend(object):
 		t.start()
 
 	def _log_picon(self, msg):
-		"""FIX 0.48j: log cez print() namiesto vlastného súboru. ArchivCZSK
-		framework presmeruje stdout do /tmp/archivCZSK.log, takže príspevky
-		s prefixom '[plugin.tvheadend.picons]' sú dohľadateľné cez:
-		    grep '\\[plugin.tvheadend.picons\\]' /tmp/archivCZSK.log
+		"""FIX 0.57.0: log cez framework self.cp.log_info() ktorý ide do
+		/tmp/archivCZSK.log. Predtým bol print() ktorý nešiel (E2 stdout
+		nie je redirected na archivCZSK.log pre plugin code).
+		Sleduj cez: grep '\\[Tvheadend.picons\\]' /tmp/archivCZSK.log
 		"""
 		try:
-			print('[plugin.tvheadend.picons] %s' % msg)
+			cp = getattr(self, 'cp', None)
+			if cp is not None and hasattr(cp, 'log_info'):
+				cp.log_info('[Tvheadend.picons] ' + str(msg))
 		except Exception:
 			pass
 
@@ -1125,41 +1116,6 @@ class Tvheadend(object):
 			if ch:
 				out[ch] = e
 		return out
-
-	def get_epg_now_next(self, channel_uuid):
-		"""Vráti (now_event, next_event) pre daný kanál."""
-		if not channel_uuid:
-			return (None, None)
-
-		def _fetch(mode):
-			params = {'mode': mode, 'limit': 1, 'start': 0, 'channel': channel_uuid}
-			try:
-				data = self.api_get('api/epg/events/grid', params=params) or {}
-			except Exception:
-				return None
-			entries = data.get('entries')
-			if entries:
-				return entries[0]
-			# fallback – niektoré verzie TVH používajú channelUuid
-			params.pop('channel', None)
-			params['channelUuid'] = channel_uuid
-			try:
-				data = self.api_get('api/epg/events/grid', params=params) or {}
-			except Exception:
-				return None
-			entries = data.get('entries')
-			return entries[0] if entries else None
-
-		now_event = next_event = None
-		try:
-			now_event = _fetch('now')
-		except Exception:
-			pass
-		try:
-			next_event = _fetch('next')
-		except Exception:
-			pass
-		return (now_event, next_event)
 
 	def get_channel_name_by_service_uuid(self, service_uuid):
 		if not service_uuid:
