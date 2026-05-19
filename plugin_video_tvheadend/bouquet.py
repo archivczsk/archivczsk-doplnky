@@ -379,15 +379,13 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 			return default
 
 	def get_setting(self, name):
-		# FIX 0.48e: XML EPG cesta bola odstránená — pre staré inštalácie
-		# kde užívateľ má enable_xmlepg=true vrátime False, aby framework
-		# neprodukoval XML súbory.
-		if name == 'enable_xmlepg':
-			return False
-		if name == 'xmlepg_dir':
-			return ''
-		if name == 'xmlepg_days':
-			return 0
+		# FIX 0.58.2 (skyjet PR #22 review #11 follow-up):
+		# Odstránené hardcoded overrides `enable_xmlepg=False`,
+		# `xmlepg_dir=''`, `xmlepg_days=0` (boli z 0.48e keď plugin
+		# používal vlastnú custom EPG injection cestu a chcel
+		# blokovať framework XML EPG export). Teraz framework
+		# `EnigmaEpgGenerator` má naopak BEŽAŤ — settings sa čítajú
+		# z user settings.xml ako bool/int.
 
 		# FIX 0.57.0 (skyjet PR #22 review): odstránený priame čítanie
 		# /etc/enigma2/settings cez vlastný parser — framework
@@ -407,7 +405,11 @@ class TvheadendBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 			# FIX 0.58.2: enable_xmlepg bool toggle (framework default name)
 			"enable_xmlepg",
 		):
-			return self._to_bool(val, default=False)
+			# FIX 0.58.2: enable_xmlepg default=True (settings.xml má
+			# default="true"), takže pre fresh install pred prvým save
+			# settingov chceme vrátiť True ak setting nie je v configu.
+			default = True if name == "enable_xmlepg" else False
+			return self._to_bool(val, default=default)
 
 		# FIX 0.58.2: framework default name `xmlepg_days` (predtým `enigmaepg_days`)
 		if name == "xmlepg_days":

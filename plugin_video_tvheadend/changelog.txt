@@ -1,5 +1,5 @@
 Tvheadend plugin pre archivCZSK
-Verzia 0.58.2 (19.5.2026)
+Verzia 0.58.3 (19.5.2026)
 ================================================================
 
 Klient pre Tvheadend server na sledovanie živej TV, rádia
@@ -51,6 +51,19 @@ Watchdog:
   - Automatické sledovanie offline → online prechodu TVH servera
   - Pri detekcii online stavu spustí obnovu bouquetu a picons
   - Netreba manuálne otvoriť plugin po reštarte TVH servera
+
+
+NOVINKY VO VERZII 0.58.3
+----------------------------------------------------------------
+
+  - Opravené: framework EPG injection cez EnigmaEpgGenerator
+    sa nikdy nespúšťala kvôli stale override v get_setting()
+    ktorý vracal enable_xmlepg=False bez ohľadu na user
+    nastavenie. Po inštalácii čistého image-u plugin negeneroval
+    EPG do Enigma2 eEPGCache.
+
+  - Nastavenie enable_xmlepg teraz korektne čítané z user
+    settings (default true).
 
 
 NOVINKY VO VERZII 0.58.2
