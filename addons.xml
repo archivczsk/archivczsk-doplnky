@@ -5,6 +5,7 @@
 <addon id="plugin.video.autosalontv" name="Autosalon" version="1.9" hash="e1836431641d28c728f02e2b0a0037e4" rhash="e1836431641d28c728f02e2b0a0037e4" />
 <addon id="plugin.video.disneyplus" name="Disney+" version="2.7" hash="9b4f337a451cca43d23e75f20a0f30a3" rhash="a99e06ffbb749b1277f64bb218645ebc" />
 <addon id="plugin.video.dupe" name="Dupe" version="1.5" hash="e4b33d736f17bcfcf767d5fa6aa9123e" rhash="7fee04af22be3c224ee9859bdad68679" />
+<addon id="plugin.video.e2m3u2bouquet" name="E2m3u2bouquet" version="0.1.0" hash="1fe43453fd1a50b6920de7ae3cc61c04" rhash="830b801262bc4667484643182c3dfcc3" />
 <addon id="plugin.video.idnestv" name="iDNES.tv" version="1.8" hash="fc03240f747f08c9e8dbe5737e94002b" rhash="fc03240f747f08c9e8dbe5737e94002b" />
 <addon id="plugin.video.ivysilani" name="iVysílání - Česká televize" version="3.9" hash="23012a1fc5a63992419ca21b2efea159" rhash="b041ec278dc9b02bbb361af9b15b2893" />
 <addon id="plugin.video.jojplay" name="JOJ Play" version="1.8" hash="30511abc16ac3faf53ab4f2400086aab" rhash="1536af64805a9d424875a85a85be148f" />
@@ -32,7 +33,7 @@
 <addon id="plugin.video.telly" name="Telly" version="1.9.0" hash="aae23747c70b0c3d6eac87563610d62c" rhash="468d71083682e63a0b456d54794e5f16" />
 <addon id="plugin.video.tipostv" name="Tipos TV" version="1.2" hash="e337662a26d2ac0bc6f86b3d1c44f64f" rhash="cf255ffe91148173ea4fd52bfcd8dfd8" />
 <addon id="plugin.video.tvcom.cz" name="tvcom.cz" version="1.6" hash="ccf4617244add2159db9a82bdae810c5" rhash="ccf4617244add2159db9a82bdae810c5" />
-<addon id="plugin.video.tvheadend" name="Tvheadend" version="0.13" hash="3ebae05e6ccfdba69918ddaa8f611f83" rhash="bbd2c7cd718741f5eb5803a48d3204a9" />
+<addon id="plugin.video.tvheadend" name="Tvheadend" version="0.58.2" hash="81f2e0f37096adf3223cd058fdb3c12b" rhash="79c45851cff19e24b52c532d8f754295" />
 <addon id="plugin.video.tvlux" name="TV Lux" version="1.1" hash="645da0301ef29f55b4e4686bf82139a2" rhash="65e6a480e3c73af0d3a7b515b554e51e" />
 <addon id="plugin.video.tvnoe" name="TV Noe" version="1.1" hash="569ae4fe72ae953f49da90fa22d9ca4a" rhash="c44ee161a8dfc1e367061b7f6eac0e69" />
 <addon id="plugin.video.tvseznam" name="Televize Seznam" version="1.10" hash="d8afda7516c7dfa3a802f6d26a20ea2f" rhash="d8afda7516c7dfa3a802f6d26a20ea2f" />
