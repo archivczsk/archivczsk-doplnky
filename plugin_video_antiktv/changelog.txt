@@ -1,3 +1,7 @@
+2.33: 24.05.2026
+- oprava funkčnosti po zmenách formátu dát na strane Antiku
+- verzia pre MIPSEL procesory je momentálne NEFUNKĆNÁ !!!
+
 2.32: 02.03.2026
 - vylepšené formátovanie popisu v EPG
 - možnosť prechodu priamo na archív programu cez kontextové menu
