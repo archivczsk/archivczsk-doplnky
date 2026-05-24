@@ -5,45 +5,10 @@ from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.debug.http import dump_json_request
 from tools_archivczsk.player.features import PlayerFeatures
 from time import time
-from datetime import timedelta, datetime, tzinfo
+from datetime import timedelta, datetime
 from base64 import b64decode
 import re, os, json, requests
 from .youtube import resolve as yt_resolve
-
-class FixedOffset(tzinfo):
-    def __init__(self, offset_minutes):
-        self._offset = timedelta(minutes=offset_minutes)
-
-    def utcoffset(self, dt):
-        return self._offset
-
-    def dst(self, dt):
-        return timedelta(0)
-
-    def tzname(self, dt):
-        total_minutes = int(self._offset.total_seconds() // 60)
-        sign = "+" if total_minutes >= 0 else "-"
-        total_minutes = abs(total_minutes)
-        return "%s%02d:%02d" % (sign, total_minutes // 60, total_minutes % 60)
-
-def parse_iso8601(s):
-    # UTC Z
-    if s.endswith("Z"):
-        dt = datetime.strptime(s[:-1], "%Y-%m-%dT%H:%M:%S")
-        return dt.replace(tzinfo=FixedOffset(0))
-
-    # ±HH:MM
-    base = s[:-6]
-    tz = s[-6:]
-
-    dt = datetime.strptime(base, "%Y-%m-%dT%H:%M:%S")
-
-    sign = 1 if tz[0] == "+" else -1
-    hours = int(tz[1:3])
-    minutes = int(tz[4:6])
-
-    offset_minutes = sign * (hours * 60 + minutes)
-    return dt.replace(tzinfo=FixedOffset(offset_minutes))
 
 class YoutubeContentProvider(CommonContentProvider):
 
@@ -132,6 +97,17 @@ class YoutubeContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
+	def iso_to_cet(self, s):
+		try:
+			dt = datetime.strptime(s[:-6], "%Y-%m-%dT%H:%M:%S")
+			sign = 1 if s[-6] == "+" else -1
+			h, m = int(s[-5:-3]), int(s[-2:])
+			return (dt - sign * timedelta(hours=h, minutes=m) + timedelta(hours=1)).strftime("%d.%m.%Y %H:%M:%S")
+		except:
+			return "N/A"
+
+	# ##################################################################################################################
+
 	def format_time(self, seconds):
 		h, rem = divmod(seconds, 3600)
 		m, s = divmod(rem, 60)
@@ -156,7 +132,7 @@ class YoutubeContentProvider(CommonContentProvider):
 					channel_title = data.get("microformat", {}).get("playerMicroformatRenderer", {}).get("ownerChannelName", "N/A")
 					published = data.get("microformat", {}).get("playerMicroformatRenderer", {}).get("publishDate", "N/A")
 					plot = '{} [{}] {} ({}x)\n{}'.format(
-						parse_iso8601(published).strftime("%-d.%-m.%Y %H:%M"),
+						self.iso_to_cet(published),
 						channel_title,
 						self.format_time(int(length)),
 						views,
@@ -278,8 +254,8 @@ class YoutubeContentProvider(CommonContentProvider):
 					menu.add_menu_item(self._('Save channel'), cmd=self.save_channel, channel_name=channel_title, channel_id=channel_id)
 					self.add_video(title, "https://i.ytimg.com/vi/" + video_id + "/maxresdefault.jpg", info_labels, menu=menu, cmd=self.resolve_video, video_title=title, video_id=video_id)
 					continue
-				elif "richItemRenderer" in block and "content" in block["richItemRenderer"] and "videoRenderer" in block["richItemRenderer"]["content"]:
-					one = block["richItemRenderer"]["content"]["videoRenderer"]
+				elif "richItemRenderer" in block and "content" in block["richItemRenderer"] and "lockupViewModel" in block["richItemRenderer"]["content"]:
+					one = block["richItemRenderer"]["content"]["lockupViewModel"]
 				elif "videoRenderer" in block:
 					one = block["videoRenderer"]
 				elif "continuationItemRenderer" in block:
@@ -287,12 +263,28 @@ class YoutubeContentProvider(CommonContentProvider):
 					continue
 				else:
 					continue
-				video_id = one.get("videoId", "N/A")
-				title = one.get("title", {}).get("runs",[{}])[0].get("text","N/A")
-				channel_title = data.get("header", {}).get("pageHeaderRenderer", {}).get("pageTitle", one.get("longBylineText", {}).get("runs", [{}])[0].get("text", "N/A"))
-				channel_id = data.get("metadata", {}).get("channelMetadataRenderer", {}).get("externalId", one.get("longBylineText", {}).get("runs", [{}])[0].get("navigationEndpoint", {}).get("browseEndpoint", {}).get("browseId", ""))
-				published = one.get("publishedTimeText", {}).get("simpleText", "")
-				is_live = 1 if one.get("thumbnailOverlays", [{}])[0].get("thumbnailOverlayTimeStatusRenderer", {}).get("style", None) == "LIVE" else 0
+
+				if endpoint == "search":
+					video_id = one.get("videoId", "N/A")
+					title = one.get("title", {}).get("runs",[{}])[0].get("text","N/A")
+					channel_title = data.get("header", {}).get("pageHeaderRenderer", {}).get("pageTitle", one.get("longBylineText", {}).get("runs", [{}])[0].get("text", "N/A"))
+					channel_id = data.get("metadata", {}).get("channelMetadataRenderer", {}).get("externalId", one.get("longBylineText", {}).get("runs", [{}])[0].get("navigationEndpoint", {}).get("browseEndpoint", {}).get("browseId", ""))
+					published = one.get("publishedTimeText", {}).get("simpleText", "")
+					duration = one.get("lengthText", {}).get("simpleText", "")
+					views = re.sub(r"\D", "", one.get("viewCountText", {}).get("simpleText", "N/A"))
+					is_live = 1 if one.get("thumbnailOverlays", [{}])[0].get("thumbnailOverlayTimeStatusRenderer", {}).get("style", None) == "LIVE" else 0
+				else:
+					video_id = one.get("contentId", "N/A")
+					title = one.get("metadata", {}).get("lockupMetadataViewModel", {}).get("title", {}).get("content", "N/A")
+					channel_title = data.get("metadata", {}).get("channelMetadataRenderer", {}).get("title", data.get("header", {}).get("pageHeaderRenderer", {}).get("pageTitle", "N/A"))
+					channel_id = data.get("metadata", {}).get("channelMetadataRenderer", {}).get("externalId", "N/A")
+					duration = one.get("contentImage", {}).get("thumbnailViewModel", {}).get("overlays", [{}])[0].get("thumbnailBottomOverlayViewModel", {}).get("badges", [{}])[0].get("thumbnailBadgeViewModel", {}).get("text", "0")
+					views = one.get("metadata", {}).get("lockupMetadataViewModel", {}).get("metadata", {}).get("contentMetadataViewModel", {}).get("metadataRows", [{}])[0].get("metadataParts", [{},{}])[0].get("text", {}).get("content", "N/A")
+					try:
+						published = one.get("metadata", {}).get("lockupMetadataViewModel", {}).get("metadata", {}).get("contentMetadataViewModel", {}).get("metadataRows", [{}])[0].get("metadataParts", [{},{}])[1].get("text", {}).get("content", "N/A")
+					except (KeyError, IndexError, TypeError):
+						published = "N/A"
+					is_live = 1 if duration == "LIVE" else 0
 				upcoming = int(one.get("upcomingEventData", {}).get("startTime", 0))
 				if is_live == 0: # special for Search
 					is_live = 1 if one.get("badges", [{}])[0].get("metadataBadgeRenderer", {}).get("label", None) == "LIVE" else 0
@@ -304,13 +296,13 @@ class YoutubeContentProvider(CommonContentProvider):
 				plot = '{} [{}] {} ({}x)\n{}'.format(
 					published,
 					channel_title,
-					one.get("lengthText", {}).get("simpleText", ""),
-					re.sub(r"\D", "", one.get("viewCountText", {}).get("simpleText", "N/A")),
+					duration,
+					views.replace(" views", ""),
 					decode_html(one.get("descriptionSnippet", {}).get("runs",[{}])[0].get("text",""))
 				)
 				info_labels = {
 					'plot': plot,
-					'duration': self.to_seconds(one.get("lengthText", {}).get("simpleText", "0"))
+					'duration': self.to_seconds(duration if duration != "LIVE" else "0")
 				}
 				menu = self.create_ctx_menu()
 				channel_params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"browseId":channel_id,"params":"EgZ2aWRlb3PyBgQKAjoA"}
