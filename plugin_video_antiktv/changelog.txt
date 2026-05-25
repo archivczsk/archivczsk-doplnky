@@ -1,3 +1,6 @@
+2.34: 25.05.2026
+- oprava funkcionality po zmenách na strane Antiku pre mipsel
+
 2.33: 24.05.2026
 - oprava funkčnosti po zmenách formátu dát na strane Antiku
 - verzia pre MIPSEL procesory je momentálne NEFUNKĆNÁ !!!
