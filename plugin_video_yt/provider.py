@@ -89,10 +89,13 @@ class YoutubeContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def to_seconds(self, time_str):
-		parts = map(int, time_str.split(":"))
 		total = 0
-		for p in parts:
-			total = total * 60 + p
+		try:
+			parts = map(int, time_str.split(":"))
+			for p in parts:
+				total = total * 60 + p
+		except:
+			pass
 		return total
 
 	# ##################################################################################################################
@@ -297,12 +300,12 @@ class YoutubeContentProvider(CommonContentProvider):
 					published,
 					channel_title,
 					duration,
-					views.replace(" views", ""),
-					decode_html(one.get("descriptionSnippet", {}).get("runs",[{}])[0].get("text",""))
+					"",
+					views
 				)
 				info_labels = {
 					'plot': plot,
-					'duration': self.to_seconds(duration if duration != "LIVE" else "0")
+					'duration': self.to_seconds(duration)
 				}
 				menu = self.create_ctx_menu()
 				channel_params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"browseId":channel_id,"params":"EgZ2aWRlb3PyBgQKAjoA"}
