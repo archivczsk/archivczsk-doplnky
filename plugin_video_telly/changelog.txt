@@ -1,11 +1,14 @@
+1.10.0: 12.06.2026
+    - oprava prehrávania archívu priamo z EPG
+
 1.9.0: 26.01.2026
-- nastavenie sťahovania streamu do formátu TS
+    - nastavenie sťahovania streamu do formátu TS
 
 1.8.0: 16.01.2026
-- úprava inicializácie po zmenách v závislostiach doplnku
-- oprava zobrazenia EPG v doplnku ak nie je povolený export EPG
-- oprava prehrávania pri zakázanom h265 kodeku
-- ak je h265 kodek povolený, tak sa automaticky použije (ak je dostupný)
+    - úprava inicializácie po zmenách v závislostiach doplnku
+    - oprava zobrazenia EPG v doplnku ak nie je povolený export EPG
+    - oprava prehrávania pri zakázanom h265 kodeku
+    - ak je h265 kodek povolený, tak sa automaticky použije (ak je dostupný)
 
 1.7.0 - 22.12.2024
     - pridanie podpory pre prehrávanie archívu priamo z EPG
