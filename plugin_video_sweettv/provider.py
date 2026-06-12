@@ -147,7 +147,7 @@ class SweetTVModuleArchive(CPModuleArchive):
 			startts = event["time_start"]
 			endts = event["time_stop"]
 
-			if (abs(startts) - event_start) > 60:
+			if abs(startts - event_start) > 60:
 #				self.cp.log_debug("Archive event %d - %d doesn't match: %s" % (startts, endts, event.get("text") or '???'))
 				continue
 
