@@ -24,8 +24,8 @@ DUMP_REQUESTS = False
 # #################################################################################################
 
 class Oneplay(object):
-	APP_VERSION = 'R9.18'
-	API_VERSION = '1.9'
+	APP_VERSION = 'R11.33'
+	API_VERSION = '1.11'
 
 	def __init__(self, cp):
 		self.cp = cp
@@ -497,21 +497,20 @@ class Oneplay(object):
 		response = self.call_api('page.search.display', payload)
 		ret = []
 
-		for block in response.get('layout',{}).get('blocks',[]):
-			if block['schema'] == 'CarouselBlock':
-				if block['template'] == 'searchPortrait':
-					for carousel in block['carousels']:
-						for item in carousel['tiles']:
-							if item['action']['params']['schema'] == 'PageContentDisplayApiAction':
-								item_type = item['action']['params']['contentType']
+		for block_tab in filter(lambda b: b['schema'] == 'TabBlock', response.get('layout',{}).get('blocks',[])):
+			for block in filter(lambda b: b['schema'] == 'CarouselBlock' and b['template'] == 'searchPortrait', block_tab.get('layout',{}).get('blocks',[])):
+				for carousel in block['carousels']:
+					for item in carousel['tiles']:
+						if item['action']['params']['schema'] == 'PageContentDisplayApiAction':
+							item_type = item['action']['params']['contentType']
 
-								if item_type in ('show', 'movie', 'epgitem'):
-									ret.append({
-										'type': 'series' if item_type == 'show' else 'video',
-										'id': item['action']['params']['payload']['contentId'],
-										'title':  item['title'],
-										'img': self._get_img(item),
-									})
+							if item_type in ('show', 'movie', 'epgitem'):
+								ret.append({
+									'type': 'series' if item_type == 'show' else 'video',
+									'id': item['action']['params']['payload']['contentId'],
+									'title':  item['title'],
+									'img': self._get_img(item),
+								})
 
 		return ret
 
