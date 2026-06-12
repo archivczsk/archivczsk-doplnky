@@ -1,3 +1,6 @@
+2.24: 12.06.2026
+- oprava prehrávania archívu priamo z EPG
+
 2.23: 26.01.2026
 - nastavenie sťahovania streamu do formátu TS
 

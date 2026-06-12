@@ -240,7 +240,7 @@ class SledovaniTVModuleArchive(CPModuleArchive):
 			start_ts = self.cp.sledovanitv.convert_time(epg["startTime"])
 			end_ts = self.cp.sledovanitv.convert_time(epg["endTime"])
 
-			if (abs(start_ts) - event_start) > 60:
+			if abs(start_ts - event_start) > 60:
 #				self.cp.log_debug("Archive event %d - %d doesn't match: %s" % (start_ts, end_ts, epg.get("title") or '???'))
 				continue
 
