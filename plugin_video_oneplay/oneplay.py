@@ -251,16 +251,17 @@ class Oneplay(object):
 
 	# #################################################################################################
 
-	def fill_accounts(self, accounts):
+	def fill_accounts(self, groups):
 		self.cp.log_debug("Filling available accounts")
 
 		self.accounts = []
-		for a in accounts:
-			self.accounts.append({
-				'provider': a['accountProvider'],
-				'id': a['accountId'],
-				'name': a['name'],
-			})
+		for group in (groups or []):
+			for a in group.get('accounts', []):
+				self.accounts.append({
+					'provider': a['accountProvider'],
+					'id': a['accountId'],
+					'name': a['name'],
+				})
 
 		# check if we have at least one account marked as active - if not - select the first one
 		for a in self.accounts:
@@ -320,7 +321,7 @@ class Oneplay(object):
 				return False
 
 			self.cp.log_debug("Starting login with account command")
-			self.fill_accounts(response['step']['accounts'])
+			self.fill_accounts(response['step'].get('groups', []))
 
 			account_num = account_choose_cbk(['{}: {}'.format(a['provider'], a['name']) for a in self.accounts])
 
