@@ -543,8 +543,9 @@ class SweetTV:
 		for m in re.finditer(r'^#EXT-X-STREAM-INF:(?P<info>.+)\n(?P<chunk>.+)', req.text, re.MULTILINE):
 			stream_info = {}
 			for info in re.split(r''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', m.group('info')):
-				key, val = info.split('=', 1)
-				stream_info[key.lower()] = val
+				if '=' in info:
+					key, val = info.split('=', 1)
+					stream_info[key.lower()] = val
 
 			stream_url = m.group('chunk')
 
