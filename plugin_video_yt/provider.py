@@ -236,7 +236,7 @@ class YoutubeContentProvider(CommonContentProvider):
 					.get("twoColumnSearchResultsRenderer", {})
 					.get("primaryContents", {})
 					.get("sectionListRenderer", {})
-					.get("contents", [])[0]
+					.get("contents", [{}])[0]
 					.get("itemSectionRenderer", {})
 					.get("contents", [])
 				)
