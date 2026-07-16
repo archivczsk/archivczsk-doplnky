@@ -144,12 +144,14 @@ def tvseznam_run(addon, session, params):
 			return False
 		jso = data.json()
 		if 'data' in jso:
-			for episode in jso['data']['tag']['episodesConnection']['edges']:
-				poster = 'https:' + episode['node']['images'][0]['url'] if 'images' in episode['node'] and 'url' in episode['node']['images'][0] else None
-				datum = datetime.datetime.utcfromtimestamp(episode['node']['publishTime']['timestamp']).strftime('%d.%m.%y %H:%M') + ' - ' if 'publishTime' in episode['node'] and 'timestamp' in episode['node']['publishTime'] else ''
-				addDir(episode['node']['name'], episode['node']['spl'], 5, poster, None, None, { 'plot': '[' + episode['node']['originTag']['name'] + '] ' + datum + episode['node']['perex'], 'duration': episode['node']['duration'], 'rating': episode['node']['views']})
-			if jso['data']['tag']['episodesConnection']['pageInfo']['hasNextPage']:
-				addDir('Další strana >>', id, 3, nexticon, jso['data']['tag']['episodesConnection']['pageInfo']['endCursor'])
+			episodes = jso['data']['tag']['episodesConnection']
+			if episodes:
+				for episode in episodes['edges']:
+					poster = 'https:' + episode['node']['images'][0]['url'] if 'images' in episode['node'] and 'url' in episode['node']['images'][0] else None
+					datum = datetime.datetime.utcfromtimestamp(episode['node']['publishTime']['timestamp']).strftime('%d.%m.%y %H:%M') + ' - ' if 'publishTime' in episode['node'] and 'timestamp' in episode['node']['publishTime'] else ''
+					addDir(episode['node']['name'], episode['node']['spl'], 5, poster, None, None, { 'plot': '[' + episode['node']['originTag']['name'] + '] ' + datum + episode['node']['perex'], 'duration': episode['node']['duration'], 'rating': episode['node']['views']})
+				if episodes['pageInfo']['hasNextPage']:
+					addDir('Další strana >>', id, 3, nexticon, episodes['pageInfo']['endCursor'])
 
 	def videoLink(url):
 		data = getUrl(url + 'spl2,3,VOD')
