@@ -45,7 +45,7 @@ def tvseznam_run(addon, session, params):
 			return False
 		for edge in jso['data']['tag']['episodesConnection']['edges']:
 			if edge['node']:
-				poster = 'https:' + edge['node']['images'][0]['url'] if 'images' in edge['node'] and 'url' in edge['node']['images'][0] else None
+				poster = 'https:' + edge['node']['images'][0]['url'] if 'images' in edge['node'] and edge['node']['images'] and 'url' in edge['node']['images'][0] else None
 				datum = datetime.datetime.utcfromtimestamp(edge['node']['publishTime']['timestamp']).strftime('%d.%m.%y %H:%M') + ' - ' if 'publishTime' in edge['node'] and 'timestamp' in edge['node']['publishTime'] else ''
 				addDir(edge['node']['name'], edge['node']['id'], 4, poster, None, None, infoLabels={'plot':'[' + edge['node']['originTag']['name'] + '] ' + datum + edge['node']['perex'], 'duration':edge['node']['duration'], 'rating': edge['node']['views']})
 
@@ -60,7 +60,7 @@ def tvseznam_run(addon, session, params):
 			return False
 		for edge in jso['data']['tag']['episodesConnection']['edges']:
 			if edge['node']:
-				poster = 'https:' + edge['node']['images'][0]['url'] if 'images' in edge['node'] and 'url' in edge['node']['images'][0] else None
+				poster = 'https:' + edge['node']['images'][0]['url'] if 'images' in edge['node'] and edge['node']['images'] and 'url' in edge['node']['images'][0] else None
 				datum = datetime.datetime.utcfromtimestamp(edge['node']['publishTime']['timestamp']).strftime('%d.%m.%y %H:%M') + ' - ' if 'publishTime' in edge['node'] and 'timestamp' in edge['node']['publishTime'] else ''
 				addDir(edge['node']['name'], edge['node']['id'], 4, poster, None, None, infoLabels={'plot':'[' + edge['node']['originTag']['name'] + '] ' + datum + edge['node']['perex'], 'duration':edge['node']['duration'], 'rating': edge['node']['views']})
 
@@ -75,7 +75,7 @@ def tvseznam_run(addon, session, params):
 			return False
 		for edge in jso['data']['tag']['episodesConnection']['edges']:
 			if edge['node']:
-				poster = 'https:' + edge['node']['images'][0]['url'] if 'images' in edge['node'] and 'url' in edge['node']['images'][0] else None
+				poster = 'https:' + edge['node']['images'][0]['url'] if 'images' in edge['node'] and edge['node']['images'] and 'url' in edge['node']['images'][0] else None
 				datum = datetime.datetime.utcfromtimestamp(edge['node']['publishTime']['timestamp']).strftime('%d.%m.%y %H:%M') + ' - ' if 'publishTime' in edge['node'] and 'timestamp' in edge['node']['publishTime'] else ''
 				addDir(edge['node']['name'], edge['node']['id'], 4, poster, None, None, infoLabels={'plot':'[' + edge['node']['originTag']['name'] + '] ' + datum + edge['node']['perex'], 'duration':edge['node']['duration'], 'rating': edge['node']['views']})
 
@@ -86,7 +86,7 @@ def tvseznam_run(addon, session, params):
 			return False
 		jso = data.json()
 		if 'data' in jso and 'episode' in jso['data']:
-			poster = 'https:' + jso['data']['episode']['images'][0]['url'] if 'images' in jso['data']['episode'] and 'url' in jso['data']['episode']['images'][0] else None
+			poster = 'https:' + jso['data']['episode']['images'][0]['url'] if 'images' in jso['data']['episode'] and jso['data']['episode']['images'] and 'url' in jso['data']['episode']['images'][0] else None
 			datum = datetime.datetime.utcfromtimestamp(jso['data']['episode']['publishTime']['timestamp']).strftime('%d.%m.%y %H:%M') + ' - ' if 'publishTime' in jso['data']['episode'] and 'timestamp' in jso['data']['episode']['publishTime'] else ''
 			addDir(jso['data']['episode']['name'], jso['data']['episode']['spl'], 5, poster, None, None, { 'plot': '[' + jso['data']['episode']['originTag']['name'] + '] ' + datum + jso['data']['episode']['perex'], 'duration': jso['data']['episode']['duration'], 'rating': jso['data']['episode']['views']})
 			posterCat = None
@@ -147,7 +147,7 @@ def tvseznam_run(addon, session, params):
 			episodes = jso['data']['tag']['episodesConnection']
 			if episodes:
 				for episode in episodes['edges']:
-					poster = 'https:' + episode['node']['images'][0]['url'] if 'images' in episode['node'] and 'url' in episode['node']['images'][0] else None
+					poster = 'https:' + episode['node']['images'][0]['url'] if 'images' in episode['node'] and episode['node']['images'] and 'url' in episode['node']['images'][0] else None
 					datum = datetime.datetime.utcfromtimestamp(episode['node']['publishTime']['timestamp']).strftime('%d.%m.%y %H:%M') + ' - ' if 'publishTime' in episode['node'] and 'timestamp' in episode['node']['publishTime'] else ''
 					addDir(episode['node']['name'], episode['node']['spl'], 5, poster, None, None, { 'plot': '[' + episode['node']['originTag']['name'] + '] ' + datum + episode['node']['perex'], 'duration': episode['node']['duration'], 'rating': episode['node']['views']})
 				if episodes['pageInfo']['hasNextPage']:
@@ -192,7 +192,7 @@ def tvseznam_run(addon, session, params):
 				addDir('[COLOR yellow]' + tag['name'] + '[/COLOR]', tag['id'], 3, poster, 1)
 		if 'data' in jso and 'searchEpisode' in jso['data']:
 			for episode in jso['data']['searchEpisode']:
-				poster = 'https:' + episode['images'][0]['url'] if 'images' in episode and 'url' in episode['images'][0] else None
+				poster = 'https:' + episode['images'][0]['url'] if 'images' in episode and episode['images'] and 'url' in episode['images'][0] else None
 				datum = datetime.datetime.utcfromtimestamp(episode['publishTime']['timestamp']).strftime('%d.%m.%y %H:%M') + ' - ' if 'publishTime' in episode and 'timestamp' in episode['publishTime'] else ''
 				addDir(episode['name'], episode['spl'], 5, poster, None, None, { 'plot': '[' + episode['originTag']['name'] + '] ' + datum + episode['perex'], 'duration': episode['duration']})
 	#	else:
@@ -211,7 +211,7 @@ def tvseznam_run(addon, session, params):
 			client.show_message(session, 'Chyba nacitani dat ze serveru', msg_type='error', timeout=10)
 			return False
 		jso = data.json()
-		if 'data' in jso and 'playout' in jso['data']:
+		if 'data' in jso and 'playout' in jso['data'] and jso['data']['playout']:
 			for playout in jso['data']['playout']:
 				epgstart = datetime.datetime.fromtimestamp(playout['epgStart']).strftime('%d.%m.%y %H:%M')
 				timestart = datetime.datetime.fromtimestamp(playout['start']).strftime('%d.%m.%y %H:%M')
