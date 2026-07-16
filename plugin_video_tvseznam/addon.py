@@ -32,7 +32,7 @@ def tvseznam_run(addon, session, params):
 		if post_data == '':
 			return requests.get(url=url, headers={'User-Agent': 'okhttp/3.12.2', 'Content-Type': 'application/json; charset=utf-8'}, timeout=15)
 		else:
-			return requests.post(url=url, data=post_data, headers={'User-Agent': 'okhttp/3.12.2', 'Content-Type': 'application/json; charset=utf-8'}, timeout=15)
+			return requests.post(url=url, data=post_data.encode('utf-8'), headers={'User-Agent': 'okhttp/3.12.2', 'Content-Type': 'application/json; charset=utf-8'}, timeout=15)
 
 	def Most():
 		data = getUrl('https://api.televizeseznam.cz/graphql', '{"operationName":"TagEpisodes","variables":{"id":"VGFnOjEyNDk1OTY","cursor":null,"limit":20},"query":"query TagEpisodes($id: ID, $cursor: String, $limit: Int = 20) {  tag(id: $id) {    __typename    episodesConnection(after: $cursor, first: $limit) {      __typename      ...EpisodeConnector    }  }}fragment EpisodeConnector on EpisodeItemConnection {  __typename  pageInfo {    __typename    hasNextPage    endCursor  }  edges {    __typename    cursor    node {      __typename      ...EpisodeDetail    }  }}fragment EpisodeDetail on Episode {  __typename  id  dotId  name  duration  perex  publishTime {    __typename    timestamp  }  spl  isLive  originTag {    __typename    ...OriginTag  }  images {    __typename    ...Img  }  views  urlName  originUrl  commentsDisabled  downloadable  contextualFields {    __typename    lastVideoPositionSec  }  expirationTime {    __typename    timestamp  }}fragment OriginTag on Tag {  __typename  id  dotId  category  name  favouritesCount  urlName  originTag {    __typename    name  }  images {    __typename    ...Img  }}fragment Img on Image {  __typename  url  usage}"}')
