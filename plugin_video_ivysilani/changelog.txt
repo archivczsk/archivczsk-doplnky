@@ -1,3 +1,6 @@
+2026-07-16 [3.10]
+* oprava pádov ak EPG neobsahuje kompletné informácie
+
 2026-01-14 [3.9]
 * úprava inicializácie po zmenách v závislostiach doplnku
 

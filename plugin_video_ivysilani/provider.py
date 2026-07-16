@@ -29,10 +29,14 @@ class iVysilaniModuleLiveTV(CPModuleLiveTV):
 	def get_live_tv_channels(self, cat_id=None):
 		def get_plot(d):
 			if d:
-				start_time = iso8601_to_datetime(d['startsAt'])
-				end_time = iso8601_to_datetime(d['endsAt'])
-				title_time = start_time.strftime('%H:%M') + ' - ' + end_time.strftime('%H:%M')
-				return '[{}] {}\n{}\n'.format(title_time, d.get('title') or '', d.get('description') or '')
+				try:
+					start_time = iso8601_to_datetime(d['startsAt'])
+					end_time = iso8601_to_datetime(d['endsAt'])
+					title_time = start_time.strftime('%H:%M') + ' - ' + end_time.strftime('%H:%M')
+					return '[{}] {}\n{}\n'.format(title_time, d.get('title') or '', d.get('description') or '')
+				except:
+					self.cp.log_exception()
+					return ''
 			else:
 				return ''
 
