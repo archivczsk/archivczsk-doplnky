@@ -332,7 +332,7 @@ class Telly:
 
 	def get_archiv_channel_programs(self, epg_id, fromts, tots):
 		if not self.device_token:
-			return
+			return []
 
 		epg_data = self.get_channels_epg( [int(epg_id)], fromts, tots)
 
@@ -365,7 +365,8 @@ class Telly:
 			]
 
 			# prepend h265 profiles
-			params['stream_profiles'] = ','.join(profiles_h265) + ',' + params['stream_profiles']
+			if 'stream_profiles' in params:
+				params['stream_profiles'] = ','.join(profiles_h265) + ',' + params['stream_profiles']
 
 		url = urlunparse( ('http' if force_http else u.scheme, u.netloc, u.path, '', urlencode(params), '') )
 
@@ -391,7 +392,7 @@ class Telly:
 
 	def get_archive_video_link(self, ch, fromts, tots, enable_h265=False, max_bitrate=None, force_http=False):
 		if not self.device_token:
-			return None
+			return []
 
 		params = {
 			'device_token': self.device_token,
@@ -404,7 +405,7 @@ class Telly:
 
 		if not ret or ret.get('success') != True:
 			self.check_token()
-			return None
+			return []
 
 		return self.get_video_link(ret['stream_uri'], enable_h265, max_bitrate, force_http)
 
