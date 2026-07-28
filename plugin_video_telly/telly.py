@@ -332,7 +332,7 @@ class Telly:
 
 	def get_archiv_channel_programs(self, epg_id, fromts, tots):
 		if not self.device_token:
-			return []
+			return
 
 		epg_data = self.get_channels_epg( [int(epg_id)], fromts, tots)
 
