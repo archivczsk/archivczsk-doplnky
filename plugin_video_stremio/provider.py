@@ -46,6 +46,7 @@ class StremioContentProvider(CommonContentProvider):
 		self.adult_addons = {}
 		self.adult_catalogs = {}
 		self.play_time = 0
+		self.video_types = self.load_cached_data('custom_types').get('video_types', ['movie','tv'])
 
 		# hack to handle compatibility with ArchivCZSK, because in stremio 'movie' can be anything and here we need to know if it is single video or collection
 		self.collection_prefixes = ('tvdbc:',)
@@ -183,7 +184,7 @@ class StremioContentProvider(CommonContentProvider):
 
 				search_query = il.search_query()
 
-				if item_type in ('movie', 'tv') and not item_id.startswith(self.collection_prefixes):
+				if item_type in self.video_types and not item_id.startswith(self.collection_prefixes):
 					self.add_video(il, menu=menu, cmd=self.resolve_stream, video_title=il.format_title(False), item_type=item_type, item_id=item_id, streams=getattr(il, 'streams', None), search_query=search_query)
 				else:
 					self.add_dir(il, menu=menu, cmd=self.list_videos, addon_id=None, item_type=item_type, item_id=item_id, search_query=search_query)
@@ -548,7 +549,7 @@ class StremioContentProvider(CommonContentProvider):
 			menu = menu or self.create_ctx_menu()
 			menu.add_media_menu_item(self._("Play trailer"), cmd=self.resolve_trailer, trailers=item['trailers'])
 
-		if item['type'] in ('movie', 'tv') and not item['id'].startswith(self.collection_prefixes):
+		if item['type'] in self.video_types and not item['id'].startswith(self.collection_prefixes):
 			self.add_video(il, menu=menu, cmd=self.resolve_stream, video_title=il.format_title(False), item_type=item['type'], item_id=item['id'], addon_id=addon_id, cached_item_data=il, streams=item.get('streams'), search_query=il.search_query())
 		else:
 			il.item_type = item['type']
