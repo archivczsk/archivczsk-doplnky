@@ -1135,14 +1135,20 @@ class Oneplay(object):
 		ret = []
 
 		for item in response['carousel']['tiles']:
-			if 'contentId' in item['action']['params']['payload']:
+			if item.get('action',{}).get('params',{}).get('schema') == 'ContentPlayApiAction':
+				content_id = item.get('action',{}).get('params',{}).get('payload')
+				item_type = 'epg_video'
+			elif 'contentId' in item['action']['params']['payload']:
 				item_type = item['action']['params']['contentType']
+				content_id = item['action']['params']['payload']['contentId']
 
+			if content_id:
 				ret.append({
 					'type': 'series' if item_type == 'show' else 'video',
-					'id': item['action']['params']['payload']['contentId'],
+					'id': content_id,
 					'title':  item['title'],
 					'img': self._get_img(item),
+					'plot': item.get('description') if item_type == 'epg_video' else None
 				})
 
 		if response['carousel']['paging']['next'] == True:
@@ -1254,14 +1260,19 @@ class Oneplay(object):
 			response = self.call_api('carousel.display', payload)
 
 			for item in response['carousel']['tiles']:
-				content_id = item.get('action',{}).get('params',{}).get('payload', {}).get('criteria',{}).get('contentId')
+				if item.get('action',{}).get('params',{}).get('schema') == 'ContentPlayApiAction':
+					content_id = item.get('action',{}).get('params',{}).get('payload')
+				else:
+					content_id = item.get('action',{}).get('params',{}).get('payload', {}).get('criteria',{}).get('contentId')
+
 				if content_id:
 					ret.append({
 						'type': 'video',
 						'id': content_id,
 						'title':  item['title'],
 						'subtitle': item.get('subTitle'),
-						'img': self._get_img(item)
+						'img': self._get_img(item),
+						'plot': item.get('description')
 					})
 
 			if not response['carousel']['paging']['next']:

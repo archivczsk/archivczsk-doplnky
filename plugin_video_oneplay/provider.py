@@ -345,7 +345,11 @@ class OneplayTVModuleVOD(CPModuleTemplate):
 		elif item['type'] == 'season':
 			self.cp.add_dir(item['title'], item.get('img'), cmd=self.list_season, carousel_id=item['id'], criteria=item['criteria'])
 		elif item['type'] == 'video':
-			info_labels = partial(self.cp.load_info_labels, item_id=item['id'])
+			if item.get('plot'):
+				info_labels = {'plot': item['plot']}
+			else:
+				info_labels = partial(self.cp.load_info_labels, item_id=item['id'])
+
 			title = item['title']
 			if item.get('subtitle'):
 				title += '  {}'.format(_I(item['subtitle']))
