@@ -440,7 +440,8 @@ class PrimaPlus(object):
 
 		epg = {}
 		for item in self.call_rpc_api('epg.program.bulk.current', params):
-			epg[item['channelVdmId']] = item['items'][0]
+			if item.get('items'):
+				epg[item['channelVdmId']] = item['items'][0]
 
 		return epg
 
