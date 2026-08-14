@@ -33,3 +33,34 @@ try:
 except:
 	import traceback
 	print( traceback.format_exc() )
+
+
+class SafeDict(object):
+	def __init__(self, data):
+		# Ensure the underlying data is a dictionary or None
+		self._data = data if isinstance(data, dict) else None
+
+	def get(self, key, default=None):
+		# If the current level is not a dict, immediately return the default wrap
+		if self._data is None:
+			return SafeDict(default)
+
+		value = self._data.get(key)
+
+		# Treat None values exactly like missing keys
+		if value is None:
+			return SafeDict(default)
+
+		# If the value is a nested dict, wrap it to allow further chaining
+		if isinstance(value, dict):
+			return SafeDict(value)
+
+		# Return the actual leaf value if it is not a dictionary
+		return value
+
+	def unwrap(self):
+		"""Returns the raw underlying data."""
+		return self._data
+
+	def __repr__(self):
+		return "SafeDict({})".format(self._data)
