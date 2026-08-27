@@ -58,7 +58,7 @@ def iso8601_to_timestamp(iso_string, utc=False):
 
 def iso8601_to_datetime(iso_string, utc=False):
 	local_timestamp = iso8601_to_timestamp(iso_string, utc)
-	local_datetime = datetime.datetime.fromtimestamp(local_timestamp)
+	local_datetime = datetime.datetime.utcfromtimestamp(local_timestamp) if utc else datetime.datetime.fromtimestamp(local_timestamp)
 	return local_datetime
 
 def iso8601_duration_to_timedelta(iso_duration="P2DT6H21M32S"):
