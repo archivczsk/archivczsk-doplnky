@@ -11,7 +11,7 @@ class DupeContentProvider(CommonContentProvider):
 
 	def __init__(self):
 		CommonContentProvider.__init__(self)
-		self.login_optional_settings_names = ('username', 'password')
+		self.login_settings_names = ('username', 'password')
 		self.dupe = Dupe(self)
 		self.play_time = 0
 
@@ -19,18 +19,16 @@ class DupeContentProvider(CommonContentProvider):
 
 	def login(self, silent):
 		if not self.get_setting('username') or not self.get_setting('password'):
-			# no username/password provided - continue with free account
-			self.log_debug("No username or password provided - continuing without account")
-			return True
+			# no username/password provided - access to content is not possible
+			self.log_error("No username or password provided")
+			return False
 
 		ret = self.dupe.login()
 
-		if ret == False:
-			if silent:
-				return False
-			self.show_error(self._("Login failed. Check your credentials. Without valid credentials you will be unable to watch any content."), noexit=True)
+		if ret == False and not silent:
+			self.show_error(self._("Login failed. Check your login credentials in addon settings."), noexit=True)
 
-		return True
+		return ret
 
 	# ##################################################################################################################
 
@@ -125,9 +123,6 @@ class DupeContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def list_tvshow(self, url):
-		if not self.dupe.is_logged_in():
-			raise AddonErrorException(self._("In order to play content you need to enter login credentials in addon's setting."))
-
 		episodes = self.dupe.get_episodes(url)
 		if len(episodes) == 1:
 			return self.list_season(episodes[0]['episodes'])
@@ -175,11 +170,8 @@ class DupeContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def resolve_video(self, video_title, url, providers=None):
-		if not self.dupe.is_logged_in():
-			raise AddonErrorException(self._("In order to play content you need to enter login credentials in addon's setting."))
-
 		if self.play_time >= 300:
-			self.ensure_supporter(self._("You have reached the limit and playback of another item is not available for you."))
+			self.ensure_supporter(self._("You have reached the limit for not users that do not support development of ArchivCZSK. Playback of another item is not available for you."))
 
 		providers = providers or self.dupe.get_stream_providers(url)
 

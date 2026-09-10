@@ -1,3 +1,6 @@
+1.6: 10.09.2026
+- prihlásenie je po zmenách stránky povinné aj pre prezeranie obsahu (nie len pre prehrávanie)
+
 1.5: 27.03.2026
 - oprava pádu ak je rok filmu v nesprávnom formáte
 
