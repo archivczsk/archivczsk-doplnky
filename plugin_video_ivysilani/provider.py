@@ -419,7 +419,7 @@ class iVysilaniContentProvider(ModuleContentProvider):
 			title = _C('grey', title)
 
 		if item.get('showType') in ('series', 'magazine'):
-			self.add_dir(title, img, info_labels, menu, cmd=self.list_seasons, show_id=item['id'])
+			self.add_dir(title, img, info_labels, menu, cmd=self.list_seasons, show_id=item.get('sidp') or item['id'])
 		elif 'idec' in item:
 			self.add_video(title, img, info_labels, menu, cmd=self.play_idec, idec=item.get('idec') if is_playable else None)
 		else:

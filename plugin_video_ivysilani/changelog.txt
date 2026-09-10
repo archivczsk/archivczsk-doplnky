@@ -1,3 +1,6 @@
+2026-09-10 [3.11]
+* oprava zobrazenia obsahu v kategórii "Doporučené"
+
 2026-07-16 [3.10]
 * oprava pádov ak EPG neobsahuje kompletné informácie
 
