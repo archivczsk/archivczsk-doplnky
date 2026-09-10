@@ -75,7 +75,11 @@ class OkRuStreamProvider(BasicStreamProvider):
 		try:
 			player_data = soup.find('div', {'data-module': "OKVideo"})
 			js = get_js_data(player_data.get('data-options'))
-			js = get_js_data(js['flashvars']['metadata'])
+
+			js = js['flashvars']['metadata']
+
+			if not isinstance(js, dict):
+				js = get_js_data(js)
 		except:
 			self.log_error("Failed to get player configuration from url %s" % url)
 			self.log_exception()
@@ -382,7 +386,7 @@ class StreamProvider(object):
 		# MOON - links hidded inside of obfuscated javascript loaded from no one knows ...
 		# U4S - a russian site with all kind of anti debug protections + tracks everything
 
-		if provider_name in ('ABS', 'MOON', 'U4S'):
+		if provider_name in ('ABS', 'MOON', 'U4S') or provider_name.startswith('ABS '):
 			return False
 
 		return True
