@@ -352,8 +352,12 @@ class StremioContentProvider(CommonContentProvider):
 			self.add_item_uni(search_id['id'], item, menu, is_adult)
 
 		# page == None -> disable paging
-		if page != None and len(items) >= STREMIO_PAGE_SIZE and self.stremio.supports_paging(extra):
-			self.add_next(cmd=self.search, search_id=search_id, keyword=keyword, page=page+1)
+		if page != None and self.stremio.supports_paging(extra):
+			# check if there are more items available
+			items = addon.search(search_id['type'], search_id['cat_id'], keyword, search_id.get('params') or self.stremio.build_default_params(extra), page=page+1)
+
+			if items and len(items) > 0:
+				self.add_next(cmd=self.search, keyword=keyword, search_id=search_id, page=page+1)
 
 	# #################################################################################################
 
@@ -445,8 +449,12 @@ class StremioContentProvider(CommonContentProvider):
 				menu = {}
 			self.add_item_uni(addon_id, item, menu, is_adult)
 
-		if len(items) >= STREMIO_PAGE_SIZE and self.stremio.supports_paging(extra):
-			self.add_next(cmd=self.list_catalog, addon_id=addon_id, cat_type=cat_type, cat_id=cat_id, extra=extra, page=page+1)
+		if self.stremio.supports_paging(extra):
+			# check if there are more pages available
+			items = addon.get_catalog(cat_type, cat_id, params=params or self.stremio.build_default_params(extra), page=page+1)
+
+			if items and len(items) > 0:
+				self.add_next(cmd=self.list_catalog, addon_id=addon_id, cat_type=cat_type, cat_id=cat_id, extra=extra, page=page+1)
 
 	# #################################################################################################
 
