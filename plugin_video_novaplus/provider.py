@@ -157,7 +157,7 @@ class TVNovaContentProvider(CommonContentProvider):
 		self.add_video('TN Live', cmd=self.resolve_video, video_title="TN Live", url="#live#tn-live-live", download=False)
 
 		self.add_dir(self._("Latest episodes"), cmd=self.list_recent_episodes)
-		self.add_dir(self._("TOP programs"), cmd=self.list_shows_menu)
+		self.add_dir(self._("Programs"), cmd=self.list_shows_menu)
 
 	# ##################################################################################################################
 
@@ -188,7 +188,7 @@ class TVNovaContentProvider(CommonContentProvider):
 			pass
 
 		if video:
-			video_title = "{0} - [COLOR yellow]{1}[/COLOR]".format(show_title, title)
+			video_title = "{0} - {1}".format(show_title, _I(title))
 			img = img_res(article_hero.find("img")["data-src"])
 			info_labels = {
 				'duration': get_duration(re.sub(r"[a-z]", ':', (dur.replace(" ", "")))[:-1]) if dur else None
@@ -210,7 +210,7 @@ class TVNovaContentProvider(CommonContentProvider):
 			dur = article.find("time", {"class": "duration"})
 			show_url = article.find("a", {"class": "category"})["href"]
 
-			video_title = "{0} - [COLOR yellow]{1}[/COLOR]".format(show_title, title)
+			video_title = "{0} - {1}".format(show_title, _I(title))
 			img = img_res(article.find("picture").find("source")["data-srcset"])
 
 			info_labels = {
@@ -224,20 +224,29 @@ class TVNovaContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def list_shows_menu(self):
-		self.add_dir(self._('Best'), cmd=self.list_shows, selector='c-show-wrapper -highlight tab-pane fade show active')
-		self.add_dir(self._('Latest'), cmd=self.list_shows, selector='c-show-wrapper -highlight tab-pane fade')
-		self.add_dir(self._('All'), cmd=self.list_shows, selector='c-show-wrapper')
+		soup = self.call_api("porady")
+
+		for section in soup.find_all(lambda tag: tag.name == 'section' and ' '.join(tag.get('class', [])) == 'minor-inner -shows'):
+			self.add_dir(section.find('h2', {'class': 'c-title'}).get_text().strip(), cmd=self.list_shows, soup=section)
+
+		self.add_dir(self._('All'), cmd=self.list_all_shows, soup=soup)
 
 	# ##################################################################################################################
 
-	def list_shows(self, selector):
-		soup = self.call_api("porady")
+	def list_all_shows(self, soup):
+		soup = soup.find('div', {'class': 'c-show-wrapper'})
 
-		articles = soup.find(lambda tag: tag.name == 'div' and ' '.join(tag.get('class', [])) == selector).find_all("a")
-
-		for article in articles:
+		for article in soup.find_all("a"):
 			title = article["data-tracking-tile-name"]
 			img = img_res(article.div.img["data-src"])
+			self.add_dir(title, img, cmd=self.list_episodes, url=article["href"], category=True)
+
+	# ##################################################################################################################
+
+	def list_shows(self, soup):
+		for article in soup.find_all("a"):
+			title = article.div.img["alt"]
+			img = img_res(article.div.img["src"])
 			self.add_dir(title, img, cmd=self.list_episodes, url=article["href"], category=True)
 
 	# ##################################################################################################################
@@ -272,7 +281,7 @@ class TVNovaContentProvider(CommonContentProvider):
 			title = article.get("data-tracking-tile-name")
 			dur = article.find("time", {"class": "duration"})
 
-			video_title = "{0} - [COLOR yellow]{1}[/COLOR]".format(show_title, title or '???')
+			video_title = "{0} - {1}".format(show_title, _I(title or '???'))
 			img = img_res(article.find("picture").find("source")["data-srcset"])
 
 			info_labels = {
@@ -476,7 +485,7 @@ class TVNovaContentProvider(CommonContentProvider):
 				if 'Error' in embeded_text:
 					embeded_text = embeded_text.replace('Error', '').strip()
 					if '\n' in embeded_text:
-						embeded_text = embeded_text[embeded_text.rfind('\n'):]
+						embeded_text = embeded_text[:embeded_text.rfind('\n')]
 				else:
 					embeded_text = self._("Format of page has changed")
 
