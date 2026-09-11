@@ -211,7 +211,7 @@ class HlsPlaylist(object):
 				# no stream passed max bandwith filtering, so choose only the worst one
 				playlists = [playlists2[-1]]
 
-		if video_variants == False:
+		if video_variants == False and self.video_playlists:
 			# if no video variants are enabled, then use only one video stream
 			self.video_playlists = [playlists[0]]
 
@@ -247,7 +247,7 @@ class HlsPlaylist(object):
 			p.playlist_url = urljoin(self.mp_url, p.playlist_url)
 
 		for s in self.segments:
-			s.segment_url = urljoin(self.mp_url, p.segment_url)
+			s.segment_url = urljoin(self.mp_url, s.segment_url)
 
 	# ##################################################################################################################
 

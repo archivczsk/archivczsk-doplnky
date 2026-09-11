@@ -370,8 +370,8 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		try:
 			response = self.req_session.get(hls_info['url'], headers=hls_info.get('headers'))
 			response.raise_for_status()
-		except:
-			self.cp.log_error('Failed to retrieve HLS playlist data from %s\n%s' % (hls_info['url'], str(response)))
+		except Exception as e:
+			self.cp.log_error('Failed to retrieve HLS playlist data from %s\n%s' % (hls_info['url'], str(e)))
 			return None
 
 

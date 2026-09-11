@@ -1,3 +1,6 @@
+3.15 - 17.09.2026
+    - fixed HLS parser
+
 3.14 - 27.08.2026
     - fixed iso8601 UTC conversion
 
