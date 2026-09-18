@@ -423,7 +423,7 @@ class iVysilaniContentProvider(ModuleContentProvider):
 		elif 'idec' in item:
 			self.add_video(title, img, info_labels, menu, cmd=self.play_idec, idec=item.get('idec') if is_playable else None)
 		else:
-			self.add_video(title, img, info_labels, menu, cmd=self.play_show, show_id=item.get('id') if is_playable else None)
+			self.add_video(title, img, info_labels, menu, cmd=self.play_show, show_id=item.get('sidp') or item['id'] if is_playable else None)
 
 	# ##################################################################################################################
 
