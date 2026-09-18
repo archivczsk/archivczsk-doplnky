@@ -1,3 +1,6 @@
+1.13 - 18.09.2026
+- fixed kid+pssh extraction from binary segments
+
 1.12 - 04.03.2026
 - binary libs for arm and mipsel compiled with older version of gcc
 
