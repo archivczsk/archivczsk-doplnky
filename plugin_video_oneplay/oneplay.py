@@ -155,7 +155,9 @@ class Oneplay(object):
 
 		try:
 			ws_data = json.loads(ws.recv())
-		except WebSocketException as e:
+			server_id = ws_data['data']['serverId']
+		except Exception as e:
+			self.cp.log_exception()
 			ws.close()
 			raise AddonErrorException('{}:\n{}'.format(self._("Failed to read data from server"), str(e)))
 
@@ -172,8 +174,8 @@ class Oneplay(object):
 			"context": {
 				"requestId": request_id,
 			 	"clientId": client_id,
-			 	"sessionId": ws_data['data']['serverId'],
-			 	"serverId": ws_data['data']['serverId']
+				"sessionId": server_id,
+				"serverId": server_id
 			}
 		}
 
