@@ -12,10 +12,9 @@ __addon__ = ArchivCZSK.get_addon('tools.archivczsk')
 def _(id):
 	return __addon__.get_localized_string(id)
 
-AVAILABLE_EXTEPLAYER3_VERSION=181
+AVAILABLE_EXTEPLAYER3_VERSION=182
 
 EXTEPLAYER3_NAME='exteplayer3_%d' % AVAILABLE_EXTEPLAYER3_VERSION
-FFMPEG_NAME='ffmpeg_%d' % AVAILABLE_EXTEPLAYER3_VERSION
 
 class PlayerFeatures(object):
 	DATA_LOADED = False
@@ -58,7 +57,8 @@ class PlayerFeatures(object):
 	def extract_ffmpeg_features(self):
 		try:
 			try:
-				data = subprocess.check_output(['ffmpeg'], shell=False, stderr=subprocess.STDOUT)
+				ffmpeg_path = '/usr/lib/exteplayer3_deps/ffmpeg' if os.path.isfile('/usr/lib/exteplayer3_deps/ffmpeg') else 'ffmpeg'
+				data = subprocess.check_output([ffmpeg_path], shell=False, stderr=subprocess.STDOUT)
 			except subprocess.CalledProcessError as ex:
 				data = ex.output
 			data = data.decode('utf-8')
@@ -75,7 +75,7 @@ class PlayerFeatures(object):
 			return None
 
 	@classmethod
-	def download_and_install(cls, name):
+	def download_and_install(cls, name=EXTEPLAYER3_NAME):
 		if stbinfo.hw_arch == 'armv7l':
 			url = 'https://github.com/skyjet18/exteplayer3/raw/master/ipk/%s_armv7ahf.ipk' % name
 		elif stbinfo.hw_arch == 'mips':
@@ -111,8 +111,7 @@ class PlayerFeatures(object):
 			msg = _("Installed version of ffmpeg probably doesn't support MPEG-DASH streams needed by this addon.")
 
 		if content_provider.get_yes_no_input(msg + ' ' + _("It is recommended to install modified version of exteplayer3 and ffmpeg with build in support for MPEG-DASH and DRM streams.\nShould I download and install recommanded version for you?")) == True:
-			cls.download_and_install(EXTEPLAYER3_NAME)
-			cls.download_and_install(FFMPEG_NAME)
+			cls.download_and_install()
 			PlayerFeatures(True)
 
 	@classmethod
@@ -141,8 +140,7 @@ class PlayerFeatures(object):
 			msg = _("Installed version of exteplayer3 doesn't support all features needed by this addon.")
 
 		if content_provider.get_yes_no_input(msg + ' ' + _("It is recommended to install latest modified version of exteplayer3 and ffmpeg with build in all features needed.\nShould I download and install recommanded version for you?")) == True:
-			cls.download_and_install(EXTEPLAYER3_NAME)
-			cls.download_and_install(FFMPEG_NAME)
+			cls.download_and_install()
 			PlayerFeatures(True)
 
 	@classmethod
@@ -153,9 +151,8 @@ class PlayerFeatures(object):
 		if cls.exteplayer3_version is None or cls.exteplayer3_version >= AVAILABLE_EXTEPLAYER3_VERSION:
 			return
 
-		if content_provider.get_yes_no_input(_("A new version of modified exteplayer3 is available. Player is important system component and many ArchivCZSK feautures are fully functional only on this version.\nShould I download and install new version for you?")) == True:
-			cls.download_and_install(EXTEPLAYER3_NAME)
-			cls.download_and_install(FFMPEG_NAME)
+		if content_provider.get_yes_no_input(_("A new version of modified exteplayer3 is available. Player is important system component and many ArchivCZSK features are fully functional only on this version.\nShould I download and install new version for you?")) == True:
+			cls.download_and_install()
 			PlayerFeatures(True)
 
 PlayerFeatures()

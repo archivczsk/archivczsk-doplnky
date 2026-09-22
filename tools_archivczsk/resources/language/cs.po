@@ -188,7 +188,7 @@ msgstr ""
 
 #: tools_archivczsk/player/features.py:156
 msgid ""
-"A new version of modified exteplayer3 is available. Player is important system component and many ArchivCZSK feautures are fully functional only on this version.\n"
+"A new version of modified exteplayer3 is available. Player is important system component and many ArchivCZSK features are fully functional only on this version.\n"
 "Should I download and install new version for you?"
 msgstr ""
 "Je k dispozici nová verze upraveného přehrávače exteplayer3. Přehrávač je důležitou součásti systému a mnohé funkce ArchivCZSK jsou plně funkční pouze v téjto verzi.\n"
