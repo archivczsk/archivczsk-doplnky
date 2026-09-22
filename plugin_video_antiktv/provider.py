@@ -271,8 +271,9 @@ class AntikTVModuleArchive(CPModuleArchive):
 	# #################################################################################################
 
 	def get_channel_id_from_path(self, path):
-		if path.startswith('playlive/'):
-			channel_type, channel_id = self.cp.decode_playlive_url(path[9:])
+		if path.startswith( ('playlive/', 'playlivets/',) ):
+			path = path.split('/', 1)[1]
+			channel_type, channel_id = self.cp.decode_playlive_url(path)
 			channel = self.cp.atk.get_channel_by_id(self.channel_type, int(channel_id))
 			if channel and channel['archive']:
 				return int(channel_id)

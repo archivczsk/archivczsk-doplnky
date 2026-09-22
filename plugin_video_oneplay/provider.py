@@ -161,8 +161,8 @@ class OneplayTVModuleArchive(CPModuleArchive):
 	# #################################################################################################
 
 	def get_channel_id_from_path(self, path):
-		if path.startswith('playlive/'):
-			path = path[9:]
+		if path.startswith( ('playlive/', 'playlivets/',) ):
+			path = path.split('/', 1)[1]
 			if path.endswith('/index.mpd'):
 				path = path[:-10]
 			elif path.endswith('/index.m3u8'):

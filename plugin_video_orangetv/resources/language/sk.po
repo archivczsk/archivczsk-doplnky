@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_orangetv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-04 16:43+0100\n"
+"POT-Creation-Date: 2026-09-22 14:43+0200\n"
 "PO-Revision-Date: 2025-03-04 16:44+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,15 +16,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.5\n"
 
-#: plugin_video_orangetv/orangetv.py:120
+#: plugin_video_orangetv/orangetv.py:121
 msgid "Unexpected return code from server"
 msgstr "Neočakávaný návratový kód zo servera"
 
-#: plugin_video_orangetv/orangetv.py:171
+#: plugin_video_orangetv/orangetv.py:172
 msgid "Login data not set"
 msgstr "Nezadané prihlasovacie údaje"
 
-#: plugin_video_orangetv/orangetv.py:197
+#: plugin_video_orangetv/orangetv.py:198
 msgid "Failed to autentificate - probably wrong username/password"
 msgstr "Prihlásenie zlyhalo - pravdepodobne chybné meno/heslo"
 
@@ -32,35 +32,35 @@ msgstr "Prihlásenie zlyhalo - pravdepodobne chybné meno/heslo"
 msgid "Play from beginning"
 msgstr "Prehrať od začiatku"
 
-#: plugin_video_orangetv/provider.py:181
+#: plugin_video_orangetv/provider.py:182
 msgid "Special section"
 msgstr "Špeciálna sekcia"
 
-#: plugin_video_orangetv/provider.py:192
+#: plugin_video_orangetv/provider.py:193
 msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
 msgstr "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočné zariadenia, aby ste sa mohli znova inde prihlásiť."
 
-#: plugin_video_orangetv/provider.py:193
+#: plugin_video_orangetv/provider.py:194
 msgid "Registered devices"
 msgstr "Zaregistrované zariadenia"
 
-#: plugin_video_orangetv/provider.py:194
+#: plugin_video_orangetv/provider.py:195
 msgid "Run EPG export to enigma or XML files"
 msgstr "Spustiť EPG export do enigmy alebo do XML súborov"
 
-#: plugin_video_orangetv/provider.py:200
+#: plugin_video_orangetv/provider.py:201
 msgid "EPG export started"
 msgstr "EPG export bol spustený"
 
-#: plugin_video_orangetv/provider.py:209
+#: plugin_video_orangetv/provider.py:210
 msgid "In menu you can remove device using Remove device!"
 msgstr "V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!"
 
-#: plugin_video_orangetv/provider.py:212
+#: plugin_video_orangetv/provider.py:213
 msgid "Remove device!"
 msgstr "Zmazať zariadenie!"
 
-#: plugin_video_orangetv/provider.py:219
+#: plugin_video_orangetv/provider.py:220
 #, python-brace-format
 msgid "Device {device} was removed!"
 msgstr "Zariadenie {device} bolo vymazané!"
@@ -151,3 +151,6 @@ msgstr ""
 
 msgid "DVB (OE>=2.5)"
 msgstr ""
+
+msgid "Convert streams to TS format using ffmpeg"
+msgstr "Konvertovať streamy do formátu TS pomocou ffmpeg"

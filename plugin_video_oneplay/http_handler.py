@@ -3,7 +3,8 @@
 import traceback
 import base64
 from tools_archivczsk.http_handler.dash import DashHTTPRequestHandler
-from tools_archivczsk.http_handler.hls import HlsHTTPRequestHandler, HlsMasterProcessor
+from tools_archivczsk.http_handler.hls import HlsHTTPRequestHandler
+from tools_archivczsk.http_handler.playlive import PlayliveTVHTTPRequestHandler
 from tools_archivczsk.date_utils import iso8601_duration_to_seconds, iso8601_to_datetime
 import json
 
@@ -16,40 +17,12 @@ from Plugins.Extensions.archivCZSK.client.shortcut import run_shortcut
 
 # #################################################################################################
 
-class OneplayHlsMasterProcessor(HlsMasterProcessor):
-	def cleanup_master_playlist(self):
-		super(OneplayHlsMasterProcessor, self).cleanup_master_playlist()
-
-		external_audio_cnt = 0
-		internal_audio_cnt = 0
-
-		for p in self.audio_playlists:
-			if p.playlist_url:
-				external_audio_cnt += 1
-			else:
-				internal_audio_cnt += 1
-
-
-		if external_audio_cnt > 0 and internal_audio_cnt > 0:
-			# exteplayer3 has problems playing HLS when there is a mix of audio tracks with external URI and internal (embedded to video track - without URI in playlist)
-			# only external audio is played and switching to internal one doesn't work
-			# workaround to play embedded audio is to remove all external tracks
-
-			playlists = []
-			for p in self.audio_playlists:
-				if not p.playlist_url:
-					playlists.append(p)
-
-			self.audio_playlists = playlists
-
-# #################################################################################################
-
-class OneplayHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler):
+class OneplayHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler, PlayliveTVHTTPRequestHandler):
 	def __init__(self, content_provider, addon):
 		super(OneplayHTTPRequestHandler, self).__init__(content_provider, addon)
 		self.hls_proxy_variants = False
 		self.hls_proxy_segments = False
-		self.hls_master_processor = OneplayHlsMasterProcessor
+		self.enable_hls_multiaudio = False
 
 		self.live_cache = {}
 		self.oneplay_session = self.cp.get_requests_session()
@@ -78,7 +51,7 @@ class OneplayHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler):
 			if key in self.live_cache and self.live_cache[key]['life'] > int(time()):
 #				self.cp.log_debug("Returning result from cache" )
 				stream_info = self.live_cache[key]['stream_info']
-				self.live_cache[key]['life'] = int(time())+20
+				self.live_cache[key]['life'] = int(time())+5
 			else:
 				channel = self.cp.channels_by_key.get(key)
 				if channel:
@@ -93,17 +66,12 @@ class OneplayHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler):
 								break
 
 					self.live_cache_cleanup()
-					self.live_cache[key] = { 'life': int(time())+20, 'stream_info': stream_info }
+					self.live_cache[key] = { 'life': int(time())+5, 'stream_info': stream_info }
 		except:
 			self.cp.log_error(traceback.format_exc())
 			stream_info = None
 
 		return stream_info
-
-	# #################################################################################################
-
-	def decode_channel_id(self, path):
-		return base64.b64decode(path.encode('utf-8')).decode("utf-8")
 
 	# #################################################################################################
 
@@ -138,7 +106,7 @@ class OneplayHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler):
 		elif path.endswith('/index.m3u8'):
 			path = path[:-11]
 
-		channel_id = self.decode_channel_id(path)
+		channel_id = self.decode_channel_key(path)
 
 #		self.cp.log_debug("%s resource ID: %s, path: %s" % (service_type, channel_id, path))
 

@@ -41,7 +41,7 @@ class VoyoEnigmaEpgGenerator(EnigmaEpgGenerator):
 
 class VoyoBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 	def __init__(self, content_provider):
-		self.bouquet_settings_names = ('enable_userbouquet', 'enable_xmlepg', 'enable_picons', 'player_name')
+		self.bouquet_settings_names = ['enable_userbouquet', 'enable_xmlepg', 'enable_picons', 'player_name', 'enable_tsconvert']
 		BouquetXmlEpgGenerator.__init__(self, content_provider)
 		self.xmlepg_generator = VoyoXmlEpgGenerator
 		self.enigmaepg_generator = VoyoEnigmaEpgGenerator

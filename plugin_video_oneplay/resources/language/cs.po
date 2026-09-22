@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_oneplay\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-31 20:27+0100\n"
+"POT-Creation-Date: 2026-09-22 14:01+0200\n"
 "PO-Revision-Date: 2026-01-31 20:28+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,42 +16,37 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.5\n"
 
-#: plugin_video_oneplay/http_handler.py:131
-#: plugin_video_oneplay/provider.py:771
-msgid "Multidimension - select stream"
-msgstr "Multidimenze - vyberte stream"
-
-#: plugin_video_oneplay/oneplay.py:151
+#: plugin_video_oneplay/oneplay.py:154
 msgid "Failed to create new connection to server"
 msgstr "Nepodařilo se vytvořit nové připojení k serveru"
 
-#: plugin_video_oneplay/oneplay.py:157 plugin_video_oneplay/oneplay.py:207
+#: plugin_video_oneplay/oneplay.py:160 plugin_video_oneplay/oneplay.py:206
 msgid "Failed to read data from server"
 msgstr "Nepodařilo se přečíst data ze serveru"
 
-#: plugin_video_oneplay/oneplay.py:200
-msgid "Received wrong response from server"
-msgstr "Přijatá chybná odpověď ze serveru"
-
-#: plugin_video_oneplay/oneplay.py:224
+#: plugin_video_oneplay/oneplay.py:232
 msgid "This content is not available"
 msgstr "Tento obsah není k dispozici"
 
-#: plugin_video_oneplay/oneplay.py:229
+#: plugin_video_oneplay/oneplay.py:237
 msgid "Server returned error response"
 msgstr "Server vrátil chybovou odpověď"
 
-#: plugin_video_oneplay/oneplay.py:239
+#: plugin_video_oneplay/oneplay.py:247
 msgid "Received wrong websocket response from server"
 msgstr "Přijatá chybná websocket odpověď ze serveru"
 
-#: plugin_video_oneplay/oneplay.py:340
+#: plugin_video_oneplay/oneplay.py:349
 msgid "Login failed - no access token in response data received"
 msgstr "Přihlášení selhalo - odpověď ze serveru neobsahuje přístupovej token"
 
-#: plugin_video_oneplay/oneplay.py:1331
+#: plugin_video_oneplay/oneplay.py:1360
 msgid "Available from"
 msgstr "Dostupné od"
+
+#: plugin_video_oneplay/http_handler.py:99 plugin_video_oneplay/provider.py:775
+msgid "Multidimension - select stream"
+msgstr "Multidimenze - vyberte stream"
 
 #: plugin_video_oneplay/provider.py:62
 msgid "Play from beginnig"
@@ -90,112 +85,112 @@ msgstr "Odebrat z mého seznamu"
 msgid "List related"
 msgstr "Zobrazit podobné"
 
-#: plugin_video_oneplay/provider.py:364
+#: plugin_video_oneplay/provider.py:368
 msgid "Special section"
 msgstr "Speciální sekce"
 
-#: plugin_video_oneplay/provider.py:375
+#: plugin_video_oneplay/provider.py:379
 msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
 msgstr "Tu si můžete zobrazit a případně vymazat/odregistrovat zbytečná zařízení, aby jste se mohli znova jinde přihlásit."
 
-#: plugin_video_oneplay/provider.py:376
+#: plugin_video_oneplay/provider.py:380
 msgid "Registered devices"
 msgstr "Zaregistrovaná zařízení"
 
-#: plugin_video_oneplay/provider.py:378
+#: plugin_video_oneplay/provider.py:382
 msgid "Here you can see the list of created profiles for this account and optionally change active one."
 msgstr "Zde můžete zobrazit seznam vytvořených profilů pro tento účet a případně změnit aktivní profil."
 
-#: plugin_video_oneplay/provider.py:379
+#: plugin_video_oneplay/provider.py:383
 msgid "Profiles"
 msgstr "Profily"
 
-#: plugin_video_oneplay/provider.py:381
+#: plugin_video_oneplay/provider.py:385
 msgid "Run EPG export to enigma or XML files"
 msgstr "Spustit export EPG do enigmy nebo do XML souborů"
 
-#: plugin_video_oneplay/provider.py:383
+#: plugin_video_oneplay/provider.py:387
 msgid "This will force login reset. New device identificator will be created and used for login."
 msgstr "Tohle vynutí reset přihlášení. Bude vygenerován nový identifikátor zařízení, který bude použit pro přihlášení."
 
-#: plugin_video_oneplay/provider.py:384
+#: plugin_video_oneplay/provider.py:388
 msgid "Reset login"
 msgstr "Resetovat přihlášení"
 
-#: plugin_video_oneplay/provider.py:390
+#: plugin_video_oneplay/provider.py:394
 msgid "EPG export started"
 msgstr "EPG export byl spuštěn"
 
-#: plugin_video_oneplay/provider.py:404
+#: plugin_video_oneplay/provider.py:408
 msgid "Last used"
 msgstr "Naposled použito"
 
-#: plugin_video_oneplay/provider.py:404
+#: plugin_video_oneplay/provider.py:408
 msgid "Is streaming now"
 msgstr "Nyní se streamuje"
 
-#: plugin_video_oneplay/provider.py:409
+#: plugin_video_oneplay/provider.py:413
 msgid "Remove device!"
 msgstr "Smazat zařízení!"
 
-#: plugin_video_oneplay/provider.py:432
+#: plugin_video_oneplay/provider.py:436
 msgid "In menu you can activate service using \"Make activate\""
 msgstr "V menu můžete aktivovat službu pomocí \"Aktivovat\""
 
-#: plugin_video_oneplay/provider.py:433
+#: plugin_video_oneplay/provider.py:437
 msgid "Make active"
 msgstr "Aktivovat"
 
-#: plugin_video_oneplay/provider.py:443
+#: plugin_video_oneplay/provider.py:447
 msgid "Enter profile pin"
 msgstr "Zadejte PIN profilu"
 
-#: plugin_video_oneplay/provider.py:459
+#: plugin_video_oneplay/provider.py:463
 #, python-brace-format
 msgid "New login session using device ID {device_id} was created!"
 msgstr "Bylo vytvořeno nové přihlašovací sezení pomocí identifikace {device_id}!"
 
-#: plugin_video_oneplay/provider.py:461
+#: plugin_video_oneplay/provider.py:465
 msgid "Failed to create new login session!"
 msgstr "Nepodařilo se vytvořit novou přihlašovací session!"
 
-#: plugin_video_oneplay/provider.py:481
+#: plugin_video_oneplay/provider.py:485
 msgid "Mo"
 msgstr "Po"
 
-#: plugin_video_oneplay/provider.py:481
+#: plugin_video_oneplay/provider.py:485
 msgid "Tu"
 msgstr "Út"
 
-#: plugin_video_oneplay/provider.py:481
+#: plugin_video_oneplay/provider.py:485
 msgid "We"
 msgstr "St"
 
-#: plugin_video_oneplay/provider.py:481
+#: plugin_video_oneplay/provider.py:485
 msgid "Th"
 msgstr "Čt"
 
-#: plugin_video_oneplay/provider.py:481
+#: plugin_video_oneplay/provider.py:485
 msgid "Fr"
 msgstr "Pá"
 
-#: plugin_video_oneplay/provider.py:481
+#: plugin_video_oneplay/provider.py:485
 msgid "Sa"
 msgstr "So"
 
-#: plugin_video_oneplay/provider.py:481
+#: plugin_video_oneplay/provider.py:485
 msgid "Su"
 msgstr "Ne"
 
-#: plugin_video_oneplay/provider.py:502
+#: plugin_video_oneplay/provider.py:506
 msgid "Select account"
 msgstr "Zvolte konto"
 
-#: plugin_video_oneplay/provider.py:569 plugin_video_oneplay/provider.py:584
+#: plugin_video_oneplay/provider.py:573 plugin_video_oneplay/provider.py:588
 msgid "Item was added to my list"
 msgstr "Položka byla přidána do mého seznamu"
 
-#: plugin_video_oneplay/provider.py:575 plugin_video_oneplay/provider.py:587
+#: plugin_video_oneplay/provider.py:579 plugin_video_oneplay/provider.py:591
 msgid "Item was removed from my list"
 msgstr "Položka byla odstraněna z mého seznamu"
 
@@ -271,6 +266,9 @@ msgstr ""
 msgid "DVB (OE>=2.5)"
 msgstr ""
 
+msgid "Convert streams to TS format using ffmpeg"
+msgstr "Konvertovat streamy do formátu TS pomocí ffmpeg"
+
 msgid "Advanced"
 msgstr "Pokročilé"
 
@@ -303,6 +301,9 @@ msgstr "Dodatečná vyrovnávací paměť streamu (v sekundách)"
 
 msgid "Check exteplayer3 version on startup"
 msgstr "Zkontrolovat verzi exteplayer3 při spuštění"
+
+#~ msgid "Received wrong response from server"
+#~ msgstr "Přijatá chybná odpověď ze serveru"
 
 #~ msgid "Unexpected return code from server"
 #~ msgstr "Neočekávaný návratový kód ze serveru"

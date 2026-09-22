@@ -1,5 +1,11 @@
+2.35: 22.09.2026
+- pridanie podpory pre konverziu streamov v userbuquete do formátu TS
+- úpravy po zmenách v závislostiach doplnku
+
 2.34: 25.05.2026
 - oprava funkcionality po zmenách na strane Antiku pre mipsel
+- úpravy po zmenách v závislostiach doplnku
+- pridanie podpory pre konverziu streamov v userbuquete do formátu TS
 
 2.33: 24.05.2026
 - oprava funkčnosti po zmenách formátu dát na strane Antiku

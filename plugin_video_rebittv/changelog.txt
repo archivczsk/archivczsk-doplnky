@@ -1,3 +1,7 @@
+1.16 - 22.09.2026
+- úpravy po zmenách v závislostiach doplnku
+- pridanie podpory pre konverziu streamov v userbuquete do formátu TS
+
 1.15 - 26.01.2026
 - nastavenie sťahovania streamu do formátu TS
 

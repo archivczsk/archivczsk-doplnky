@@ -4,13 +4,14 @@ import traceback
 import base64
 from tools_archivczsk.http_handler.hls import HlsHTTPRequestHandler
 from tools_archivczsk.http_handler.dash import DashHTTPRequestHandler
+from tools_archivczsk.http_handler.playlive import PlayliveTVHTTPRequestHandler
 
 from time import time
 import json
 
 # #################################################################################################
 
-class MagioGOHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler):
+class MagioGOHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler, PlayliveTVHTTPRequestHandler):
 	def __init__(self, content_provider, addon ):
 		super(MagioGOHTTPRequestHandler, self).__init__(content_provider, addon)
 		self.hls_proxy_variants = True
@@ -42,7 +43,7 @@ class MagioGOHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler):
 #				self.cp.log_debug("Returning result from cache" )
 				index_url = self.live_cache[key]['index_url']
 				cookies = self.live_cache[key]['cookies']
-				self.live_cache[key]['life'] = int(time())+20
+				self.live_cache[key]['life'] = int(time())+5
 			else:
 				self.cp.log_debug("Getting stream URL for channel ID: %s" % channel_id)
 				index_url = self.cp.magiogo.get_stream_link(channel_id)
@@ -61,12 +62,12 @@ class MagioGOHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler):
 
 				self.live_cache_cleanup()
 				self.live_cache[key] = {
-					'life': int(time())+20,
+					'life': int(time())+5,
 					'index_url': index_url,
 					'cookies': cookies
 				}
 		except:
-			self.cp.log_error(traceback.format_exc())
+			self.cp.log_exception()
 			index_url = None
 			cookies = None
 

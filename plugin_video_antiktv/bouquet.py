@@ -8,8 +8,8 @@ from datetime import datetime
 class AntikTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
 	def __init__(self, content_provider):
-		self.bouquet_settings_names = ('enable_userbouquet', 'enable_userbouquet_radio', 'enable_userbouquet_cam', 'userbouquet_categories', 'enable_adult', 'enable_xmlepg', 'enable_picons', 'player_name')
-		BouquetXmlEpgGenerator.__init__(self, content_provider, channel_types=('tv', 'radio', 'cam'))
+		BouquetXmlEpgGenerator.__init__(self, content_provider, channel_types=['tv', 'radio', 'cam'])
+		self.bouquet_settings_names.extend(['enable_userbouquet_radio', 'enable_userbouquet_cam', 'userbouquet_categories'])
 
 	def logged_in(self):
 		return self.cp.atk and self.cp.atk.is_logged()

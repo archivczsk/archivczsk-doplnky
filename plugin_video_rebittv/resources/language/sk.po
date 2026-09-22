@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_rebittv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-24 15:02+0200\n"
+"POT-Creation-Date: 2026-09-22 14:52+0200\n"
 "PO-Revision-Date: 2024-04-24 15:02+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -15,43 +15,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
-
-#: plugin_video_rebittv/provider.py:141
-msgid "Special section"
-msgstr "Špeciálna sekcia"
-
-#: plugin_video_rebittv/provider.py:152
-msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
-msgstr "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočné zariadenia, aby ste sa mohli znova inde prihlásiť."
-
-#: plugin_video_rebittv/provider.py:153
-msgid "Registered devices"
-msgstr "Zaregistrované zariadenia"
-
-#: plugin_video_rebittv/provider.py:154
-msgid "Run EPG export to enigma or XML files"
-msgstr "Spustiť EPG export do enigmy alebo do XML súborov"
-
-#: plugin_video_rebittv/provider.py:160
-msgid "EPG export started"
-msgstr "EPG export bol spustený"
-
-#: plugin_video_rebittv/provider.py:167
-msgid "Added"
-msgstr "Pridané"
-
-#: plugin_video_rebittv/provider.py:168
-msgid "In menu you can remove device using Remove device!"
-msgstr "V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!"
-
-#: plugin_video_rebittv/provider.py:171
-msgid "Remove device!"
-msgstr "Zmazať zariadenie!"
-
-#: plugin_video_rebittv/provider.py:178
-#, python-brace-format
-msgid "Device {device} was removed!"
-msgstr "Zariadenie {device} bolo vymazané!"
 
 #: plugin_video_rebittv/rebittv.py:186
 msgid "Unexpected return code from server"
@@ -92,6 +55,43 @@ msgstr "Chyba pri získavaní adresy streamu"
 #: plugin_video_rebittv/rebittv.py:455
 msgid "Unsupported stream type"
 msgstr "Nepodporovaný typ streamu"
+
+#: plugin_video_rebittv/provider.py:169
+msgid "Special section"
+msgstr "Špeciálna sekcia"
+
+#: plugin_video_rebittv/provider.py:180
+msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
+msgstr "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočné zariadenia, aby ste sa mohli znova inde prihlásiť."
+
+#: plugin_video_rebittv/provider.py:181
+msgid "Registered devices"
+msgstr "Zaregistrované zariadenia"
+
+#: plugin_video_rebittv/provider.py:182
+msgid "Run EPG export to enigma or XML files"
+msgstr "Spustiť EPG export do enigmy alebo do XML súborov"
+
+#: plugin_video_rebittv/provider.py:188
+msgid "EPG export started"
+msgstr "EPG export bol spustený"
+
+#: plugin_video_rebittv/provider.py:195
+msgid "Added"
+msgstr "Pridané"
+
+#: plugin_video_rebittv/provider.py:196
+msgid "In menu you can remove device using Remove device!"
+msgstr "V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!"
+
+#: plugin_video_rebittv/provider.py:199
+msgid "Remove device!"
+msgstr "Zmazať zariadenie!"
+
+#: plugin_video_rebittv/provider.py:206
+#, python-brace-format
+msgid "Device {device} was removed!"
+msgstr "Zariadenie {device} bolo vymazané!"
 
 msgid "Login name"
 msgstr "Prihlasovacie meno"
@@ -167,3 +167,6 @@ msgstr ""
 
 msgid "DVB (OE>=2.5)"
 msgstr ""
+
+msgid "Convert streams to TS format using ffmpeg"
+msgstr "Konvertovať streamy do formátu TS pomocou ffmpeg"

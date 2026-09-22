@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_sweettv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-12 21:00+0100\n"
+"POT-Creation-Date: 2026-09-22 15:23+0200\n"
 "PO-Revision-Date: 2025-03-12 21:01+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -15,78 +15,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.5\n"
-
-#: plugin_video_sweettv/provider.py:173
-msgid "By genre"
-msgstr "Podľa žánru"
-
-#: plugin_video_sweettv/provider.py:174
-msgid "By collection"
-msgstr "Podľa kolekcie"
-
-#: plugin_video_sweettv/provider.py:211
-msgid "Special section"
-msgstr "Špeciálna sekcia"
-
-#: plugin_video_sweettv/provider.py:222
-msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
-msgstr "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočné zariadenia, aby ste sa mohli znova inde prihlásiť."
-
-#: plugin_video_sweettv/provider.py:223
-msgid "Registered devices"
-msgstr "Zaregistrované zariadenia"
-
-#: plugin_video_sweettv/provider.py:224
-msgid "Run EPG export to enigma or XML files"
-msgstr "Spustiť EPG export do enigmy alebo do XML súborov"
-
-#: plugin_video_sweettv/provider.py:225
-msgid "Forces logout from this devices and does new login. Use if you have problem with playback. After running this option it's necessary to go out of this addon to force new automatic login."
-msgstr "Vynúti odhlásenie z tohto zariadenia a vykoná nové prihlásenie. Použite to v prípade problémov s prehrávaním. Po spustení tejto voľby je nutné doplnok opustiť a vrátiť sa späť pre opätovné prihlásenie."
-
-#: plugin_video_sweettv/provider.py:226
-msgid "Logout from this device"
-msgstr "Odhlásiť sa z tohto zariadenia"
-
-#: plugin_video_sweettv/provider.py:232
-msgid "EPG export started"
-msgstr "EPG export bol spustený"
-
-#: plugin_video_sweettv/provider.py:239 plugin_video_sweettv/provider.py:240
-msgid "You have been logged out!"
-msgstr "Boli ste odhlásený!"
-
-#: plugin_video_sweettv/provider.py:248
-msgid "In menu you can remove device using Remove device!"
-msgstr "V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!"
-
-#: plugin_video_sweettv/provider.py:251
-msgid "Remove device!"
-msgstr "Zmazať zariadenie!"
-
-#: plugin_video_sweettv/provider.py:258
-#, python-brace-format
-msgid "Device {device} was removed!"
-msgstr "Zariadenie {device} bolo vymazané!"
-
-#: plugin_video_sweettv/provider.py:299
-msgid "You need valid subscription and pair this device in order to use the addon. Start pairing process now?"
-msgstr "Na používanie doplnku je potrebné platné predplatné a spárovanie tohto zariadenia. Spustiť proces párovania teraz?"
-
-#: plugin_video_sweettv/provider.py:305
-#, python-brace-format
-msgid ""
-"Go to sweet.tv website using computer or mobile phone and login to your account.\n"
-"Then navigate to your profile, section \"My devices\". You will see an input box to pair new device.\n"
-"Enter code \"{code}\" and press \"Activate\". When you finish confirm this dialog by pressing OK on remote control."
-msgstr ""
-"Prejdite na webovú stránku sweet.tv pomocou počítača alebo mobilného telefónu a prihláste sa do svojho konta.\n"
-"Potom prejdite do svojho profilu, časť \"Moje zariadenia\". Zobrazí sa vstupné pole na spárovanie nového zariadenia.\n"
-"Zadajte kód \"{code}\" a stlačte tlačidlo \"Aktivovať\". Po dokončení potvrďte toto dialógové okno stlačením tlačidla OK na diaľkovom ovládači."
-
-#: plugin_video_sweettv/provider.py:391
-msgid "Play trailer"
-msgstr "Prehrať trailer"
 
 #: plugin_video_sweettv/sweettv.py:154
 msgid "Can't access this content. You are not logged in!"
@@ -100,53 +28,125 @@ msgstr "Neočakávaný návratový kód zo servera"
 msgid "Failed to start signing process"
 msgstr "Nepodarilo sa spustiť proces prihlásenia"
 
-#: plugin_video_sweettv/sweettv.py:264
+#: plugin_video_sweettv/sweettv.py:266
 msgid "Error by refresing login token"
 msgstr "Nastala chyba pri obnove prihlasovacieho tokenu"
 
-#: plugin_video_sweettv/sweettv.py:377
+#: plugin_video_sweettv/sweettv.py:380
 msgid "Error by loading EPG"
 msgstr "Pri načítaní EPG nastala chyba"
 
-#: plugin_video_sweettv/sweettv.py:404
+#: plugin_video_sweettv/sweettv.py:407
 msgid "Error by loading channnel list"
 msgstr "Pri načítaní zoznamu programov nastala chyba"
 
-#: plugin_video_sweettv/sweettv.py:431
+#: plugin_video_sweettv/sweettv.py:434
 msgid "Error by loading movie configuration"
 msgstr "Nastala chyba pri načítaní konfigurácie filmov"
 
-#: plugin_video_sweettv/sweettv.py:442
+#: plugin_video_sweettv/sweettv.py:445
 msgid "Error by loading list of collections"
 msgstr "Nastala chyba pri načítaní zoznamu kolekcií"
 
-#: plugin_video_sweettv/sweettv.py:458
+#: plugin_video_sweettv/sweettv.py:461
 msgid "Error by loading collections of movies"
 msgstr "Nastala chyba pri načítaní kolekcie filmov"
 
-#: plugin_video_sweettv/sweettv.py:474
+#: plugin_video_sweettv/sweettv.py:477
 msgid "Error by loading movie genres"
 msgstr "Nastala chyba pri načítaní žánrov"
 
-#: plugin_video_sweettv/sweettv.py:498
+#: plugin_video_sweettv/sweettv.py:501
 msgid "Error by loading movie informations"
 msgstr "Nastala chyba pri načítaní informácii o filmoch"
 
-#: plugin_video_sweettv/sweettv.py:526 plugin_video_sweettv/sweettv.py:530
+#: plugin_video_sweettv/sweettv.py:529 plugin_video_sweettv/sweettv.py:533
 msgid "Error by loading video"
 msgstr "Nastal problém pri načítaní videa"
 
-#: plugin_video_sweettv/sweettv.py:592
+#: plugin_video_sweettv/sweettv.py:596
 msgid "Error by loading stream address"
 msgstr "Nastala chyba pri získavaní adresy streamu"
 
-#: plugin_video_sweettv/sweettv.py:616
+#: plugin_video_sweettv/sweettv.py:620
 msgid "Error by loading movie stream address"
 msgstr "Nastala chyba pri získavaní adresy filmu"
 
-#: plugin_video_sweettv/sweettv.py:620
+#: plugin_video_sweettv/sweettv.py:624
 msgid "Unsupported stream type"
 msgstr "Nepodporovaný typ streamu"
+
+#: plugin_video_sweettv/provider.py:174
+msgid "By genre"
+msgstr "Podľa žánru"
+
+#: plugin_video_sweettv/provider.py:175
+msgid "By collection"
+msgstr "Podľa kolekcie"
+
+#: plugin_video_sweettv/provider.py:210
+msgid "Special section"
+msgstr "Špeciálna sekcia"
+
+#: plugin_video_sweettv/provider.py:221
+msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
+msgstr "Tu si môžete zobraziť a prípadne vymazať/odregistrovať zbytočné zariadenia, aby ste sa mohli znova inde prihlásiť."
+
+#: plugin_video_sweettv/provider.py:222
+msgid "Registered devices"
+msgstr "Zaregistrované zariadenia"
+
+#: plugin_video_sweettv/provider.py:223
+msgid "Run EPG export to enigma or XML files"
+msgstr "Spustiť EPG export do enigmy alebo do XML súborov"
+
+#: plugin_video_sweettv/provider.py:224
+msgid "Forces logout from this devices and does new login. Use if you have problem with playback. After running this option it's necessary to go out of this addon to force new automatic login."
+msgstr "Vynúti odhlásenie z tohto zariadenia a vykoná nové prihlásenie. Použite to v prípade problémov s prehrávaním. Po spustení tejto voľby je nutné doplnok opustiť a vrátiť sa späť pre opätovné prihlásenie."
+
+#: plugin_video_sweettv/provider.py:225
+msgid "Logout from this device"
+msgstr "Odhlásiť sa z tohto zariadenia"
+
+#: plugin_video_sweettv/provider.py:231
+msgid "EPG export started"
+msgstr "EPG export bol spustený"
+
+#: plugin_video_sweettv/provider.py:238 plugin_video_sweettv/provider.py:239
+msgid "You have been logged out!"
+msgstr "Boli ste odhlásený!"
+
+#: plugin_video_sweettv/provider.py:247
+msgid "In menu you can remove device using Remove device!"
+msgstr "V menu môžete zariadenie vymazať pomocou Zmazať zariadenie!"
+
+#: plugin_video_sweettv/provider.py:250
+msgid "Remove device!"
+msgstr "Zmazať zariadenie!"
+
+#: plugin_video_sweettv/provider.py:257
+#, python-brace-format
+msgid "Device {device} was removed!"
+msgstr "Zariadenie {device} bolo vymazané!"
+
+#: plugin_video_sweettv/provider.py:297
+msgid "You need valid subscription and pair this device in order to use the addon. Start pairing process now?"
+msgstr "Na používanie doplnku je potrebné platné predplatné a spárovanie tohto zariadenia. Spustiť proces párovania teraz?"
+
+#: plugin_video_sweettv/provider.py:303
+#, python-brace-format
+msgid ""
+"Go to sweet.tv website using computer or mobile phone and login to your account.\n"
+"Then navigate to your profile, section \"My devices\". You will see an input box to pair new device.\n"
+"Enter code \"{code}\" and press \"Activate\". When you finish confirm this dialog by pressing OK on remote control."
+msgstr ""
+"Prejdite na webovú stránku sweet.tv pomocou počítača alebo mobilného telefónu a prihláste sa do svojho konta.\n"
+"Potom prejdite do svojho profilu, časť \"Moje zariadenia\". Zobrazí sa vstupné pole na spárovanie nového zariadenia.\n"
+"Zadajte kód \"{code}\" a stlačte tlačidlo \"Aktivovať\". Po dokončení potvrďte toto dialógové okno stlačením tlačidla OK na diaľkovom ovládači."
+
+#: plugin_video_sweettv/provider.py:389
+msgid "Play trailer"
+msgstr "Prehrať trailer"
 
 msgid "Maximum bandwidth of the offered stream"
 msgstr "Maximálny dátový tok ponúkaného streamu"
@@ -217,14 +217,5 @@ msgstr ""
 msgid "DVB (OE>=2.5)"
 msgstr ""
 
-#~ msgid "Error by login"
-#~ msgstr "Problém pri prihlásení"
-
-#~ msgid "Login name"
-#~ msgstr "Prihlasovacie meno"
-
-#~ msgid "Login password"
-#~ msgstr "Prihlasovacie heslo"
-
-#~ msgid "Device ID"
-#~ msgstr "ID zariadenia"
+msgid "Convert streams to TS format using ffmpeg"
+msgstr "Konvertovať streamy do formátu TS pomocou ffmpeg"

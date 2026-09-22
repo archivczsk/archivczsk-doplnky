@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_magiogo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-17 13:49+0100\n"
+"POT-Creation-Date: 2026-09-22 13:57+0200\n"
 "PO-Revision-Date: 2025-02-17 13:52+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -180,6 +180,9 @@ msgstr ""
 
 msgid "DVB (OE>=2.5)"
 msgstr ""
+
+msgid "Convert streams to TS format using ffmpeg"
+msgstr "Konvertovať streamy do formátu TS pomocou ffmpeg"
 
 msgid "Advanced"
 msgstr "Pre pokročilých"

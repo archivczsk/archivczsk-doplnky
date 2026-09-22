@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from tools_archivczsk.generator.bouquet_xmlepg import BouquetXmlEpgGenerator, BouquetGenerator, XmlEpgGenerator, EnigmaEpgGenerator
+from tools_archivczsk.generator.bouquet_xmlepg import BouquetXmlEpgGenerator, BouquetGenerator
 
 # #################################################################################################
 
 class OneplayTVBouquetGenerator(BouquetGenerator):
 	def __init__(self, bxeg, channel_type=None):
 		BouquetGenerator.__init__(self, bxeg, channel_type)
-		self.play_url_pattern = '/playlive/%s/index.mpd'
+		self.play_url_pattern += '/index.mpd'
 
 # #################################################################################################
 

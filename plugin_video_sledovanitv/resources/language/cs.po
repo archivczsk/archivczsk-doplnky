@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_sledovanitv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-16 18:40+0100\n"
+"POT-Creation-Date: 2026-09-22 15:21+0200\n"
 "PO-Revision-Date: 2025-12-16 18:40+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -28,7 +28,7 @@ msgstr "Špatný PIN kód"
 #: plugin_video_sledovanitv/sledovanitv.py:263
 #: plugin_video_sledovanitv/sledovanitv.py:278
 #: plugin_video_sledovanitv/sledovanitv.py:283
-#: plugin_video_sledovanitv/provider.py:562
+#: plugin_video_sledovanitv/provider.py:563
 msgid "Login failed"
 msgstr "Přihlášení selhalo"
 
@@ -86,149 +86,149 @@ msgstr "Obsahuje seznam rádií dostupných s vašim předplatným"
 msgid "Add recording"
 msgstr "Přidat nahrávku"
 
-#: plugin_video_sledovanitv/provider.py:263
+#: plugin_video_sledovanitv/provider.py:264
 msgid "Recordings"
 msgstr "Nahrávky"
 
-#: plugin_video_sledovanitv/provider.py:263
+#: plugin_video_sledovanitv/provider.py:264
 msgid "Here you will find recordings of your programs"
 msgstr "Tu najdete nahrávky vašich programů"
 
-#: plugin_video_sledovanitv/provider.py:264
+#: plugin_video_sledovanitv/provider.py:265
 msgid "Monday"
 msgstr "Pondelí"
 
-#: plugin_video_sledovanitv/provider.py:264
+#: plugin_video_sledovanitv/provider.py:265
 msgid "Tuesday"
 msgstr "Úterý"
 
-#: plugin_video_sledovanitv/provider.py:264
+#: plugin_video_sledovanitv/provider.py:265
 msgid "Wednesday"
 msgstr "Středa"
 
-#: plugin_video_sledovanitv/provider.py:264
+#: plugin_video_sledovanitv/provider.py:265
 msgid "Thursday"
 msgstr "Čtvrtek"
 
-#: plugin_video_sledovanitv/provider.py:264
+#: plugin_video_sledovanitv/provider.py:265
 msgid "Friday"
 msgstr "Pátek"
 
-#: plugin_video_sledovanitv/provider.py:264
+#: plugin_video_sledovanitv/provider.py:265
 msgid "Saturday"
 msgstr "Sobota"
 
-#: plugin_video_sledovanitv/provider.py:264
+#: plugin_video_sledovanitv/provider.py:265
 msgid "Sunday"
 msgstr "Neděle"
 
-#: plugin_video_sledovanitv/provider.py:269
+#: plugin_video_sledovanitv/provider.py:270
 msgid "Plan recording"
 msgstr "Naplánovat nahrávání"
 
-#: plugin_video_sledovanitv/provider.py:270
+#: plugin_video_sledovanitv/provider.py:271
 msgid "Futures - planed"
 msgstr "Budoucí - plánováne"
 
-#: plugin_video_sledovanitv/provider.py:271
+#: plugin_video_sledovanitv/provider.py:272
 msgid "Existing"
 msgstr "Existujíci"
 
-#: plugin_video_sledovanitv/provider.py:303
+#: plugin_video_sledovanitv/provider.py:304
 msgid "expires"
 msgstr "expiruje"
 
-#: plugin_video_sledovanitv/provider.py:316
+#: plugin_video_sledovanitv/provider.py:317
 msgid "Delete recording"
 msgstr "Smazat nahrávku"
 
-#: plugin_video_sledovanitv/provider.py:353
+#: plugin_video_sledovanitv/provider.py:354
 msgid "Today"
 msgstr "Dnes"
 
-#: plugin_video_sledovanitv/provider.py:356
+#: plugin_video_sledovanitv/provider.py:357
 msgid "Tomorrow"
 msgstr "Zítra"
 
-#: plugin_video_sledovanitv/provider.py:392
-#: plugin_video_sledovanitv/provider.py:660
+#: plugin_video_sledovanitv/provider.py:393
+#: plugin_video_sledovanitv/provider.py:661
 msgid "Record the event"
 msgstr "Nahrát pořad"
 
-#: plugin_video_sledovanitv/provider.py:400
+#: plugin_video_sledovanitv/provider.py:401
 msgid "Video library"
 msgstr "Videotéka"
 
-#: plugin_video_sledovanitv/provider.py:444
-#: plugin_video_sledovanitv/provider.py:627
+#: plugin_video_sledovanitv/provider.py:445
+#: plugin_video_sledovanitv/provider.py:628
 msgid "Playing of DRM protected content is not available for you."
 msgstr "Přehrávání obsahu chráněného technologií DRM není pro vás dostupné."
 
-#: plugin_video_sledovanitv/provider.py:473
+#: plugin_video_sledovanitv/provider.py:474
 msgid "Special section"
 msgstr "Speciální sekce"
 
-#: plugin_video_sledovanitv/provider.py:484
+#: plugin_video_sledovanitv/provider.py:485
 msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
 msgstr "Tu si můžete zobrazit a případně vymazat/odregistrovat zbytečná zařízení, aby jste se mohli znova jinde přihlásit."
 
-#: plugin_video_sledovanitv/provider.py:485
+#: plugin_video_sledovanitv/provider.py:486
 msgid "Registered devices"
 msgstr "Zaregistrovaná zařízení"
 
-#: plugin_video_sledovanitv/provider.py:486
+#: plugin_video_sledovanitv/provider.py:487
 msgid "Run EPG export to enigma or XML files"
 msgstr "Spustit export EPG do enigmy nebo do XML souborů"
 
-#: plugin_video_sledovanitv/provider.py:492
+#: plugin_video_sledovanitv/provider.py:493
 msgid "EPG export started"
 msgstr "EPG export byl spuštěn"
 
-#: plugin_video_sledovanitv/provider.py:499
+#: plugin_video_sledovanitv/provider.py:500
 msgid "In menu you can remove device using Remove device!"
 msgstr "V menu můžete zařízení vymazat pomocí Smazat zařízení!"
 
-#: plugin_video_sledovanitv/provider.py:505
+#: plugin_video_sledovanitv/provider.py:506
 msgid "Remove device!"
 msgstr "Smazat zařízení!"
 
-#: plugin_video_sledovanitv/provider.py:514
+#: plugin_video_sledovanitv/provider.py:515
 msgid "This operation is not supported yet"
 msgstr "Tato operace zatím není podporováná"
 
-#: plugin_video_sledovanitv/provider.py:535
+#: plugin_video_sledovanitv/provider.py:536
 msgid "Mo"
 msgstr "Po"
 
-#: plugin_video_sledovanitv/provider.py:535
+#: plugin_video_sledovanitv/provider.py:536
 msgid "Tu"
 msgstr "Út"
 
-#: plugin_video_sledovanitv/provider.py:535
+#: plugin_video_sledovanitv/provider.py:536
 msgid "We"
 msgstr "St"
 
-#: plugin_video_sledovanitv/provider.py:535
+#: plugin_video_sledovanitv/provider.py:536
 msgid "Th"
 msgstr "Čt"
 
-#: plugin_video_sledovanitv/provider.py:535
+#: plugin_video_sledovanitv/provider.py:536
 msgid "Fr"
 msgstr "Pá"
 
-#: plugin_video_sledovanitv/provider.py:535
+#: plugin_video_sledovanitv/provider.py:536
 msgid "Sa"
 msgstr "So"
 
-#: plugin_video_sledovanitv/provider.py:535
+#: plugin_video_sledovanitv/provider.py:536
 msgid "Su"
 msgstr "Ne"
 
-#: plugin_video_sledovanitv/provider.py:635
+#: plugin_video_sledovanitv/provider.py:636
 msgid "Recording added"
 msgstr "Nahrávka přidána"
 
-#: plugin_video_sledovanitv/provider.py:635
+#: plugin_video_sledovanitv/provider.py:636
 msgid "There was an error by adding recording"
 msgstr "Při přidávaní nahrávky nastala chyba"
 
@@ -316,11 +316,5 @@ msgstr ""
 msgid "DVB (OE>=2.5)"
 msgstr ""
 
-#~ msgid "Allow multiple audio tracks for HLS"
-#~ msgstr "Povolit více audio stop pro HLS streamy"
-
-#~ msgid "Error by loading video. If it's red, the check PIN code."
-#~ msgstr "Chyba při načítaní videa. Pokud je červené, zkontrolujte PIN kód."
-
-#~ msgid "Error by loading video"
-#~ msgstr "Chyba při načítání videa"
+msgid "Convert streams to TS format using ffmpeg"
+msgstr "Konvertovat streamy do formátu TS pomocí ffmpeg"

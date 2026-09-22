@@ -154,8 +154,8 @@ class MagioGOModuleArchive(CPModuleArchive):
 	# #################################################################################################
 
 	def get_channel_id_from_path(self, path):
-		if path.startswith('playlive/'):
-			path = path[9:]
+		if path.startswith( ('playlive/', 'playlivets/',) ):
+			path = path.split('/', 1)[1]
 			if path.endswith('/index'):
 				path = path[:-6]
 			channel_id = base64.b64decode(path.encode('utf-8')).decode("utf-8")

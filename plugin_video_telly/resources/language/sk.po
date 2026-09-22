@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_telly\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-16 08:27+0100\n"
+"POT-Creation-Date: 2026-09-22 15:25+0200\n"
 "PO-Revision-Date: 2026-01-16 08:28+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,31 +16,31 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.5\n"
 
-#: plugin_video_telly/telly.py:143
+#: plugin_video_telly/telly.py:129
 msgid "Unexpected return code from server"
 msgstr "Neočakávaný návratový kód zo servera"
 
-#: plugin_video_telly/telly.py:176
+#: plugin_video_telly/telly.py:162
 msgid "Login token is invalid. Pair device again."
 msgstr "Prihlasovací token je neplatný. Spárujte zariadenie znova."
 
-#: plugin_video_telly/provider.py:173
+#: plugin_video_telly/provider.py:174
 msgid "Special section"
 msgstr "Špeciálna sekcia"
 
-#: plugin_video_telly/provider.py:184
+#: plugin_video_telly/provider.py:185
 msgid "Run EPG export to enigma or XML files"
 msgstr "Spustiť EPG export do enigmy alebo do XML súborov"
 
-#: plugin_video_telly/provider.py:190
+#: plugin_video_telly/provider.py:191
 msgid "EPG export started"
 msgstr "EPG export bol spustený"
 
-#: plugin_video_telly/provider.py:229
+#: plugin_video_telly/provider.py:231
 msgid "Enter pairing code from site"
 msgstr "Zadajte párovací kód zo stránky"
 
-#: plugin_video_telly/provider.py:232
+#: plugin_video_telly/provider.py:234
 msgid ""
 "Device pairing with your Telly account failed.\n"
 "Check pairing code validity and try again."
@@ -123,8 +123,5 @@ msgstr ""
 msgid "DVB (OE>=2.5)"
 msgstr ""
 
-#~ msgid "Enable H.265 video codec"
-#~ msgstr "Povoliť H.265 video kodek"
-
-#~ msgid "Unexpected answer from server. Try to repeat operation again."
-#~ msgstr "Neočakávaná odpoveď zo servera. Skúste operáciu zopakovať."
+msgid "Convert streams to TS format using ffmpeg"
+msgstr "Konvertovať streamy do formátu TS pomocou ffmpeg"

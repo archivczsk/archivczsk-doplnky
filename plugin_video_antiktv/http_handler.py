@@ -2,20 +2,16 @@
 
 import base64
 import binascii
-from Plugins.Extensions.archivCZSK.engine.httpserver import AddonHttpRequestHandler
+from tools_archivczsk.http_handler.playlive import PlayliveTVHTTPRequestHandler
 
 # #################################################################################################
 
-class AntikTVHTTPRequestHandler( AddonHttpRequestHandler ):
+class AntikTVHTTPRequestHandler( PlayliveTVHTTPRequestHandler ):
 	getkey_uri = "/getkey/"
 	getsegment_live_uri = "/getslive/"
 	getsegment_archive_uri = "/getsarchive/"
 	playlive_redirect_uri = "/playliver/"
 	plaarchive_redirect_uri = "/playarchiver/"
-
-	def __init__(self, content_provider, addon ):
-		AddonHttpRequestHandler.__init__(self, addon)
-		self.cp = content_provider
 
 	# #################################################################################################
 

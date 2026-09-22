@@ -1,3 +1,7 @@
+2026-09-22 - 2.28
+- úpravy po zmenách v závislostiach doplnku
+- pridanie podpory pre konverziu streamov v userbuquete do formátu TS
+
 2026-01-26 - 2.27
 - nastavenie sťahovania streamu do formátu TS
 
