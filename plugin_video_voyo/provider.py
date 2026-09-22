@@ -55,7 +55,7 @@ class VoyoContentProvider(CommonContentProvider):
 			except:
 				pass
 
-		PlayerFeatures.request_ffmpeg_mpd_support(self)
+		PlayerFeatures.check_latest_exteplayer3(self)
 		self.load_favorites()
 
 		self.add_search_dir()

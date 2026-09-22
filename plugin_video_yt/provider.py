@@ -24,7 +24,7 @@ class YoutubeContentProvider(CommonContentProvider):
 
 	def root(self):
 		if self.get_setting('player-check'):
-			PlayerFeatures.request_exteplayer3_version(self, 172)
+			PlayerFeatures.check_latest_exteplayer3(self)
 
 		self.add_search_dir()
 		self.add_dir(self._("Last watched"), cmd=self.list_watched)

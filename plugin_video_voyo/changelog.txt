@@ -1,6 +1,7 @@
 1.12: 22.09.2026
     - úpravy po zmenách v závislostiach doplnku
     - pridanie podpory pre konverziu streamov v userbuquete do formátu TS
+    - úprava kontroly najnovšej verzie exeplayer3
 
 1.11: 01.02.2026
     - pridanie možnosti ručne spustiť export EPG do sekcie "Informácie a nastavenia"

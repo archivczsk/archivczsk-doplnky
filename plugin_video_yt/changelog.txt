@@ -1,3 +1,6 @@
+3.3: 22.09.2026
+- úprava kontroly najnovšej verzie exeplayer3
+
 3.2: 16.07.2026
 - oprava pádu ak nie sú dostupné žiadne videá
 
