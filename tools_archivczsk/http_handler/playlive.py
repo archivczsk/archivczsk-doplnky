@@ -3,6 +3,9 @@
 import base64
 from .template import HTTPRequestHandlerTemplate
 from time import time
+import subprocess
+import select
+import os
 
 # #################################################################################################
 
@@ -21,6 +24,9 @@ class PlayliveTVHTTPRequestHandler(HTTPRequestHandlerTemplate):
 	def decode_channel_key(self, path):
 		if path.endswith('.m3u8'):
 			path = path[:-5]
+
+		if path.endswith('.mpd'):
+			path = path[:-4]
 
 		return base64.b64decode(path.encode('utf-8')).decode("utf-8")
 
@@ -53,5 +59,114 @@ class PlayliveTVHTTPRequestHandler(HTTPRequestHandlerTemplate):
 				}
 
 		return self.reply_redirect(request, result)
+
+	# #################################################################################################
+
+	def P_playlivets(self, request, path):
+		return self.convert_stream_to_ts(request, self.cp.http_endpoint + '/playlive/' + path)
+
+	# #################################################################################################
+
+	def convert_stream_to_ts(self, request, input_url):
+		cmd = [
+			'/usr/bin/ffmpeg',
+			'-nostdin',
+			'-loglevel', 'info',
+			'-i', input_url,
+			'-map', '0:v:0',
+			'-map', '0:a:0',
+			'-c:v', 'copy',
+			'-c:a', 'copy',
+			'-muxdelay', '0',
+			'-muxpreload', '0',
+			'-mpegts_flags', '+resend_headers',
+			'-f', 'mpegts',
+			'pipe:1'
+		]
+
+		if os.path.isfile('/usr/lib/exteplayer3_deps/ffmpeg'):
+			cmd[0] = '/usr/lib/exteplayer3_deps/ffmpeg'
+
+		# cmd = [
+		# 	'/usr/bin/gst-launch-1.0',
+		# 	'urisourcebin', 'uri=' + input_url, 'name=src',
+		# 	'mpegtsmux', 'name=mux', 'pat-interval=100000000', 'pmt-interval=100000000', '!', 'fdsink', 'fd=1',
+		# 	'src.', '!', 'parsebin', 'name=vparse', '!', 'queue', '!', 'mux.',
+		# 	'src.', '!', 'parsebin', 'name=aparse', '!', 'queue', '!', 'mux.'
+		# ]
+
+		process = None
+		log = None
+
+		try:
+			self.cp.log_info("Starting stream conversion to TS for URL: %s" % input_url)
+
+#			log = open('/tmp/archivczsk-ffmpeg.log-%s' % input_url.split('/')[-1], 'w')
+
+			poll_obj = select.poll()
+			process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=log or subprocess.DEVNULL, bufsize=0)
+			poll_obj.register(process.stdout, select.POLLIN)
+			poll_obj.register(request.wfile, select.POLLIN | select.POLLHUP | select.POLLERR)
+
+			request.send_response(200)
+			request.send_header('Content-Type', 'video/mp2t')
+			request.send_header('Cache-Control','no-cache')
+			request.send_header('Connection', 'close')
+
+			while True:
+				events = poll_obj.poll(1000)  # 6 second timeout
+				if not events:
+					continue
+
+				for fd, event in events:
+					if fd == request.wfile.fileno():
+#						if event & (select.POLLHUP | select.POLLERR):
+						raise IOError("Client disconnected")
+
+				for fd, event in events:
+					if fd == process.stdout.fileno():
+						data = process.stdout.read(65536)
+
+						if not data:
+							break
+
+						request.write(data)
+
+		except (IOError, OSError):
+			self.cp.log_debug("Stopping stream conversion for URL: %s - client disconnected" % input_url)
+
+		except:
+			self.cp.log_exception()
+
+		finally:
+			if process:
+				try:
+					if process.poll() is None:
+#						process.terminate()
+						process.kill()
+
+						try:
+							process.wait()
+						except:
+							self.cp.log_error("Failed to stop ffmpeg process for URL: %s" % input_url)
+							self.cp.log_exception()
+
+				except:
+					self.cp.log_error("Failed to kill ffmpeg process for URL: %s" % input_url)
+					self.cp.log_exception()
+
+				try:
+					poll_obj.unregister(process.stdout)
+					poll_obj.unregister(request.wfile)
+					process.stdout.close()
+				except:
+					self.cp.log_exception()
+
+			if log:
+				log.close()
+
+			self.cp.log_info("Stream conversion for URL %s stopped" % input_url)
+
+		return None
 
 # #################################################################################################
