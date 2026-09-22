@@ -1,5 +1,6 @@
 2026-09-18 [3.12]
 * oprava filmov v kategórii "Doporučené"
+* úpravy po zmenách v závislostiach doplnku
 
 2026-09-10 [3.11]
 * oprava zobrazenia obsahu v kategórii "Doporučené"
