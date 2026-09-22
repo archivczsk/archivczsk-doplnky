@@ -245,7 +245,10 @@ class Dupe(object):
 			data = [x.get_text().strip() for x in a.find_all('div', class_='x-text')]
 #			self.cp.log_debug("Series data:\n%s" % data)
 
-			year = data[0][6:]
+			try:
+				year = data[0][6:].strip()
+			except:
+				year = None
 
 			ret.append({
 				'type': 'tvshow',
