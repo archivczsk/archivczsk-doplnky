@@ -28,11 +28,11 @@ except:
 
 class BouquetGeneratorTemplate(object):
 
-	def __init__(self, endpoint, enable_adult=True, enable_xmlepg=False, enable_picons=False, player_name='0', user_agent=None):
+	def __init__(self, endpoint, enable_adult=True, enable_xmlepg=False, enable_picons=False, player_name='0', user_agent=None, ts_convert=False):
 		# configuration to make this class little bit reusable also in other addons
 		self.proxy_url = endpoint
 		self.userbouquet_file_name = "userbouquet.%s.tv" % self.prefix
-		self.play_url_pattern = '/playlive/%s'
+		self.play_url_pattern = '/playlivets/%s' if ts_convert else '/playlive/%s'
 		self.user_agent = user_agent
 		self.enable_adult = enable_adult
 		self.enable_xmlepg = enable_xmlepg

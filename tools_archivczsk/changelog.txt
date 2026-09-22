@@ -1,6 +1,7 @@
 3.15 - 22.09.2026
     - fixed HLS parser
     - added playlive HTTP handler with stream conversion to TS format
+    - updated bouquet generator to support TS converter
 
 3.14 - 27.08.2026
     - fixed iso8601 UTC conversion

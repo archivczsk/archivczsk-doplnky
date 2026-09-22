@@ -33,7 +33,7 @@ class BouquetGenerator(BouquetGeneratorTemplate):
 		self.onid = bxeg.onid
 		self.namespace = bxeg.namespace
 		self.channel_type = channel_type
-		BouquetGeneratorTemplate.__init__(self, bxeg.http_endpoint, bxeg.get_setting('enable_adult'), bxeg.get_setting('enable_xmlepg'), bxeg.get_setting('enable_picons'), bxeg.get_setting('player_name'), bxeg.user_agent)
+		BouquetGeneratorTemplate.__init__(self, bxeg.http_endpoint, bxeg.get_setting('enable_adult'), bxeg.get_setting('enable_xmlepg'), bxeg.get_setting('enable_picons'), bxeg.get_setting('player_name'), bxeg.user_agent, bxeg.get_setting('enable_tsconvert'))
 
 	# #################################################################################################
 
@@ -117,7 +117,7 @@ class BouquetXmlEpgGenerator(object):
 	automaticaly run the generation of bouquet and xml epg or delete it. It will also run periodic check and refresh when
 	something changes. Check will be run every 4 hour by default and xml epg data are refreshed every 20 hours.
 	'''
-	def __init__(self, content_provider, http_endpoint=None, login_settings_names=('username', 'password'), user_agent=None, channel_types=('tv',)):
+	def __init__(self, content_provider, http_endpoint=None, login_settings_names=['username', 'password'], user_agent=None, channel_types=['tv']):
 		''' content_provider shoould be based on CommonContentProvider '''
 		self.prefix = content_provider.get_addon_id(short=True)
 		self.name = content_provider.name
@@ -141,14 +141,18 @@ class BouquetXmlEpgGenerator(object):
 
 		if not hasattr(self, 'bouquet_settings_names'):
 			# set settings names, that will start bouquet rebuild + are used to check, if rebuild is needed
-			self.bouquet_settings_names = ('enable_userbouquet', 'enable_adult', 'enable_xmlepg', 'enable_picons', 'player_name')
+			self.bouquet_settings_names = ['enable_userbouquet', 'enable_adult', 'enable_xmlepg', 'enable_picons', 'player_name', 'enable_tsconvert']
+		else:
+			self.bouquet_settings_names = list(self.bouquet_settings_names)
 
 		if not hasattr(self, 'xmlepg_settings_names'):
 			# set settings names that are chcecked if rebuild of xmlepg is needed
-			self.xmlepg_settings_names = ('xmlepg_dir', 'xmlepg_days')
+			self.xmlepg_settings_names = ['xmlepg_dir', 'xmlepg_days']
+		else:
+			self.xmlepg_settings_names = list(self.xmlepg_settings_names)
 
 		# if any of login settings names changes, then it will force bouquet and xmlepg rebuild
-		self.login_settings_names = login_settings_names
+		self.login_settings_names = list(login_settings_names)
 		self.channel_types = channel_types       # list of enabled channel types
 		self.channel_types_all = channel_types   # list of all channel types
 		self.bouquet_generator = BouquetGenerator
