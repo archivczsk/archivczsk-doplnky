@@ -95,16 +95,13 @@ class PrimaPlusContentProvider(CommonContentProvider):
 	def list_devices(self):
 		for item in self.primaplus.get_devices():
 			plot = []
-			d = datetime.strptime(item["registered"][:19], "%Y-%m-%dT%H:%M:%S")
-			plot.append("{}: {:02}.{:02}.{:04} - {:02d}:{:02d} UTC".format(self._("Registered at"), d.day, d.month, d.year, d.hour, d.minute))
+			d = datetime.strptime(item["createdAt"][:19], "%Y-%m-%dT%H:%M:%S")
+			plot.append("{}: {:02}.{:02}.{:04} - {:02d}:{:02d} UTC".format(self._("Created at"), d.day, d.month, d.year, d.hour, d.minute))
 
-			d = datetime.strptime(item["lastChanged"][:19], "%Y-%m-%dT%H:%M:%S")
-			plot.append("{}: {:02}.{:02}.{:04} - {:02d}:{:02d} UTC".format(self._("Last change"), d.day, d.month, d.year, d.hour, d.minute))
-
-			title = '[%s]: %s' % (item['slotType'], item['title'])
+			title = '[%s]: %s' % (item['deviceType'], item['deviceName'])
 			if item['this']:
 				title = _I(title)
-			self.add_video(title, info_labels={'plot': '\n'.join(plot)}, cmd=self.delete_device, device_id=item['slotId'] if item['this'] == False else None )
+			self.add_video(title, info_labels={'plot': '\n'.join(plot)}, cmd=self.delete_device, device_id=item['sessionId'] if item['this'] == False else None )
 
 	# ##################################################################################################################
 
@@ -133,7 +130,7 @@ class PrimaPlusContentProvider(CommonContentProvider):
 			else:
 				title = p['name']
 
-			self.add_video(title, img=p['avatarUrl'], info_labels={'plot':'\n'.join(plot)}, cmd=self.switch_profile, profile_id=p['ulid'] if p['this'] == False else None)
+			self.add_video(title, img=p.get('avatar', {}).get('imgDefault'), info_labels={'plot':'\n'.join(plot)}, cmd=self.switch_profile, profile_id=p['ulid'] if p['this'] == False else None)
 
 	# ##################################################################################################################
 

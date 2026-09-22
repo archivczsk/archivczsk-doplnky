@@ -534,12 +534,9 @@ class PrimaPlus(object):
 
 	def get_devices(self):
 		ret = []
-		data = self.call_rpc_api('user.device.slot.list')
+		data = self.call_rpc_api('user.user.session.active.list').get('data',[])
 		for item in data:
-			if item['deleted'] or item['deletedByAdmin']:
-				continue
-
-			if item['slotId'] == self.login_data.get('device'):
+			if item['sessionId'] == self.login_data.get('device'):
 				item['this'] = True
 			else:
 				item['this'] = False
@@ -549,10 +546,11 @@ class PrimaPlus(object):
 
 	# ##################################################################################################################
 
-	def delete_device(self, slot_id):
+	def delete_device(self, device_id):
 		params = {
-			'slotId': slot_id
+			'sessionId': device_id,
+			'revokeType': 'manual'
 		}
-		self.call_rpc_api('user.device.slot.remove', params)
+		self.call_rpc_api('user.user.session.revoke', params)
 
 	# ##################################################################################################################
