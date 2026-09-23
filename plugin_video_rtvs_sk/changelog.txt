@@ -1,3 +1,6 @@
+1.18.0:
+- oprava funkcionality po zmenách na stránke stvr
+
 1.17.1:
 - oprava pádov pre python 2
 

@@ -46,17 +46,17 @@ DOMAIN = 'stvr.sk'
 HOST = 'https://www.' + DOMAIN
 IMAGES = ''
 
-START_AZ = '<div class=\"row tv__archive\">'
+START_AZ = 'id=\"tv-archiv-results\"'
 END_AZ = '<div class="footer'
-AZ_ITER_RE = r'<a title=\"(?P<title>[^"]+)\"(.+?)href=\"(?P<url>[^"]+)\"(.+?)<img src=\"(?P<img>[^"]+)\"(.+?)<span class=\"date\">(?P<date>[^<]+)<\/span>(.+?)<span class=\"program time--start\">(?P<time>[^<]+)'
+AZ_ITER_RE = r'<div class=\"[^\"]*tv-archiv__item\"[^>]*>\s*<a href=\"(?P<url>[^\"]+)\"[^>]*>.*?<img src=\"(?P<img>[^\"]+)\"[^>]*/?>.*?<h[23][^>]*>(?P<title>[^<]+)<\/h[23]>'
 
 START_AZ_RADIO = '<li class=\"list--radio-series__list list__headers\">'
-END_AZ_RADIO = '<div class=\"box box--live\">'
+END_AZ_RADIO = '<div class="footer'
 AZ_ITER_RE_RADIO = r'title=\"(?P<title>[^\"]+)\" href=\"(?P<url>[^\"]+)\".+?__station[^"]+">(?P<station>[^\t]+).+?__series">(?P<series>[^<]+).+?__date">(?P<date>[^<]+)'
 
-START_DATE = 'class=\"row tv__archive tv__archive--date\">'
+START_DATE = 'id=\"tv-archiv-results\"'
 END_DATE = '<!-- FOOTER -->'
-DATE_ITER_RE = r'<div class=\"media.+?\">\s*<a href=\"(?P<url>[^\"]+)\".+?<img src=\"(?P<img>[^\"]+)\".+?<\/a>\s*<div class=\"media__body\">.+?<div class=\"program time--start\">(?P<time>[^\<]+)<span>.+?<a class=\"link\".+?title=\"(?P<title>[^\"]+)\">'
+DATE_ITER_RE = r'<div class=\"[^\"]*tv-archiv__item\"[^>]*>\s*<a href=\"(?P<url>[^\"]+)\"[^>]*>.*?<img src=\"(?P<img>[^\"]+)\"[^>]*/?>.*?<h[23][^>]*>(?P<title>[^<]+)<\/h[23]>'
 
 START_DATE_RADIO = '<li class=\"list--radio-series__list list__headers\">'
 END_DATE_RADIO = '<div class=\"box box--live\">'
@@ -96,6 +96,31 @@ LISTING_ITER_RE = r'<td class=(\"day\"|\"active day\")>\s+<a href=[\'\"](?P<url>
 
 EPISODE_RE = r'<div class="article__header">.?<h2 class="page__title">(?P<title>[^<]+)</h2>.?<div class="article__date-name(?: article__date-name--valid)?">.*?(?P<plot>\d{1,2}.\d{1,2}.\d{4})'
 
+# Vyber roka/serie poradu ("Vsetky serie" / 2026 / 2025 / ...) -- kazda opcia ma
+# svoje vlastne 's' id pre /json/tv/archiv (viz list_show)
+SERIES_SELECT_RE = r'<select[^>]*id=\"filter_series\"[^>]*>(?P<options>.*?)</select>'
+SERIES_OPTION_RE = r'<option value=\"(?P<value>\d+)\"[^>]*>\s*(?P<label>[^<]+?)\s*</option>'
+
+# Archiv TV podla zanru (/televizia/archiv/{slug}) -- rovnaka polozka-znacka ako
+# AZ/datum (tv-archiv__item), ale stranka aj /chunk/tv-archiv (dalsie strany cez
+# infinite scroll) davaju kazda zanru ine 't'/'node'/'sub' parametre (viz list_genre)
+GENRES = [
+	('filmy', 'Filmy'),
+	('serialy', 'Seriály'),
+	('dokument', 'Dokument'),
+	('publicistika', 'Publicistika'),
+	('spravodajstvo', 'Spravodajstvo'),
+	('sport', 'Šport'),
+	('zabava', 'Zábava'),
+	('hudba', 'Hudba'),
+	('vzdelavanie', 'Vzdelávanie'),
+	('nabozenstvo', 'Náboženstvo'),
+	('umenie', 'Umenie'),
+]
+GENRE_CHUNK_PARAMS_RE = r'data-chunk-base-params=\"(?P<params>[^\"]+)\"'
+GENRE_ROWS_ALL_RE = r'data-rows-all=\"(?P<rows>\d+)\"'
+GENRE_PAGE_LIMIT_RE = r'data-page-limit=\"(?P<limit>\d+)\"'
+
 COLOR_START = '[COLOR FFB2D4F5]'
 COLOR_END = '[/COLOR]'
 
@@ -121,7 +146,7 @@ def get_streams_from_manifest_url(url):
 	return result
 
 def _fix_date(date):
-#	print (date)
+	print (date)
 	# return date
 	if date[0] == ' ':
 		date = date[1:]
@@ -149,7 +174,7 @@ class RtvsContentProvider(ContentProvider):
 	data_json = None
 
 	def __init__(self, username=None, password=None, filter=None, tmp_dir='/tmp'):
-		ContentProvider.__init__(self, DOMAIN, HOST + '/televizia/archiv', username, password, filter, tmp_dir)
+		ContentProvider.__init__(self, DOMAIN, f'{HOST}/televizia/archiv', username, password, filter, tmp_dir)
 		opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookielib.LWPCookieJar()))
 		urllib2.install_opener(opener)
 
@@ -165,9 +190,9 @@ class RtvsContentProvider(ContentProvider):
 		return self._url(url)
 
 	def _get_url(self, radio=False):
-		url = HOST + '/televizia/archiv'
+		url = f'{HOST}/televizia/archiv'
 		if radio:
-			url = HOST + '/radio/archiv'
+			url = f'{HOST}/radio/archiv'
 		return url
 
 	def capabilities(self):
@@ -184,6 +209,13 @@ class RtvsContentProvider(ContentProvider):
 		elif url.find('#az_radio#') == 0:
 			return self.az_radio()
 
+		elif url.find('#genre_list#') == 0:
+			return self.genres()
+
+		elif url.find('#genre#') == 0:
+			slug, page_num, base_params = url.split('#')[-1].split('|', 2)
+			return self.list_genre(slug, int(page_num), base_params)
+
 		elif url.find('#live#') == 0:
 			return self.live()
 
@@ -195,7 +227,7 @@ class RtvsContentProvider(ContentProvider):
 				self.base_url = self._get_url(True)
 				return self.list_az_radio(util.request(self._fix_url_radio(url)))
 
-		elif url.find("#date_radio#") == 0 or (url.find("radio=1") != -1 and url.find('ord=dt') == -1):
+		elif url.find("#date_radio#") == 0:
 			d = re.search('#date(?:_radio|)#(?P<month>[\d]{1,2})\.(?P<year>[\d]{4})', url)
 			month = d.group('month')
 			year = d.group('year')
@@ -206,6 +238,10 @@ class RtvsContentProvider(ContentProvider):
 			month, year = url.split('#')[-1].split('.')
 			self.base_url = self._get_url()
 			return self.date(int(year), int(month))
+
+		elif url.find("#episodes#") == 0:
+			node_id, page_num, limit = url.split('#')[-1].split('.')
+			return self.list_episodes_json(node_id, int(page_num), int(limit))
 
 
 		elif url.find("/archiv/extra/vzdelavanie") != -1:
@@ -250,6 +286,11 @@ class RtvsContentProvider(ContentProvider):
 		else:
 			self.info("EPISODE listing: %s" % url)
 			if url.find('/radio/') == -1:
+				m = re.search(r'/televizia/archiv/(?P<node>\d+)/(?P<program>\d+)', url)
+				if m:
+					# stary kalendar (calendar modal) uz stvr.sk neposkytuje -- ponukame
+					# vyber roku/serie (tak ako na webe) a epizody citame z AJAX JSON API
+					return self.list_show(m.group('node'), m.group('program'))
 				page = util.request(self._fix_url(url))
 				self.data_web(page)
 				return self.list_episodes(page)
@@ -292,6 +333,11 @@ class RtvsContentProvider(ContentProvider):
 		result.append(item)
 
 		item = self.dir_item()
+		item['title'] = '[B][COLOR FFB2D4F5]TV:[/COLOR] Podľa žánru[/B]'
+		item['url'] = "#genre_list#"
+		result.append(item)
+
+		item = self.dir_item()
 		item['title'] = '[B][COLOR FFB2D4F5]Rádio:[/COLOR] A-Z [/B]'
 		item['url'] = "#az_radio#"
 		result.append(item)
@@ -311,7 +357,9 @@ class RtvsContentProvider(ContentProvider):
 	def getInfoFromWeb(self, item):
 		channel_id = item['url'].split('.')[1]
 		data = util.request(HOST + "/json/live5f.json?c=%s&b=mozilla&p=linux&v=47&f=1&d=1"%(channel_id))
-		videodata = util.json.loads(data).get('clip', {})
+		videodata = util.json.loads(data)['clip']
+		url = videodata['sources'][0]['src']
+		url = ''.join(url.split())
 		# item['plot'] = videodata.get('title','')
 		title = videodata.get('title','')
 		if title != '':
@@ -323,7 +371,7 @@ class RtvsContentProvider(ContentProvider):
 	def get_list_radios(self):
 		result = []
 		self.info ('== get_list_radios ==')
-		page = util.request(HOST + '/radio/radia')
+		page = util.request(f'{HOST}/radio/radia')
 		page = util.substr(page, RADIO_STATION_START, RADIO_STATION_END)
 		for m in re.finditer(RADIO_STATION_ITER_RE, page, re.IGNORECASE | re.DOTALL):
 			item = self.video_item()
@@ -339,7 +387,7 @@ class RtvsContentProvider(ContentProvider):
 		result = []
 		self.info ('== get_radio_archiv_extra ==')
 		# self.info(page)
-		page = util.request(HOST + '/radio/archiv/extra')
+		page = util.request(f'{HOST}/radio/archiv/extra')
 		page = util.substr(page, RADIO_EXTRA_START, RADIO_EXTRA_END)
 		# self.info(page)
 		for m in re.finditer(RADIO_EXTRA_ITER_RE, page, re.IGNORECASE | re.DOTALL):
@@ -357,7 +405,7 @@ class RtvsContentProvider(ContentProvider):
 		result = []
 		# self.info ('== get_radio_archiv_plus ==')
 		# self.info(page)
-		page = util.request(HOST + '/radio/archiv-plus')
+		page = util.request(f'{HOST}/radio/archiv-plus')
 		page = util.substr(page, RADIO_PLUS_START, RADIO_PLUS_END)
 		# self.info(page)
 		for m in re.finditer(RADIO_PLUS_ITER_RE, page, re.IGNORECASE | re.DOTALL):
@@ -483,6 +531,51 @@ class RtvsContentProvider(ContentProvider):
 			self._filter(result, item)
 		return result
 
+	def genres(self):
+		# self.info ('== genres ==')
+		result = []
+		for slug, label in GENRES:
+			item = self.dir_item()
+			item['title'] = label
+			# base_params (t/node/sub pre /chunk/tv-archiv) sa este nepoznaju --
+			# zistia sa az pri prvom nacitani stranky daneho zanru (list_genre)
+			item['url'] = '#genre#%s|1|' % slug
+			self._filter(result, item)
+		return result
+
+	def list_genre(self, slug, page_num=1, base_params=''):
+		# self.info('== list_genre %s page=%s ==' % (slug, page_num))
+		result = []
+		if base_params:
+			api_url = '%s/chunk/tv-archiv?%s&page=%d' % (HOST, base_params, page_num)
+			sub = util.request(api_url)
+		else:
+			# 1. strana -- este nepozname 't'/'node'/'sub' pre /chunk/tv-archiv,
+			# tie sa zistia zo samotnej stranky zanru
+			page = util.request('%s/televizia/archiv/%s' % (HOST, slug))
+			p = re.search(GENRE_CHUNK_PARAMS_RE, page, re.IGNORECASE)
+			base_params = p.group('params').replace('&amp;', '&') if p else ''
+			sub = util.substr(page, START_AZ, END_AZ)
+
+		for m in re.finditer(AZ_ITER_RE, sub, re.IGNORECASE | re.DOTALL):
+			item = self.dir_item()
+			item['title'] = util.decode_html(m.group('title'))
+			item['img'] = self._fix_url(m.group('img'))
+			item['url'] = m.group('url')
+			self._filter(result, item)
+
+		if base_params:
+			rows = re.search(GENRE_ROWS_ALL_RE, sub, re.IGNORECASE)
+			limit = re.search(GENRE_PAGE_LIMIT_RE, sub, re.IGNORECASE)
+			total = int(rows.group('rows')) if rows else 0
+			page_limit = int(limit.group('limit')) if limit else 20
+			if page_num * page_limit < total:
+				item = self.dir_item()
+				item['type'] = 'next'
+				item['url'] = '#genre#%s|%d|%s' % (slug, page_num + 1, base_params)
+				result.append(item)
+		return result
+
 	def az_radio(self):
 		# self.info ('== az_radio ==')
 		result = []
@@ -530,7 +623,7 @@ class RtvsContentProvider(ContentProvider):
 		prev_year = prev_month == 12 and year - 1 or year
 		item = self.dir_item()
 		item['type'] = 'prev'
-		item['url'] = "#date#%d.%d&radio=1" % (prev_month, prev_year)
+		item['url'] = "#date_radio#%d.%d" % (prev_month, prev_year)
 		result.append(item)
 		for d in calendar.LocaleTextCalendar().itermonthdates(year, month):
 			if d.month != month:
@@ -553,11 +646,12 @@ class RtvsContentProvider(ContentProvider):
 		page = util.substr(page, START_AZ, END_AZ)
 		for m in re.finditer(AZ_ITER_RE, page, re.IGNORECASE | re.DOTALL):
 			item = self.dir_item()
-			semicolon = m.group('title').find(':')
+			title = util.decode_html(m.group('title'))
+			semicolon = title.find(':')
 			if semicolon != -1:
-				item['title'] = m.group('title')[:semicolon].strip()
+				item['title'] = title[:semicolon].strip()
 			else:
-				item['title'] = m.group('title')
+				item['title'] = title
 			item['img'] = self._fix_url(m.group('img'))
 			item['url'] = m.group('url')
 			self._filter(result, item)
@@ -594,7 +688,7 @@ class RtvsContentProvider(ContentProvider):
 		# self.info(page)
 		for m in re.finditer(DATE_ITER_RE, page, re.IGNORECASE | re.DOTALL):
 			item = self.video_item()
-			item['title'] = "%s (%s)" % (m.group('title'), m.group('time'))
+			item['title'] = util.decode_html(m.group('title'))
 			item['img'] = self._fix_url(m.group('img'))
 			item['url'] = m.group('url')
 			if 'plot' in m.groups():
@@ -628,6 +722,77 @@ class RtvsContentProvider(ContentProvider):
 			item['type'] = 'next'
 			item['url'] = HOST + prev_url
 			result.append(item)
+		return result
+
+	def list_episodes_json(self, node_id, page_num=1, limit=1000):
+		# Stara "kalendar modal" stranka poradu (list_episodes) zanikla pri redesigne
+		# stvr.sk (2026). Zoznam odvysielanych epizod sa teraz cita z tohto AJAX
+		# JSON API, ktore pouziva aj samotna webova stranka (tlacidlo "Zobrazit
+		# dalsie epizody"). node_id = prve cislo v URL poradu (/televizia/archiv/{node}/{program}).
+		self.info('== list_episodes_json node=%s page=%s ==' % (node_id, page_num))
+		result = []
+		api_url = '%s/json/tv/archiv?e=1&archive=1&p=%d&l=%d&o=desc&s=%s' % (HOST, page_num, limit, node_id)
+		data = util.json.loads(util.request(api_url))
+		programs = data.get('program', []) or []
+		for p in programs:
+			item = self.video_item()
+			air = p.get('air', '') or ''
+			title = p.get('name') or ''
+			if ' ' in air:
+				date_part, time_part = air.split(' ', 1)
+				y, mo, d = date_part.split('-')
+				item['title'] = '%s (%s.%s.%s %s)' % (title, d, mo, y, time_part[:5])
+			else:
+				item['title'] = title
+			item['img'] = p.get('image', '')
+			# 'description' je popis konkretnej odvysielanej epizody (napr. kto su
+			# hostia v danom diele), 'synopsis' je len vseobecny popis poradu ako
+			# takeho (rovnaky pre kazdu epizodu) -- ak existuje konkretny, ma prednost
+			item['plot'] = p.get('description') or p.get('synopsis') or ''
+			item['url'] = '/televizia/archiv/%s/%s' % (node_id, p.get('ID'))
+			item['menu'] = {'$30070': {'list': item['url'], 'action-type': 'list'}}
+			self._filter(result, item)
+
+		try:
+			total = int(data.get('paging', {}).get('results', 0))
+		except (TypeError, ValueError):
+			total = 0
+		if page_num * limit < total:
+			item = self.dir_item()
+			item['type'] = 'next'
+			item['url'] = '#episodes#%s.%d.%d' % (node_id, page_num + 1, limit)
+			result.append(item)
+		return result
+
+	def list_show(self, node_id, program_id=None):
+		# Stranka poradu ponuka vyber "Vsetky serie" / konkretny rok -- kazda
+		# opcia ma svoje vlastne 's' id pre /json/tv/archiv (rocne id maju
+		# vsetky epizody daneho roka, zvycajne pod limitom 1000 v jednom volani).
+		self.info('== list_show node=%s program=%s ==' % (node_id, program_id))
+		result = []
+		page_url = '%s/televizia/archiv/%s/%s' % (HOST, node_id, program_id or '')
+		page = util.request(page_url)
+		sel = re.search(SERIES_SELECT_RE, page, re.IGNORECASE | re.DOTALL)
+		options = []
+		if sel:
+			for m in re.finditer(SERIES_OPTION_RE, sel.group('options'), re.IGNORECASE | re.DOTALL):
+				options.append((m.group('value'), _fix_space(m.group('label'))))
+
+		if not options:
+			# nenasiel sa vyber roka (napr. porad s jedinou epizodou) -- rovno zoznam
+			return self.list_episodes_json(node_id, 1)
+
+		if len(options) <= 2:
+			# len "Vsetky serie" (bez rokov), alebo "Vsetky serie" + 1 rok -- oba
+			# by aj tak vypisali to iste, takze netreba ponukat vyber, rovno epizody
+			value = options[-1][0]
+			return self.list_episodes_json(value, 1)
+
+		for value, label in options:
+			item = self.dir_item()
+			item['title'] = label
+			item['url'] = '#episodes#%s.1.1000' % value
+			self._filter(result, item)
 		return result
 
 	def list_episodes(self, page):
@@ -669,7 +834,7 @@ class RtvsContentProvider(ContentProvider):
 
 			if data_json:
 				item['img'] = data_json.get('thumbnailUrl', '')
-				item['plot'] = data_json.get('description', '')
+				item['plot'] = data_json.   get('description', '')
 			self._filter(result, item)
 		result.sort(key=lambda x:int(x['date']), reverse=True)
 		item = self.dir_item()
@@ -696,20 +861,19 @@ class RtvsContentProvider(ContentProvider):
 		item = item.copy()
 		if item['url'].startswith('live.'):
 			channel_id = item['url'].split('.')[1]
-			data = util.request(HOST + "/json/live5f.json?c=%s&b=mozilla&p=linux&v=47&f=1&d=1"%(channel_id))
-			videodata = util.json.loads(data).get('clip', {})
-			url = videodata.get('sources', [{}])[0].get('src')
-			if url:
-				url = ''.join(url.split()) # remove whitespace \n from URL
-				#process m3u8 playlist
-				for stream in get_streams_from_manifest_url(url):
-					item = self.video_item()
-					item['title'] = videodata.get('title','')
-					item['url'] = stream['url']
-					item['quality'] = stream['quality']
-					# item['img'] = videodata.get('image','')
-					item['img'] = videodata.get('image', _item.get('img', ''))
-					result.append(item)
+			data = util.request(f"{HOST}/json/live5f.json?c=%s&b=mozilla&p=linux&v=47&f=1&d=1"%(channel_id))
+			videodata = util.json.loads(data)['clip']
+			url = videodata['sources'][0]['src']
+			url = ''.join(url.split()) # remove whitespace \n from URL
+			#process m3u8 playlist
+			for stream in get_streams_from_manifest_url(url):
+				item = self.video_item()
+				item['title'] = videodata.get('title','')
+				item['url'] = stream['url']
+				item['quality'] = stream['quality']
+				# item['img'] = videodata.get('image','')
+				item['img'] = videodata.get('image', _item.get('img', ''))
+				result.append(item)
 
 		elif item['url'].find('/player/') != -1:
 			if '/' == item['url'][-1]:
@@ -726,7 +890,7 @@ class RtvsContentProvider(ContentProvider):
 		elif item['url'].find('/embed/audio/') != -1:
 				audio_id = item['url'].split('/')[-1]
 				# item['url'] = 'http://www.rtvs.sk/json/audio5f.json?id=' + url
-				audiodata = util.json.loads(util.request(HOST + "/json/audio5f.json?id=" + audio_id))
+				audiodata = util.json.loads(util.request(f"{HOST}/json/audio5f.json?id=" + audio_id))
 				for v in audiodata['playlist'][0]['sources']:
 					url =  v['src']
 					if '.mp3' in url:
@@ -741,9 +905,9 @@ class RtvsContentProvider(ContentProvider):
 			audio_id = item['url'].split('/')[-1]
 			audio_id0 = item['url'].split('/')[-2]
 			self.info("<resolve> audioid: %s" % audio_id)
-			embed_data = util.request(HOST + "/embed/radio/archive/%s/%s"%(audio_id0, audio_id))
+			embed_data = util.request(f"{HOST}/embed/radio/archive/%s/%s"%(audio_id0, audio_id))
 			audio_id = re.search('audio5f\.json\?id=(?P<id>[^\"]+)', embed_data, re.IGNORECASE | re.DOTALL).group('id')
-			audiodata = util.json.loads(util.request(HOST + "/json/audio5f.json?id=" + audio_id))
+			audiodata = util.json.loads(util.request(f"{HOST}/json/audio5f.json?id=" + audio_id))
 			for v in audiodata['playlist'][0]['sources']:
 				url =  v['src']
 				if '.mp3' in url:
@@ -756,8 +920,8 @@ class RtvsContentProvider(ContentProvider):
 		else:
 			video_id = item['url'].split('/')[-1]
 			self.info("<resolve> videoid: %s" % video_id)
-			videodata = util.json.loads(util.request(HOST + "/json/archive5f.json?id=" + video_id))
-			for v in videodata.get('clip', {}).get('sources', []):
+			videodata = util.json.loads(util.request(f"{HOST}/json/archive5f.json?id=" + video_id))
+			for v in videodata['clip']['sources']:
 				url =  v['src']
 				if '.m3u8' in url:
 					#process m3u8 playlist
