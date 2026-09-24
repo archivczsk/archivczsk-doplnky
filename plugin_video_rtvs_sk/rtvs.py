@@ -174,7 +174,7 @@ class RtvsContentProvider(ContentProvider):
 	data_json = None
 
 	def __init__(self, username=None, password=None, filter=None, tmp_dir='/tmp'):
-		ContentProvider.__init__(self, DOMAIN, f'{HOST}/televizia/archiv', username, password, filter, tmp_dir)
+		ContentProvider.__init__(self, DOMAIN, HOST + '/televizia/archiv', username, password, filter, tmp_dir)
 		opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookielib.LWPCookieJar()))
 		urllib2.install_opener(opener)
 
@@ -190,9 +190,9 @@ class RtvsContentProvider(ContentProvider):
 		return self._url(url)
 
 	def _get_url(self, radio=False):
-		url = f'{HOST}/televizia/archiv'
+		url = HOST + '/televizia/archiv'
 		if radio:
-			url = f'{HOST}/radio/archiv'
+			url = HOST + '/radio/archiv'
 		return url
 
 	def capabilities(self):
@@ -371,7 +371,7 @@ class RtvsContentProvider(ContentProvider):
 	def get_list_radios(self):
 		result = []
 		self.info ('== get_list_radios ==')
-		page = util.request(f'{HOST}/radio/radia')
+		page = util.request(HOST + '/radio/radia')
 		page = util.substr(page, RADIO_STATION_START, RADIO_STATION_END)
 		for m in re.finditer(RADIO_STATION_ITER_RE, page, re.IGNORECASE | re.DOTALL):
 			item = self.video_item()
@@ -387,7 +387,7 @@ class RtvsContentProvider(ContentProvider):
 		result = []
 		self.info ('== get_radio_archiv_extra ==')
 		# self.info(page)
-		page = util.request(f'{HOST}/radio/archiv/extra')
+		page = util.request(HOST + '/radio/archiv/extra')
 		page = util.substr(page, RADIO_EXTRA_START, RADIO_EXTRA_END)
 		# self.info(page)
 		for m in re.finditer(RADIO_EXTRA_ITER_RE, page, re.IGNORECASE | re.DOTALL):
@@ -405,7 +405,7 @@ class RtvsContentProvider(ContentProvider):
 		result = []
 		# self.info ('== get_radio_archiv_plus ==')
 		# self.info(page)
-		page = util.request(f'{HOST}/radio/archiv-plus')
+		page = util.request(HOST + '/radio/archiv-plus')
 		page = util.substr(page, RADIO_PLUS_START, RADIO_PLUS_END)
 		# self.info(page)
 		for m in re.finditer(RADIO_PLUS_ITER_RE, page, re.IGNORECASE | re.DOTALL):
@@ -861,7 +861,7 @@ class RtvsContentProvider(ContentProvider):
 		item = item.copy()
 		if item['url'].startswith('live.'):
 			channel_id = item['url'].split('.')[1]
-			data = util.request(f"{HOST}/json/live5f.json?c=%s&b=mozilla&p=linux&v=47&f=1&d=1"%(channel_id))
+			data = util.request(HOST + "/json/live5f.json?c=%s&b=mozilla&p=linux&v=47&f=1&d=1"%(channel_id))
 			videodata = util.json.loads(data)['clip']
 			url = videodata['sources'][0]['src']
 			url = ''.join(url.split()) # remove whitespace \n from URL
@@ -890,7 +890,7 @@ class RtvsContentProvider(ContentProvider):
 		elif item['url'].find('/embed/audio/') != -1:
 				audio_id = item['url'].split('/')[-1]
 				# item['url'] = 'http://www.rtvs.sk/json/audio5f.json?id=' + url
-				audiodata = util.json.loads(util.request(f"{HOST}/json/audio5f.json?id=" + audio_id))
+				audiodata = util.json.loads(util.request(HOST + "/json/audio5f.json?id=" + audio_id))
 				for v in audiodata['playlist'][0]['sources']:
 					url =  v['src']
 					if '.mp3' in url:
@@ -905,9 +905,9 @@ class RtvsContentProvider(ContentProvider):
 			audio_id = item['url'].split('/')[-1]
 			audio_id0 = item['url'].split('/')[-2]
 			self.info("<resolve> audioid: %s" % audio_id)
-			embed_data = util.request(f"{HOST}/embed/radio/archive/%s/%s"%(audio_id0, audio_id))
+			embed_data = util.request(HOST + "/embed/radio/archive/%s/%s"%(audio_id0, audio_id))
 			audio_id = re.search('audio5f\.json\?id=(?P<id>[^\"]+)', embed_data, re.IGNORECASE | re.DOTALL).group('id')
-			audiodata = util.json.loads(util.request(f"{HOST}/json/audio5f.json?id=" + audio_id))
+			audiodata = util.json.loads(util.request(HOST + "/json/audio5f.json?id=" + audio_id))
 			for v in audiodata['playlist'][0]['sources']:
 				url =  v['src']
 				if '.mp3' in url:
@@ -920,7 +920,7 @@ class RtvsContentProvider(ContentProvider):
 		else:
 			video_id = item['url'].split('/')[-1]
 			self.info("<resolve> videoid: %s" % video_id)
-			videodata = util.json.loads(util.request(f"{HOST}/json/archive5f.json?id=" + video_id))
+			videodata = util.json.loads(util.request(HOST + "/json/archive5f.json?id=" + video_id))
 			for v in videodata['clip']['sources']:
 				url =  v['src']
 				if '.m3u8' in url:
