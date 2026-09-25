@@ -102,9 +102,10 @@ class PlayliveTVHTTPRequestHandler(HTTPRequestHandlerTemplate):
 			self.cp.log_info("Starting stream conversion to TS for URL: %s" % input_url)
 
 #			log = open('/tmp/archivczsk-ffmpeg.log-%s' % input_url.split('/')[-1], 'w')
+			log = open(os.devnull, 'w')
 
 			poll_obj = select.poll()
-			process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=log or subprocess.DEVNULL, bufsize=0)
+			process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=log, bufsize=0)
 			poll_obj.register(process.stdout, select.POLLIN)
 			poll_obj.register(request.wfile, select.POLLIN | select.POLLHUP | select.POLLERR)
 

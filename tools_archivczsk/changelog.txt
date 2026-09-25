@@ -1,3 +1,6 @@
+3.16 - 25.09.2026
+    - fixed playlivets handler for python2
+
 3.15 - 22.09.2026
     - fixed HLS parser
     - added playlive HTTP handler with stream conversion to TS format
