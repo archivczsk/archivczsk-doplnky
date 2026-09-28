@@ -6,6 +6,7 @@ from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.string_utils import _I, _C, _B, clean_html
 from tools_archivczsk.date_utils import iso8601_to_datetime
+from tools_archivczsk.player.features import PlayerFeatures
 from functools import partial
 import sys, os
 
@@ -288,6 +289,13 @@ class iVysilaniContentProvider(ModuleContentProvider):
 			iVysilaniModuleFavourites(self),
 		]
 
+# ##################################################################################################################
+
+	def root(self):
+		if self.get_setting('player-check'):
+			PlayerFeatures.check_latest_exteplayer3(self)
+
+		ModuleContentProvider.root(self)
 
 	# ##################################################################################################################
 
