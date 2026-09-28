@@ -1,3 +1,6 @@
+3.17 - 28.09.2026
+    - updated available exteplayer3 version
+
 3.16 - 25.09.2026
     - fixed playlivets handler for python2
 
