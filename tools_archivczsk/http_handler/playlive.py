@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
 import base64
 from .template import HTTPRequestHandlerTemplate
 from time import time
@@ -18,6 +19,10 @@ class PlayliveTVHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		super(PlayliveTVHTTPRequestHandler, self).__init__(content_provider, addon)
 		self.live_cache = {}
 		self.cache_life = cache_life
+		self.tsconvert_cmd_path = [
+			os.path.join(addon.get_info('data_path'), 'tsconvert_cmd.txt'),
+			os.path.join(ArchivCZSK.get_addon('tools.archivczsk').get_info('data_path'), 'tsconvert_cmd.txt')
+		]
 
 	# #################################################################################################
 
@@ -68,41 +73,32 @@ class PlayliveTVHTTPRequestHandler(HTTPRequestHandlerTemplate):
 	# #################################################################################################
 
 	def convert_stream_to_ts(self, request, input_url):
-		cmd = [
-			'/usr/bin/ffmpeg',
-			'-nostdin',
-			'-loglevel', 'info',
-			'-i', input_url,
-			'-map', '0:v:0',
-			'-map', '0:a:0',
-			'-c:v', 'copy',
-			'-c:a', 'copy',
-			'-muxdelay', '0',
-			'-muxpreload', '0',
-			'-mpegts_flags', '+resend_headers',
-			'-f', 'mpegts',
-			'pipe:1'
-		]
+		cmd = None
+		for path in self.tsconvert_cmd_path:
+			if os.path.isfile(path):
+				with open(path, 'r') as f:
+					cmd = f.read().strip().format(input_url=input_url).split(' ')
+				break
+		else:
+			cmd = '/usr/bin/ffmpeg -nostdin -loglevel info -i {input_url} -map 0 -c:v copy -c:a copy -c:s copy -muxdelay 0 -muxpreload 0 -mpegts_flags +resend_headers -f mpegts pipe:1'.format(input_url=input_url)
+			cmd = cmd.split(' ')
 
-		if os.path.isfile('/usr/lib/exteplayer3_deps/ffmpeg'):
-			cmd[0] = '/usr/lib/exteplayer3_deps/ffmpeg'
+			if os.path.isfile('/usr/lib/exteplayer3_deps/ffmpeg'):
+				cmd[0] = '/usr/lib/exteplayer3_deps/ffmpeg'
 
-		# cmd = [
-		# 	'/usr/bin/gst-launch-1.0',
-		# 	'urisourcebin', 'uri=' + input_url, 'name=src',
-		# 	'mpegtsmux', 'name=mux', 'pat-interval=100000000', 'pmt-interval=100000000', '!', 'fdsink', 'fd=1',
-		# 	'src.', '!', 'parsebin', 'name=vparse', '!', 'queue', '!', 'mux.',
-		# 	'src.', '!', 'parsebin', 'name=aparse', '!', 'queue', '!', 'mux.'
-		# ]
+		# cmd = '/usr/bin/gst-launch-1.0 urisourcebin uri={input_url} name=src mpegtsmux name=mux pat-interval=100000000 pmt-interval=100000000 ! fdsink fd=1 src. ! parsebin name=vparse ! queue ! mux. src. ! parsebin name=aparse ! queue ! mux.'.format(input_url=input_url)
 
 		process = None
 		log = None
 
 		try:
 			self.cp.log_info("Starting stream conversion to TS for URL: %s" % input_url)
+			log_file_name = '/tmp/tsconvert.log'
 
-#			log = open('/tmp/archivczsk-ffmpeg.log-%s' % input_url.split('/')[-1], 'w')
-			log = open(os.devnull, 'w')
+			if os.path.isfile(log_file_name):
+				log = open('{}-{}'.format(log_file_name, input_url.replace('/', '_').replace(':', '_')), 'w')
+			else:
+				log = open(os.devnull, 'w')
 
 			poll_obj = select.poll()
 			process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=log, bufsize=0)
