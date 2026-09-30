@@ -263,7 +263,7 @@ msgstr ""
 msgid "DMM"
 msgstr ""
 
-msgid "DVB (OE>=2.5)"
+msgid "DVB"
 msgstr ""
 
 msgid "Convert streams to TS format using ffmpeg"

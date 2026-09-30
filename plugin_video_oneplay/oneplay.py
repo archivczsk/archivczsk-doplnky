@@ -24,8 +24,8 @@ DUMP_REQUESTS = False
 # #################################################################################################
 
 class Oneplay(object):
-	APP_VERSION = 'R11.33'
-	API_VERSION = '1.11'
+	APP_VERSION = 'R14.36'
+	API_VERSION = '1.14'
 
 	def __init__(self, cp):
 		self.cp = cp
