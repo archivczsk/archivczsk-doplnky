@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_antiktv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-22 12:58+0200\n"
+"POT-Creation-Date: 2026-09-30 09:29+0200\n"
 "PO-Revision-Date: 2026-09-22 12:58+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -15,11 +15,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.9\n"
-
-#: plugin_video_antiktv/atk_loader.py:55
-#, python-brace-format
-msgid "Platform of your receiver is currently not supported. Please send log file {log_file} to {email} and we will try to add support for it ..."
-msgstr "Platforma vášho prijímača momentálne nie je podporovaná. Prosím pošlite log súbor {log_file} na {email} a pokúsime sa pre neho pridať podporu ..."
 
 #: plugin_video_antiktv/atk_client.py:198
 msgid "Others"
@@ -286,38 +281,8 @@ msgstr ""
 msgid "DMM"
 msgstr ""
 
-msgid "DVB (OE>=2.5)"
+msgid "DVB"
 msgstr ""
 
 msgid "Convert streams to TS format using ffmpeg"
 msgstr "Konvertovať streamy do formátu TS pomocou ffmpeg"
-
-#~ msgid "Please enter parental control pin"
-#~ msgstr "Prosím zadajte rodičovský pin"
-
-#~ msgid "Entered pin code is incorrect"
-#~ msgstr "Zadaný pin kód je nesprávny"
-
-#~ msgid "Parental control PIN"
-#~ msgstr "Rodičovský PIN kód"
-
-#~ msgid "Default PIN is 0000. Please change it to your own value."
-#~ msgstr "Predvolený PIN je 0000. Prosím zmeňte ho na vašu vlastnú hodnotu."
-
-#~ msgid "Please enter current parental control pin"
-#~ msgstr "Prosím zadajte aktuálny rodičovský pin"
-
-#~ msgid "Please enter new parental control pin"
-#~ msgstr "Prosím zadajte nový rodičovský pin"
-
-#~ msgid "Please repeat new parental control pin"
-#~ msgstr "Prosím zopakujte nový rodičovský pin"
-
-#~ msgid "Parental control pins differs"
-#~ msgstr "Zadané rodičovské piny sú rozdielne"
-
-#~ msgid "Parental control pin successfuly changed"
-#~ msgstr "Rodičovský pin úspešne zmenený"
-
-#~ msgid "Device ID"
-#~ msgstr "ID zariadenia"

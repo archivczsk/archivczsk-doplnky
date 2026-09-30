@@ -7,7 +7,7 @@ from tools_archivczsk.generator.lamedb import channel_name_normalise
 from tools_archivczsk.player.features import PlayerFeatures
 from tools_archivczsk.date_utils import iso8601_to_datetime
 
-from .atk_loader import ATKClient
+from .atk_client import ATKClient
 from .bouquet import AntikTVBouquetXmlEpgGenerator
 
 from datetime import date, datetime, timedelta

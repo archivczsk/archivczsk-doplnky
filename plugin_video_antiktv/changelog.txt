@@ -1,3 +1,6 @@
+2.36: 30.09.2026
+- prechod na nový formát neverejnej časti doplnku nezávislej na architektúre prijímača a verzii pythonu
+
 2.35: 22.09.2026
 - pridanie podpory pre konverziu streamov v userbuquete do formátu TS
 - úpravy po zmenách v závislostiach doplnku
