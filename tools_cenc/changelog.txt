@@ -1,3 +1,6 @@
+1.14 - 30.09.2026
+- rebuild of binary libs to support older boxes with lower version of glibc
+
 1.13 - 18.09.2026
 - fixed kid+pssh extraction from binary segments
 
