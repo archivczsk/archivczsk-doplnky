@@ -1,3 +1,6 @@
+1.28 - 01.10.2026
+- oprava prvého prihlásenia po zmenách na stane Oneplay
+
 1.27 - 30.09.2026
 - aktualizácia API po zmene na strane Oneplay
 

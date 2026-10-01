@@ -351,7 +351,7 @@ class Oneplay(object):
 			raise LoginException(self._("Login failed - no access token in response data received"))
 
 		self.cp.log_debug("Changing device")
-		device_id = response['step']['currentUser']['currentDevice']['id']
+		device_id = response['step']['user']['loggedUser']['currentDevice']['id']
 		payload = {
 			"id": device_id,
 			"name": self.device_id
