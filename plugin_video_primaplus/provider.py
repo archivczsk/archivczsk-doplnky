@@ -40,7 +40,9 @@ class PrimaPlusContentProvider(CommonContentProvider):
 		self.add_search_dir()
 		self.add_dir(self._("Movies"), cmd=self.list_layout, layout='categoryMovie')
 		self.add_dir(self._("Series"), cmd=self.list_layout, layout='categorySeries')
+		self.add_dir(self._("Sport"), cmd=self.list_layout, layout='sport')
 		self.add_dir(self._("Kids"), cmd=self.list_layout, layout='kids')
+		self.add_dir(self._("News"), cmd=self.list_layout, layout='news')
 		self.add_dir(self._("New releases"), cmd=self.list_layout, layout='categoryNewReleases')
 		self.add_dir(self._("My"), cmd=self.list_layout, layout='mySection')
 		self.add_dir(self._("Genres"), cmd=self.list_genres)
@@ -208,6 +210,11 @@ class PrimaPlusContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def add_item_uni(self, item, menu=None, data_filter=None):
+		if data_filter and item.get('data_filter'):
+			data_filter = [item.get('data_filter'), data_filter]
+		else:
+			data_filter = item.get('data_filter') or data_filter
+
 		if item['type'] in ('movie', 'episode', 'series'):
 			return self.add_media_item(item, menu=menu)
 		elif item['type'] == 'api' and item['method'] == 'vdm.frontend.genre.list':

@@ -158,6 +158,9 @@ class PrimaPlus(object):
 		}
 
 		if data_filter:
+			if isinstance(data_filter, list):
+				data_filter = ' AND '.join(data_filter)
+
 			post['filter'] += ' AND {}'.format(data_filter)
 
 		if next_id:
@@ -307,7 +310,6 @@ class PrimaPlus(object):
 	def get_layout(self, layout):
 		ret = []
 		params = {
-			'deviceType': self.DEVICE_TYPE,
 			'pageSlug' : layout,
 			'userLevel': self.get_subscription()
 		}
@@ -318,7 +320,6 @@ class PrimaPlus(object):
 				ret.append({
 					'type': 'recombee',
 					'title': strip['title'],
-					'method': strip['recombeeDataSource']['method'],
 					'scenario': strip['recombeeDataSource']['scenario']
 				})
 			elif strip.get('apiDataSource'):
@@ -333,6 +334,13 @@ class PrimaPlus(object):
 					'title': strip['title'],
 					'subtype': strip['technicalDataSource']['type'],
 					'scenario': strip['technicalDataSource']['scenario']
+				})
+			elif strip.get('editorialDataSource'):
+				ret.append({
+					'type': 'recombee',
+					'title': strip['title'],
+					'data_filter': "'xVdmId' in {%s}" % ','.join('"{}"'.format(x) for x in strip['editorialDataSource']['items']),
+					'scenario': strip['editorialDataSource']['scenario']
 				})
 			else:
 				self.cp.log_error("Unsupported strip:\n%s" % str(strip))
