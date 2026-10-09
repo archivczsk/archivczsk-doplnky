@@ -18,7 +18,7 @@
 <addon id="plugin.video.orangetv" name="OrangeTV" version="2.28" hash="956eee7f8f6f1229dc68fafed152174e" rhash="b8dc86797df093b4d68cf0f7b6479369" />
 <addon id="plugin.video.pohadkar.cz" name="Pohádkář.cz" version="1.5.0" hash="2f30d87101b495adc0afb4cb95736753" rhash="2f30d87101b495adc0afb4cb95736753" />
 <addon id="plugin.video.prehrajto" name="Prehraj.to" version="1.6" hash="e3ffb4f832e2cecbfa72e0d63e0f33ac" rhash="02e9a1fa8192172079fff23e5021fbda" />
-<addon id="plugin.video.primaplus" name="Prima+" version="1.17" hash="55de59a3ef7fa9a1c433188704010a37" rhash="9b9d5251e196f3ad388de311827f7d8d" />
+<addon id="plugin.video.primaplus" name="Prima+" version="1.18" hash="ac440f7ede72f63e270f854dc9a77313" rhash="810f2ddc0bf92b20c50ec5e09e54bdd3" />
 <addon id="plugin.video.rebittv" name="Rebit.tv" version="1.16" hash="b57ef0905118c44abed8641b90f8cdc0" rhash="fcdfde5a750422f5c4c3ce60cb19eb9f" />
 <addon id="plugin.video.rtvs.sk" name="stvr.sk" version="1.18.1" hash="c49ee6c4f8267ca75852b1a3e3be3e0d" rhash="c49ee6c4f8267ca75852b1a3e3be3e0d" />
 <addon id="plugin.video.sktonline" name="SkTonline" version="2.10" hash="9ae36c20f7c1ecbd8656855437b2e155" rhash="f09e73dc6d9ff31c3aff8eb29b1be11c" />
