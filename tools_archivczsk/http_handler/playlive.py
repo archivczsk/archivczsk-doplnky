@@ -26,6 +26,40 @@ class PlayliveTVHTTPRequestHandler(HTTPRequestHandlerTemplate):
 
 	# #################################################################################################
 
+	def live_cache_cleanup(self):
+		act_time = int(time())
+
+		to_clean_list = []
+		for k, v in self.live_cache.items():
+			if v['life'] < act_time:
+				to_clean_list.append(k)
+
+		for k in to_clean_list:
+			del self.live_cache[k]
+
+	# #################################################################################################
+
+	def live_cache_get(self, channel_key):
+		if self.cache_life > 0:
+			cache_result = self.live_cache.get(channel_key)
+			if cache_result and cache_result.get('life', 0) > int(time()):
+				cache_result['life'] = int(time()) + self.cache_life
+				return cache_result['result']
+
+		return None
+
+	# #################################################################################################
+
+	def live_cache_put(self, channel_key, result):
+		if self.cache_life > 0:
+			self.live_cache[channel_key] = {
+				'life': int(time()) + self.cache_life,
+				'result': result
+			}
+			self.live_cache_cleanup()
+
+	# #################################################################################################
+
 	def decode_channel_key(self, path):
 		if path.endswith('.m3u8'):
 			path = path[:-5]
@@ -49,19 +83,14 @@ class PlayliveTVHTTPRequestHandler(HTTPRequestHandlerTemplate):
 	def P_playlive(self, request, path):
 		channel_key = self.decode_channel_key(path)
 
-		if self.cache_life > 0 and channel_key in self.live_cache and self.live_cache[channel_key]['life'] > int(time()):
-			result = self.live_cache[channel_key]['result']
-		else:
+		result = self.live_cache_get(channel_key)
+		if not result:
 			result = self.get_url_by_channel_key(channel_key)
 
 			if not result:
 				return self.reply_error404(request)
 
-			if self.cache_life > 0:
-				self.live_cache[channel_key] = {
-					'life': int(time()) + self.cache_life,
-					'result': result
-				}
+			self.live_cache_put(channel_key, result)
 
 		return self.reply_redirect(request, result)
 
@@ -80,90 +109,10 @@ class PlayliveTVHTTPRequestHandler(HTTPRequestHandlerTemplate):
 					cmd = f.read().strip().format(input_url=input_url).split(' ')
 				break
 		else:
-			cmd = '/usr/bin/ffmpeg -nostdin -loglevel info -i {input_url} -map 0 -c:v copy -c:a copy -c:s copy -muxdelay 0 -muxpreload 0 -mpegts_flags +resend_headers -f mpegts pipe:1'.format(input_url=input_url)
-			cmd = cmd.split(' ')
+			cmd = '-nostdin -loglevel info -i {input_url} -map 0 -c:v copy -c:a copy -c:s copy -muxdelay 0 -muxpreload 0 -mpegts_flags +resend_headers -f mpegts pipe:1'.format(input_url=input_url)
+			cmd = [None] + cmd.split(' ')
 
-			if os.path.isfile('/usr/lib/exteplayer3_deps/ffmpeg'):
-				cmd[0] = '/usr/lib/exteplayer3_deps/ffmpeg'
+		return self.ffmpeg_stream_ts(request, cmd)
 
-		# cmd = '/usr/bin/gst-launch-1.0 urisourcebin uri={input_url} name=src mpegtsmux name=mux pat-interval=100000000 pmt-interval=100000000 ! fdsink fd=1 src. ! parsebin name=vparse ! queue ! mux. src. ! parsebin name=aparse ! queue ! mux.'.format(input_url=input_url)
-
-		process = None
-		log = None
-
-		try:
-			self.cp.log_info("Starting stream conversion to TS for URL: %s" % input_url)
-			log_file_name = '/tmp/tsconvert.log'
-
-			if os.path.isfile(log_file_name):
-				log = open('{}-{}'.format(log_file_name, input_url.replace('/', '_').replace(':', '_')), 'w')
-			else:
-				log = open(os.devnull, 'w')
-
-			poll_obj = select.poll()
-			process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=log, bufsize=0)
-			poll_obj.register(process.stdout, select.POLLIN)
-			poll_obj.register(request.wfile, select.POLLIN | select.POLLHUP | select.POLLERR)
-
-			request.send_response(200)
-			request.send_header('Content-Type', 'video/mp2t')
-			request.send_header('Cache-Control','no-cache')
-			request.send_header('Connection', 'close')
-
-			while True:
-				events = poll_obj.poll(1000)  # 6 second timeout
-				if not events:
-					continue
-
-				for fd, event in events:
-					if fd == request.wfile.fileno():
-#						if event & (select.POLLHUP | select.POLLERR):
-						raise IOError("Client disconnected")
-
-				for fd, event in events:
-					if fd == process.stdout.fileno():
-						data = process.stdout.read(65536)
-
-						if not data:
-							break
-
-						request.write(data)
-
-		except (IOError, OSError):
-			self.cp.log_debug("Stopping stream conversion for URL: %s - client disconnected" % input_url)
-
-		except:
-			self.cp.log_exception()
-
-		finally:
-			if process:
-				try:
-					if process.poll() is None:
-#						process.terminate()
-						process.kill()
-
-						try:
-							process.wait()
-						except:
-							self.cp.log_error("Failed to stop ffmpeg process for URL: %s" % input_url)
-							self.cp.log_exception()
-
-				except:
-					self.cp.log_error("Failed to kill ffmpeg process for URL: %s" % input_url)
-					self.cp.log_exception()
-
-				try:
-					poll_obj.unregister(process.stdout)
-					poll_obj.unregister(request.wfile)
-					process.stdout.close()
-				except:
-					self.cp.log_exception()
-
-			if log:
-				log.close()
-
-			self.cp.log_info("Stream conversion for URL %s stopped" % input_url)
-
-		return None
 
 # #################################################################################################

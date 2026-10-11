@@ -1,3 +1,8 @@
+3.19 - 11.10.2026
+    - improved cache in playlive handler
+    - added decorator to catch and stream exception as TS
+    - move ffmpeg_stream_ts to template
+
 3.18 - 30.09.2026
     - added possibility to define custom command for ts convert (global or per addon)
 

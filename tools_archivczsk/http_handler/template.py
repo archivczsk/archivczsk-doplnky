@@ -3,12 +3,16 @@
 import os, base64
 from Plugins.Extensions.archivCZSK.engine.httpserver import AddonHttpRequestHandler
 from ..cache import SimpleAutokeyExpiringCache
+from ..contentprovider.archivczsk_provider import _icon
 import json
 
 from tools_cenc.wvdecrypt import WvDecrypt
 from tools_cenc.prdecrypt import PrDecrypt
 from tools_cenc.mp4decrypt import mp4_pssh_get
 from binascii import crc32
+from time import time
+import subprocess
+import select
 
 # #################################################################################################
 
@@ -33,6 +37,143 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler):
 		if self.enable_devel_logs:
 			self.cp.log_debug(msg)
 
+	# #################################################################################################
+
+	@staticmethod
+	def get_ffmpeg_path():
+		if os.path.isfile('/usr/lib/exteplayer3_deps/ffmpeg'):
+			return '/usr/lib/exteplayer3_deps/ffmpeg'
+		else:
+			return '/usr/bin/ffmpeg'
+
+	# #################################################################################################
+
+	@staticmethod
+	def exception_as_stream(function):
+		def wrapper(self, request, *args, **kwargs):
+			try:
+				return function(self, request, *args, **kwargs)
+			except Exception as e:
+				self.cp.log_error("Exception in HTTP request handler: %s - startting exception streaming" % str(e))
+				self.cp.log_exception()
+
+				error_ts_file = '/tmp/error-%d.ts' % int(time())
+
+				cmd = "-r 1 -loop 1 -i %s -vf drawtext=text='{}':x=(w-tw)/2:y=4*(h-th)/5:fontsize=36:fontcolor=yellow:fontfile=/usr/share/fonts/DejaVuSans.ttf -c:v libx264 -pix_fmt yuv420p -preset ultrafast -tune stillimage -t 200ms -f mpegts %s" % (_icon('error.jpg'), error_ts_file)
+				cmd = [HTTPRequestHandlerTemplate.get_ffmpeg_path()] + cmd.split(' ')
+				cmd[8] = cmd[8].format(str(e).replace('\n', ' ').replace(':', 'x\:').replace('"', 'x\"').replace("'", "x\'"))
+
+				try:
+					subprocess.check_call(cmd)
+				except:
+					if cmd[0] != '/usr/bin/ffmpeg':
+						cmd[0] = '/usr/bin/ffmpeg'
+						subprocess.check_call(cmd)
+					else:
+						raise
+
+				cmd = '-nostdin -loglevel info -stream_loop -1 -i %s -map 0 -c copy -muxdelay 0 -muxpreload 0 -mpegts_flags +resend_headers -f mpegts pipe:1' % error_ts_file
+				cmd = [None] + cmd.split(' ')
+
+				try:
+					return self.ffmpeg_stream_ts(request, cmd)
+				finally:
+					if os.path.isfile(error_ts_file):
+						os.remove(error_ts_file)
+
+		return wrapper
+
+	# #################################################################################################
+
+	def ffmpeg_stream_ts(self, request, cmd):
+		if len(cmd) > 0 and cmd[0] == None:
+			cmd[0] = self.get_ffmpeg_path()
+
+		# cmd = '/usr/bin/gst-launch-1.0 urisourcebin uri={input_url} name=src mpegtsmux name=mux pat-interval=100000000 pmt-interval=100000000 ! fdsink fd=1 src. ! parsebin name=vparse ! queue ! mux. src. ! parsebin name=aparse ! queue ! mux.'.format(input_url=input_url)
+
+		input_url = '?'
+		for c in cmd:
+			if c == '-i':
+				input_url = cmd[cmd.index(c) + 1]
+				break
+
+		process = None
+		log = None
+
+		try:
+			self.cp.log_info("Starting stream conversion to TS for URL: %s" % input_url)
+			log_file_name = '/tmp/tsconvert.log'
+
+			if os.path.isfile(log_file_name):
+				log = open('{}-{}'.format(log_file_name, input_url.replace('/', '_').replace(':', '_')), 'w')
+			else:
+				log = open(os.devnull, 'w')
+
+			poll_obj = select.poll()
+			process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=log, bufsize=0)
+			poll_obj.register(process.stdout, select.POLLIN)
+			poll_obj.register(request.wfile, select.POLLIN | select.POLLHUP | select.POLLERR)
+
+			request.send_response(200)
+			request.send_header('Content-Type', 'video/mp2t')
+			request.send_header('Cache-Control','no-cache')
+			request.send_header('Connection', 'close')
+
+			while True:
+				events = poll_obj.poll(1000)  # 6 second timeout
+				if not events:
+					continue
+
+				for fd, event in events:
+					if fd == request.wfile.fileno():
+#						if event & (select.POLLHUP | select.POLLERR):
+						raise IOError("Client disconnected")
+
+				for fd, event in events:
+					if fd == process.stdout.fileno():
+						data = process.stdout.read(65536)
+
+						if not data:
+							break
+
+						request.write(data)
+
+		except (IOError, OSError):
+			self.cp.log_debug("Stopping stream conversion for URL: %s - client disconnected" % input_url)
+
+		except:
+			self.cp.log_exception()
+
+		finally:
+			if process:
+				try:
+					if process.poll() is None:
+#						process.terminate()
+						process.kill()
+
+						try:
+							process.wait()
+						except:
+							self.cp.log_error("Failed to stop ffmpeg process for URL: %s" % input_url)
+							self.cp.log_exception()
+
+				except:
+					self.cp.log_error("Failed to kill ffmpeg process for URL: %s" % input_url)
+					self.cp.log_exception()
+
+				try:
+					poll_obj.unregister(process.stdout)
+					poll_obj.unregister(request.wfile)
+					process.stdout.close()
+				except:
+					self.cp.log_exception()
+
+			if log:
+				log.close()
+
+			self.cp.log_info("Stream conversion for URL %s stopped" % input_url)
+
+		return None
 
 	# #################################################################################################
 
