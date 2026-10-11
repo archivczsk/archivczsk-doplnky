@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import traceback
-import base64
 from tools_archivczsk.http_handler.dash import DashHTTPRequestHandler
 from tools_archivczsk.http_handler.hls import HlsHTTPRequestHandler
 from tools_archivczsk.http_handler.playlive import PlayliveTVHTTPRequestHandler
 from tools_archivczsk.date_utils import iso8601_duration_to_seconds, iso8601_to_datetime
-import json
-
-from time import time
 
 from Plugins.Extensions.archivCZSK.gsession import GlobalSession
 from Plugins.Extensions.archivCZSK.engine.tools.util import toString
@@ -23,67 +18,13 @@ class OneplayHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler, P
 		self.hls_proxy_variants = False
 		self.hls_proxy_segments = False
 		self.enable_hls_multiaudio = False
-
-		self.live_cache = {}
-		self.oneplay_session = self.cp.get_requests_session()
+		self.dash_proxy_segments = False
+		self.cache_life = 10
 		self.last_played_channel = None
 
 	# #################################################################################################
 
-	def live_cache_cleanup(self):
-		act_time = int(time())
-
-		to_clean_list = []
-		for k, v in self.live_cache.items():
-			if v['life'] < act_time:
-				to_clean_list.append(k)
-
-		for k in to_clean_list:
-			del self.live_cache[k]
-
-	# #################################################################################################
-
-	def get_stream_index_url(self, channel_id):
-		try:
-			key = channel_id
-			stream_info = {}
-
-			if key in self.live_cache and self.live_cache[key]['life'] > int(time()):
-#				self.cp.log_debug("Returning result from cache" )
-				stream_info = self.live_cache[key]['stream_info']
-				self.live_cache[key]['life'] = int(time())+5
-			else:
-				channel = self.cp.channels_by_key.get(key)
-				if channel:
-					stream_info = self.cp.oneplay.get_live_link(channel_id)
-					if stream_info:
-						while True:
-							# follow redirects to get last URL and cache it
-							response = self.oneplay_session.get(stream_info['url'], allow_redirects=False)
-							if response.status_code > 300 and response.status_code < 310:
-								stream_info['url'] = response.headers['Location']
-							else:
-								break
-
-					self.live_cache_cleanup()
-					self.live_cache[key] = { 'life': int(time())+5, 'stream_info': stream_info }
-		except:
-			self.cp.log_error(traceback.format_exc())
-			stream_info = None
-
-		return stream_info
-
-	# #################################################################################################
-
-	def encode_p_dash_key(self, stream_key):
-		if isinstance( stream_key, (type({}), type([]), type(()),) ):
-			stream_key = '{' + json.dumps(stream_key) + '}'
-
-		return base64.b64encode(stream_key.encode('utf-8')).decode('utf-8')
-
-	# #################################################################################################
-
-	def show_md_menu(self, stream_info):
+	def show_md_menu(self, md):
 		session = GlobalSession.getSession()
 
 		def md_continue(answer):
@@ -91,11 +32,11 @@ class OneplayHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler, P
 				return
 
 			try:
-				run_shortcut(session, None, 'oneplay-md', {'stream_info': stream_info, 'play_idx': choicelist.index(answer) }, True)
+				run_shortcut(session, None, 'oneplay-md', {'md': md, 'play_idx': choicelist.index(answer) }, True)
 			except:
 				self.cp.log_exception()
 
-		choicelist = [(toString(mi['title']),) for mi in stream_info['md']]
+		choicelist = [(toString(mi['title']),) for mi in md]
 		session.openWithCallback(md_continue, ChoiceBox, toString(self.cp._("Multidimension - select stream")), choicelist, skin_name="ArchivCZSKChoiceBox")
 
 	# #################################################################################################
@@ -106,47 +47,24 @@ class OneplayHTTPRequestHandler(HlsHTTPRequestHandler, DashHTTPRequestHandler, P
 		elif path.endswith('/index.m3u8'):
 			path = path[:-11]
 
-		channel_id = self.decode_channel_key(path)
+		channel_key = self.decode_channel_key(path)
 
-#		self.cp.log_debug("%s resource ID: %s, path: %s" % (service_type, channel_id, path))
+		result = self.live_cache_get(channel_key)
+		if not result:
+			self.cp.log_debug("Adding channel to cache: %s" % channel_key)
+			result = self.get_url_by_channel_key(channel_key)
 
-		max_bitrate = int(self.cp.get_setting('max_bitrate'))
-		if max_bitrate and int(max_bitrate) > 0:
-			max_bitrate = int(max_bitrate) * 1000000
-		else:
-			max_bitrate = 1000000000
+			if not result.get('url'):
+				return self.reply_error404(request)
 
-		# get real mainfest url and forwad it to dash handler ...
-		stream_index_info = self.get_stream_index_url(channel_id)
+			self.live_cache_put(channel_key, result)
 
-		stream_info = {
-			'url': stream_index_info['url'],
-			'bandwidth': max_bitrate,
-		}
+		if result.get('md') and self.last_played_channel != channel_key and self.cp.get_setting('show_md_choice'):
+			self.run_in_reactor(self.show_md_menu, result['md'])
 
-		drm_info = stream_index_info.get('drm', {})
-		if drm_info.get('license_url') and drm_info.get('license_key'):
-			stream_info.update({
-				'drm' : {
-					'wv': {
-						'license_url': drm_info['license_url'],
-						'headers': {
-							'X-AxDRM-Message': drm_info['license_key']
-						}
-					}
-				}
-			})
+		self.last_played_channel = channel_key
 
-		# if channels broatcasts MD, then show menu to select MD stream
-		if 'md' in stream_index_info and self.last_played_channel != channel_id and self.cp.get_setting('show_md_choice'):
-			self.run_in_reactor(self.show_md_menu, stream_index_info)
-
-		self.last_played_channel = channel_id
-
-		if stream_index_info['type'] == 'dash':
-			return self.P_dash(request, self.encode_p_dash_key(stream_info))
-		else:
-			return self.P_hls(request, self.encode_p_dash_key(stream_info))
+		return self.reply_redirect(request, result['url'])
 
 	# #################################################################################################
 

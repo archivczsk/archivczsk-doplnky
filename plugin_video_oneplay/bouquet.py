@@ -1,32 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from tools_archivczsk.generator.bouquet_xmlepg import BouquetXmlEpgGenerator, BouquetGenerator
-
-# #################################################################################################
-
-class OneplayTVBouquetGenerator(BouquetGenerator):
-	def __init__(self, bxeg, channel_type=None):
-		BouquetGenerator.__init__(self, bxeg, channel_type)
-		self.play_url_pattern += '/index.mpd'
+from tools_archivczsk.generator.bouquet_xmlepg import BouquetXmlEpgGenerator
 
 # #################################################################################################
 
 class OneplayTVBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
-	def __init__(self, content_provider):
-		BouquetXmlEpgGenerator.__init__(self, content_provider)
-		self.bouquet_generator = OneplayTVBouquetGenerator
-
-	def refresh_bouquet(self):
-		# this is temprorary code - remove it when all users update to this version
-		if self.cp.load_cached_data('picons').get('version') != 1:
-			# remove old picons, because they are wrong
-			self.cp.log_info("Removing old picons")
-			import os
-			os.system('rm /usr/share/enigma2/picon/*_0_1_*_6DAE_1_7070000_0_0_0.png')
-			self.cp.save_cached_data('picons', {'version': 1})
-
-		return super(OneplayTVBouquetXmlEpgGenerator, self).refresh_bouquet()
-
 	def logged_in(self):
 		return self.cp.oneplay != None
 

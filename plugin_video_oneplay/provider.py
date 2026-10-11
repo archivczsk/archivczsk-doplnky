@@ -668,7 +668,7 @@ class OneplayTVContentProvider(ModuleContentProvider):
 
 	# ##################################################################################################################
 
-	def resolve_dash_streams(self, url, video_title, playlist=None, fix=None, offset=0, drm=None):
+	def resolve_dash_streams(self, url, video_title, playlist_on_start=False, fix=None, offset=0, drm=None):
 		if not url:
 			return
 
@@ -679,7 +679,7 @@ class OneplayTVContentProvider(ModuleContentProvider):
 
 		play_settings = {
 			'check_seek_borders': fix == 'startover',
-			'playlist_on_start': playlist != None
+			'playlist_on_start': playlist_on_start
 		}
 
 		cache_data = {
@@ -689,6 +689,7 @@ class OneplayTVContentProvider(ModuleContentProvider):
 
 		cache_key = self.scache.put(cache_data)
 
+		ret = []
 		for one in streams:
 			key = {
 				'key': cache_key,
@@ -705,15 +706,18 @@ class OneplayTVContentProvider(ModuleContentProvider):
 			if not supporter and int(info_labels['quality'][:-1]) > 720:
 				continue
 
-			if playlist:
-				playlist.add_play(video_title, stream_key_to_dash_url(self.http_endpoint, key), info_labels=info_labels, settings=play_settings)
-				break
-			else:
-				self.add_play(video_title, stream_key_to_dash_url(self.http_endpoint, key), info_labels=info_labels, settings=play_settings)
+			ret.append({
+				'title': video_title,
+				'url': stream_key_to_dash_url(self.http_endpoint, key),
+				'info_labels': info_labels,
+				'settings': play_settings
+			})
+
+		return ret
 
 	# ##################################################################################################################
 
-	def resolve_hls_streams(self, url, video_title, playlist=None, fix=None, offset=0):
+	def resolve_hls_streams(self, url, video_title, playlist_on_start=False, fix=None, offset=0):
 		if not url:
 			return
 
@@ -724,7 +728,7 @@ class OneplayTVContentProvider(ModuleContentProvider):
 
 		play_settings = {
 			'check_seek_borders': fix == 'startover',
-			'playlist_on_start': playlist != None
+			'playlist_on_start': playlist_on_start
 		}
 
 		cache_data = {
@@ -733,6 +737,7 @@ class OneplayTVContentProvider(ModuleContentProvider):
 
 		cache_key = self.scache.put(cache_data)
 
+		ret = []
 		for one in streams:
 			key = {
 				'key': cache_key,
@@ -748,11 +753,14 @@ class OneplayTVContentProvider(ModuleContentProvider):
 			if not supporter and int(info_labels['quality'][:-1]) > 720:
 				continue
 
-			if playlist:
-				playlist.add_play(video_title, stream_key_to_hls_url(self.http_endpoint, key), info_labels=info_labels, settings=play_settings)
-				break
-			else:
-				self.add_play(video_title, stream_key_to_hls_url(self.http_endpoint, key), info_labels=info_labels, settings=play_settings)
+			ret.append({
+				'title': video_title,
+				'url': stream_key_to_hls_url(self.http_endpoint, key),
+				'info_labels': info_labels,
+				'settings': play_settings
+			})
+
+		return ret
 
 	# ##################################################################################################################
 
@@ -761,9 +769,17 @@ class OneplayTVContentProvider(ModuleContentProvider):
 		stream_type = stream_info.get('type')
 
 		if stream_type == 'dash':
-			self.resolve_dash_streams(stream_info['url'], item['title'], self if playlist_on_start else None, item.get('fix'), item.get('offset', 0), stream_info.get('drm'))
+			streams = self.resolve_dash_streams(stream_info['url'], item['title'], playlist_on_start, item.get('fix'), item.get('offset', 0), stream_info.get('drm'))
 		elif stream_type == 'hls':
-			self.resolve_hls_streams(stream_info['url'], item['title'], self if playlist_on_start else None, item.get('fix'), item.get('offset', 0))
+			streams = self.resolve_hls_streams(stream_info['url'], item['title'], playlist_on_start, item.get('fix'), item.get('offset', 0))
+		else:
+			streams = []
+
+		for s in streams:
+			self.add_play(**s)
+
+			if playlist_on_start:
+				break
 
 	# ##################################################################################################################
 
@@ -795,26 +811,48 @@ class OneplayTVContentProvider(ModuleContentProvider):
 			return
 
 		if stream_type == 'dash':
-			self.resolve_dash_streams(stream_info['url'], video_title, None, fix, offset, stream_info.get('drm'))
+			streams = self.resolve_dash_streams(stream_info['url'], video_title, False, fix, offset, stream_info.get('drm'))
 		elif stream_type == 'hls':
-			self.resolve_hls_streams(stream_info['url'], video_title, None, fix, offset)
+			streams = self.resolve_hls_streams(stream_info['url'], video_title, False, fix, offset)
+		else:
+			streams = []
+
+		for s in streams:
+			self.add_play(**s)
 
 	# ##################################################################################################################
 
-	def shortcut_oneplay_md(self, stream_info, play_idx=0):
+	def shortcut_oneplay_md(self, md, play_idx=0):
 		playlist = self.add_playlist('Multidimension')
-		items = [stream_info['md'][play_idx]]
-		items.extend(stream_info['md'][:play_idx])
-		items.extend(stream_info['md'][play_idx+1:])
+		items = [md[play_idx]]
+		items.extend(md[:play_idx])
+		items.extend(md[play_idx+1:])
 
 		for item in items:
 			md_item = {
 				'title': item['title'],
-				'fix': stream_info.get('fix'),
-				'offset': stream_info.get('offset',0),
 				'id': item['id'],
 				'start_mode': item['start_mode']
 			}
 			playlist.add_video(item['title'], cmd=self.resolve_md_stream, item=md_item)
+
+	# ##################################################################################################################
+
+	def get_url_by_channel_key(self, channel_key):
+		stream_info = self.oneplay.get_live_link(channel_key)
+		stream_type = stream_info.get('type')
+
+		if stream_type == 'dash':
+			streams = self.resolve_dash_streams(stream_info['url'], None, drm=stream_info.get('drm'))
+		elif stream_type == 'hls':
+			streams = self.resolve_hls_streams(stream_info['url'], None)
+		else:
+			streams = []
+
+		ret = {
+			'url': streams[0]['url'] if streams else None,
+			'md': stream_info.get('md'),
+		}
+		return ret
 
 	# ##################################################################################################################
