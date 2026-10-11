@@ -290,6 +290,9 @@ class Oneplay(object):
 		# check access token validity
 
 		if self.is_logged_in():
+			if not self.profile_id:
+				self.select_profile()
+
 			return True
 
 		return self.login(account_choose_cbk)
