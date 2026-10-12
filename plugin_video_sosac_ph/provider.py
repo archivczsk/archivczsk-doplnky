@@ -1132,7 +1132,16 @@ class SosacContentProvider(CommonContentProvider):
 		else:
 			use_subs = self.get_setting('subs-autostart') in ('always', 'undubbed')
 
-			streams = sorted(streams, key=lambda x: (int(x['resolution'][:-1]), x['lang'] in ('SK', 'CZ'), use_subs and x['sub_lang'] != None,), reverse=True )
+			def stream_sort_key(x):
+				# sort by resolution, then by language (CZ/SK first), then by subtitle availability
+				try:
+					res = int(x['resolution'][:-1])
+				except:
+					res = 0
+
+				return (res, x['lang'] in ('SK', 'CZ'), use_subs and x['sub_lang'] != None,)
+
+			streams = sorted(streams, key=stream_sort_key, reverse=True )
 
 			streams_filtered = self.filter_streams( streams )
 			idx = None

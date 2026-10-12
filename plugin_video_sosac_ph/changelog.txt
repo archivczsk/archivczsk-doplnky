@@ -1,3 +1,6 @@
+2.13: 12.10.2026
+- oprava pádu ak stream obsahuje v popise neplatné rozlíšenie
+
 2.12: 14.01.2026
 - úprava inicializácie po zmenách v závislostiach doplnku
 
