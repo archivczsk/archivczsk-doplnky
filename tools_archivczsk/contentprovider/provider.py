@@ -94,12 +94,39 @@ class CCPRequestsSession(requests.Session):
 	Wrapper on requests Session() object, that automaticaly sets up timeout and SSL verification
 	based on content provider settings
 	'''
-	def __init__(self, content_provider):
+	def __init__(self, content_provider, auto_retry=True):
 		requests.Session.__init__(self)
 		self.cp = content_provider
 		self.headers.update({
 			'User-Agent': USER_AGENT
 		})
+
+		if auto_retry:
+			try:
+				from requests.adapters import HTTPAdapter
+				from urllib3.util import Retry
+
+				retry_args = {
+					'backoff_factor': 1,
+					'total': 3,
+					'status_forcelist': [429, 504],
+					'allowed_methods': list(Retry.DEFAULT_ALLOWED_METHODS) + ['POST'],
+					'raise_on_status': False,
+				}
+
+				if hasattr(Retry, "DEFAULT_ALLOWED_METHODS"):
+					retry_args["allowed_methods"] = list(Retry.DEFAULT_ALLOWED_METHODS) + ['POST']
+				else:
+					retry_args["method_whitelist"] = list(Retry.DEFAULT_METHOD_WHITELIST) + ['POST']
+
+				retry_strategy = Retry(**retry_args)
+
+				adapter = HTTPAdapter(max_retries=retry_strategy)
+				self.mount("https://", adapter)
+				self.mount("http://", adapter)
+			except:
+				self.cp.log_error("Requests retry strategy not available - requests package is too old")
+				self.cp.log_exception()
 
 	def request(self, method, url, **kwargs):
 		if 'timeout' not in kwargs:
@@ -628,11 +655,12 @@ class CommonContentProvider(object):
 
 	# #################################################################################################
 
-	def get_requests_session(self):
+	def get_requests_session(self, auto_retry=True):
 		'''
 		Returns configured Session() from requests library. Timeout and SSL verification is set automaticaly based on addons settings
+		auto_retry - if True, then requests will be automaticaly retried on 429 and 504 status codes (with exponential backoff)
 		'''
-		return CCPRequestsSession(self)
+		return CCPRequestsSession(self, auto_retry=auto_retry)
 
 	# #################################################################################################
 

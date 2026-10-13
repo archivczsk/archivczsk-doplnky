@@ -1,3 +1,6 @@
+3.20 - 13.10.2026
+    - added auto_retry strategy to requests session returned by CommonContentProvider.get_requests_session()
+
 3.19 - 11.10.2026
     - improved cache in playlive handler
     - added decorator to catch and stream exception as TS
