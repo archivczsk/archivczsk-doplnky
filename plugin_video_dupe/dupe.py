@@ -204,6 +204,10 @@ class Dupe(object):
 			data = [x.get_text().strip() for x in a.find_all('div', class_='x-text')]
 #			self.cp.log_debug("Movie data:\n%s" % data)
 
+			if len(data) < 3:
+				self.cp.log_error("Unexpected movie data format - ignoring:\n%s" % data)
+				continue
+
 			try:
 				year = data[0][4:].split(',')[0].strip()
 			except:
@@ -244,6 +248,10 @@ class Dupe(object):
 		for a in div.find_all('a'):
 			data = [x.get_text().strip() for x in a.find_all('div', class_='x-text')]
 #			self.cp.log_debug("Series data:\n%s" % data)
+
+			if len(data) < 3:
+				self.cp.log_error("Unexpected series data format - ignoring:\n%s" % data)
+				continue
 
 			try:
 				year = data[0][6:].strip()
@@ -311,6 +319,10 @@ class Dupe(object):
 		for a in soup.find_all('a'):
 			if a['href'].startswith( ('https://dupe.cz/odkaz/', 'https://dupe.cz/odkaz-epizoda/',) ):
 				data = [x.get_text() for x in a.find_all('span')]
+
+				if len(data) < 2:
+					self.cp.log_error("Unexpected stream provider data format - ignoring:\n%s" % data)
+					continue
 
 				provider = data[1]
 				if not self.stream_provider.is_supported(provider):
