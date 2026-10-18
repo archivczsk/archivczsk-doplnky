@@ -467,8 +467,6 @@ class OneplayTVModuleExtra(CPModuleTemplate):
 # #################################################################################################
 
 class OneplayTVContentProvider(ModuleContentProvider):
-	DOWNLOAD_FORMAT='mp4'
-
 	def __init__(self):
 		ModuleContentProvider.__init__(self, 'Oneplay')
 
@@ -670,12 +668,12 @@ class OneplayTVContentProvider(ModuleContentProvider):
 
 	def resolve_dash_streams(self, url, video_title, playlist_on_start=False, fix=None, offset=0, drm=None):
 		if not url:
-			return
+			return []
 
 		supporter = self.is_supporter()
 		streams = self.get_dash_streams(url, self.oneplay.req_session, max_bitrate=self.get_setting('max_bitrate'))
 		if not streams:
-			return
+			return []
 
 		play_settings = {
 			'check_seek_borders': fix == 'startover',
@@ -719,12 +717,12 @@ class OneplayTVContentProvider(ModuleContentProvider):
 
 	def resolve_hls_streams(self, url, video_title, playlist_on_start=False, fix=None, offset=0):
 		if not url:
-			return
+			return []
 
 		supporter = self.is_supporter()
 		streams = self.get_hls_streams(url, self.oneplay.req_session, max_bitrate=self.get_setting('max_bitrate'))
 		if not streams:
-			return
+			return []
 
 		play_settings = {
 			'check_seek_borders': fix == 'startover',

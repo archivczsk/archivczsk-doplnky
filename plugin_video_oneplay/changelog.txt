@@ -1,3 +1,7 @@
+1.30 - 18.10.2026
+- zmena formátu sťahovaných súborov z mp4 na mkv (kvôli podpore webvtt titulkov)
+- oprava možného pádu pri resolvovaní zoznamu dostupných streamov
+
 1.29 - 11.10.2026
 - úprava spôsobu prehrávania programov z userbouquetu (malo by vyriešiť zamŕzanie niektorých programov)
 
