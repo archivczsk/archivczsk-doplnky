@@ -1,3 +1,6 @@
+2.37: 19.10.2026
+- oprava prehrávania živého vysielania
+
 2.36: 30.09.2026
 - prechod na nový formát neverejnej časti doplnku nezávislej na architektúre prijímača a verzii pythonu
 
