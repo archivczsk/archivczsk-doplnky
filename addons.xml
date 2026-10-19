@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <addons>
 <addon id="plugin.video.aktualne" name="Aktuálně (video)" version="1.8" hash="73a61f12609e704164f094bcabfaae03" rhash="73a61f12609e704164f094bcabfaae03" />
-<addon id="plugin.video.antiktv" name="Antik TV" version="2.36" hash="e5e7e3db00031cd057cd13e43b287c26" rhash="94ca5681b38aedd5e43622d34dc70560" />
+<addon id="plugin.video.antiktv" name="Antik TV" version="2.37" hash="7db4bc6a079dd90654a0db01389d4839" rhash="139aed04d25cb357029ec36b4a594e59" />
 <addon id="plugin.video.autosalontv" name="Autosalon" version="1.9" hash="e1836431641d28c728f02e2b0a0037e4" rhash="e1836431641d28c728f02e2b0a0037e4" />
 <addon id="plugin.video.disneyplus" name="Disney+" version="2.7" hash="9b4f337a451cca43d23e75f20a0f30a3" rhash="a99e06ffbb749b1277f64bb218645ebc" />
 <addon id="plugin.video.dupe" name="Dupe" version="1.8" hash="395c9dd0c39c3bb916b230e6a8a5ac6a" rhash="e48232b67b508e1d7f115ff41fd3916e" />
