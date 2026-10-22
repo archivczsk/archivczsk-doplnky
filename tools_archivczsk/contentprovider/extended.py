@@ -210,7 +210,7 @@ class CPModuleArchive(CPModuleTemplate):
 		Implement this function creates list days for channel_id (see params for self.add_archive_channel())
 		'''
 		if archive_hours < 24:
-			return self.get_archive_program(channel_id, archive_day=(archive_hours * 60))
+			return self.get_archive_program(channel_id, archive_day=(archive_hours / 60))
 
 		stop_i = int(archive_hours // 24)
 
@@ -262,7 +262,7 @@ class CPModuleArchive(CPModuleTemplate):
 		Implement this function to list program for channel_id and archive day (0=today, 1=yesterday, ...)
 		It should call self.cp.add_video() or self.cp.add_play() to add videos, or resolved videos to menu
 
-		Special case: If archive_day > 30, then it should be interpreted as minutes back
+		Special case: If archive_day > 0 and archive_day < 1, then it should be interpreted part of the day back
 		'''
 		return
 

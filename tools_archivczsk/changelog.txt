@@ -1,3 +1,6 @@
+3.21 - 22.10.2026
+    - fixed archive times calculation for archives shorter then 1 day
+
 3.20 - 13.10.2026
     - added auto_retry strategy to requests session returned by CommonContentProvider.get_requests_session()
 
