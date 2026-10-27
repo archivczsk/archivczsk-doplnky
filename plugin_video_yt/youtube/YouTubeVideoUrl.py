@@ -263,11 +263,28 @@ class YouTubeVideoUrl():
 
 	def _get_m3u8_audio_urls(self, manifest):
 		audio_urls = {}
+		audio_rank = {}
 		if '#EXT-X-MEDIA:' in manifest:
 			for line in manifest.splitlines():
 				if line.startswith('#EXT-X-MEDIA:'):
 					audio_info = self._parse_m3u8_attributes(line)
-					audio_urls[audio_info.get('GROUP-ID')] = audio_info.get('URI')
+					group_id = audio_info.get('GROUP-ID')
+					uri = audio_info.get('URI')
+					if not uri:
+						continue
+					# one group can hold several languages (original + auto-dubbed), keep the original one
+					text = (line + ' ' + uri).lower()
+					if search(r'acont(?:=|%3d|%253d|/)original', text) or 'original' in (audio_info.get('NAME') or '').lower():
+						rank = 0
+					elif search(r'acont(?:=|%3d|%253d|/)dubbed', text):
+						rank = 3
+					elif audio_info.get('DEFAULT') == 'YES':
+						rank = 1
+					else:
+						rank = 2
+					if group_id not in audio_rank or rank < audio_rank[group_id]:
+						audio_rank[group_id] = rank
+						audio_urls[group_id] = uri
 		return audio_urls
 
 	@staticmethod
@@ -323,14 +340,29 @@ class YouTubeVideoUrl():
 
 	@staticmethod
 	def _audio_pref(fmt, prefer, get_audio):
-		audio_track = fmt.get('audioTrack', {})
-		if get_audio == '' and 'original' in audio_track.get('displayName', '').lower():
-			prefer -= 40
-		if audio_track.get('audioIsDefault'):
-			prefer -= 20
 		if prefer == 100:
-			prefer = 20 if 'audio/mp4' in fmt.get('mimeType').lower() else 200
+			prefer = 20 if 'audio/mp4' in fmt.get('mimeType', '').lower() else 200
 		return prefer
+
+	@staticmethod
+	def _audio_track_rank(fmt):
+		""" Lower is better. Prefer the original (non-dubbed) audio track.
+		YouTube adds auto-dubbed tracks (de, hi, es, ...) with the same itag as
+		the original one, so the itag alone can't tell them apart. """
+		audio_track = fmt.get('audioTrack') or {}
+		if not audio_track:
+			return 1  # video has a single audio track
+		name = (audio_track.get('displayName') or '').lower()
+		raw_url = (fmt.get('url') or fmt.get('signatureCipher') or '').lower()
+		if search(r'acont(?:=|%3d|%253d)original', raw_url) or 'original' in name:
+			return 0
+		if 'descriptive' in name or search(r'acont(?:=|%3d|%253d)descriptive', raw_url):
+			return 4
+		if search(r'acont(?:=|%3d|%253d)dubbed', raw_url):
+			return 3
+		if audio_track.get('audioIsDefault'):
+			return 1
+		return 2
 
 	def _sort_formats(self, priority_formats, streaming_formats, get_audio=None):
 		sorted_fmt = []
@@ -341,6 +373,9 @@ class YouTubeVideoUrl():
 			prefer = priority_formats.index(itag) if itag in priority_formats else 100
 			prefer = self._video_pref(fmt, prefer) if get_audio is None else self._audio_pref(fmt, prefer, get_audio)
 			if prefer < 200:
+				if get_audio is not None:
+					# track kind (original/dubbed) is more important than audio bitrate
+					prefer += self._audio_track_rank(fmt) * 1000
 				fmt['preference'] = prefer
 				sorted_fmt.append(fmt)
 		return sorted(sorted_fmt, key=lambda k: k['preference'])
@@ -357,7 +392,9 @@ class YouTubeVideoUrl():
 	def _extract_dash_audio_format(self, streaming_formats, player_id):
 		""" If DASH MP4 video add also DASH MP4 audio track"""
 		print('[YouTubeVideoUrl] Try fmt audio url')
-		get_audio = config.plugins.YouTube.searchLanguage.value
+		# fake_config returns None here, which made _sort_formats treat audio as video
+		# and pick a random (often auto-dubbed) audio track
+		get_audio = config.plugins.YouTube.searchLanguage.value or ''
 		DASH_AUDIO_FORMATS = ('141', '140', '139', '258', '265', '325', '328', '233', '234')
 		for fmt in self._sort_formats(DASH_AUDIO_FORMATS, streaming_formats, get_audio):
 			url = self._extract_url(fmt, player_id)
