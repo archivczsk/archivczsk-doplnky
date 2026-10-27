@@ -1,0 +1,9 @@
+1.0.0
+- prvé vydanie
+- živé vysielanie pre slovenský aj český Skylink, prihlásenie menom a heslom
+- zoznam kanálov celkom, podľa žánrov a samostatne rozhlasové stanice
+- archív sedem dní, program po dňoch aj s popismi relácií
+- generovanie userbouquetu, export programu do EPG cache prijímača aj do XML
+- picony, náhľadové obrázky a popisy relácií v zozname kanálov
+- voliteľné obmedzenie rozlíšenia a šírky pásma
+- preklady sk, cs, en

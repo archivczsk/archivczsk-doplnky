@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+	<setting label="Service" id="brand" type="keyenum" values="slsk;Skylink SK|slcz;Skylink CZ" default="slsk" />
+	<setting label="Login name" id="username" type="text" default="" />
+	<setting label="Login password" id="password" type="password" default="" />
+	<setting label="Maximum resolution of the offered stream" id="max_resolution" type="keyenum" values="0;Unlimited|1080;1080p|720;720p|576;576p|480;480p|360;360p" default="0" />
+	<setting label="Enable adult channels" id="enable_adult" type="bool" default="true" />
+	<setting label="Load programme descriptions (slower, only for shorter lists)" id="load_descriptions" type="bool" default="true" />
+	<category label="Userbouquet">
+		<setting label="Automatically export channel list as userbouquet" id="enable_userbouquet" type="bool" default="false" />
+		<setting label="Generate XML EPG for epgimport plugin (if installed)" id="enable_xmlepg" type="bool" default="false" />
+		<setting label="Directory for XML EPG data (need at least 20MB of free space)" id="xmlepg_dir" type="text" default="/media/hdd" />
+		<setting label="For how many days to generate XML EPG" id="xmlepg_days" type="enum" lvalues="1|2|3|4|5|6|7" default="4"/>
+		<setting label="Automatically download picons when exporting userbouquet" id="enable_picons" type="bool" default="false" />
+		<setting label="Player used for userbouquet" id="player_name" type="enum" lvalues="Default|gstplayer|exteplayer3|DMM|DVB (OE&gt;=2.5)" default="2"/>
+		<setting label="Convert streams to TS format using ffmpeg" id="enable_tsconvert" type="bool" default="false" />
+	</category>
+	<category label="Advanced">
+		<setting label="Enable special section in main menu" id="enable_extra" type="bool" default="false" />
+		<setting label="Allow downloading of live broadcasting" id="download_live" type="bool" default="false" />
+		<setting label="Maximum bandwidth of the offered stream" id="max_bitrate" type="keyenum" values="0;Unlimited|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />
+		<setting label="Privacy mode for the license request" id="privacy_mode" type="bool" default="false" />
+		<setting label="Device (set automatically)" id="device_serial" type="text" default="" visible="false" />
+		<setting label="Session (set automatically after sign-in)" id="session" type="text" default="" visible="false" />
+	</category>
+</settings>
