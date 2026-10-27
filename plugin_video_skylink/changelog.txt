@@ -1,4 +1,4 @@
-1.0.0
+1.0: 27.10.2026
 - prvé vydanie
 - živé vysielanie pre slovenský aj český Skylink, prihlásenie menom a heslom
 - zoznam kanálov celkom, podľa žánrov a samostatne rozhlasové stanice
