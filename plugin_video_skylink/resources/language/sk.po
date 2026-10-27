@@ -1,0 +1,279 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_skylink\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-27 07:10+0100\n"
+"PO-Revision-Date: 2026-10-27 07:10+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: sk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Service"
+msgstr "Služba"
+
+msgid "Login name"
+msgstr "Prihlasovacie meno"
+
+msgid "Login password"
+msgstr "Prihlasovacie heslo"
+
+msgid "Maximum bandwidth of the offered stream"
+msgstr "Maximálna šírka pásma ponúkaného streamu"
+
+msgid "Privacy mode for the license request"
+msgstr "Privacy mode pri žiadosti o licenciu"
+
+msgid "Device (set automatically)"
+msgstr "Zariadenie (nastaví sa automaticky)"
+
+msgid "Session (set automatically after sign-in)"
+msgstr "Session (nastaví sa automaticky po prihlásení)"
+
+msgid "All channels"
+msgstr "Všetky kanály"
+
+
+
+msgid "Account"
+msgstr "Účet"
+
+msgid "Signed in as: %s"
+msgstr "Prihlásený ako: %s"
+
+msgid "Service: %s"
+msgstr "Služba: %s"
+
+msgid "Device: %s"
+msgstr "Zariadenie: %s"
+
+msgid "Sign out this device"
+msgstr "Odhlásiť toto zariadenie"
+
+msgid "Do you really want to sign out? The saved sign-in will be deleted, the username and password stay in the settings."
+msgstr "Naozaj sa chceš odhlásiť? Uložené prihlásenie sa vymaže, meno a heslo zostanú v nastaveniach."
+
+msgid "Signed out."
+msgstr "Odhlásené."
+
+msgid "Wrong username or password - check the addon settings."
+msgstr "Nesprávne meno alebo heslo - skontroluj nastavenia doplnku."
+
+
+msgid "The account is blocked or inactive."
+msgstr "Účet je zablokovaný alebo neaktívny."
+
+msgid "Sign-in failed: %s"
+msgstr "Prihlásenie zlyhalo: %s"
+
+
+
+
+
+msgid "Failed to load the TV guide: %s"
+msgstr "Nepodarilo sa načítať TV program: %s"
+
+
+
+
+
+msgid "Missing item identifier."
+msgstr "Chýba identifikátor položky."
+
+msgid "This channel is not part of your subscription."
+msgstr "Tento kanál nie je súčasťou tvojho predplatného."
+
+msgid "The broadcast is not available from this network (geoblocking)."
+msgstr "Prenos nie je z tejto siete dostupný (geoblokovanie)."
+
+msgid "Playback failed: %s"
+msgstr "Prehrávanie zlyhalo: %s"
+
+msgid "No stream URL received from server."
+msgstr "Zo servera neprišla adresa streamu."
+
+msgid "No license URL received. The stream cannot be played."
+msgstr "Neprišla licenčná adresa. Stream sa nedá prehrať."
+
+msgid "Failed to load the DASH stream."
+msgstr "Nepodarilo sa načítať DASH stream."
+
+msgid "Movies and series"
+msgstr "Filmy a seriály"
+
+msgid "Sport"
+msgstr "Šport"
+
+msgid "Documentary"
+msgstr "Dokumenty"
+
+msgid "News"
+msgstr "Spravodajstvo"
+
+msgid "Kids"
+msgstr "Pre deti"
+
+msgid "Entertainment"
+msgstr "Zábava"
+
+msgid "Cooking"
+msgstr "Varenie"
+
+msgid "Lifestyle"
+msgstr "Životný štýl"
+
+msgid "Music"
+msgstr "Hudba"
+
+msgid "Culture"
+msgstr "Kultúra"
+
+msgid "Adult"
+msgstr "Pre dospelých"
+
+msgid "Advanced"
+msgstr "Rozšírené"
+
+msgid "Userbouquet"
+msgstr "Userbouquet"
+
+msgid "Archive"
+msgstr "Archív"
+
+msgid "Enable adult channels"
+msgstr "Povoliť kanály pre dospelých"
+
+msgid "Automatically export channel list as userbouquet"
+msgstr "Automaticky exportovať zoznam kanálov ako userbouquet"
+
+msgid "Generate XML EPG for epgimport plugin (if installed)"
+msgstr "Generovať XML EPG pre plugin epgimport (ak je nainštalovaný)"
+
+msgid "Directory for XML EPG data (need at least 20MB of free space)"
+msgstr "Priečinok pre dáta XML EPG (treba aspoň 20 MB voľného miesta)"
+
+msgid "For how many days to generate XML EPG"
+msgstr "Na koľko dní generovať XML EPG"
+
+msgid "Automatically download picons when exporting userbouquet"
+msgstr "Pri exporte userbouquetu automaticky stiahnuť picony"
+
+msgid "Player used for userbouquet"
+msgstr "Prehrávač použitý pre userbouquet"
+
+msgid "Convert streams to TS format using ffmpeg"
+msgstr "Konvertovať streamy do formátu TS cez ffmpeg"
+
+msgid "Enable special section in main menu"
+msgstr "Zapnúť špeciálnu sekciu v hlavnom menu"
+
+msgid "Allow downloading of live broadcasting"
+msgstr "Povoliť sťahovanie živého vysielania"
+
+msgid "Registered devices"
+msgstr "Zaregistrované zariadenia"
+
+msgid "Here you can see the devices registered to your account and free up a slot."
+msgstr "Tu vidíš zariadenia zaregistrované na účte a môžeš uvoľniť miesto."
+
+msgid "Shows which account the addon is signed in with."
+msgstr "Ukáže, pod ktorým účtom je doplnok prihlásený."
+
+msgid "This is the device used by the addon."
+msgstr "Toto zariadenie používa doplnok."
+
+msgid "In the menu you can remove this device and free up a slot."
+msgstr "V menu môžeš toto zariadenie odobrať a uvoľniť miesto."
+
+msgid "Remove device!"
+msgstr "Odobrať zariadenie!"
+
+msgid "Do you really want to remove the device %s?"
+msgstr "Naozaj chceš odobrať zariadenie %s?"
+
+msgid "Device %s was removed."
+msgstr "Zariadenie %s bolo odobrané."
+
+msgid "Failed to remove the device: %s"
+msgstr "Zariadenie sa nepodarilo odobrať: %s"
+
+msgid "Failed to load the device list: %s"
+msgstr "Nepodarilo sa načítať zoznam zariadení: %s"
+
+msgid "Run EPG export to enigma or XML files"
+msgstr "Spustiť export EPG do enigmy alebo XML súborov"
+
+msgid "EPG export started"
+msgstr "Export EPG sa spustil"
+
+msgid "The limit of registered devices has been reached. Remove one device in the Special section, in the Skylink app or on the website."
+msgstr "Dosiahol si limit registrovaných zariadení. Odober jedno zariadenie v špeciálnej sekcii, v aplikácii Skylink alebo na webe."
+
+msgid "Radio"
+msgstr "Rádiá"
+
+msgid "Check playback"
+msgstr "Skontrolovať prehrávanie"
+
+msgid "With this button you can check if playback works OK or it gives some error from the server."
+msgstr "Týmto si overíš, či prehrávanie funguje, alebo server hlási chybu."
+
+msgid "No error occured during playback check. Playback should work."
+msgstr "Pri kontrole prehrávania nenastala chyba, prehrávanie by malo fungovať."
+
+msgid "Can't check playback. There are no channels available."
+msgstr "Prehrávanie sa nedá skontrolovať, nie sú dostupné žiadne kanály."
+
+msgid "The server did not return a stream or a license address."
+msgstr "Server nevrátil adresu streamu alebo licencie."
+
+msgid "Load programme descriptions (slower, only for shorter lists)"
+msgstr "Načítať popisy relácií (pomalšie, len pri kratších zoznamoch)"
+
+msgid "Maximum resolution of the offered stream"
+msgstr "Maximálne rozlíšenie ponúkaného streamu"
+
+msgid "Your sign-in has expired."
+msgstr "Prihlásenie vypršalo."
+
+msgid "The server returned an empty channel list."
+msgstr "Server vrátil prázdny zoznam kanálov."
+
+msgid "Special section"
+msgstr "Špeciálna sekcia"
+
+msgid "Unlimited"
+msgstr "Bez obmedzenia"
+
+msgid "Default"
+msgstr "Predvolený"
+
+msgid "gstplayer"
+msgstr ""
+
+msgid "exteplayer3"
+msgstr ""
+
+msgid "DMM"
+msgstr ""
+
+msgid "DVB (OE>=2.5)"
+msgstr ""
+
+msgid "8 Mbit/s"
+msgstr ""
+
+msgid "6 Mbit/s"
+msgstr ""
+
+msgid "4 Mbit/s"
+msgstr ""
+
+msgid "3 Mbit/s"
+msgstr ""
+
+msgid "2 Mbit/s"
+msgstr ""
