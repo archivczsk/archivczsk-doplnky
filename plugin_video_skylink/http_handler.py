@@ -2,6 +2,7 @@
 
 import base64
 import json
+import re
 from time import time
 
 from tools_archivczsk.http_handler.dash import DashHTTPRequestHandler
@@ -136,8 +137,72 @@ class SkylinkHTTPRequestHandler(DashHTTPRequestHandler, PlayliveTVHTTPRequestHan
 
 		try:
 			self.keep_single_video_set(root, bandwidth)
+			self.align_live_timelines(root)
 		except Exception:
 			self.cp.log_exception()
+
+	# #################################################################################################
+
+	@staticmethod
+	def align_live_timelines(root):
+		"""Všetkým stopám živého vysielania nechá rovnaký časový úsek segmentov.
+
+		exteplayer3 (dashdec) si začiatok počíta pre každú stopu zvlášť od konca
+		jej časovej osi a časy každej stopy potom posúva od nuly. Skylink má často
+		v manifeste o segment obrazu viac ako zvuku a obnovu manifestu každé
+		2 sekundy, takže stopy začnú z rôznych segmentov a zvuk zostane posunutý.
+		"""
+		if root.get('type') != 'dynamic':
+			return
+
+		ns = root.tag[1:root.tag.index('}')] if root.tag.startswith('{') else ''
+		ns = '{%s}' % ns if ns else ''
+
+		# manifest sa nemá obnoviť počas otvárania stôp pri štarte
+		m = re.match(r'^PT([\d.]+)S$', root.get('minimumUpdatePeriod') or '')
+		if m and float(m.group(1)) < 10:
+			root.set('minimumUpdatePeriod', 'PT10S')
+
+		for e_period in root.findall('%sPeriod' % ns):
+			tracks = []
+			for e_template in e_period.iter('%sSegmentTemplate' % ns):
+				e_timeline = e_template.find('%sSegmentTimeline' % ns)
+				if e_timeline is None:
+					continue
+
+				timescale = float(e_template.get('timescale') or 1)
+				offset = int(e_template.get('presentationTimeOffset') or 0)
+				segments = []
+				t = 0
+				for e_s in e_timeline.findall('%sS' % ns):
+					t = int(e_s.get('t', t))
+					d = int(e_s.get('d'))
+					for _i in range(int(e_s.get('r') or 0) + 1):
+						segments.append(((t - offset) / timescale, (t + d - offset) / timescale, t, d))
+						t += d
+
+				# r=-1 (opakuj do konca) sa takto spočítať nedá
+				if segments and all(int(e_s.get('r') or 0) >= 0 for e_s in e_timeline.findall('%sS' % ns)):
+					tracks.append((e_timeline, segments))
+
+			if len(tracks) < 2:
+				continue
+
+			# spoločný úsek všetkých stôp, tolerancia pol sekundy na drobné rozdiely časov
+			start = max(seg[0][0] for _e, seg in tracks) - 0.5
+			end = min(seg[-1][1] for _e, seg in tracks) + 0.5
+
+			for e_timeline, segments in tracks:
+				keep = [s for s in segments if s[0] >= start and s[1] <= end]
+				if not keep or len(keep) == len(segments):
+					continue
+
+				for e_s in list(e_timeline):
+					e_timeline.remove(e_s)
+
+				for _start, _end, t, d in keep:
+					e_s = e_timeline.makeelement('%sS' % ns, {'t': str(t), 'd': str(d)})
+					e_timeline.append(e_s)
 
 	# #################################################################################################
 
