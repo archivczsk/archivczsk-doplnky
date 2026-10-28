@@ -277,3 +277,6 @@ msgstr ""
 
 msgid "2 Mbit/s"
 msgstr ""
+
+msgid "Allow DRM decrypt using exteplayer3"
+msgstr "Povolit dešifrování DRM pomocí exteplayer3"

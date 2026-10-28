@@ -16,6 +16,7 @@
 		<setting label="Convert streams to TS format using ffmpeg" id="enable_tsconvert" type="bool" default="false" />
 	</category>
 	<category label="Advanced">
+		<setting label="Allow DRM decrypt using exteplayer3" id="ext_drm_decrypt" type="bool" default="true" />
 		<setting label="Enable special section in main menu" id="enable_extra" type="bool" default="false" />
 		<setting label="Allow downloading of live broadcasting" id="download_live" type="bool" default="false" />
 		<setting label="Maximum bandwidth of the offered stream" id="max_bitrate" type="keyenum" values="0;Unlimited|8;8 Mbit/s|6;6 Mbit/s|4;4 Mbit/s|3;3 Mbit/s|2;2 Mbit/s" default="0" />

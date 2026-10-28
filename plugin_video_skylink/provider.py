@@ -877,6 +877,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 		license_headers['Content-Type'] = 'application/octet-stream'
 
 		return {
+			'ext_drm_decrypt': self.get_setting('ext_drm_decrypt'),
 			'url': stream_key['url'],
 			'bandwidth': stream_key.get('bandwidth'),
 			'headers': self.stream_headers(web),
