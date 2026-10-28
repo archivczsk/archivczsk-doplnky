@@ -39,7 +39,7 @@ LOGIN_URL = 'https://m7.login.solocoo.tv/login'
 # Verzia doplnku a poradie zostavenia. Zostavenie sa zapisuje do logu a mení sa
 # s každým balíkom, takže z logu vidno, ktorá verzia práve beží. Zmena zostavenia
 # zároveň vynúti jeden nový export programu.
-ADDON_VERSION = '1.0.0'
+ADDON_VERSION = '1.1'
 ADDON_BUILD = 5
 
 APP_VERSION = '13.3'

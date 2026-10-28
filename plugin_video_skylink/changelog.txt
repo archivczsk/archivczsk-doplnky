@@ -1,3 +1,7 @@
+1.1: 28.10.2026
+- oprava posunutého zvuku voči obrazu pri živom vysielaní v exteplayer3
+- nové nastavenie pre prehrávanie cez exteplayer3 (rovnaké ako v doplnku Oneplay)
+
 1.0: 27.10.2026
 - prvé vydanie
 - živé vysielanie pre slovenský aj český Skylink, prihlásenie menom a heslom
