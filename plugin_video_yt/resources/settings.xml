@@ -6,4 +6,7 @@
   <setting label="Preferred stream resolution" id="max_resolution" type="keyenum" values="38;4k|37;1080p|22;720p|35;480p|18;360p" default="37" />
   <setting label="Check exteplayer3 version on startup" id="player-check" type="bool" default="true" />
   <setting label="Youtube API key" id="api_key" type="text" default=""/>
+  <setting label="Subtitles" id="subtitles" type="keyenum" values="off;Off|lang;In subtitles language (otherwise original)|orig;In original language of the video" default="off" />
+  <setting label="Subtitles language" id="subtitles_lang" type="keyenum" values="auto;Same as addon language|cs;Czech|sk;Slovak|en;English|de;German|pl;Polish|hu;Hungarian" default="auto" />
+  <setting label="Machine translation of subtitles (experimental, often fails)" id="subtitles_translate" type="bool" default="false" />
 </settings>
