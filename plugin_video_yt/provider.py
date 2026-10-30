@@ -7,9 +7,11 @@ from tools_archivczsk.player.features import PlayerFeatures
 from time import time
 from datetime import timedelta, datetime
 from base64 import b64decode
-import re, os, json, requests
+import re, os, io, json, requests
 from .youtube import resolve as yt_resolve
 from .youtube.captions import choose_track_url, download_srt
+
+CHANNEL_VIDEOS_PARAMS = "EgZ2aWRlb3PyBgQKAjoA"
 
 class YoutubeContentProvider(CommonContentProvider):
 	SUBTITLES_DIR = '/tmp'
@@ -335,44 +337,64 @@ class YoutubeContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def save_channel(self,channel_name,channel_id):
-		history = ['{};{}'.format(channel_name, channel_id)]
-		max_history = self.get_setting('channels')
+	def channels_file(self):
+		return os.path.join(self.data_dir, "channels.txt")
 
-		filename = os.path.join(self.data_dir, "channels.txt")
+	# ##################################################################################################################
+
+	def read_channels(self):
+		''' Returns list of saved channels [(name, channel_id), ...] without duplicates '''
+		channels = []
 		try:
-			with open(filename, "r") as file:
+			with io.open(self.channels_file(), "r", encoding="utf-8") as file:
 				for line in file:
-					item = line[:-1]
-					history.append(item)
+					line = line.strip()
+					if ';' not in line:
+						continue
+					name, channel_id = line.rsplit(";", 1)
+					if channel_id and channel_id not in [c[1] for c in channels]:
+						channels.append((name, channel_id))
 		except IOError:
 			pass
+		return channels
 
+	# ##################################################################################################################
+
+	def write_channels(self, channels):
 		try:
-			cnt = 0
-			with open(filename, "w") as file:
-				for item in history:
-					cnt = cnt + 1
-					if cnt <= max_history:
-						file.write('%s\n' % item)
+			with io.open(self.channels_file(), "w", encoding="utf-8") as file:
+				for name, channel_id in channels:
+					file.write(u'%s;%s\n' % (name.replace('\n', ' '), channel_id))
 		except:
 			self.log_exception()
-			pass
 
+	# ##################################################################################################################
+
+	def channel_params(self, channel_id):
+		return {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"browseId":channel_id,"params":CHANNEL_VIDEOS_PARAMS}
+
+	# ##################################################################################################################
+
+	def save_channel(self,channel_name,channel_id):
+		max_history = int(self.get_setting('channels') or 20)
+		# newly saved channel goes to the top, already saved channel is only moved to the top
+		channels = [(channel_name, channel_id)] + [c for c in self.read_channels() if c[1] != channel_id]
+		self.write_channels(channels[:max(max_history, 1)])
+		self.refresh_screen()
+
+	# ##################################################################################################################
+
+	def remove_channel(self, channel_id):
+		self.write_channels([c for c in self.read_channels() if c[1] != channel_id])
 		self.refresh_screen()
 
 	# ##################################################################################################################
 
 	def load_channels(self):
-		filename = os.path.join(self.data_dir, "channels.txt")
-		try:
-			with open(filename, "r") as file:
-				for line in file:
-					item = line[:-1].split(";")
-					channel_params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"browseId":item[1],"params":"EgZ2aWRlb3PyBgQKAjoA"}
-					self.add_dir(item[0], cmd=self.list_videos, endpoint='browse', params=channel_params)
-		except IOError:
-			self.log_exception()
+		for name, channel_id in self.read_channels():
+			menu = self.create_ctx_menu()
+			menu.add_menu_item(self._('Remove channel'), cmd=self.remove_channel, channel_id=channel_id)
+			self.add_dir(name, menu=menu, cmd=self.list_videos, endpoint='browse', params=self.channel_params(channel_id))
 
 	# ##################################################################################################################
 

@@ -143,3 +143,6 @@ msgstr "Přehrát s titulky v původním jazyce"
 
 msgid "Play without subtitles"
 msgstr "Přehrát bez titulků"
+
+msgid "Remove channel"
+msgstr "Odebrat kanál"
