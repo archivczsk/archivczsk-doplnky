@@ -289,3 +289,6 @@ msgstr "Přehrávání streamu v rozlišení 1080p selhalo. Přepínám zpět na
 
 msgid "You have enabled 1080p streams in addon settings. This option works only in distributions based on python 3.8+ like OpenATV 7.x, OpenPLi > 9.x etc. Update software in you receiver to get better quality streams."
 msgstr "V nastavení doplňku máš zapnuté streamy v rozlišení 1080p. Tato možnost funguje jen na distribucích postavených na Pythonu 3.8 a novějším, například OpenATV 7.x nebo OpenPLi > 9.x. Pokud chceš kvalitnější streamy, aktualizuj software v přijímači."
+
+msgid "Skylink does not provide an internet stream for this channel."
+msgstr "Skylink pro tento kanál neposkytuje internetový stream."

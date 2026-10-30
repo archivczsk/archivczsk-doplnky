@@ -21,8 +21,8 @@ from tools_archivczsk.string_utils import _I, _C
 from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.generator.lamedb import channel_name_normalise
 
-from .skylink_api import (SkylinkApi, SkylinkSessionError, BRANDS, USER_AGENT, error_text,
-                          channel_id as asset_channel_id, channel_title, unwrap_asset,
+from .skylink_api import (SkylinkApi, SkylinkSessionError, SkylinkNoStreamError, BRANDS, USER_AGENT,
+                          error_text, channel_id as asset_channel_id, channel_title, unwrap_asset,
                           to_timestamp, event_description, image_url,
                           ADDON_VERSION, ADDON_BUILD)
 from .bouquet import SkylinkBouquetXmlEpgGenerator
@@ -941,6 +941,9 @@ class SkylinkContentProvider(ModuleContentProvider):
 			stream = self.get_stream_info(asset_id)
 		except SkylinkSessionError:
 			self.session_expired()
+			return
+		except SkylinkNoStreamError:
+			self.show_error(self._("Skylink does not provide an internet stream for this channel."))
 			return
 		except Exception as e:
 			msg = error_text(e)

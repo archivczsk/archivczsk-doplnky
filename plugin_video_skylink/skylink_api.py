@@ -216,6 +216,18 @@ def unwrap_asset(entry):
 	return entry
 
 
+def has_online_stream(entry):
+	"""Kanály dostupné len zo satelitu majú prázdne sources - stream pre ne nie je."""
+	if not isinstance(entry, dict) or 'sources' not in entry:
+		return True
+
+	for source in entry.get('sources') or []:
+		if isinstance(source, dict) and source.get('type') == 'ott':
+			return True
+
+	return False
+
+
 def channel_id(asset):
 	"""Identifikátor kanála - podľa endpointu sa volá rôzne."""
 	if not isinstance(asset, dict):
@@ -242,6 +254,11 @@ def channel_title(asset):
 
 class SkylinkSessionError(Exception):
 	"""Vypršané alebo neplatné prihlásenie - volajúci má skúsiť prihlásiť sa znova."""
+	pass
+
+
+class SkylinkNoStreamError(Exception):
+	"""Kanál je v zozname, ale Skylink preň nemá internetový stream."""
 	pass
 
 
@@ -363,6 +380,14 @@ class SkylinkApi(object):
 			raise SkylinkSessionError(message or 'Session expired')
 
 		if response.status_code == 404:
+			try:
+				label = (response.json() or {}).get('label') or ''
+			except Exception:
+				label = ''
+
+			if label.endswith('cannot_play'):
+				raise SkylinkNoStreamError(label)
+
 			raise Exception('HTTP 404')
 
 		try:
@@ -644,6 +669,9 @@ class SkylinkApi(object):
 		result = []
 		seen = set()
 		for entry in channels:
+			if not has_online_stream(entry):
+				continue
+
 			ch = unwrap_asset(entry)
 			cid = channel_id(ch)
 			if not cid or cid in seen:
