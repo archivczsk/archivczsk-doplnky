@@ -13,6 +13,8 @@ from .youtube.captions import choose_track_url, download_srt
 
 CHANNEL_VIDEOS_PARAMS = "EgZ2aWRlb3PyBgQKAjoA"
 FEED_CACHE_TIME = 600
+SUBSCRIPTIONS_DIR = '/tmp'
+CHANNEL_ID_RE = re.compile(r'(UC[\w-]{22})')
 
 class YoutubeContentProvider(CommonContentProvider):
 	SUBTITLES_DIR = '/tmp'
@@ -39,6 +41,9 @@ class YoutubeContentProvider(CommonContentProvider):
 		self.add_dir(self._("Last watched"), cmd=self.list_watched)
 		if self.read_channels():
 			self.add_dir(self._("New videos from saved channels"), cmd=self.list_channels_feed)
+		subscriptions_file = self.find_subscriptions_file()
+		if subscriptions_file:
+			self.add_dir(self._("Import subscriptions") + ' (%s)' % subscriptions_file, info_labels={'plot': self._("Subscriptions exported from Google Takeout (YouTube) found. Channels will be added to saved channels.")}, cmd=self.import_subscriptions, filename=subscriptions_file)
 		self.load_channels()
 
 	# ##################################################################################################################
@@ -490,6 +495,78 @@ class YoutubeContentProvider(CommonContentProvider):
 		menu = self.create_ctx_menu()
 		menu.add_menu_item(self._('Save channel'), cmd=self.save_channel, channel_name=name, channel_id=channel_id)
 		self.add_dir(_B(self._("Channel") + ": " + name), img, {'plot': ' | '.join(info) + '\n' + decode_html(desc)}, menu=menu, cmd=self.list_videos, endpoint='browse', params=self.channel_params(channel_id))
+
+	# ##################################################################################################################
+
+	@staticmethod
+	def parse_subscriptions_line(line):
+		'''
+		Line of subscriptions CSV from Google Takeout: Channel Id,Channel Url,Channel Title
+		Header and file name are localised by Google (subscriptions.csv, odběry.csv, ...), so only the content is checked.
+		Returns (name, channel_id) or None
+		'''
+		parts = line.strip().split(',', 2)
+		if len(parts) < 3:
+			return None
+		m = CHANNEL_ID_RE.match(parts[0].strip().strip('"'))
+		if not m or 'youtube.com' not in parts[1]:
+			return None
+		name = parts[2].strip()
+		if len(name) > 1 and name.startswith('"') and name.endswith('"'):
+			name = name[1:-1].replace('""', '"')
+		return (name or m.group(1), m.group(1))
+
+	# ##################################################################################################################
+
+	def find_subscriptions_file(self):
+		''' Newest CSV file in /tmp that contains YouTube subscriptions '''
+		found = []
+		try:
+			names = os.listdir(SUBSCRIPTIONS_DIR)
+		except OSError:
+			return None
+		for name in names:
+			if not name.lower().endswith('.csv'):
+				continue
+			filename = os.path.join(SUBSCRIPTIONS_DIR, name)
+			try:
+				if os.path.getsize(filename) > 5 * 1024 * 1024:
+					continue
+				with io.open(filename, "r", encoding="utf-8-sig", errors="ignore") as file:
+					head = [file.readline() for _ in range(3)]
+				if any(self.parse_subscriptions_line(line) for line in head):
+					found.append((os.path.getmtime(filename), filename))
+			except (OSError, IOError):
+				continue
+		return sorted(found)[-1][1] if found else None
+
+	# ##################################################################################################################
+
+	def import_subscriptions(self, filename):
+		imported = []
+		try:
+			with io.open(filename, "r", encoding="utf-8-sig") as file:
+				for line in file:
+					item = self.parse_subscriptions_line(line)
+					if item:
+						imported.append(item)
+		except Exception as e:
+			self.log_exception()
+			raise AddonErrorException(self._("Failed to read subscriptions file") + ':\n%s' % str(e))
+
+		existing = self.read_channels()
+		known = [c[1] for c in existing]
+		new = []
+		for item in sorted(imported, key=lambda c: c[0].lower()):
+			if item[1] not in known:
+				known.append(item[1])
+				new.append(item)
+		channels = existing + new
+		if len(channels) > int(self.get_setting('channels') or 20):
+			self.set_setting('channels', len(channels))
+		self.write_channels(channels)
+		self.show_info(self._("Imported channels") + ': %d' % len(new), noexit=True)
+		self.refresh_screen()
 
 	# ##################################################################################################################
 

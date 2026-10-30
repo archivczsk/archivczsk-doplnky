@@ -152,3 +152,15 @@ msgstr "Kanál"
 
 msgid "New videos from saved channels"
 msgstr "Nové videá z uložených kanálov"
+
+msgid "Import subscriptions"
+msgstr "Importovať odbery"
+
+msgid "Subscriptions exported from Google Takeout (YouTube) found. Channels will be added to saved channels."
+msgstr "Nájdené odbery exportované z Google Takeout (YouTube). Kanály budú pridané k uloženým kanálom."
+
+msgid "Failed to read subscriptions file"
+msgstr "Nepodarilo sa načítať súbor s odbermi"
+
+msgid "Imported channels"
+msgstr "Importovaných kanálov"
