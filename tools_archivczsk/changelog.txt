@@ -1,3 +1,6 @@
+3.22 - 28.10.2026
+    - get_dash_streams: Representation inherits width and height from AdaptationSet
+
 3.21 - 22.10.2026
     - fixed archive times calculation for archives shorter then 1 day
 
