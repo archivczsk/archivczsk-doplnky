@@ -7,11 +7,12 @@ from tools_archivczsk.player.features import PlayerFeatures
 from time import time
 from datetime import timedelta, datetime
 from base64 import b64decode
-import re, os, io, json, requests
+import re, os, io, json, requests, threading
 from .youtube import resolve as yt_resolve
 from .youtube.captions import choose_track_url, download_srt
 
 CHANNEL_VIDEOS_PARAMS = "EgZ2aWRlb3PyBgQKAjoA"
+FEED_CACHE_TIME = 600
 
 class YoutubeContentProvider(CommonContentProvider):
 	SUBTITLES_DIR = '/tmp'
@@ -26,6 +27,7 @@ class YoutubeContentProvider(CommonContentProvider):
 		self.max_results = 50
 		self.api_keys = json.loads(b64decode(b'WyJBSXphU3lDVFdDNzVpNzBtb0pMenlOaDN0dDRqekNsalpjUmtVOFkiLCAiQUl6YVN5Q0lNNEV6TnFpMWluMjJmNFozUnUzaVl2TGFZOHRjM2JvIiwgIkFJemFTeUQySjJscW5qRTVWMGZIdmlFSUNITXRjMlBTS3FZN0lTayIsICJBSXphU3lCVV9vV0VJVUxpMy1uOTZ2V0tFVFlDTXNsZFlEQWx6Mk0iLCAiQUl6YVN5QzRDM2d6U1NFcnptYzJGZVVUbGVRcVpHenc4LXotZDZ3IiwgIkFJemFTeUNyRldpUGZHY2I1SXN5Uy13cEFNazZlYU5kTWFDOHBYcyIsICJBSXphU3lEbFpSMlVod1FYZUd3MkloQ1JucG9aQjhMSFprYWd3STQiLCAiQUl6YVN5Q1hxanMyWlBiMFBRUmVJV2lFTk1BQWtTeDBfdHZkNG5rIiwgIkFJemFTeUNzRTkxUFRELVhqVFUzT19JWnBZMFB2Vm9tMnR3NERyOCIsICJBSXphU3lBcnJoa2g0OWIyR05sQzhVZExvZHEzdVNwS3pjZ2R6ZWciLCAiQUl6YVN5Q1BjQUtDNzRTemdRQjhNU1hLY1BPNnpJb1ZmcXdsT2lnIiwgIkFJemFTeURCa29IZEQxSXc2SG9vTWhNb09iYkhGQ1hIRlN3S3pJVSIsICJBSXphU3lDNEMzZ3pTU0Vyem1jMkZlVVRsZVFxWkd6dzgtei1kNnciLCAiQUl6YVN5QUdQUDRqQTNoTDhmZXNqeGFWR2U4YmRWVW9RcUtMRExRIiwgIkFJemFTeUFfNW13aVZSWko5WkphaXR1cXYxbmdJQ2RMLTVGMTdQayIsICJBSXphU3lBLXV3T0taQnBieXBXcDFUV3B1WWY1SzAtNHd1UHp3RzgiLCAiQUl6YVN5RGpuZXdqNUpKRnVxWmFva3FkYkoybWE3bmhQa3V3VHBNIiwgIkFJemFTeUJ2Z1lVX1lEQkpWU3RDNkxEWDRHZ2tpWDkxMnZtSHJDZyIsICJBSXphU3lCODBoaFIySEc4aUxxV1AtTXdmWjhDdnlYV3NQX0tyQUEiLCAiQUl6YVN5QkRGcWJidDViMEo5Y3VvaGw1cWtnQUYyWUo5UVVfa0l3IiwgIkFJemFTeUJ0blR6YU00MHRWZXVEV1hrQ3FuWGFVVjhiMkotMk5iWSIsICJBSXphU3lEZF9zZnZRNE5BU2ItazBvS1lBcl9nOUZaY1FJTHR5S2MiLCAiQUl6YVN5QnRuVHphTTQwdFZldURXWGtDcW5YYVVWOGIySi0yTmJZIiwgIkFJemFTeUJqODBualdzMEtjZ0Q2QTQ0eTZjRGRHMnFpbmZ2Ylo0VSIsICJBSXphU3lENDktWFoySlY3UndzM0tETTJUN25BNTZKYmktTzdkalkiLCAiQUl6YVN5Qmo4MG5qV3MwS2NnRDZBNDR5NmNEZEcycWluZnZiWjRVIiwgIkFJemFTeUR5cTNucjJLamJGTUU5RWVOcEh5OTdBWDg3dms3NUhfWSIsICJBSXphU3lBbHd6X1ZqNm1XSUJncWdLRDByUXdJODJGYTRTM2Nza2siLCAiQUl6YVN5RC1vWjhBcXNWTUo3U3pYZDB5ZnBSVEF6SmFwbGVnYUIwIiwgIkFJemFTeUFTUExBV21qQ1BEUm9pTXR0MUFIR1EwVEd5Ung5d1RSVSIsICJBSXphU3lCaWhuWEtVbXg5aDZESEFsVE5rclotNnpuenJ6M01FMU0iLCAiQUl6YVN5QThIVlFFc3lST0xtZVo0UDNHaEtSQ1UyQmFqVG5KVU5jIiwgIkFJemFTeUFnRThKT1kwNmtKU1V4QllZWENHS2hRbmh4MXFEOGpkQSIsICJBSXphU3lDR3pfOGJFMzJxNE5Ba2pkQVhqcEFpaWdCUzZ6OVpBU1UiLCAiQUl6YVN5QnhUdjBSUEl6X0Rqdms5U1JmTUNUTzNpdV83WXNNanJRIiwgIkFJemFTeURGNDZJeVpZd1BsYjZaQnhBRDYtSXVMeFZOWXNiVEl3USIsICJBSXphU3lCa2lMQXRhYXYyZWNJN1Z2Z3MtaUJlZU1zX3YzWG5kRDgiLCAiQUl6YVN5Qkc5OENzQlVTTFhfd2FWTFNiMzRiQ2VTRjFxc0pxR2pFIiwgIkFJemFTeUM3VkdROU9qdmpPYUlUT01tNFR2TFRlRy1feVFaUmkwUSIsICJBSXphU3lCaWE1Szd3MFNEOGJBS0dhc2RhQzl0SDQwXzBnRTdsRHciLCAiQUl6YVN5Q3JZVHpxVUx2V045YjlOSW5EZFFNcGY1dDVoeTl6UlNvIiwgIkFJemFTeUF0R3Vyd042R2Zzc0N3VlNIWHpQUmJBNG9meFlNNUZSbyIsICJBSXphU3lDT1RaVEV6VHlkY1h1ZXRjb25reFpVakVYS2lQTURwRzAiLCAiQUl6YVN5Q0F5WDYzQlI5XzVYUzhqRmhYeFY0ZG9JR2h2YWpjWjdjIiwgIkFJemFTeUNrZ2xYcHNvWG83UWpzTERCQUw4bXpDZlg0WVp6cGR0ZyIsICJBSXphU3lBN19FTTZ5NVI4UzlFdExXcC1KUEZBNDN1dGF1aTMtdm8iLCAiQUl6YVN5QW1obFQ3c1YtT0JadlJCRzh4alVHc2tUM2VzajBtYzNrIiwgIkFJemFTeUJfYjhCcjd1MW1JM2Yzb193N1VJT0F4VUdHSklHeDktYyIsICJBSXphU3lBbWhsVDdzVi1PQlp2UkJHOHhqVUdza1QzZXNqMG1jM2siLCAiQUl6YVN5RGlSTURVY25tbV93U1ZoWUxvMHZoQWVrSHlHaEl6a2N3IiwgIkFJemFTeUNqVG1xVHhSRmZhb2FkcUp5U1EwQzNIS2l6Vm5kWnJJVSIsICJBSXphU3lDdGQ5N1plczdraFpZbTJHQ0hjWUFmRFQ1RWd2bVdxWmsiLCAiQUl6YVN5Q0ZqcnU4ZE9aYkd0WlVpX0FRdTFDejFNTG9BTmFZMjJrIiwgIkFJemFTeURYU1hiUVNHRUN3aWpIN1RhQUs5UnRmSkFPSngwNjJHMCIsICJBSXphU3lCVHByaTZJamVmZWQ2bThONDhjN3hHUlJlZXBmd3JXYzAiLCAiQUl6YVN5QmViQkcxTFp5Yk96NURORGRaTXEzNW53c1ZxUm5LZVVrIiwgIkFJemFTeUNaQ1NFbUtoZm5QT1FORzBTanU0aGx3MllEVXhnaTZwZyIsICJBSXphU3lCT185bHdGQ0lQTmYxT3lvQWZ3VnVOS3RFTXB0Z3U0NG8iLCAiQUl6YVN5QjFaenJUbUZwZFNOYzJnSG1GOW45UzExQTR2Z0hyS2JjIiwgIkFJemFTeUNUeVRBRnhCN1BTeTB2S0I0RGo1OHc2djNiUFFobVBUVSIsICJBSXphU3lDVjRmbWZkZ3NWYWxHTlIzc2MtMFczY2JwRVo4dU9kNjAiLCAiQUl6YVN5REZyUU12WFRaOVBBUkZYdkxwY09UU2VDOGJCT3U2UHcwIiwgIkFJemFTeURSWWhFY29VWGlqX2kzMGlkdnFha0JWRUVQU2xrWEtyayIsICJBSXphU3lCd1RxaDdHLXhWNFdXWmdfLVFGQjA0SzR2Q1BqTFh6QVkiLCAiQUl6YVN5REFlQmZVdmpaWnNjNFd4NTJDa3ZOakZMT19wczNXZ204IiwgIkFJemFTeUE2RmJVYkRxVDJ3amFsdWlvM0N2Umh2V1N5d1lKRWNQZyIsICJBSXphU3lDemxiU181dlN0cm9EbWNkYThSaGs5T2swV1JDS2k4blEiLCAiQUl6YVN5QUczR3lEUk1TZ2NfXzlZS00zN0RORHppMG9nX0tvejFRIiwgIkFJemFTeURKTGY3cGxkanZmNlFldlZGX0JhejBTcmNYMEludmVNSSJd').decode('utf-8'))
 		self.api_key_blacklist = {}
+		self.feed_cache = (0, None, [])
 
 	# ##################################################################################################################
 
@@ -35,6 +37,8 @@ class YoutubeContentProvider(CommonContentProvider):
 
 		self.add_search_dir()
 		self.add_dir(self._("Last watched"), cmd=self.list_watched)
+		if self.read_channels():
+			self.add_dir(self._("New videos from saved channels"), cmd=self.list_channels_feed)
 		self.load_channels()
 
 	# ##################################################################################################################
@@ -390,6 +394,78 @@ class YoutubeContentProvider(CommonContentProvider):
 	def remove_channel(self, channel_id):
 		self.write_channels([c for c in self.read_channels() if c[1] != channel_id])
 		self.refresh_screen()
+
+	# ##################################################################################################################
+
+	def fetch_channel_feed(self, name, channel_id):
+		''' Latest videos of the channel from RSS feed - exact publish date, no API key needed '''
+		entries = []
+		r = requests.get("https://www.youtube.com/feeds/videos.xml?channel_id=" + channel_id, timeout=10)
+		r.raise_for_status()
+		r.encoding = 'utf-8'
+		for entry in re.findall(r'<entry>(.*?)</entry>', r.text, re.S):
+			video_id = re.search(r'<yt:videoId>([^<]+)</yt:videoId>', entry)
+			link = re.search(r'<link rel="alternate" href="([^"]+)"', entry)
+			if not video_id or (link and '/shorts/' in link.group(1)):
+				continue
+			title = re.search(r'<title>(.*?)</title>', entry, re.S)
+			published = re.search(r'<published>([^<]+)</published>', entry)
+			views = re.search(r'<media:statistics views="(\d+)"', entry)
+			desc = re.search(r'<media:description>(.*?)</media:description>', entry, re.S)
+			entries.append({
+				'id': video_id.group(1),
+				'title': decode_html(title.group(1)) if title else 'N/A',
+				'published': published.group(1) if published else '',
+				'views': views.group(1) if views else '',
+				'desc': decode_html(desc.group(1)) if desc else '',
+				'channel': name,
+				'channel_id': channel_id,
+			})
+		return entries
+
+	# ##################################################################################################################
+
+	def get_channels_feed(self, channels):
+		cache_time, cache_key, entries = self.feed_cache
+		key = ','.join(c[1] for c in channels)
+		if cache_key == key and time() - cache_time < FEED_CACHE_TIME:
+			return entries
+
+		entries = []
+		lock = threading.Lock()
+
+		def fetch(name, channel_id):
+			try:
+				result = self.fetch_channel_feed(name, channel_id)
+				with lock:
+					entries.extend(result)
+			except Exception:
+				self.log_exception()
+
+		threads = []
+		for name, channel_id in channels:
+			t = threading.Thread(target=fetch, args=(name, channel_id))
+			t.daemon = True
+			t.start()
+			threads.append(t)
+			if len(threads) >= 8:
+				threads.pop(0).join()
+		for t in threads:
+			t.join()
+
+		entries = sorted(entries, key=lambda e: e['published'], reverse=True)[:100]
+		self.feed_cache = (time(), key, entries)
+		return entries
+
+	# ##################################################################################################################
+
+	def list_channels_feed(self):
+		for e in self.get_channels_feed(self.read_channels()):
+			plot = '{} [{}] ({}x)\n{}'.format(self.iso_to_cet(e['published']), e['channel'], e['views'], e['desc'])
+			menu = self.create_ctx_menu()
+			menu.add_menu_item(self._('View channel videos'), cmd=self.list_videos, endpoint='browse', params=self.channel_params(e['channel_id']))
+			self.add_subtitles_menu(menu, e['title'], e['id'])
+			self.add_video(e['title'], "https://i.ytimg.com/vi/" + e['id'] + "/maxresdefault.jpg", {'plot': plot}, menu=menu, cmd=self.resolve_video, video_title=e['title'], video_id=e['id'])
 
 	# ##################################################################################################################
 
