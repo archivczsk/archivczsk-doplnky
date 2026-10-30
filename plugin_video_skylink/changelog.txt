@@ -1,3 +1,7 @@
+1.2: 30.10.2026
+- voliteľné streamy v rozlíšení 1080p (experimentálne, treba zapnúť v nastaveniach, len pre image s Python 3)
+- kanály, ktoré Skylink cez internet nevysiela, sa už nezobrazujú (týka sa aj rozhlasových staníc)
+
 1.1: 28.10.2026
 - oprava posunutého zvuku voči obrazu pri živom vysielaní v exteplayer3
 - nové nastavenie pre prehrávanie cez exteplayer3 (rovnaké ako v doplnku Oneplay)
