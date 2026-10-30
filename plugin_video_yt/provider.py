@@ -9,11 +9,16 @@ from datetime import timedelta, datetime
 from base64 import b64decode
 import re, os, json, requests
 from .youtube import resolve as yt_resolve
+from .youtube.captions import choose_track_url, download_srt
 
 class YoutubeContentProvider(CommonContentProvider):
+	SUBTITLES_DIR = '/tmp'
+	# YouTube refuses automatically translated subtitles quite often (HTTP 429), but later attempts usually succeed
+	SUBTITLES_RETRY_DELAYS = (60, 180)
 
 	def __init__(self):
 		CommonContentProvider.__init__(self, 'Youtube')
+		self.subtitles_retry = set()
 		self.watched = self.load_cached_data('watched')
 		self.req_session = self.get_requests_session()
 		self.max_results = 50
@@ -407,14 +412,123 @@ class YoutubeContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def resolve_video(self, video_title, video_id):
+	def get_subtitles_lang(self):
+		lang = self.get_setting('subtitles_lang')
+		if not lang or lang == 'auto':
+			lang = self.get_lang_code() or 'en'
+		return lang.split('_')[0].lower()
+
+	# ##################################################################################################################
+
+	def subtitles_file(self, video_id, name):
+		return os.path.join(self.SUBTITLES_DIR, 'youtube_%s_%s.srt' % (video_id, name))
+
+	# ##################################################################################################################
+
+	@staticmethod
+	def cached_subtitles(filename):
 		try:
-			url = yt_resolve(video_id, self.settings)
+			if os.path.getsize(filename) > 0:
+				return filename
+		except OSError:
+			pass
+		return None
+
+	# ##################################################################################################################
+
+	def retry_translated_subtitles(self, video_id, url, filename):
+		''' Tries to download translated subtitles again in background - they will be used on next playback of the video '''
+		import threading
+		from time import sleep
+
+		if video_id in self.subtitles_retry:
+			return
+
+		def retry():
+			try:
+				for delay in self.SUBTITLES_RETRY_DELAYS:
+					sleep(delay)
+					try:
+						tmp_filename = filename + '.part'
+						if download_srt(self.req_session, url, tmp_filename, note=self.translation_note(), note_duration=4):
+							os.rename(tmp_filename, filename)
+							self.log_info("Translated subtitles for %s downloaded on next attempt" % video_id)
+							return
+					except Exception as e:
+						self.log_debug("Translated subtitles for %s still not available: %s" % (video_id, str(e)))
+			finally:
+				self.subtitles_retry.discard(video_id)
+
+		self.subtitles_retry.add(video_id)
+		t = threading.Thread(target=retry)
+		t.daemon = True
+		t.start()
+
+	# ##################################################################################################################
+
+	def translation_note(self):
+		return '(' + self._('machine translation by YouTube') + ')'
+
+	# ##################################################################################################################
+
+	def fallback_note(self):
+		return self._('YouTube refused machine translation of subtitles, subtitles are shown in the original language.') + '\n' + \
+			self._('You can try to play the video again later.')
+
+	# ##################################################################################################################
+
+	def get_subtitles(self, video_id, captions, mode):
+		if not mode or mode == 'off':
+			return None
+		try:
+			lang = self.get_subtitles_lang()
+			caption_tracks = captions.get('tracks')
+			orig_lang = captions.get('orig_lang')
+			url, desc = choose_track_url(caption_tracks, mode, lang, self.get_setting('subtitles_translate') == True, orig_lang)
+			if not url and mode == 'lang':
+				# no subtitles in subtitles language and machine translation is disabled - original language is better than nothing
+				mode = 'orig'
+				url, desc = choose_track_url(caption_tracks, mode, orig_lang=orig_lang)
+			self.log_debug("Subtitles for %s (%s): %s" % (video_id, mode, desc))
+			if not url:
+				return None
+
+			filename = self.subtitles_file(video_id, lang if mode == 'lang' else 'orig')
+			# already downloaded subtitles are used again without asking YouTube
+			if self.cached_subtitles(filename):
+				return filename
+
+			translated = '&tlang=' in url
+			try:
+				return download_srt(self.req_session, url, filename, note=self.translation_note() if translated else None, note_duration=4)
+			except Exception as e:
+				if not translated:
+					raise
+				# YouTube often refuses automatically translated subtitles outside of web browser (HTTP 429),
+				# so use subtitles in original language of the video now and try the translation again in background
+				self.log_error("Translated subtitles for %s not available (%s) - using original language" % (video_id, str(e)))
+				self.retry_translated_subtitles(video_id, url, filename)
+				orig_url, desc = choose_track_url(caption_tracks, 'orig', orig_lang=orig_lang)
+				if not orig_url:
+					return None
+				# original subtitles with explanation shown at the start of the video
+				return download_srt(self.req_session, orig_url, self.subtitles_file(video_id, lang + '_orig'), note=self.fallback_note())
+		except Exception:
+			# subtitles must never break playback
+			self.log_exception()
+		return None
+
+		# ##################################################################################################################
+
+	def resolve_video(self, video_title, video_id, subtitles=None):
+		try:
+			url, captions = yt_resolve(video_id, self.settings, with_captions=True)
 		except Exception as e:
 			self.log_exception()
 			raise AddonErrorException(self._("Failed to get playable video stream address") + ':\n%s' % str(e))
 
-		self.add_play(video_title, url)
+		subs = self.get_subtitles(video_id, captions or {}, subtitles or self.get_setting('subtitles'))
+		self.add_play(video_title, url, subs=subs)
 		self.add_watched_item(video_id)
 
 	# ##################################################################################################################

@@ -86,3 +86,51 @@ msgstr "Při startu kontrolovat verzi exteplayer3 přehrávače"
 
 msgid "Youtube API key"
 msgstr "Youtube API klíč"
+
+msgid "Subtitles"
+msgstr "Titulky"
+
+msgid "machine translation by YouTube"
+msgstr "strojový překlad YouTube"
+
+msgid "YouTube refused machine translation of subtitles, subtitles are shown in the original language."
+msgstr "YouTube strojový překlad titulků odmítl, zobrazují se titulky v původním jazyce."
+
+msgid "You can try to play the video again later."
+msgstr "Můžete zkusit video pustit znovu později."
+
+msgid "Off"
+msgstr "Vypnuto"
+
+msgid "In subtitles language (otherwise original)"
+msgstr "V jazyce titulků (jinak původní)"
+
+msgid "In original language of the video"
+msgstr "V původním jazyce videa"
+
+msgid "Subtitles language"
+msgstr "Jazyk titulků"
+
+msgid "Same as addon language"
+msgstr "Podle jazyka doplňku"
+
+msgid "Czech"
+msgstr "Čeština"
+
+msgid "Slovak"
+msgstr "Slovenština"
+
+msgid "English"
+msgstr "Angličtina"
+
+msgid "German"
+msgstr "Němčina"
+
+msgid "Polish"
+msgstr "Polština"
+
+msgid "Hungarian"
+msgstr "Maďarština"
+
+msgid "Machine translation of subtitles (experimental, often fails)"
+msgstr "Strojový překlad titulků (experimentální, často nefunguje)"

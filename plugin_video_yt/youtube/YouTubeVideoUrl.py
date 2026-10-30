@@ -17,6 +17,7 @@ from .compat import compat_urlopen
 from .compat import compat_URLError
 from .compat import SUBURI
 from .jsinterp import JSInterpreter
+from .captions import original_language
 
 import traceback
 #####
@@ -72,6 +73,8 @@ class YouTubeVideoUrl():
 		self._code_cache = {}
 		self._player_cache = {}
 		self.nsig_cache = (None, None)
+		self.caption_tracks = []
+		self.original_lang = None
 
 	@staticmethod
 	def try_get(src, get):
@@ -524,6 +527,9 @@ class YouTubeVideoUrl():
 				player_response, player_id = self._extract_player_response(video_id, yt_auth, 85)
 			if not player_response:
 				raise RuntimeError('Age gate content player response not found!')
+
+		self.caption_tracks = self.try_get(player_response, ('captions', 'playerCaptionsTracklistRenderer', 'captionTracks')) or []
+		self.original_lang = original_language(player_response)
 
 		streaming_data = player_response.get('streamingData', {})
 		streaming_formats = streaming_data.get('formats', [])
