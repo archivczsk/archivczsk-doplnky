@@ -807,6 +807,11 @@ class CommonContentProvider(object):
 									'duration': e_period.get('duration')
 								}
 							}
+							# width/height can be set on AdaptationSet and inherited by Representations
+							for a in ('width', 'height'):
+								if e_adaptation_set.get(a):
+									stream_info[a] = e_adaptation_set.get(a)
+
 							stream_info.update(e_rep.attrib)
 							add_drm_info(e_rep, stream_info)
 							if drm_info_adaptation.get('kid') and not stream_info.get('kid'):
