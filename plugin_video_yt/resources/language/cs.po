@@ -86,3 +86,81 @@ msgstr "Při startu kontrolovat verzi exteplayer3 přehrávače"
 
 msgid "Youtube API key"
 msgstr "Youtube API klíč"
+
+msgid "Subtitles"
+msgstr "Titulky"
+
+msgid "machine translation by YouTube"
+msgstr "strojový překlad YouTube"
+
+msgid "YouTube refused machine translation of subtitles, subtitles are shown in the original language."
+msgstr "YouTube strojový překlad titulků odmítl, zobrazují se titulky v původním jazyce."
+
+msgid "You can try to play the video again later."
+msgstr "Můžete zkusit video pustit znovu později."
+
+msgid "Off"
+msgstr "Vypnuto"
+
+msgid "In subtitles language (otherwise original)"
+msgstr "V jazyce titulků (jinak původní)"
+
+msgid "In original language of the video"
+msgstr "V původním jazyce videa"
+
+msgid "Subtitles language"
+msgstr "Jazyk titulků"
+
+msgid "Same as addon language"
+msgstr "Podle jazyka doplňku"
+
+msgid "Czech"
+msgstr "Čeština"
+
+msgid "Slovak"
+msgstr "Slovenština"
+
+msgid "English"
+msgstr "Angličtina"
+
+msgid "German"
+msgstr "Němčina"
+
+msgid "Polish"
+msgstr "Polština"
+
+msgid "Hungarian"
+msgstr "Maďarština"
+
+msgid "Machine translation of subtitles (experimental, often fails)"
+msgstr "Strojový překlad titulků (experimentální, často nefunguje)"
+
+msgid "Play with subtitles"
+msgstr "Přehrát s titulky"
+
+msgid "Play with subtitles in original language"
+msgstr "Přehrát s titulky v původním jazyce"
+
+msgid "Play without subtitles"
+msgstr "Přehrát bez titulků"
+
+msgid "Remove channel"
+msgstr "Odebrat kanál"
+
+msgid "Channel"
+msgstr "Kanál"
+
+msgid "New videos from saved channels"
+msgstr "Nová videa z uložených kanálů"
+
+msgid "Import subscriptions"
+msgstr "Importovat odběry"
+
+msgid "Subscriptions exported from Google Takeout (YouTube) found. Channels will be added to saved channels."
+msgstr "Nalezeny odběry exportované z Google Takeout (YouTube). Kanály budou přidány k uloženým kanálům."
+
+msgid "Failed to read subscriptions file"
+msgstr "Nepodařilo se načíst soubor s odběry"
+
+msgid "Imported channels"
+msgstr "Importováno kanálů"

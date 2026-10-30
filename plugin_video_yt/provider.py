@@ -7,18 +7,29 @@ from tools_archivczsk.player.features import PlayerFeatures
 from time import time
 from datetime import timedelta, datetime
 from base64 import b64decode
-import re, os, json, requests
+import re, os, io, json, requests, threading
 from .youtube import resolve as yt_resolve
+from .youtube.captions import choose_track_url, download_srt
+
+CHANNEL_VIDEOS_PARAMS = "EgZ2aWRlb3PyBgQKAjoA"
+FEED_CACHE_TIME = 600
+SUBSCRIPTIONS_DIR = '/tmp'
+CHANNEL_ID_RE = re.compile(r'(UC[\w-]{22})')
 
 class YoutubeContentProvider(CommonContentProvider):
+	SUBTITLES_DIR = '/tmp'
+	# YouTube refuses automatically translated subtitles quite often (HTTP 429), but later attempts usually succeed
+	SUBTITLES_RETRY_DELAYS = (60, 180)
 
 	def __init__(self):
 		CommonContentProvider.__init__(self, 'Youtube')
+		self.subtitles_retry = set()
 		self.watched = self.load_cached_data('watched')
 		self.req_session = self.get_requests_session()
 		self.max_results = 50
 		self.api_keys = json.loads(b64decode(b'WyJBSXphU3lDVFdDNzVpNzBtb0pMenlOaDN0dDRqekNsalpjUmtVOFkiLCAiQUl6YVN5Q0lNNEV6TnFpMWluMjJmNFozUnUzaVl2TGFZOHRjM2JvIiwgIkFJemFTeUQySjJscW5qRTVWMGZIdmlFSUNITXRjMlBTS3FZN0lTayIsICJBSXphU3lCVV9vV0VJVUxpMy1uOTZ2V0tFVFlDTXNsZFlEQWx6Mk0iLCAiQUl6YVN5QzRDM2d6U1NFcnptYzJGZVVUbGVRcVpHenc4LXotZDZ3IiwgIkFJemFTeUNyRldpUGZHY2I1SXN5Uy13cEFNazZlYU5kTWFDOHBYcyIsICJBSXphU3lEbFpSMlVod1FYZUd3MkloQ1JucG9aQjhMSFprYWd3STQiLCAiQUl6YVN5Q1hxanMyWlBiMFBRUmVJV2lFTk1BQWtTeDBfdHZkNG5rIiwgIkFJemFTeUNzRTkxUFRELVhqVFUzT19JWnBZMFB2Vm9tMnR3NERyOCIsICJBSXphU3lBcnJoa2g0OWIyR05sQzhVZExvZHEzdVNwS3pjZ2R6ZWciLCAiQUl6YVN5Q1BjQUtDNzRTemdRQjhNU1hLY1BPNnpJb1ZmcXdsT2lnIiwgIkFJemFTeURCa29IZEQxSXc2SG9vTWhNb09iYkhGQ1hIRlN3S3pJVSIsICJBSXphU3lDNEMzZ3pTU0Vyem1jMkZlVVRsZVFxWkd6dzgtei1kNnciLCAiQUl6YVN5QUdQUDRqQTNoTDhmZXNqeGFWR2U4YmRWVW9RcUtMRExRIiwgIkFJemFTeUFfNW13aVZSWko5WkphaXR1cXYxbmdJQ2RMLTVGMTdQayIsICJBSXphU3lBLXV3T0taQnBieXBXcDFUV3B1WWY1SzAtNHd1UHp3RzgiLCAiQUl6YVN5RGpuZXdqNUpKRnVxWmFva3FkYkoybWE3bmhQa3V3VHBNIiwgIkFJemFTeUJ2Z1lVX1lEQkpWU3RDNkxEWDRHZ2tpWDkxMnZtSHJDZyIsICJBSXphU3lCODBoaFIySEc4aUxxV1AtTXdmWjhDdnlYV3NQX0tyQUEiLCAiQUl6YVN5QkRGcWJidDViMEo5Y3VvaGw1cWtnQUYyWUo5UVVfa0l3IiwgIkFJemFTeUJ0blR6YU00MHRWZXVEV1hrQ3FuWGFVVjhiMkotMk5iWSIsICJBSXphU3lEZF9zZnZRNE5BU2ItazBvS1lBcl9nOUZaY1FJTHR5S2MiLCAiQUl6YVN5QnRuVHphTTQwdFZldURXWGtDcW5YYVVWOGIySi0yTmJZIiwgIkFJemFTeUJqODBualdzMEtjZ0Q2QTQ0eTZjRGRHMnFpbmZ2Ylo0VSIsICJBSXphU3lENDktWFoySlY3UndzM0tETTJUN25BNTZKYmktTzdkalkiLCAiQUl6YVN5Qmo4MG5qV3MwS2NnRDZBNDR5NmNEZEcycWluZnZiWjRVIiwgIkFJemFTeUR5cTNucjJLamJGTUU5RWVOcEh5OTdBWDg3dms3NUhfWSIsICJBSXphU3lBbHd6X1ZqNm1XSUJncWdLRDByUXdJODJGYTRTM2Nza2siLCAiQUl6YVN5RC1vWjhBcXNWTUo3U3pYZDB5ZnBSVEF6SmFwbGVnYUIwIiwgIkFJemFTeUFTUExBV21qQ1BEUm9pTXR0MUFIR1EwVEd5Ung5d1RSVSIsICJBSXphU3lCaWhuWEtVbXg5aDZESEFsVE5rclotNnpuenJ6M01FMU0iLCAiQUl6YVN5QThIVlFFc3lST0xtZVo0UDNHaEtSQ1UyQmFqVG5KVU5jIiwgIkFJemFTeUFnRThKT1kwNmtKU1V4QllZWENHS2hRbmh4MXFEOGpkQSIsICJBSXphU3lDR3pfOGJFMzJxNE5Ba2pkQVhqcEFpaWdCUzZ6OVpBU1UiLCAiQUl6YVN5QnhUdjBSUEl6X0Rqdms5U1JmTUNUTzNpdV83WXNNanJRIiwgIkFJemFTeURGNDZJeVpZd1BsYjZaQnhBRDYtSXVMeFZOWXNiVEl3USIsICJBSXphU3lCa2lMQXRhYXYyZWNJN1Z2Z3MtaUJlZU1zX3YzWG5kRDgiLCAiQUl6YVN5Qkc5OENzQlVTTFhfd2FWTFNiMzRiQ2VTRjFxc0pxR2pFIiwgIkFJemFTeUM3VkdROU9qdmpPYUlUT01tNFR2TFRlRy1feVFaUmkwUSIsICJBSXphU3lCaWE1Szd3MFNEOGJBS0dhc2RhQzl0SDQwXzBnRTdsRHciLCAiQUl6YVN5Q3JZVHpxVUx2V045YjlOSW5EZFFNcGY1dDVoeTl6UlNvIiwgIkFJemFTeUF0R3Vyd042R2Zzc0N3VlNIWHpQUmJBNG9meFlNNUZSbyIsICJBSXphU3lDT1RaVEV6VHlkY1h1ZXRjb25reFpVakVYS2lQTURwRzAiLCAiQUl6YVN5Q0F5WDYzQlI5XzVYUzhqRmhYeFY0ZG9JR2h2YWpjWjdjIiwgIkFJemFTeUNrZ2xYcHNvWG83UWpzTERCQUw4bXpDZlg0WVp6cGR0ZyIsICJBSXphU3lBN19FTTZ5NVI4UzlFdExXcC1KUEZBNDN1dGF1aTMtdm8iLCAiQUl6YVN5QW1obFQ3c1YtT0JadlJCRzh4alVHc2tUM2VzajBtYzNrIiwgIkFJemFTeUJfYjhCcjd1MW1JM2Yzb193N1VJT0F4VUdHSklHeDktYyIsICJBSXphU3lBbWhsVDdzVi1PQlp2UkJHOHhqVUdza1QzZXNqMG1jM2siLCAiQUl6YVN5RGlSTURVY25tbV93U1ZoWUxvMHZoQWVrSHlHaEl6a2N3IiwgIkFJemFTeUNqVG1xVHhSRmZhb2FkcUp5U1EwQzNIS2l6Vm5kWnJJVSIsICJBSXphU3lDdGQ5N1plczdraFpZbTJHQ0hjWUFmRFQ1RWd2bVdxWmsiLCAiQUl6YVN5Q0ZqcnU4ZE9aYkd0WlVpX0FRdTFDejFNTG9BTmFZMjJrIiwgIkFJemFTeURYU1hiUVNHRUN3aWpIN1RhQUs5UnRmSkFPSngwNjJHMCIsICJBSXphU3lCVHByaTZJamVmZWQ2bThONDhjN3hHUlJlZXBmd3JXYzAiLCAiQUl6YVN5QmViQkcxTFp5Yk96NURORGRaTXEzNW53c1ZxUm5LZVVrIiwgIkFJemFTeUNaQ1NFbUtoZm5QT1FORzBTanU0aGx3MllEVXhnaTZwZyIsICJBSXphU3lCT185bHdGQ0lQTmYxT3lvQWZ3VnVOS3RFTXB0Z3U0NG8iLCAiQUl6YVN5QjFaenJUbUZwZFNOYzJnSG1GOW45UzExQTR2Z0hyS2JjIiwgIkFJemFTeUNUeVRBRnhCN1BTeTB2S0I0RGo1OHc2djNiUFFobVBUVSIsICJBSXphU3lDVjRmbWZkZ3NWYWxHTlIzc2MtMFczY2JwRVo4dU9kNjAiLCAiQUl6YVN5REZyUU12WFRaOVBBUkZYdkxwY09UU2VDOGJCT3U2UHcwIiwgIkFJemFTeURSWWhFY29VWGlqX2kzMGlkdnFha0JWRUVQU2xrWEtyayIsICJBSXphU3lCd1RxaDdHLXhWNFdXWmdfLVFGQjA0SzR2Q1BqTFh6QVkiLCAiQUl6YVN5REFlQmZVdmpaWnNjNFd4NTJDa3ZOakZMT19wczNXZ204IiwgIkFJemFTeUE2RmJVYkRxVDJ3amFsdWlvM0N2Umh2V1N5d1lKRWNQZyIsICJBSXphU3lDemxiU181dlN0cm9EbWNkYThSaGs5T2swV1JDS2k4blEiLCAiQUl6YVN5QUczR3lEUk1TZ2NfXzlZS00zN0RORHppMG9nX0tvejFRIiwgIkFJemFTeURKTGY3cGxkanZmNlFldlZGX0JhejBTcmNYMEludmVNSSJd').decode('utf-8'))
 		self.api_key_blacklist = {}
+		self.feed_cache = (0, None, [])
 
 	# ##################################################################################################################
 
@@ -28,6 +39,11 @@ class YoutubeContentProvider(CommonContentProvider):
 
 		self.add_search_dir()
 		self.add_dir(self._("Last watched"), cmd=self.list_watched)
+		if self.read_channels():
+			self.add_dir(self._("New videos from saved channels"), cmd=self.list_channels_feed)
+		subscriptions_file = self.find_subscriptions_file()
+		if subscriptions_file:
+			self.add_dir(self._("Import subscriptions") + ' (%s)' % subscriptions_file, info_labels={'plot': self._("Subscriptions exported from Google Takeout (YouTube) found. Channels will be added to saved channels.")}, cmd=self.import_subscriptions, filename=subscriptions_file)
 		self.load_channels()
 
 	# ##################################################################################################################
@@ -148,6 +164,7 @@ class YoutubeContentProvider(CommonContentProvider):
 					menu = self.create_ctx_menu()
 					menu.add_menu_item(self._('Remove from watched'), cmd=self.remove_watched_item, video_id=video_id)
 					menu.add_menu_item(self._('Save channel'), cmd=self.save_channel, channel_name=channel_title, channel_id=channel_id)
+					self.add_subtitles_menu(menu, title, video_id)
 					self.add_video(title, "https://i.ytimg.com/vi/" + video_id + "/maxresdefault.jpg", info_labels, menu=menu, cmd=self.resolve_video, video_title=title, video_id=video_id)
 		else:
 			popular = None
@@ -255,6 +272,7 @@ class YoutubeContentProvider(CommonContentProvider):
 					channel_params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"browseId":channel_id,"params":"EgZ2aWRlb3PyBgQKAjoA"}
 					menu.add_menu_item(self._('View channel videos'), cmd=self.list_videos, endpoint='browse', params=channel_params)
 					menu.add_menu_item(self._('Save channel'), cmd=self.save_channel, channel_name=channel_title, channel_id=channel_id)
+					self.add_subtitles_menu(menu, title, video_id)
 					self.add_video(title, "https://i.ytimg.com/vi/" + video_id + "/maxresdefault.jpg", info_labels, menu=menu, cmd=self.resolve_video, video_title=title, video_id=video_id)
 					continue
 				elif "richItemRenderer" in block and "content" in block["richItemRenderer"] and "lockupViewModel" in block["richItemRenderer"]["content"]:
@@ -263,6 +281,9 @@ class YoutubeContentProvider(CommonContentProvider):
 					one = block["videoRenderer"]
 				elif "continuationItemRenderer" in block:
 					cont = block.get("continuationItemRenderer").get("continuationEndpoint", {}).get("continuationCommand", {}).get("token", None)
+					continue
+				elif "channelRenderer" in block:
+					self.add_channel_dir(block["channelRenderer"])
 					continue
 				else:
 					continue
@@ -311,6 +332,7 @@ class YoutubeContentProvider(CommonContentProvider):
 				channel_params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"browseId":channel_id,"params":"EgZ2aWRlb3PyBgQKAjoA"}
 				menu.add_menu_item(self._('View channel videos'), cmd=self.list_videos, endpoint='browse', params=channel_params)
 				menu.add_menu_item(self._('Save channel'), cmd=self.save_channel, channel_name=channel_title, channel_id=channel_id)
+				self.add_subtitles_menu(menu, title, video_id)
 				self.add_video(title, "https://i.ytimg.com/vi/" + video_id + "/maxresdefault.jpg", info_labels, menu=menu, cmd=self.resolve_video, video_title=title, video_id=video_id)
 
 			if not cont:
@@ -327,44 +349,232 @@ class YoutubeContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def save_channel(self,channel_name,channel_id):
-		history = ['{};{}'.format(channel_name, channel_id)]
-		max_history = self.get_setting('channels')
+	def channels_file(self):
+		return os.path.join(self.data_dir, "channels.txt")
 
-		filename = os.path.join(self.data_dir, "channels.txt")
+	# ##################################################################################################################
+
+	def read_channels(self):
+		''' Returns list of saved channels [(name, channel_id), ...] without duplicates '''
+		channels = []
 		try:
-			with open(filename, "r") as file:
+			with io.open(self.channels_file(), "r", encoding="utf-8") as file:
 				for line in file:
-					item = line[:-1]
-					history.append(item)
+					line = line.strip()
+					if ';' not in line:
+						continue
+					name, channel_id = line.rsplit(";", 1)
+					if channel_id and channel_id not in [c[1] for c in channels]:
+						channels.append((name, channel_id))
 		except IOError:
 			pass
+		return channels
 
+	# ##################################################################################################################
+
+	def write_channels(self, channels):
 		try:
-			cnt = 0
-			with open(filename, "w") as file:
-				for item in history:
-					cnt = cnt + 1
-					if cnt <= max_history:
-						file.write('%s\n' % item)
+			with io.open(self.channels_file(), "w", encoding="utf-8") as file:
+				for name, channel_id in channels:
+					file.write(u'%s;%s\n' % (name.replace('\n', ' '), channel_id))
 		except:
 			self.log_exception()
-			pass
 
+	# ##################################################################################################################
+
+	def channel_params(self, channel_id):
+		return {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"browseId":channel_id,"params":CHANNEL_VIDEOS_PARAMS}
+
+	# ##################################################################################################################
+
+	def save_channel(self,channel_name,channel_id):
+		max_history = int(self.get_setting('channels') or 20)
+		# newly saved channel goes to the top, already saved channel is only moved to the top
+		channels = [(channel_name, channel_id)] + [c for c in self.read_channels() if c[1] != channel_id]
+		self.write_channels(channels[:max(max_history, 1)])
+		self.refresh_screen()
+
+	# ##################################################################################################################
+
+	def remove_channel(self, channel_id):
+		self.write_channels([c for c in self.read_channels() if c[1] != channel_id])
+		self.refresh_screen()
+
+	# ##################################################################################################################
+
+	def fetch_channel_feed(self, name, channel_id):
+		''' Latest videos of the channel from RSS feed - exact publish date, no API key needed '''
+		entries = []
+		r = requests.get("https://www.youtube.com/feeds/videos.xml?channel_id=" + channel_id, timeout=10)
+		r.raise_for_status()
+		r.encoding = 'utf-8'
+		for entry in re.findall(r'<entry>(.*?)</entry>', r.text, re.S):
+			video_id = re.search(r'<yt:videoId>([^<]+)</yt:videoId>', entry)
+			link = re.search(r'<link rel="alternate" href="([^"]+)"', entry)
+			if not video_id or (link and '/shorts/' in link.group(1)):
+				continue
+			title = re.search(r'<title>(.*?)</title>', entry, re.S)
+			published = re.search(r'<published>([^<]+)</published>', entry)
+			views = re.search(r'<media:statistics views="(\d+)"', entry)
+			desc = re.search(r'<media:description>(.*?)</media:description>', entry, re.S)
+			entries.append({
+				'id': video_id.group(1),
+				'title': decode_html(title.group(1)) if title else 'N/A',
+				'published': published.group(1) if published else '',
+				'views': views.group(1) if views else '',
+				'desc': decode_html(desc.group(1)) if desc else '',
+				'channel': name,
+				'channel_id': channel_id,
+			})
+		return entries
+
+	# ##################################################################################################################
+
+	def get_channels_feed(self, channels):
+		cache_time, cache_key, entries = self.feed_cache
+		key = ','.join(c[1] for c in channels)
+		if cache_key == key and time() - cache_time < FEED_CACHE_TIME:
+			return entries
+
+		entries = []
+		lock = threading.Lock()
+
+		def fetch(name, channel_id):
+			try:
+				result = self.fetch_channel_feed(name, channel_id)
+				with lock:
+					entries.extend(result)
+			except Exception:
+				self.log_exception()
+
+		threads = []
+		for name, channel_id in channels:
+			t = threading.Thread(target=fetch, args=(name, channel_id))
+			t.daemon = True
+			t.start()
+			threads.append(t)
+			if len(threads) >= 8:
+				threads.pop(0).join()
+		for t in threads:
+			t.join()
+
+		entries = sorted(entries, key=lambda e: e['published'], reverse=True)[:100]
+		self.feed_cache = (time(), key, entries)
+		return entries
+
+	# ##################################################################################################################
+
+	def list_channels_feed(self):
+		for e in self.get_channels_feed(self.read_channels()):
+			plot = '{} [{}] ({}x)\n{}'.format(self.iso_to_cet(e['published']), e['channel'], e['views'], e['desc'])
+			menu = self.create_ctx_menu()
+			menu.add_menu_item(self._('View channel videos'), cmd=self.list_videos, endpoint='browse', params=self.channel_params(e['channel_id']))
+			self.add_subtitles_menu(menu, e['title'], e['id'])
+			self.add_video(e['title'], "https://i.ytimg.com/vi/" + e['id'] + "/maxresdefault.jpg", {'plot': plot}, menu=menu, cmd=self.resolve_video, video_title=e['title'], video_id=e['id'])
+
+	# ##################################################################################################################
+
+	def add_channel_dir(self, renderer):
+		''' Channel found by search - opens channel videos (sorted from the newest) '''
+		channel_id = renderer.get("channelId")
+		if not channel_id:
+			return
+		name = renderer.get("title", {}).get("simpleText", "") or channel_id
+		try:
+			img = renderer["thumbnail"]["thumbnails"][-1]["url"]
+			if img.startswith('//'):
+				img = 'https:' + img
+		except (KeyError, IndexError, TypeError):
+			img = None
+		info = []
+		for key in ("subscriberCountText", "videoCountText"):
+			text = renderer.get(key, {}).get("simpleText")
+			if text:
+				info.append(text)
+		desc = ''.join(r.get("text", "") for r in renderer.get("descriptionSnippet", {}).get("runs", []))
+		menu = self.create_ctx_menu()
+		menu.add_menu_item(self._('Save channel'), cmd=self.save_channel, channel_name=name, channel_id=channel_id)
+		self.add_dir(_B(self._("Channel") + ": " + name), img, {'plot': ' | '.join(info) + '\n' + decode_html(desc)}, menu=menu, cmd=self.list_videos, endpoint='browse', params=self.channel_params(channel_id))
+
+	# ##################################################################################################################
+
+	@staticmethod
+	def parse_subscriptions_line(line):
+		'''
+		Line of subscriptions CSV from Google Takeout: Channel Id,Channel Url,Channel Title
+		Header and file name are localised by Google (subscriptions.csv, odběry.csv, ...), so only the content is checked.
+		Returns (name, channel_id) or None
+		'''
+		parts = line.strip().split(',', 2)
+		if len(parts) < 3:
+			return None
+		m = CHANNEL_ID_RE.match(parts[0].strip().strip('"'))
+		if not m or 'youtube.com' not in parts[1]:
+			return None
+		name = parts[2].strip()
+		if len(name) > 1 and name.startswith('"') and name.endswith('"'):
+			name = name[1:-1].replace('""', '"')
+		return (name or m.group(1), m.group(1))
+
+	# ##################################################################################################################
+
+	def find_subscriptions_file(self):
+		''' Newest CSV file in /tmp that contains YouTube subscriptions '''
+		found = []
+		try:
+			names = os.listdir(SUBSCRIPTIONS_DIR)
+		except OSError:
+			return None
+		for name in names:
+			if not name.lower().endswith('.csv'):
+				continue
+			filename = os.path.join(SUBSCRIPTIONS_DIR, name)
+			try:
+				if os.path.getsize(filename) > 5 * 1024 * 1024:
+					continue
+				with io.open(filename, "r", encoding="utf-8-sig", errors="ignore") as file:
+					head = [file.readline() for _ in range(3)]
+				if any(self.parse_subscriptions_line(line) for line in head):
+					found.append((os.path.getmtime(filename), filename))
+			except (OSError, IOError):
+				continue
+		return sorted(found)[-1][1] if found else None
+
+	# ##################################################################################################################
+
+	def import_subscriptions(self, filename):
+		imported = []
+		try:
+			with io.open(filename, "r", encoding="utf-8-sig") as file:
+				for line in file:
+					item = self.parse_subscriptions_line(line)
+					if item:
+						imported.append(item)
+		except Exception as e:
+			self.log_exception()
+			raise AddonErrorException(self._("Failed to read subscriptions file") + ':\n%s' % str(e))
+
+		existing = self.read_channels()
+		known = [c[1] for c in existing]
+		new = []
+		for item in sorted(imported, key=lambda c: c[0].lower()):
+			if item[1] not in known:
+				known.append(item[1])
+				new.append(item)
+		channels = existing + new
+		if len(channels) > int(self.get_setting('channels') or 20):
+			self.set_setting('channels', len(channels))
+		self.write_channels(channels)
+		self.show_info(self._("Imported channels") + ': %d' % len(new), noexit=True)
 		self.refresh_screen()
 
 	# ##################################################################################################################
 
 	def load_channels(self):
-		filename = os.path.join(self.data_dir, "channels.txt")
-		try:
-			with open(filename, "r") as file:
-				for line in file:
-					item = line[:-1].split(";")
-					channel_params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"browseId":item[1],"params":"EgZ2aWRlb3PyBgQKAjoA"}
-					self.add_dir(item[0], cmd=self.list_videos, endpoint='browse', params=channel_params)
-		except IOError:
-			self.log_exception()
+		for name, channel_id in self.read_channels():
+			menu = self.create_ctx_menu()
+			menu.add_menu_item(self._('Remove channel'), cmd=self.remove_channel, channel_id=channel_id)
+			self.add_dir(name, menu=menu, cmd=self.list_videos, endpoint='browse', params=self.channel_params(channel_id))
 
 	# ##################################################################################################################
 
@@ -407,14 +617,130 @@ class YoutubeContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def resolve_video(self, video_title, video_id):
+	def add_subtitles_menu(self, menu, title, video_id):
+		menu.add_media_menu_item(self._('Play with subtitles') + ' (%s)' % self.get_subtitles_lang().upper(), cmd=self.resolve_video, video_title=title, video_id=video_id, subtitles='lang')
+		menu.add_media_menu_item(self._('Play with subtitles in original language'), cmd=self.resolve_video, video_title=title, video_id=video_id, subtitles='orig')
+		menu.add_media_menu_item(self._('Play without subtitles'), cmd=self.resolve_video, video_title=title, video_id=video_id, subtitles='off')
+
+	# ##################################################################################################################
+
+	def get_subtitles_lang(self):
+		lang = self.get_setting('subtitles_lang')
+		if not lang or lang == 'auto':
+			lang = self.get_lang_code() or 'en'
+		return lang.split('_')[0].lower()
+
+	# ##################################################################################################################
+
+	def subtitles_file(self, video_id, name):
+		return os.path.join(self.SUBTITLES_DIR, 'youtube_%s_%s.srt' % (video_id, name))
+
+	# ##################################################################################################################
+
+	@staticmethod
+	def cached_subtitles(filename):
 		try:
-			url = yt_resolve(video_id, self.settings)
+			if os.path.getsize(filename) > 0:
+				return filename
+		except OSError:
+			pass
+		return None
+
+	# ##################################################################################################################
+
+	def retry_translated_subtitles(self, video_id, url, filename):
+		''' Tries to download translated subtitles again in background - they will be used on next playback of the video '''
+		import threading
+		from time import sleep
+
+		if video_id in self.subtitles_retry:
+			return
+
+		def retry():
+			try:
+				for delay in self.SUBTITLES_RETRY_DELAYS:
+					sleep(delay)
+					try:
+						tmp_filename = filename + '.part'
+						if download_srt(self.req_session, url, tmp_filename, note=self.translation_note(), note_duration=4):
+							os.rename(tmp_filename, filename)
+							self.log_info("Translated subtitles for %s downloaded on next attempt" % video_id)
+							return
+					except Exception as e:
+						self.log_debug("Translated subtitles for %s still not available: %s" % (video_id, str(e)))
+			finally:
+				self.subtitles_retry.discard(video_id)
+
+		self.subtitles_retry.add(video_id)
+		t = threading.Thread(target=retry)
+		t.daemon = True
+		t.start()
+
+	# ##################################################################################################################
+
+	def translation_note(self):
+		return '(' + self._('machine translation by YouTube') + ')'
+
+	# ##################################################################################################################
+
+	def fallback_note(self):
+		return self._('YouTube refused machine translation of subtitles, subtitles are shown in the original language.') + '\n' + \
+			self._('You can try to play the video again later.')
+
+	# ##################################################################################################################
+
+	def get_subtitles(self, video_id, captions, mode):
+		if not mode or mode == 'off':
+			return None
+		try:
+			lang = self.get_subtitles_lang()
+			caption_tracks = captions.get('tracks')
+			orig_lang = captions.get('orig_lang')
+			url, desc = choose_track_url(caption_tracks, mode, lang, self.get_setting('subtitles_translate') == True, orig_lang)
+			if not url and mode == 'lang':
+				# no subtitles in subtitles language and machine translation is disabled - original language is better than nothing
+				mode = 'orig'
+				url, desc = choose_track_url(caption_tracks, mode, orig_lang=orig_lang)
+			self.log_debug("Subtitles for %s (%s): %s" % (video_id, mode, desc))
+			if not url:
+				return None
+
+			filename = self.subtitles_file(video_id, lang if mode == 'lang' else 'orig')
+			# already downloaded subtitles are used again without asking YouTube
+			if self.cached_subtitles(filename):
+				return filename
+
+			translated = '&tlang=' in url
+			try:
+				return download_srt(self.req_session, url, filename, note=self.translation_note() if translated else None, note_duration=4)
+			except Exception as e:
+				if not translated:
+					raise
+				# YouTube often refuses automatically translated subtitles outside of web browser (HTTP 429),
+				# so use subtitles in original language of the video now and try the translation again in background
+				self.log_error("Translated subtitles for %s not available (%s) - using original language" % (video_id, str(e)))
+				self.retry_translated_subtitles(video_id, url, filename)
+				orig_url, desc = choose_track_url(caption_tracks, 'orig', orig_lang=orig_lang)
+				if not orig_url:
+					return None
+				# original subtitles with explanation shown at the start of the video
+				return download_srt(self.req_session, orig_url, self.subtitles_file(video_id, lang + '_orig'), note=self.fallback_note())
+		except Exception:
+			# subtitles must never break playback
+			self.log_exception()
+		return None
+
+		# ##################################################################################################################
+
+	def resolve_video(self, video_title, video_id, subtitles=None):
+		try:
+			url, captions = yt_resolve(video_id, self.settings, with_captions=True)
 		except Exception as e:
 			self.log_exception()
 			raise AddonErrorException(self._("Failed to get playable video stream address") + ':\n%s' % str(e))
 
-		self.add_play(video_title, url)
+		subs = self.get_subtitles(video_id, captions or {}, subtitles or self.get_setting('subtitles'))
+		self.add_play(video_title, url, subs=subs)
 		self.add_watched_item(video_id)
 
 	# ##################################################################################################################
