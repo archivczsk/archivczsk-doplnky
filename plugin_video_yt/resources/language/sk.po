@@ -149,3 +149,6 @@ msgstr "Odstrániť kanál"
 
 msgid "Channel"
 msgstr "Kanál"
+
+msgid "New videos from saved channels"
+msgstr "Nové videá z uložených kanálov"
