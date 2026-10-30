@@ -88,6 +88,7 @@ class SkylinkHTTPRequestHandler(DashHTTPRequestHandler, PlayliveTVHTTPRequestHan
 			'url': stream['url'],
 			'bandwidth': bandwidth,
 			'license_url': stream.get('license_url', ''),
+			'drm_system': stream.get('drm_system', ''),
 			'privacy_mode': bool(self.cp.get_setting('privacy_mode')),
 			'web': self.cp.api.web_url(),
 			'created': int(time()),
@@ -113,6 +114,10 @@ class SkylinkHTTPRequestHandler(DashHTTPRequestHandler, PlayliveTVHTTPRequestHan
 		if stream_info and (int(time()) - int(stream_info.get('created') or 0)) > STREAM_TTL:
 			stream_info = None
 
+		# po zlyhaní PlayReady treba novú adresu pre Widevine
+		if stream_info and self.cp.drm_failed and str(stream_info.get('drm_system', '')).lower().startswith('play'):
+			stream_info = None
+
 		if not stream_info:
 			stream_info = self.get_stream_info_by_channel_key(channel_key)
 			if not stream_info:
@@ -132,14 +137,34 @@ class SkylinkHTTPRequestHandler(DashHTTPRequestHandler, PlayliveTVHTTPRequestHan
 		reprezentáciu, takže by v manifeste zostali dve a prehrávač by si mohol
 		vybrať vyššiu než nastavenú.
 		"""
+		had_video = self.has_video(root)
+
 		super(SkylinkHTTPRequestHandler, self).handle_mpd_manifest(base_url, root, bandwidth,
 		                                                           dash_info, cache_key)
+
+		# pre PlayReady neprišiel kľúč - ďalej sa použije Widevine
+		if had_video and not self.has_video(root) and 'pr' in (dash_info.get('drm') or {}):
+			self.cp.drm_failed = True
 
 		try:
 			self.keep_single_video_set(root, bandwidth)
 			self.align_live_timelines(root)
 		except Exception:
 			self.cp.log_exception()
+
+	# #################################################################################################
+
+	@staticmethod
+	def has_video(root):
+		"""Či je v manifeste aspoň jedna skupina obrazu."""
+		ns = root.tag[1:root.tag.index('}')] if root.tag.startswith('{') else ''
+		ns = '{%s}' % ns if ns else ''
+
+		for e_set in root.iter('%sAdaptationSet' % ns):
+			if e_set.get('contentType') == 'video' or (e_set.get('mimeType') or '').startswith('video/'):
+				return True
+
+		return False
 
 	# #################################################################################################
 

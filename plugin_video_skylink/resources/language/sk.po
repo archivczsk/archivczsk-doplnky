@@ -280,3 +280,12 @@ msgstr ""
 
 msgid "Allow DRM decrypt using exteplayer3"
 msgstr "Povoliť dešifrovanie DRM pomocou exteplayer3"
+
+msgid "Enable 1080p streams (experimental)"
+msgstr "Povoliť streamy v rozlíšení 1080p (experimentálne)"
+
+msgid "Playback of stream with 1080p quality failed. Switching back to 720p quality."
+msgstr "Prehrávanie streamu v rozlíšení 1080p zlyhalo. Prepínam späť na 720p."
+
+msgid "You have enabled 1080p streams in addon settings. This option works only in distributions based on python 3.8+ like OpenATV 7.x, OpenPLi > 9.x etc. Update software in you receiver to get better quality streams."
+msgstr "V nastaveniach doplnku máš zapnuté streamy v rozlíšení 1080p. Táto možnosť funguje len na distribúciách postavených na Pythone 3.8 a novšom, napríklad OpenATV 7.x alebo OpenPLi > 9.x. Ak chceš kvalitnejšie streamy, aktualizuj softvér v prijímači."

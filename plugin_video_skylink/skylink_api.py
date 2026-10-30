@@ -849,9 +849,15 @@ class SkylinkApi(object):
 		devices = self._assets_from(data) if not isinstance(data, list) else data
 		return [d for d in devices if isinstance(d, dict)]
 
-	def get_stream(self, asset_id):
+	def get_stream(self, asset_id, playready=False):
 		"""Vráti adresu DASH manifestu a licencie pre danú položku."""
-		result = self._api('/v1/assets/%s/play' % asset_id, data={'player': PLAYER_INFO})
+		player = PLAYER_INFO
+		if playready:
+			# s PlayReady server vydá kľúč aj pre 1080p
+			player = dict(player)
+			player['capabilities'] = dict(player['capabilities'], drmSystems=['PlayReady'])
+
+		result = self._api('/v1/assets/%s/play' % asset_id, data={'player': player})
 
 		url = result.get('url')
 		drm = result.get('drm') or {}

@@ -10,6 +10,7 @@
 # rovnako ako ostatné doplnky s živým vysielaním.
 
 import base64
+import sys
 from time import time, strftime, localtime
 from hashlib import md5
 from binascii import crc32
@@ -31,6 +32,9 @@ CHANNELS_CACHE_SECONDS = 600
 
 # server neprijme program za rozsah dlhší než jeden deň
 ARCHIVE_WINDOW = 24 * 3600
+
+# knižnica pre PlayReady v tools_cenc vyžaduje Python 3, pod Python 2 ide len Widevine
+is_py2 = (sys.version_info[0] == 2)
 
 # koľko kanálov sa pýtame na program jedným volaním a koľko najviac naraz
 EPG_BATCH = 20
@@ -511,6 +515,8 @@ class SkylinkContentProvider(ModuleContentProvider):
 		self.genre_cache = {}
 		self.checksum = None
 
+		self.drm_failed = False
+
 		self.bxeg = SkylinkBouquetXmlEpgGenerator(self)
 
 		self.archive_module = SkylinkModuleArchive(self)
@@ -876,23 +882,39 @@ class SkylinkContentProvider(ModuleContentProvider):
 		license_headers = self.stream_headers(web)
 		license_headers['Content-Type'] = 'application/octet-stream'
 
-		return {
+		info = {
 			'ext_drm_decrypt': self.get_setting('ext_drm_decrypt'),
 			'url': stream_key['url'],
 			'bandwidth': stream_key.get('bandwidth'),
 			'headers': self.stream_headers(web),
-			'drm': {
+		}
+
+		# licenčná adresa patrí systému, ktorý vybral server
+		if str(stream_key.get('drm_system', '')).lower().startswith('play'):
+			license_headers['Content-Type'] = 'text/xml; charset=utf-8'
+			info['drm'] = {
+				'pr': {
+					'license_url': stream_key.get('license_url', ''),
+					'headers': license_headers,
+				}
+			}
+		else:
+			info['drm'] = {
 				'wv': {
 					'license_url': stream_key.get('license_url', ''),
 					'privacy_mode': bool(stream_key.get('privacy_mode')),
 					'headers': license_headers,
 				}
 			}
-		}
+
+		return info
+
+	def playready_wanted(self):
+		return not is_py2 and not self.drm_failed and self.get_setting('drm_playready')
 
 	def get_stream_info(self, asset_id):
 		"""Vráti adresu manifestu a licencie - používa aj HTTP handler pre bouquet."""
-		stream = self.api.get_stream(asset_id)
+		stream = self.api.get_stream(asset_id, playready=self.playready_wanted())
 
 		mpd_url = stream.get('url') or ''
 		if mpd_url:
@@ -908,6 +930,12 @@ class SkylinkContentProvider(ModuleContentProvider):
 		if not asset_id:
 			self.show_error(self._("Missing item identifier."))
 			return
+
+		if self.get_setting('drm_playready'):
+			if is_py2:
+				self.show_info(self._("You have enabled 1080p streams in addon settings. This option works only in distributions based on python 3.8+ like OpenATV 7.x, OpenPLi > 9.x etc. Update software in you receiver to get better quality streams."), noexit=True)
+			elif self.drm_failed:
+				self.show_info(self._("Playback of stream with 1080p quality failed. Switching back to 720p quality."), noexit=True)
 
 		try:
 			stream = self.get_stream_info(asset_id)
@@ -937,7 +965,8 @@ class SkylinkContentProvider(ModuleContentProvider):
 			self.show_error(self._("No license URL received. The stream cannot be played."))
 			return
 
-		if not self.resolve_dash_streams(mpd_url, license_url, stream_title or stream.get('title') or '', live):
+		if not self.resolve_dash_streams(mpd_url, license_url, stream_title or stream.get('title') or '', live,
+		                                 stream.get('drm_system') or ''):
 			self.show_error(self._("Failed to load the DASH stream."))
 
 	def limit_streams(self, streams):
@@ -980,7 +1009,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 
 		return self.limit_streams(streams)
 
-	def resolve_dash_streams(self, manifest_url, license_url, title, live):
+	def resolve_dash_streams(self, manifest_url, license_url, title, live, drm_system=''):
 		streams = self.resolve_streams_for_channel(manifest_url)
 		if not streams:
 			return False
@@ -993,6 +1022,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 				'url': s['playlist_url'],
 				'bandwidth': s['bandwidth'],
 				'license_url': license_url,
+				'drm_system': drm_system,
 				'privacy_mode': privacy_mode,
 				'web': web,
 			}
