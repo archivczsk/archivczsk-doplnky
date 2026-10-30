@@ -273,6 +273,9 @@ class YoutubeContentProvider(CommonContentProvider):
 				elif "continuationItemRenderer" in block:
 					cont = block.get("continuationItemRenderer").get("continuationEndpoint", {}).get("continuationCommand", {}).get("token", None)
 					continue
+				elif "channelRenderer" in block:
+					self.add_channel_dir(block["channelRenderer"])
+					continue
 				else:
 					continue
 
@@ -387,6 +390,30 @@ class YoutubeContentProvider(CommonContentProvider):
 	def remove_channel(self, channel_id):
 		self.write_channels([c for c in self.read_channels() if c[1] != channel_id])
 		self.refresh_screen()
+
+	# ##################################################################################################################
+
+	def add_channel_dir(self, renderer):
+		''' Channel found by search - opens channel videos (sorted from the newest) '''
+		channel_id = renderer.get("channelId")
+		if not channel_id:
+			return
+		name = renderer.get("title", {}).get("simpleText", "") or channel_id
+		try:
+			img = renderer["thumbnail"]["thumbnails"][-1]["url"]
+			if img.startswith('//'):
+				img = 'https:' + img
+		except (KeyError, IndexError, TypeError):
+			img = None
+		info = []
+		for key in ("subscriberCountText", "videoCountText"):
+			text = renderer.get(key, {}).get("simpleText")
+			if text:
+				info.append(text)
+		desc = ''.join(r.get("text", "") for r in renderer.get("descriptionSnippet", {}).get("runs", []))
+		menu = self.create_ctx_menu()
+		menu.add_menu_item(self._('Save channel'), cmd=self.save_channel, channel_name=name, channel_id=channel_id)
+		self.add_dir(_B(self._("Channel") + ": " + name), img, {'plot': ' | '.join(info) + '\n' + decode_html(desc)}, menu=menu, cmd=self.list_videos, endpoint='browse', params=self.channel_params(channel_id))
 
 	# ##################################################################################################################
 

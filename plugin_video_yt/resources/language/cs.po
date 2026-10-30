@@ -146,3 +146,6 @@ msgstr "Přehrát bez titulků"
 
 msgid "Remove channel"
 msgstr "Odebrat kanál"
+
+msgid "Channel"
+msgstr "Kanál"
