@@ -134,3 +134,12 @@ msgstr "Maďarština"
 
 msgid "Machine translation of subtitles (experimental, often fails)"
 msgstr "Strojový překlad titulků (experimentální, často nefunguje)"
+
+msgid "Play with subtitles"
+msgstr "Přehrát s titulky"
+
+msgid "Play with subtitles in original language"
+msgstr "Přehrát s titulky v původním jazyce"
+
+msgid "Play without subtitles"
+msgstr "Přehrát bez titulků"

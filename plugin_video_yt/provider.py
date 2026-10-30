@@ -153,6 +153,7 @@ class YoutubeContentProvider(CommonContentProvider):
 					menu = self.create_ctx_menu()
 					menu.add_menu_item(self._('Remove from watched'), cmd=self.remove_watched_item, video_id=video_id)
 					menu.add_menu_item(self._('Save channel'), cmd=self.save_channel, channel_name=channel_title, channel_id=channel_id)
+					self.add_subtitles_menu(menu, title, video_id)
 					self.add_video(title, "https://i.ytimg.com/vi/" + video_id + "/maxresdefault.jpg", info_labels, menu=menu, cmd=self.resolve_video, video_title=title, video_id=video_id)
 		else:
 			popular = None
@@ -260,6 +261,7 @@ class YoutubeContentProvider(CommonContentProvider):
 					channel_params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"browseId":channel_id,"params":"EgZ2aWRlb3PyBgQKAjoA"}
 					menu.add_menu_item(self._('View channel videos'), cmd=self.list_videos, endpoint='browse', params=channel_params)
 					menu.add_menu_item(self._('Save channel'), cmd=self.save_channel, channel_name=channel_title, channel_id=channel_id)
+					self.add_subtitles_menu(menu, title, video_id)
 					self.add_video(title, "https://i.ytimg.com/vi/" + video_id + "/maxresdefault.jpg", info_labels, menu=menu, cmd=self.resolve_video, video_title=title, video_id=video_id)
 					continue
 				elif "richItemRenderer" in block and "content" in block["richItemRenderer"] and "lockupViewModel" in block["richItemRenderer"]["content"]:
@@ -316,6 +318,7 @@ class YoutubeContentProvider(CommonContentProvider):
 				channel_params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"browseId":channel_id,"params":"EgZ2aWRlb3PyBgQKAjoA"}
 				menu.add_menu_item(self._('View channel videos'), cmd=self.list_videos, endpoint='browse', params=channel_params)
 				menu.add_menu_item(self._('Save channel'), cmd=self.save_channel, channel_name=channel_title, channel_id=channel_id)
+				self.add_subtitles_menu(menu, title, video_id)
 				self.add_video(title, "https://i.ytimg.com/vi/" + video_id + "/maxresdefault.jpg", info_labels, menu=menu, cmd=self.resolve_video, video_title=title, video_id=video_id)
 
 			if not cont:
@@ -409,6 +412,13 @@ class YoutubeContentProvider(CommonContentProvider):
 			# standard search
 			params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"query":keyword}
 			self.list_videos('search', params)
+
+	# ##################################################################################################################
+
+	def add_subtitles_menu(self, menu, title, video_id):
+		menu.add_media_menu_item(self._('Play with subtitles') + ' (%s)' % self.get_subtitles_lang().upper(), cmd=self.resolve_video, video_title=title, video_id=video_id, subtitles='lang')
+		menu.add_media_menu_item(self._('Play with subtitles in original language'), cmd=self.resolve_video, video_title=title, video_id=video_id, subtitles='orig')
+		menu.add_media_menu_item(self._('Play without subtitles'), cmd=self.resolve_video, video_title=title, video_id=video_id, subtitles='off')
 
 	# ##################################################################################################################
 
