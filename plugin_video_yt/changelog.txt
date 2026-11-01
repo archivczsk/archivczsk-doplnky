@@ -1,3 +1,12 @@
+3.5: 01.11.2026
+- pridanie podpory pre titulky vo videách s možnosťou voľby originálnej stopy alebo automaticky preklad
+- pridanie kontextového menu pre spustenie videa s titulkami
+- ošetrenie duplicitných položiek v zozname kanálov + možnosť pomocou odobrať odber pomocou kontextového menu
+- pridanie kanálov do výsledkov vyhľadávania
+- zobrazenie nových videí v odoberaných kanáloch
+- import odberov z Google Takeout - csv súbor z google takeout je potrebné uložiť do /tmp
+- zmeny navrhol a implementoval PetBar
+
 3.4: 27.10.2026
 - oprava voľby audio stopy - namiesto automatického dabingu preferuje originálnu audio stopu
 - ďakujem PetBar za zaslanie opravy
