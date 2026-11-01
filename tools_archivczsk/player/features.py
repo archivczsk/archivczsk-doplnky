@@ -12,10 +12,6 @@ __addon__ = ArchivCZSK.get_addon('tools.archivczsk')
 def _(id):
 	return __addon__.get_localized_string(id)
 
-AVAILABLE_EXTEPLAYER3_VERSION=183
-
-EXTEPLAYER3_NAME='exteplayer3_%d' % AVAILABLE_EXTEPLAYER3_VERSION
-
 class PlayerFeatures(object):
 	DATA_LOADED = False
 	exteplayer3_version = None
@@ -75,26 +71,6 @@ class PlayerFeatures(object):
 			return None
 
 	@classmethod
-	def download_and_install(cls, name=EXTEPLAYER3_NAME):
-		if stbinfo.hw_arch == 'armv7l':
-			url = 'https://github.com/skyjet18/exteplayer3/raw/master/ipk/%s_armv7ahf.ipk' % name
-		elif stbinfo.hw_arch == 'mips':
-			url = 'https://github.com/skyjet18/exteplayer3/raw/master/ipk/%s_mips32el.ipk' % name
-		else:
-			return
-
-		local_file = '/tmp/%s.ipk' % name
-
-		try:
-			subprocess.check_call(['curl', '-k', '-L', '-o', local_file, url])
-			subprocess.check_call(['opkg', 'install', '--force-downgrade', '--force-depends', local_file])
-		except:
-			client.log.error(traceback.format_exc())
-
-		if os.path.isfile(local_file):
-			os.remove(local_file)
-
-	@classmethod
 	def request_ffmpeg_mpd_support(cls, content_provider):
 		if cls.ffmpeg_mpd_supported == True:
 			return
@@ -110,49 +86,18 @@ class PlayerFeatures(object):
 		else:
 			msg = _("Installed version of ffmpeg probably doesn't support MPEG-DASH streams needed by this addon.")
 
-		if content_provider.get_yes_no_input(msg + ' ' + _("It is recommended to install modified version of exteplayer3 and ffmpeg with build in support for MPEG-DASH and DRM streams.\nShould I download and install recommanded version for you?")) == True:
-			cls.download_and_install()
-			PlayerFeatures(True)
-
 	@classmethod
 	def request_exteplayer3_cenc_support(cls, content_provider):
 		return cls.request_exteplayer3_version(content_provider, 168)
 
 	@classmethod
 	def request_exteplayer3_version(cls, content_provider, req_version):
-		if cls.exteplayer3_version is not None and cls.exteplayer3_version >= req_version:
-			return
-
-		if not videoPlayerInfo.serviceappAvailable:
-			if stbinfo.is_dmm_image:
-				content_provider.show_error(_("This addon is not supported on DMM image"))
-			else:
-				content_provider.show_error(_("You need to install ServiceApp in order to use this addon"))
-			return
-
-		if stbinfo.hw_arch not in ('armv7l', 'mips'):
-			content_provider.show_error(_("Hardware platform of your receiver is not supported"))
-			return
-
-		if cls.exteplayer3_version == None:
-			msg = _('It was not possible to determine, if you have installed exteplayer3 and if it provides features needed by this addon.')
-		else:
-			msg = _("Installed version of exteplayer3 doesn't support all features needed by this addon.")
-
-		if content_provider.get_yes_no_input(msg + ' ' + _("It is recommended to install latest modified version of exteplayer3 and ffmpeg with build in all features needed.\nShould I download and install recommanded version for you?")) == True:
-			cls.download_and_install()
-			PlayerFeatures(True)
+		# not needed anymore - exteplayer3 is now installed by default on all supported platforms
+		pass
 
 	@classmethod
 	def check_latest_exteplayer3(cls, content_provider):
-		if not videoPlayerInfo.serviceappAvailable:
-			return
-
-		if cls.exteplayer3_version is None or cls.exteplayer3_version >= AVAILABLE_EXTEPLAYER3_VERSION:
-			return
-
-		if content_provider.get_yes_no_input(_("A new version of modified exteplayer3 is available. Player is important system component and many ArchivCZSK features are fully functional only on this version.\nShould I download and install new version for you?")) == True:
-			cls.download_and_install()
-			PlayerFeatures(True)
+		# not needed anymore - exteplayer3 is now installed by default on all supported platforms
+		pass
 
 PlayerFeatures()

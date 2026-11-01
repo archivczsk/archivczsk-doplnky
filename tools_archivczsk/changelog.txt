@@ -1,3 +1,7 @@
+3.23 - 01.11.2026
+    - added service to keep exteplayer3 up to date with ArchivCZSK
+    - removed old checks and methods to get and install exteplayer3
+
 3.22 - 28.10.2026
     - get_dash_streams: Representation inherits width and height from AdaptationSet
 
