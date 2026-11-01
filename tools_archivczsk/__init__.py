@@ -1,4 +1,6 @@
 # fix updater in ArchivCZSK 3.5.4
+from .player.installer import run_exteplayer3_check_service
+run_exteplayer3_check_service()
 
 try:
 	from Plugins.Extensions.archivCZSK.version import version
