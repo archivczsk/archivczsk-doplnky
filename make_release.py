@@ -6,6 +6,8 @@ import xml.etree.ElementTree as ET
 import argparse
 import subprocess
 import zipfile
+import stat
+import time
 from itertools import zip_longest
 from hashlib import md5
 
@@ -32,6 +34,7 @@ def log_debug(s):
 class XmlOnlyAddon(object):
 	def __init__(self, xml_root, allow_empty_ver=False):
 		self.xml_root = xml_root
+		self.arch = self.xml_root.attrib.get('arch')
 		self.hash = self.xml_root.attrib.get('hash','')
 		self.rhash = self.xml_root.attrib.get('rhash','')
 		self.addon_id = self.xml_root.attrib.get('id')
@@ -76,6 +79,9 @@ class XmlOnlyAddon(object):
 			'name': self.name,
 			'version': self.force_release_version or self.version
 		})
+
+		if self.arch:
+			e.set('arch', self.arch)
 
 		if self.supported:
 			e.set('supported', self.supported)
@@ -224,8 +230,23 @@ class Addon(XmlOnlyAddon):
 		output_dir=os.path.join(REPO_DIR, self.addon_id)
 		os.makedirs(output_dir, exist_ok=True)
 		with zipfile.ZipFile( os.path.join(output_dir, self.addon_id + '-' + self.version + '.zip'), mode='w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as z:
-			for file in self.get_addon_files(filter=('.po',)):
-				z.write(file)
+			addon_files = self.get_addon_files(filter=('.po',))
+			for file in addon_files:
+				if os.path.islink(file):
+					orig_file = os.readlink(file)
+					if os.path.isabs(orig_file):
+						log_debug("Skipping symlink %s -> %s (absolute path)" % (file, orig_file))
+						continue
+
+					st = os.lstat(file)
+					zipInfo = zipfile.ZipInfo(file, time.localtime(st.st_mtime)[0:6])
+					zipInfo.create_system = 3
+					zipInfo.file_size = st.st_size
+					zipInfo.external_attr = st.st_mode << 16
+					z.writestr(zipInfo, orig_file)
+				else:
+					z.write(file)
+
 				with open(file, 'rb') as f:
 					for data in iter(lambda: f.read(8192), b''):
 						m.update(data)
