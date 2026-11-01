@@ -4,7 +4,6 @@ from tools_archivczsk.contentprovider.exception import AddonErrorException, Addo
 from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman
 from tools_archivczsk.cache import SimpleAutokeyExpiringCache
-from tools_archivczsk.player.features import PlayerFeatures
 from tools_archivczsk.date_utils import iso8601_to_timestamp, iso8601_duration_to_timedelta, timedelta_str
 from time import time
 from .wbdmax import WBDMax
@@ -122,8 +121,6 @@ class WBDMaxContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def root(self):
-		PlayerFeatures.check_latest_exteplayer3(self)
-
 		self.build_lang_lists()
 
 		if isinstance(self.wbdmax, NoLoginHelper) or self.wbdmax.need_login():

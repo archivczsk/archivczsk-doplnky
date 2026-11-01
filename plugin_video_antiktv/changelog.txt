@@ -1,4 +1,5 @@
 2.39: 01.11.2026
+- odstránenie kontroly exteplayer3 pri štarte doplnku
 - vypnutie posielania notifikácie o sledovanom programe v prípade, že to server nepodporuje
 
 2.38: 19.10.2026

@@ -12,7 +12,6 @@ from tools_archivczsk.string_utils import _I, _C, _B
 from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.cache import SimpleAutokeyExpiringCache
-from tools_archivczsk.player.features import PlayerFeatures
 from tools_archivczsk.generator.lamedb import channel_name_normalise
 from .oneplay import Oneplay
 from .bouquet import OneplayTVBouquetXmlEpgGenerator
@@ -497,9 +496,6 @@ class OneplayTVContentProvider(ModuleContentProvider):
 	# #################################################################################################
 
 	def root(self):
-		if self.get_setting('player-check'):
-			PlayerFeatures.check_latest_exteplayer3(self)
-
 		def account_choose(names):
 			return self.get_list_input(names, self._("Select account"))
 

@@ -4,7 +4,6 @@ from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPM
 from tools_archivczsk.contentprovider.provider import InfoLabels
 from tools_archivczsk.string_utils import _I, _C, _B
 from tools_archivczsk.generator.lamedb import channel_name_normalise
-from tools_archivczsk.player.features import PlayerFeatures
 from tools_archivczsk.date_utils import iso8601_to_datetime
 
 from .atk_client import ATKClient
@@ -464,14 +463,6 @@ class AntikTVContentProvider(ModuleContentProvider):
 	def post_init(self):
 		self.bxeg = AntikTVBouquetXmlEpgGenerator(self)
 		self.bgservice.run_in_loop("loop(ping)", (int(time.time()) % 900) + 1800, self.do_ping)
-
-	# #################################################################################################
-
-	def root(self):
-		if self.get_setting('player-check'):
-			PlayerFeatures.check_latest_exteplayer3(self)
-
-		ModuleContentProvider.root(self)
 
 	# #################################################################################################
 	# Provider init and configurations

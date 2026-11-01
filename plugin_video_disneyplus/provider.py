@@ -4,7 +4,6 @@ from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.string_utils import _I, _C, _B, int_to_roman
 from tools_archivczsk.cache import SimpleAutokeyExpiringCache
-from tools_archivczsk.player.features import PlayerFeatures
 from .disneyplus import DisneyPlus
 from .httphandler import DisneyHlsMaster
 import base64
@@ -101,8 +100,6 @@ class DisneyPlusContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def root(self):
-		PlayerFeatures.check_latest_exteplayer3(self)
-
 		self.build_lang_lists()
 		self.select_profile_on_startup()
 

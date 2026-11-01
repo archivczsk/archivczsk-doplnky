@@ -1,3 +1,6 @@
+1.14 - 01.11.2026
+    - odstránenie kontroly exteplayer3 pri štarte doplnku
+
 1.13 - 12.02.2026
     - oprava prehrávania archívu z olympiády v prípade, že je stream rozdelený na viacero častí
 

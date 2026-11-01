@@ -23,6 +23,5 @@
 		<setting label="Show multidimension stream choice" id="show_md_choice" type="bool" default="true" />
 		<setting label="How many minutes to play after event ends in archive" type="number" id="archive_end_offset" default="5"/>
 		<setting label="Extra stream cache (in seconds)" id="extra_cache_time" type="enum" lvalues="0|2|4|6|8|10" default="1"/>
-		<setting label="Check exteplayer3 version on startup" id="player-check" type="bool" default="true" />
 	</category>
 </settings>

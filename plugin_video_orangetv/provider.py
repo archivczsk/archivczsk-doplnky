@@ -8,7 +8,6 @@ from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPM
 from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
 from tools_archivczsk.string_utils import _I, _C, _B
 from tools_archivczsk.generator.lamedb import channel_name_normalise
-from tools_archivczsk.player.features import PlayerFeatures
 from .orangetv import OrangeTV
 from .bouquet import OrangeTVBouquetXmlEpgGenerator
 import base64
@@ -247,14 +246,6 @@ class OrangeTVContentProvider(ModuleContentProvider):
 			OrangeTVModuleArchive(self),
 			OrangeTVModuleExtra(self)
 		]
-
-	# #################################################################################################
-
-	def root(self):
-		if self.get_setting('player-check'):
-			PlayerFeatures.check_latest_exteplayer3(self)
-
-		ModuleContentProvider.root(self)
 
 	# #################################################################################################
 

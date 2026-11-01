@@ -3,7 +3,6 @@ from tools_archivczsk.contentprovider.provider import CommonContentProvider
 from tools_archivczsk.string_utils import _I, _C, _B, decode_html
 from tools_archivczsk.contentprovider.exception import AddonErrorException
 from tools_archivczsk.debug.http import dump_json_request
-from tools_archivczsk.player.features import PlayerFeatures
 from time import time
 from datetime import timedelta, datetime
 from base64 import b64decode
@@ -34,9 +33,6 @@ class YoutubeContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def root(self):
-		if self.get_setting('player-check'):
-			PlayerFeatures.check_latest_exteplayer3(self)
-
 		self.add_search_dir()
 		self.add_dir(self._("Last watched"), cmd=self.list_watched)
 		if self.read_channels():
