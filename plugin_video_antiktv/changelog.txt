@@ -1,3 +1,6 @@
+2.39: 01.11.2026
+- vypnutie posielania notifikácie o sledovanom programe v prípade, že to server nepodporuje
+
 2.38: 19.10.2026
 - oprava prehrávania živého vysielania - 2. pokus
 
