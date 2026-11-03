@@ -21,6 +21,7 @@ KIND_MAP = {
 
 class TVTipsportContentProvider(CommonContentProvider):
 	BASE_URL = 'https://tv.tipsport.cz/'
+	BASE_URL2 = 'https://tv.tipsport.sk/'
 
 	def __init__(self):
 		CommonContentProvider.__init__(self)
@@ -29,22 +30,32 @@ class TVTipsportContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def load_matches(self):
-		response = self.req_session.get(urljoin(self.BASE_URL, 'stream.json'))
-		response.raise_for_status()
-		resp_json = response.json()
-
 		matches = []
+		dup_check = {}
 
-		for k in ('liveMatches', 'vodMatches', 'highlights'):
-			for m in (resp_json.get(k) or []):
-				m['scheduledStart'] = iso8601_to_datetime(m['scheduledStart'], True)
-				m['thumbnail'] = urljoin(self.BASE_URL, m['thumbnail'])
+		def __load(url):
+			response = self.req_session.get(url)
+			response.raise_for_status()
+			resp_json = response.json()
 
-				marker = KIND_MARKER.search(m['streamUrl'])
-				m['type'] = KIND_MAP.get(marker.group(1), k) if marker else k
-				m['league'] = m['league'].strip()
-				matches.append(m)
+			for k in ('liveMatches', 'vodMatches', 'highlights'):
+				for m in (resp_json.get(k) or []):
+					m['scheduledStart'] = iso8601_to_datetime(m['scheduledStart'], True)
+					m['thumbnail'] = urljoin(self.BASE_URL, m['thumbnail'])
 
+					marker = KIND_MARKER.search(m['streamUrl'])
+					m['type'] = KIND_MAP.get(marker.group(1), k) if marker else k
+					m['league'] = m['league'].strip()
+
+					dup_key = (m['homeTeam'], m['awayTeam'], m['scheduledStart'], m['type'])
+					if dup_key in dup_check:
+						continue
+
+					dup_check[dup_key] = True
+					matches.append(m)
+
+		__load(urljoin(self.BASE_URL, 'stream.json'))
+		__load(urljoin(self.BASE_URL2, 'stream.json'))
 		return sorted(matches, key=lambda x: x['scheduledStart'], reverse=True)
 
 	# ##################################################################################################################
@@ -135,7 +146,11 @@ class TVTipsportContentProvider(CommonContentProvider):
 		if not video_url:
 			raise AddonErrorException(self._("Video URL is not available for this match."))
 
+		if not video_url.startswith( ('http://', 'https://', '/') ):
+			return self.resolve_streams(video_title, 'https://lb1.tmo.livebox.cz/tipsport-voda/{}.smil/playlist.m3u8'.format(video_url))
+
 		video_url = urljoin(self.BASE_URL, video_url)
+
 		response = self.req_session.get(video_url, headers={'Referer': self.BASE_URL})
 		response.raise_for_status()
 

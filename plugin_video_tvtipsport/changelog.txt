@@ -1,2 +1,6 @@
+1.1: 03.11.2026
+- oprava prehrávania
+- pridanie záznamov zo slovenskej verzie
+
 1.0: 27.08.2026
 - úvodná verzia
