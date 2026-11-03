@@ -36,7 +36,7 @@
 <addon id="plugin.video.tvlux" name="TV Lux" version="1.1" hash="645da0301ef29f55b4e4686bf82139a2" rhash="65e6a480e3c73af0d3a7b515b554e51e" />
 <addon id="plugin.video.tvnoe" name="TV Noe" version="1.1" hash="569ae4fe72ae953f49da90fa22d9ca4a" rhash="c44ee161a8dfc1e367061b7f6eac0e69" />
 <addon id="plugin.video.tvseznam" name="Televize Seznam" version="1.11" hash="e2acd68c68c16cf25d5674672c286255" rhash="e2acd68c68c16cf25d5674672c286255" />
-<addon id="plugin.video.tvtipsport" name="TV Tipsport" version="1.0" hash="e8a580faaaeef9c9ae133f595bd62d02" rhash="4a453e2535f845283844aaa3ee58f1ae" />
+<addon id="plugin.video.tvtipsport" name="TV Tipsport" version="1.1" hash="85f54499c67c7cd0d9722ada393286e5" rhash="7145d7126d5fe6655489cd9f0d36e145" />
 <addon id="plugin.video.videacesky.cz" name="videacesky.cz" version="1.4.2" hash="2e3d511558b73d6ab24f35b703142716" rhash="2e3d511558b73d6ab24f35b703142716" />
 <addon id="plugin.video.voyo" name="VOYO" version="1.13" hash="58cd7ab093d0b46d74bb09239e7350f7" rhash="eff4e3edb0757061407f18700ffb5662" />
 <addon id="plugin.video.webshare" name="Webshare.cz" version="1.8" hash="803dbf9e36598f70a807979c3088e17a" rhash="1e9184c3a0e9471bd52833d439d08bbd" />
