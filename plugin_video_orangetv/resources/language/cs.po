@@ -6,15 +6,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plugin_video_orangetv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-22 14:43+0200\n"
-"PO-Revision-Date: 2025-03-04 16:44+0100\n"
+"POT-Creation-Date: 2026-11-06 16:26+0100\n"
+"PO-Revision-Date: 2026-11-06 16:27+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.5\n"
+"X-Generator: Poedit 3.10\n"
 
 #: plugin_video_orangetv/orangetv.py:121
 msgid "Unexpected return code from server"
@@ -28,39 +28,39 @@ msgstr "Nezadané přihlašovací údaje"
 msgid "Failed to autentificate - probably wrong username/password"
 msgstr "Přihlášení selhalo - pravděpodobně nesprávné jméno/heslo"
 
-#: plugin_video_orangetv/provider.py:64
+#: plugin_video_orangetv/provider.py:65
 msgid "Play from beginning"
 msgstr "Přehrát od začátku"
 
-#: plugin_video_orangetv/provider.py:182
+#: plugin_video_orangetv/provider.py:181
 msgid "Special section"
 msgstr "Speciální sekce"
 
-#: plugin_video_orangetv/provider.py:193
+#: plugin_video_orangetv/provider.py:192
 msgid "Here you can show and optionaly remove/unregister unneeded devices, so you can login on another one."
 msgstr "Tu si můžete zobrazit a případně vymazat/odregistrovat zbytečná zařízení, aby jste se mohli znova jinde přihlásit."
 
-#: plugin_video_orangetv/provider.py:194
+#: plugin_video_orangetv/provider.py:193
 msgid "Registered devices"
 msgstr "Zaregistrovaná zařízení"
 
-#: plugin_video_orangetv/provider.py:195
+#: plugin_video_orangetv/provider.py:194
 msgid "Run EPG export to enigma or XML files"
 msgstr "Spustit export EPG do enigmy nebo do XML souborů"
 
-#: plugin_video_orangetv/provider.py:201
+#: plugin_video_orangetv/provider.py:200
 msgid "EPG export started"
 msgstr "EPG export byl spuštěn"
 
-#: plugin_video_orangetv/provider.py:210
+#: plugin_video_orangetv/provider.py:209
 msgid "In menu you can remove device using Remove device!"
 msgstr "V menu můžete zařízení vymazat pomocí Smazat zařízení!"
 
-#: plugin_video_orangetv/provider.py:213
+#: plugin_video_orangetv/provider.py:212
 msgid "Remove device!"
 msgstr "Smazat zařízení!"
 
-#: plugin_video_orangetv/provider.py:220
+#: plugin_video_orangetv/provider.py:219
 #, python-brace-format
 msgid "Device {device} was removed!"
 msgstr "Zařízení {device} bylo vymazáno!"
@@ -110,11 +110,17 @@ msgstr "Povolit speciální sekci v hlavním menu"
 msgid "Allow downloading of live broadcasting"
 msgstr "Povolit stahování u živého vysílání"
 
+msgid "Prefered stream type"
+msgstr "Preferovaný typ streamů"
+
+msgid "HLS"
+msgstr ""
+
+msgid "MPEG-DASH"
+msgstr ""
+
 msgid "Allow multiple audio tracks for HLS"
 msgstr "Povolit více audio stop pro HLS"
-
-msgid "Check exteplayer3 version on startup"
-msgstr "Zkontrolovat verzi přehrávače exteplayer3 při spuštění"
 
 msgid "Userbouquet"
 msgstr "Userbouquet"
@@ -154,3 +160,6 @@ msgstr ""
 
 msgid "Convert streams to TS format using ffmpeg"
 msgstr "Konvertovat streamy do formátu TS pomocí ffmpeg"
+
+#~ msgid "Check exteplayer3 version on startup"
+#~ msgstr "Zkontrolovat verzi přehrávače exteplayer3 při spuštění"

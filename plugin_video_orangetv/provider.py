@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
+from asyncio import streams
 import time
 import json
 from hashlib import md5
 
 from tools_archivczsk.contentprovider.extended import ModuleContentProvider, CPModuleLiveTV, CPModuleArchive, CPModuleTemplate
 from tools_archivczsk.http_handler.hls import stream_key_to_hls_url
+from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.string_utils import _I, _C, _B
 from tools_archivczsk.generator.lamedb import channel_name_normalise
 from .orangetv import OrangeTV
@@ -74,9 +76,8 @@ class OrangeTVModuleLiveTV(CPModuleLiveTV):
 	# #################################################################################################
 
 	def get_livetv_stream(self, channel_title, channel_key):
-		enable_download = self.cp.get_setting('download_live')
 		playlist = self.cp.orangetv.get_live_link(channel_key)
-		self.cp.resolve_hls_streams(channel_title, playlist, download=self.cp.get_setting('download_live'))
+		self.cp.resolve_streams(channel_title, playlist, download=self.cp.get_setting('download_live'))
 
 	# #################################################################################################
 
@@ -127,7 +128,7 @@ class OrangeTVModuleArchive(CPModuleArchive):
 		cur_time = int(time.time())
 		startover = cur_time > ts_from and cur_time < ts_to
 
-		self.cp.resolve_hls_streams(archive_title, playlist, startover=startover)
+		self.cp.resolve_streams(archive_title, playlist, startover=startover)
 
 	# #################################################################################################
 
@@ -173,7 +174,6 @@ class OrangeTVModuleArchive(CPModuleArchive):
 			break
 
 # #################################################################################################
-
 
 class OrangeTVModuleExtra(CPModuleTemplate):
 
@@ -303,20 +303,36 @@ class OrangeTVContentProvider(ModuleContentProvider):
 
 	# #################################################################################################
 
-	def get_url_by_channel_key(self, channel_key):
-		playlists = self.orangetv.get_live_link(channel_key)
+	def get_dash_info(self, stream_key):
+		return self.get_hls_info(stream_key)
 
-		for playlist in playlists:
-			try:
-				for p in (self.get_hls_streams(playlist, self.orangetv.req_session, max_bitrate=self.get_setting('max_bitrate')) or []):
-					if self.get_setting('hls_multiaudio'):
-						return stream_key_to_hls_url(self.http_endpoint_rel, {'url': p['playlist_url'], 'bandwidth': p['bandwidth']})
-					else:
-						return p['url']
-			except:
-				self.log_exception()
+	# #################################################################################################
+
+	def get_url_by_channel_key(self, channel_key):
+		hls_playlists, dash_playlists = self.orangetv.get_live_link(channel_key)
+
+		if self.get_setting('stream_type') == 'HLS':
+			streams = self.resolve_hls_streams('', hls_playlists)
+		else:
+			streams = self.resolve_dash_streams('', dash_playlists)
+
+		for s in streams:
+			return s['url']
 
 		return None
+
+	# #################################################################################################
+
+	def resolve_streams(self, title, playlist_urls, download=True, startover=False):
+		hls_playlists, dash_playlists = playlist_urls
+
+		if self.get_setting('stream_type') == 'HLS':
+			streams = self.resolve_hls_streams(title, hls_playlists, download=download, startover=startover)
+		else:
+			streams = self.resolve_dash_streams(title, dash_playlists, download=download, startover=startover)
+
+		for s in streams:
+			self.add_play(**s)
 
 	# #################################################################################################
 
@@ -326,6 +342,7 @@ class OrangeTVContentProvider(ModuleContentProvider):
 			'seek_border_up': 30
 		}
 
+		ret = []
 		for playlist_url in playlist_urls:
 			try:
 				streams = self.get_hls_streams(playlist_url, self.orangetv.req_session, max_bitrate=self.get_setting('max_bitrate'))
@@ -350,11 +367,56 @@ class OrangeTVContentProvider(ModuleContentProvider):
 					else:
 						url = p['url']
 
-					self.add_play(title, url, info_labels, download=download, settings=play_settings)
+					ret.append({
+						'title': title,
+						'url': url,
+						'info_labels': info_labels,
+						'settings': play_settings,
+						'download': download
+					})
+
 
 				if streams:
 					break
 			except:
 				self.log_exception()
+
+		return ret
+
+	# #################################################################################################
+
+	def resolve_dash_streams(self, title, playlist_urls, download=True, startover=False):
+		play_settings = {
+			'check_seek_borders': self.is_supporter() and startover,
+			'seek_border_up': 30
+		}
+
+		ret = []
+
+		for playlist_url in playlist_urls:
+			try:
+				streams = self.get_dash_streams(playlist_url, self.orangetv.req_session, max_bitrate=self.get_setting('max_bitrate'))
+				for p in (streams or []):
+					info_labels = {
+						'bandwidth': p['bandwidth'],
+						'quality': p.get('height', '720') + 'p'
+					}
+
+					url = stream_key_to_dash_url(self.http_endpoint, {'url': p['playlist_url'], 'bandwidth': p['bandwidth'], 'startover': startover})
+
+					ret.append({
+						'title': title,
+						'url': url,
+						'info_labels': info_labels,
+						'settings': play_settings,
+						'download': download
+					})
+
+				if streams:
+					break
+			except:
+				self.log_exception()
+
+		return ret
 
 	# #################################################################################################
