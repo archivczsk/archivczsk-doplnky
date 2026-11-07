@@ -1,0 +1,166 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_canalplus\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-07 10:00+0100\n"
+"PO-Revision-Date: 2026-11-07 10:00+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: sk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Archive"
+msgstr "Archív"
+
+msgid "Failed to load the TV guide: %s"
+msgstr "Nepodarilo sa načítať program: %s"
+
+msgid ""
+"No TV guide for this day yet. The addon collects the guide daily, so "
+"previous days will appear soon."
+msgstr ""
+"Pre tento deň zatiaľ nie je program. Doplnok si program zbiera priebežne, "
+"takže predchádzajúce dni sa čoskoro objavia."
+
+msgid "Information and settings"
+msgstr "Informácie a nastavenia"
+
+msgid "Account"
+msgstr "Účet"
+
+msgid "Sign out (pair again)"
+msgstr "Odhlásiť sa (spárovať znova)"
+
+msgid "Check playback"
+msgstr "Skontrolovať prehrávanie"
+
+msgid "Signed out. Please exit the addon and open it again to pair."
+msgstr "Odhlásené. Ukonči doplnok a otvor ho znova, aby si ho mohol spárovať."
+
+msgid "Failed to load account: %s"
+msgstr "Nepodarilo sa načítať účet: %s"
+
+msgid "Zone: %s"
+msgstr "Zóna: %s"
+
+msgid "Number of channels: %d"
+msgstr "Počet kanálov: %d"
+
+msgid "Playback failed: %s"
+msgstr "Prehrávanie zlyhalo: %s"
+
+msgid "No playable channel found."
+msgstr "Nenašiel sa žiadny prehrateľný kanál."
+
+msgid "No error occured during playback check. Playback should work."
+msgstr ""
+"Pri kontrole prehrávania nenastala chyba, prehrávanie by malo fungovať."
+
+msgid "The server did not return a stream or a license token."
+msgstr "Server nevrátil stream ani licenčný token."
+
+msgid "Sign-in failed: %s"
+msgstr "Prihlásenie zlyhalo: %s"
+
+msgid "Sign in with a code (pairing)"
+msgstr "Prihlásiť sa kódom (spárovanie)"
+
+msgid "Could not get a pairing code: %s"
+msgstr "Nepodarilo sa získať párovací kód: %s"
+
+msgid ""
+"Sign in with a code:\n"
+"\n"
+"1) On your phone/PC open %s\n"
+"2) Sign in and enter this code:\n"
+"\n"
+"        %s\n"
+"\n"
+"Waiting for confirmation... (press Back to cancel)"
+msgstr ""
+"Prihlásenie kódom:\n"
+"\n"
+"1) V mobile alebo na PC otvor %s\n"
+"2) Prihlás sa a zadaj tento kód:\n"
+"\n"
+"        %s\n"
+"\n"
+"Čakám na potvrdenie... (zrušíš tlačidlom Späť)"
+
+msgid "Paired. Please exit the addon and open it again."
+msgstr "Spárované. Ukonči doplnok a otvor ho znova."
+
+msgid "Pairing was not confirmed in time. Please try again."
+msgstr "Párovanie nebolo včas potvrdené. Skús to znova."
+
+msgid "Your sign-in has expired."
+msgstr "Prihlásenie vypršalo."
+
+msgid "Missing item identifier."
+msgstr "Chýba identifikátor položky."
+
+msgid "This channel is not part of your subscription."
+msgstr "Tento kanál nie je súčasťou tvojho predplatného."
+
+msgid "The broadcast is not available from this network (geoblocking)."
+msgstr "Vysielanie nie je z tejto siete dostupné (geoblokácia)."
+
+msgid "No stream URL received from server."
+msgstr "Server nevrátil adresu streamu."
+
+msgid "No license token received. The stream cannot be played."
+msgstr "Nedostali sme licenčný token, stream sa nedá prehrať."
+
+msgid "Failed to load the DASH stream."
+msgstr "Nepodarilo sa načítať DASH stream."
+
+msgid "Service"
+msgstr "Služba"
+
+msgid "Maximum resolution of the offered stream"
+msgstr "Maximálne rozlíšenie ponúkaného streamu"
+
+msgid "Unlimited"
+msgstr "Bez obmedzenia"
+
+msgid "Automatically export channel list as userbouquet"
+msgstr "Automaticky exportovať zoznam kanálov ako userbouquet"
+
+msgid "Generate XML EPG for epgimport plugin (if installed)"
+msgstr "Generovať XML EPG pre plugin epgimport (ak je nainštalovaný)"
+
+msgid "Directory for XML EPG data (need at least 20MB of free space)"
+msgstr "Adresár pre dáta XML EPG (treba aspoň 20 MB voľného miesta)"
+
+msgid "For how many days to generate XML EPG"
+msgstr "Na koľko dní generovať XML EPG"
+
+msgid "Automatically download picons when exporting userbouquet"
+msgstr "Pri exporte userbouquetu automaticky stiahnuť picony"
+
+msgid "Player used for userbouquet"
+msgstr "Prehrávač použitý pre userbouquet"
+
+msgid "Default"
+msgstr "Predvolený"
+
+msgid "Convert streams to TS format using ffmpeg"
+msgstr "Konvertovať streamy do formátu TS pomocou ffmpeg"
+
+msgid "Advanced"
+msgstr "Rozšírené"
+
+msgid "Allow downloading of live broadcasting"
+msgstr "Povoliť sťahovanie živého vysielania"
+
+msgid "Maximum bandwidth of the offered stream"
+msgstr "Maximálna šírka pásma ponúkaného streamu"
+
+msgid "Session key (set automatically)"
+msgstr "Kľúč relácie (nastaví sa automaticky)"
+
+msgid "Enable adult channels"
+msgstr "Povoliť kanály pre dospelých"
