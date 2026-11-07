@@ -1,0 +1,4 @@
+1.0.0 - 07.11.2026
+- prvé vydanie
+- podpora pre Live TV, archív 7 dní a userbouquet
+- prihlásenie kódom cez connect.canalplus.com

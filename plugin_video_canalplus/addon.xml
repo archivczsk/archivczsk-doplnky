@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.canalplus" name="Canal+" version="1.0.0">
+	<requires>
+		<import addon="enigma2.archivczsk" version="3.7.0"/>
+		<import addon="tools.archivczsk" version="3.22" />
+	</requires>
+	<extension point="archivczsk.addon.video" preload="yes"/>
+	<extension point="archivczsk.addon.shortcut" name="archive"/>
+	<extension point="archivczsk.addon.metadata">
+		<description>Canal+ (SK and CZ) - live channels, archive, userbouquet and XML EPG. Sign-in with a code via connect.canalplus.com.</description>
+		<description lang="sk">Canal+ (SK aj CZ) - živé kanály, archív, userbouquet a XML EPG. Prihlásenie kódom cez connect.canalplus.com.</description>
+		<description lang="cs">Canal+ (SK i CZ) - živé kanály, archiv, userbouquet a XML EPG. Přihlášení kódem přes connect.canalplus.com.</description>
+	</extension>
+</addon>

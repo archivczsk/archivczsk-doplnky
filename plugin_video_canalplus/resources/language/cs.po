@@ -1,0 +1,165 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin_video_canalplus\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-07 10:00+0100\n"
+"PO-Revision-Date: 2026-11-07 10:00+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Archive"
+msgstr "Archiv"
+
+msgid "Failed to load the TV guide: %s"
+msgstr "Nepodařilo se načíst program: %s"
+
+msgid ""
+"No TV guide for this day yet. The addon collects the guide daily, so "
+"previous days will appear soon."
+msgstr ""
+"Pro tento den zatím není program. Doplněk si program sbírá průběžně, takže "
+"předchozí dny se brzy objeví."
+
+msgid "Information and settings"
+msgstr "Informace a nastavení"
+
+msgid "Account"
+msgstr "Účet"
+
+msgid "Sign out (pair again)"
+msgstr "Odhlásit se (spárovat znovu)"
+
+msgid "Check playback"
+msgstr "Zkontrolovat přehrávání"
+
+msgid "Signed out. Please exit the addon and open it again to pair."
+msgstr "Odhlášeno. Ukonči doplněk a otevři ho znovu, abys ho mohl spárovat."
+
+msgid "Failed to load account: %s"
+msgstr "Nepodařilo se načíst účet: %s"
+
+msgid "Zone: %s"
+msgstr "Zóna: %s"
+
+msgid "Number of channels: %d"
+msgstr "Počet kanálů: %d"
+
+msgid "Playback failed: %s"
+msgstr "Přehrávání selhalo: %s"
+
+msgid "No playable channel found."
+msgstr "Nenašel se žádný přehratelný kanál."
+
+msgid "No error occured during playback check. Playback should work."
+msgstr "Při kontrole přehrávání nenastala chyba, přehrávání by mělo fungovat."
+
+msgid "The server did not return a stream or a license token."
+msgstr "Server nevrátil stream ani licenční token."
+
+msgid "Sign-in failed: %s"
+msgstr "Přihlášení selhalo: %s"
+
+msgid "Sign in with a code (pairing)"
+msgstr "Přihlásit se kódem (spárování)"
+
+msgid "Could not get a pairing code: %s"
+msgstr "Nepodařilo se získat párovací kód: %s"
+
+msgid ""
+"Sign in with a code:\n"
+"\n"
+"1) On your phone/PC open %s\n"
+"2) Sign in and enter this code:\n"
+"\n"
+"        %s\n"
+"\n"
+"Waiting for confirmation... (press Back to cancel)"
+msgstr ""
+"Přihlášení kódem:\n"
+"\n"
+"1) V mobilu nebo na PC otevři %s\n"
+"2) Přihlas se a zadej tento kód:\n"
+"\n"
+"        %s\n"
+"\n"
+"Čekám na potvrzení... (zrušíš tlačítkem Zpět)"
+
+msgid "Paired. Please exit the addon and open it again."
+msgstr "Spárováno. Ukonči doplněk a otevři ho znovu."
+
+msgid "Pairing was not confirmed in time. Please try again."
+msgstr "Párování nebylo včas potvrzeno. Zkus to znovu."
+
+msgid "Your sign-in has expired."
+msgstr "Přihlášení vypršelo."
+
+msgid "Missing item identifier."
+msgstr "Chybí identifikátor položky."
+
+msgid "This channel is not part of your subscription."
+msgstr "Tento kanál není součástí tvého předplatného."
+
+msgid "The broadcast is not available from this network (geoblocking)."
+msgstr "Vysílání není z této sítě dostupné (geoblokace)."
+
+msgid "No stream URL received from server."
+msgstr "Server nevrátil adresu streamu."
+
+msgid "No license token received. The stream cannot be played."
+msgstr "Nepřišel licenční token, stream nelze přehrát."
+
+msgid "Failed to load the DASH stream."
+msgstr "Nepodařilo se načíst DASH stream."
+
+msgid "Service"
+msgstr "Služba"
+
+msgid "Maximum resolution of the offered stream"
+msgstr "Maximální rozlišení nabízeného streamu"
+
+msgid "Unlimited"
+msgstr "Bez omezení"
+
+msgid "Automatically export channel list as userbouquet"
+msgstr "Automaticky exportovat seznam kanálů jako userbouquet"
+
+msgid "Generate XML EPG for epgimport plugin (if installed)"
+msgstr "Generovat XML EPG pro plugin epgimport (pokud je nainstalován)"
+
+msgid "Directory for XML EPG data (need at least 20MB of free space)"
+msgstr "Složka pro data XML EPG (je třeba alespoň 20 MB volného místa)"
+
+msgid "For how many days to generate XML EPG"
+msgstr "Na kolik dní generovat XML EPG"
+
+msgid "Automatically download picons when exporting userbouquet"
+msgstr "Při exportu userbouquetu automaticky stáhnout picony"
+
+msgid "Player used for userbouquet"
+msgstr "Přehrávač použitý pro userbouquet"
+
+msgid "Default"
+msgstr "Předvolený"
+
+msgid "Convert streams to TS format using ffmpeg"
+msgstr "Konvertovat streamy do formátu TS přes ffmpeg"
+
+msgid "Advanced"
+msgstr "Rozšířené"
+
+msgid "Allow downloading of live broadcasting"
+msgstr "Povolit stahování živého vysílání"
+
+msgid "Maximum bandwidth of the offered stream"
+msgstr "Maximální šířka pásma nabízeného streamu"
+
+msgid "Session key (set automatically)"
+msgstr "Klíč relace (nastaví se automaticky)"
+
+msgid "Enable adult channels"
+msgstr "Povolit kanály pro dospělé"
