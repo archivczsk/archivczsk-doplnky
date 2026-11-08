@@ -1,3 +1,8 @@
+1.2 - 08.11.2026
+- prehrávanie funguje aj cez gstplayer, používa sa prehrávač nastavený v ArchivCZSK
+- opravená pozícia a pretáčanie v archíve cez gstplayer
+- opravy podľa pripomienok z PR
+
 1.1 - 08.11.2026
 - kanály mimo predplatného sa už nezobrazujú (server ich posiela, ale prehrať sa nedajú);
   dá sa vypnúť v nastaveniach, potom sú v zozname sivé ako doteraz

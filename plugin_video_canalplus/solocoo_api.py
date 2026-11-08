@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 #
-# Solocoo (m7cp) klient - prihlasenie kodom a program (EPG) s historiou.
-# Prehravanie (zive aj archiv) riesi nativny Canal+ backend (canalplus_api.py), kde box
-# dostane HD cez PlayReady. Solocoo session vracia aj Canal+ passToken, ktory sa na to pouzije.
+# Solocoo (m7cp) client - sign-in by code and schedule (EPG) with history.
+# Playback (live and archive) is handled by the native Canal+ backend (canalplus_api.py), where
+# the box gets HD via PlayReady. The Solocoo session also returns the Canal+ passToken used for it.
 #
-#   parovanie:  POST m7cplogin.solocoo.tv/cpreversepairingrequest {deviceInfo}      -> kod + url
+#   pairing:    POST m7cplogin.solocoo.tv/cpreversepairingrequest {deviceInfo}      -> code + url
 #               POST m7cplogin.solocoo.tv/cpreversepairingcheck   {deviceInfo,code} -> ssoToken
 #   session:    POST tvapi-hlm2.solocoo.tv/v1/provision {deviceInfo}                -> provisionData
 #               POST tvapi-hlm2.solocoo.tv/v1/session   {deviceInfo,ssoToken,prov}  -> token, passToken
-#   program:    GET  tvapi-hlm2.solocoo.tv/v1/schedule?channels=..&from=..&until=..
+#   schedule:   GET  tvapi-hlm2.solocoo.tv/v1/schedule?channels=..&from=..&until=..
 #
-# Parovanie kodom Canal+ podporuje pre TV aplikaciu, preto sa klient hlasi ako webOS TV.
+# Canal+ supports pairing by code for its TV application, so the client identifies as a webOS TV.
 
 import calendar
 import json
@@ -25,8 +25,8 @@ PAIR_CHECK_URL = 'https://m7cplogin.solocoo.tv/cpreversepairingcheck'
 
 APP_VERSION = '142199'
 FEATURE_LEVEL = 8
-EPG_ALIGN = 900                 # server berie časy zarovnané na štvrťhodiny
-SCHEDULE_WINDOW = 24 * 3600     # najväčší rozsah jedného dotazu
+EPG_ALIGN = 900                 # the server expects times aligned to quarter hours
+SCHEDULE_WINDOW = 24 * 3600     # maximum range of a single request
 CHANNELS_PER_REQUEST = 20
 TOKEN_MARGIN = 120
 TIMEOUT = 20
@@ -35,7 +35,7 @@ DESC_CACHE_MAX = 5000
 USER_AGENT = ('Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) '
               'Chrome/79.0.3945.79 Safari/537.36')
 
-# zóna a jazyk; m7cp je spoločný tenant pre SK aj CZ
+# zone and language; m7cp is the shared tenant for both SK and CZ
 BRANDS = {
 	'cpsvk': {'country': 'SK', 'language': 'sk_SK', 'appStore': 'WebOS / LG (SK)'},
 	'cpscz': {'country': 'CZ', 'language': 'cs_CZ', 'appStore': 'WebOS / LG (CZ)'},
@@ -62,12 +62,12 @@ def _iso(ts):
 
 
 class SolocooAuthError(Exception):
-	"""Zariadenie nie je sparovane alebo server prihlasenie zamietol."""
+	"""The device is not paired or the server refused the sign-in."""
 	pass
 
 
 class SolocooEpg(object):
-	"""Solocoo prihlasenie a program. ssoToken a deviceSerial sa ukladaju do data_dir."""
+	"""Solocoo sign-in and schedule. ssoToken and deviceSerial are stored in data_dir."""
 
 	def __init__(self, api):
 		self.api = api                 # CanalplusApi - req_session, data_dir, brand
@@ -75,15 +75,15 @@ class SolocooEpg(object):
 		self._lock = threading.RLock()
 		self.serial = None
 		self.sso_token = None
-		self.token = None              # Bearer pre tvapi
-		self.pass_token = None         # Canal+ passToken na nativne prehravanie
+		self.token = None              # Bearer for tvapi
+		self.pass_token = None         # Canal+ passToken for native playback
 		self.token_valid_until = 0
 		self._pair_interval = 5
-		self._desc_cache = {}          # asset_id -> popis relacie
+		self._desc_cache = {}          # asset_id -> programme description
 		self._desc_lock = threading.Lock()
 		self._load_state()
 
-	# ---- stav na disku --------------------------------------------------------------------------
+	# ---- state on disk --------------------------------------------------------------------------
 
 	def _state_path(self):
 		data_dir = getattr(self.api, 'data_dir', None)
@@ -120,7 +120,7 @@ class SolocooEpg(object):
 		except Exception:
 			pass
 
-	# ---- pomocné --------------------------------------------------------------------------------
+	# ---- helpers --------------------------------------------------------------------------------
 
 	def _brand(self):
 		b = getattr(self.api, 'brand', 'cpsvk')
@@ -163,13 +163,13 @@ class SolocooEpg(object):
 		return self.api.req_session.get(url, params=params, headers=self._headers(bearer),
 		                                timeout=self._timeout())
 
-	# ---- párovanie kódom ------------------------------------------------------------------------
+	# ---- pairing by code ------------------------------------------------------------------------
 
 	def is_paired(self):
 		return bool(self.sso_token)
 
 	def request_pairing(self):
-		"""Spustí párovanie. Vráti (kód, url)."""
+		"""Starts pairing. Returns (code, url)."""
 		r = self._post(PAIR_REQUEST_URL, {'deviceInfo': self.device_info(country=True)})
 		try:
 			j = r.json() or {}
@@ -185,7 +185,7 @@ class SolocooEpg(object):
 		return self._pair_interval
 
 	def poll_pairing_once(self, code):
-		"""Jedno overenie. Vráti ssoToken keď spárované, inak None."""
+		"""A single check. Returns the ssoToken when paired, otherwise None."""
 		r = self._post(PAIR_CHECK_URL, {'deviceInfo': self.device_info(country=True), 'code': code})
 		try:
 			j = r.json() or {}
@@ -240,7 +240,7 @@ class SolocooEpg(object):
 				j = {}
 
 			if r.status_code == 403 and not j.get('ssoLogout'):
-				# 403 moze byt aj docasne (WAF/geo) - sparovanie nemazeme
+				# 403 may be temporary (WAF/geo) - don't drop the pairing
 				raise Exception('session HTTP 403 (%s)' % (j.get('Message') or j.get('label') or ''))
 
 			if r.status_code == 401 or j.get('ssoLogout'):
@@ -268,7 +268,7 @@ class SolocooEpg(object):
 			self.token_valid_until = time() + max(60, secs - TOKEN_MARGIN)
 			return self.token
 
-	# ---- program (schedule) ---------------------------------------------------------------------
+	# ---- schedule -------------------------------------------------------------------------------
 
 	@staticmethod
 	def _event(item):
@@ -283,7 +283,7 @@ class SolocooEpg(object):
 		if not start:
 			return None
 		subtitle = item.get('subtitle') or item.get('shortDescription') or ''
-		# plny popis v programe nie je, dotahuje sa z detailu relacie (get_descriptions)
+		# the schedule has no full description, it is fetched from the programme detail (get_descriptions)
 		desc = item.get('desc') or ''
 		image = None
 		for k in ('image', 'thumbnail', 'poster'):
@@ -296,7 +296,7 @@ class SolocooEpg(object):
 		        'subtitle': subtitle or '', 'desc': desc or '', 'image': image, 'id': str(asset_id)}
 
 	def get_descriptions(self, asset_ids, workers=6, time_limit=40):
-		"""Plne popisy relacii z /v1/assets/<id> (paralelne, s pamatou)."""
+		"""Full programme descriptions from /v1/assets/<id> (parallel, cached)."""
 		ids = []
 		for a in asset_ids:
 			a = str(a or '')
@@ -374,7 +374,7 @@ class SolocooEpg(object):
 		return out
 
 	def get_schedule_now(self, cc_ids):
-		"""Prave beziaca relacia pre zoznam kanalov: {cc_id: udalost}."""
+		"""Currently running programme for the channel list: {cc_id: event}."""
 		cc_ids = [str(c) for c in cc_ids if c]
 		if not cc_ids:
 			return {}
@@ -411,8 +411,8 @@ class SolocooEpg(object):
 		return out
 
 	def get_schedule(self, cc_ids, t_from, t_until):
-		"""Program kanalov (cc...) v rozsahu, deli sa na 24 h okna a skupiny kanalov.
-		Vrati {cc_id: [udalosti]}."""
+		"""Schedule of channels (cc...) in the range, split into 24 h windows and channel groups.
+		Returns {cc_id: [events]}."""
 		cc_ids = [str(c) for c in cc_ids if c]
 		if not cc_ids:
 			return {}
@@ -435,13 +435,13 @@ class SolocooEpg(object):
 				win = win_end
 		return dict((cid, sorted(b.values(), key=lambda e: e['start'])) for cid, b in merged.items())
 
-	# ---- prehravanie cez Widevine (zalozna cesta) -----------------------------------------------
-	# Natívne prehrávanie Canal+ ide cez PlayReady (Full HD), ale PlayReady CDM v tools_cenc
-	# potrebuje Python 3. Na starších prijímačoch (Python 2.7) ide len Widevine, a ten vie
-	# Solocoo vydať pre to isté predplatné - v nižšej kvalite, ale funkčne.
+	# ---- playback via Widevine (fallback path) --------------------------------------------------
+	# Native Canal+ playback goes via PlayReady (Full HD), but the PlayReady CDM in tools_cenc
+	# needs Python 3. Older receivers (Python 2.7) only have Widevine, which Solocoo can issue
+	# for the same subscription - in lower quality, but working.
 
 	def stream_headers(self):
-		"""Hlavičky pre manifest, segmenty aj licenciu Solocoo streamu."""
+		"""Headers for the manifest, segments and license of a Solocoo stream."""
 		return {
 			'User-Agent': USER_AGENT,
 			'Origin': 'https://m7cpstatic.solocoo.tv',
@@ -449,7 +449,7 @@ class SolocooEpg(object):
 		}
 
 	def get_stream(self, asset_id):
-		"""DASH manifest a Widevine licencia pre kanál (cc<EpgId>) alebo reláciu (id z programu)."""
+		"""DASH manifest and Widevine license for a channel (cc<EpgId>) or a programme (id from the schedule)."""
 		self.ensure_session()
 		player = {
 			'name': 'RxPlayer',
@@ -465,7 +465,7 @@ class SolocooEpg(object):
 		}
 		r = self._post(TVAPI_URL + '/v1/assets/%s/play' % asset_id, {'player': player}, bearer=True)
 		if r.status_code == 401:
-			# session vypršala - obnov a skús raz znova
+			# the session expired - refresh and retry once
 			self.ensure_session(force=True)
 			r = self._post(TVAPI_URL + '/v1/assets/%s/play' % asset_id, {'player': player}, bearer=True)
 		if r.status_code != 200:
