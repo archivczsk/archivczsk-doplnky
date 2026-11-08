@@ -1,2 +1,5 @@
+1.2 - 08.11.2026
+- exteplayer3 version 185
+
 1.0 - 01.11.2026
 - exteplayer3 version 184
