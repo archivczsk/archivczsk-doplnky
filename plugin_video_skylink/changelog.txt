@@ -1,6 +1,5 @@
 1.4: 08.11.2026
-- prehrávanie cez gstplayer: opravená čierna obrazovka pri živom vysielaní a pozícia
-  s pretáčaním v archíve
+- prehrávanie cez gstplayer: opravená čierna obrazovka pri živom vysielaní
 - userbouquet: prehrávač si adresu streamu obnovuje sám
 
 1.3: 08.11.2026
