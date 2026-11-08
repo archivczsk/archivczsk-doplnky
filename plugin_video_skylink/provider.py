@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 #
-# Skylink Live TV pre ArchivCZSK - slovenská aj česká verzia.
+# Skylink Live TV for ArchivCZSK - Slovak and Czech version.
 #
-# Službu (SK/CZ) a prihlasovacie údaje zadáš v nastaveniach doplnku. Prihlásenie
-# je obyčajné meno a heslo, bez captchy. Zariadenie sa zaregistruje raz a jeho
-# identifikátor sa uloží, aby doplnok nezaberal nové zariadenie pri každom štarte.
+# The service (SK/CZ) and the credentials are entered in the addon settings. The login is
+# a plain username and password, no captcha. The device is registered once and its
+# identifier is stored, so the addon doesn't take a new device slot on every start.
 #
-# Doplnok vie živé vysielanie, archív, export do userbouquetu a XML EPG,
-# rovnako ako ostatné doplnky s živým vysielaním.
+# The addon supports live TV, archive, userbouquet export and XML EPG,
+# like the other live TV addons.
 
 import base64
 import sys
@@ -23,31 +23,30 @@ from tools_archivczsk.generator.lamedb import channel_name_normalise
 
 from .skylink_api import (SkylinkApi, SkylinkSessionError, SkylinkNoStreamError, BRANDS, USER_AGENT,
                           error_text, channel_id as asset_channel_id, channel_title, unwrap_asset,
-                          to_timestamp, event_description, image_url,
-                          ADDON_VERSION, ADDON_BUILD)
+                          to_timestamp, event_description, image_url, ADDON_BUILD)
 from .bouquet import SkylinkBouquetXmlEpgGenerator
 
-# zoznam kanálov ťaháme najviac raz za tento čas
+# the channel list is fetched at most once per this interval
 CHANNELS_CACHE_SECONDS = 600
 
-# server neprijme program za rozsah dlhší než jeden deň
+# the server doesn't accept a schedule range longer than one day
 ARCHIVE_WINDOW = 24 * 3600
 
-# knižnica pre PlayReady v tools_cenc vyžaduje Python 3, pod Python 2 ide len Widevine
+# the PlayReady library in tools_cenc needs Python 3, under Python 2 only Widevine works
 is_py2 = (sys.version_info[0] == 2)
 
-# koľko kanálov sa pýtame na program jedným volaním a koľko najviac naraz
+# how many channels are asked for the schedule in one call and how many at most in parallel
 EPG_BATCH = 20
 EPG_MAX_CHANNELS = 400
 
-# popis relácie sa ťahá zvlášť, paralelne; viac než toľko položiek naraz nemá zmysel
+# programme descriptions are fetched separately, in parallel; more than this many at once makes no sense
 DESCRIPTION_LIMIT = 400
 
-# rozmer náhľadu relácie - bez neho server vráti originál, ktorý prijímač nenačíta
+# programme thumbnail size - without it the server returns the original, which the receiver can't load
 PREVIEW_WIDTH = 256
 PREVIEW_HEIGHT = 144
 
-# preklad žánrových skupín z API na čitateľné názvy
+# translation of genre groups from the API to readable names
 GENRE_NAMES = {
 	'Movie/TV Series': 'Movies and series',
 	'Sport': 'Sport',
@@ -66,7 +65,7 @@ GENRE_NAMES = {
 # ##################################################################################################################
 
 def asset_image(asset, prefer='la', width=0, height=0):
-	"""Vyberie obrázok položky - uprednostní zadaný typ."""
+	"""Picks the item image - prefers the given type."""
 	images = asset.get('images') or []
 	chosen = None
 	for img in images:
@@ -85,12 +84,12 @@ class SkylinkChannel(object):
 	             'epg_start', 'epg_stop', 'epg_full_desc')
 
 	def __init__(self, key, cid, name, picon=None, adult=False, archive=0, lcn=None):
-		self.key = key          # identifikátor položky v API
-		self.id = cid           # číselné id pre bouquet a EPG
+		self.key = key          # item identifier in the API
+		self.id = cid           # numeric id for the bouquet and EPG
 		self.name = name
 		self.picon = picon
 		self.adult = adult
-		self.archive = archive  # hodiny archívu
+		self.archive = archive  # archive hours
 		self.lcn = lcn
 		self.radio = False
 		self.replay_delay = 0
@@ -100,7 +99,7 @@ class SkylinkChannel(object):
 		self.epg_img = None
 		self.epg_start = None
 		self.epg_stop = None
-		self.epg_full_desc = False  # popis je zo servera, nie poskladaný
+		self.epg_full_desc = False  # the description is from the server, not assembled
 
 
 # ##################################################################################################################
@@ -141,7 +140,7 @@ class SkylinkModuleLiveTV(CPModuleLiveTV):
 			if not query:
 				continue
 			if key == 'Adult' and not enable_adult:
-				# inak by sa kategória otvorila prázdna, kanály sa aj tak odfiltrujú
+				# otherwise the category would open empty, the channels are filtered anyway
 				continue
 			if key in GENRE_NAMES:
 				title = self.cp._(GENRE_NAMES[key])
@@ -151,8 +150,8 @@ class SkylinkModuleLiveTV(CPModuleLiveTV):
 			self.add_live_tv_category(title, query)
 
 	def get_live_tv_channels(self, cat_id=None):
-		# session môže vypršať aj neskôr - zoznam kanálov býva v pamäti a na server
-		# sa ide až po žánre, program alebo popisy
+		# the session may expire later too - the channel list is usually cached and the server
+		# is contacted only for genres, schedule or descriptions
 		try:
 			self.cp.load_channel_list()
 
@@ -202,7 +201,7 @@ class SkylinkModuleLiveTV(CPModuleLiveTV):
 				                   cmd=self.cp.archive_module.get_archive_days_for_channels,
 				                   channel_id=channel.key, archive_hours=channel.archive)
 
-			# náhľad práve bežiacej relácie, picon ako záloha
+			# thumbnail of the running programme, picon as fallback
 			img = channel.epg_img or channel.picon
 
 			self.cp.add_video(title + epg_str, img, info_labels, menu=menu,
@@ -230,7 +229,7 @@ class SkylinkModuleArchive(CPModuleArchive):
 			if not enable_adult and channel.adult:
 				continue
 			if channel.radio:
-				# rádiá sú mimo aj v ostatných zoznamoch
+				# radios are excluded in the other lists too
 				continue
 			if channel.archive > 0:
 				self.add_archive_channel(channel.name, channel.key, channel.archive,
@@ -239,8 +238,8 @@ class SkylinkModuleArchive(CPModuleArchive):
 	def get_archive_program(self, channel_id, archive_day):
 		ts_from, ts_to = self.archive_day_to_datetime_range(archive_day, True)
 
-		# framework počíta rozsah dňa v lokálnom čase, takže v deň zmeny času vyjde
-		# 23 alebo 25 hodín - server rozsah dlhší než deň neprijme
+		# the framework computes the day range in local time, so on the DST change day it is
+		# 23 or 25 hours - the server doesn't accept a range longer than a day
 		if ts_to - ts_from > ARCHIVE_WINDOW:
 			ts_to = ts_from + ARCHIVE_WINDOW
 
@@ -297,7 +296,7 @@ class SkylinkModuleArchive(CPModuleArchive):
 			img = asset_image(event, 'la', PREVIEW_WIDTH, PREVIEW_HEIGHT)
 
 			if stop > (now - replay_delay) or not (params.get('replay') or params.get('restart')):
-				# ešte beží, nevysielalo sa, alebo ho server ešte neuvoľnil do archívu
+				# still running, not broadcast yet, or not released to the archive by the server yet
 				self.cp.add_video(_C('grey', title), img, info_labels, download=False, cmd=self.cp.noop)
 				continue
 
@@ -501,10 +500,10 @@ class SkylinkContentProvider(ModuleContentProvider):
 	def __init__(self):
 		ModuleContentProvider.__init__(self)
 
-		# nech je v logu vidno, ktorá verzia doplnku práve beží
-		self.log_info('Skylink Live TV %s (build %d)' % (ADDON_VERSION, ADDON_BUILD))
+		# the version is taken from addon.xml (via the framework) so the log matches the released version
+		self.add_initialised_callback(lambda: self.log_info('Skylink Live TV %s (build %d)' % (self.get_addon_version(), ADDON_BUILD)))
 
-		# pri zmene týchto nastavení sa prihlási znova
+		# a change of these settings triggers a new login
 		self.login_settings_names = ('brand', 'username', 'password')
 
 		self.api = SkylinkApi(self)
@@ -527,7 +526,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 			SkylinkModuleExtra(self),
 		]
 
-		# po zmene filtra predplatného sa zoznam kanálov načíta znova hneď, nie až po vypršaní pamäte
+		# after the subscription filter changes, the channel list is reloaded immediately, not after the cache expires
 		self.add_setting_change_notifier(['only_subscribed'], self.subscription_filter_changed)
 
 	# ##############################################################################################################
@@ -536,7 +535,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 		self.channels_next_load_time = 0
 
 	# ##############################################################################################################
-	# prihlásenie
+	# login
 
 	def login(self, silent):
 		brand = self.get_setting('brand') or 'slsk'
@@ -550,7 +549,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 		if not self.api.valid_device_serial(device_serial):
 			device_serial = self.api.new_device_serial()
 			self.set_setting('device_serial', device_serial)
-			# session patrí k starému zariadeniu, zahoď ju
+			# the session belongs to the old device, drop it
 			self.set_setting('session', '')
 
 		saved_sso = (self.get_setting('session') or '').strip()
@@ -561,10 +560,10 @@ class SkylinkContentProvider(ModuleContentProvider):
 		self.channels_by_norm_name = {}
 		self.channels_next_load_time = 0
 		self.genre_cache = {}
-		# po zmene značky nesmie zostať visieť kontrolný súčet starej ponuky
+		# after a brand change the checksum of the old channel offer must not stay around
 		self.checksum = None
 
-		# 1. skús uloženú session
+		# 1. try the stored session
 		if saved_sso:
 			try:
 				self.api.create_session()
@@ -574,7 +573,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 				self.api.sso_token = None
 				self.set_setting('session', '')
 
-		# 2. prihlásenie menom a heslom
+		# 2. login with username and password
 		try:
 			sso = self.api.login(username, password)
 			self.save_session(sso)
@@ -588,7 +587,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 		return True
 
 	def translate_error(self, msg):
-		"""Hlášky platformy sú kľúče typu sg.ui.sso.error.* - preložíme tie bežné."""
+		"""Platform messages are keys like sg.ui.sso.error.* - the common ones are translated."""
 		low = (msg or '').lower()
 		if 'credential' in low or 'password' in low or 'invalid_login' in low or 'wrong' in low:
 			return self._("Wrong username or password - check the addon settings.")
@@ -599,7 +598,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 		return self._("Sign-in failed: %s") % msg
 
 	def save_session(self, sso_token):
-		"""Uloží prihlasovací token - volá sa aj pri jeho výmene zo strany servera."""
+		"""Stores the login token - also called when the server replaces it."""
 		self.set_setting('session', sso_token or '')
 
 	def forget_session(self):
@@ -608,11 +607,11 @@ class SkylinkContentProvider(ModuleContentProvider):
 		self.api.token = None
 
 	def session_expired(self):
-		"""Zahodí prihlásenie a nechá framework prihlásiť znova.
+		"""Drops the login and lets the framework log in again.
 
-		Musí to byť cez login_error - tá vyhodí výnimku, ktorú engine zachytí,
-		prihlási sa nanovo a zopakuje rozbehnutú akciu. Obyčajná hláška by
-		doplnok nechala v stave, keď sa o nové prihlásenie nikto nepokúsi.
+		It must go through login_error - it raises an exception that the engine catches,
+		logs in again and repeats the running action. A plain message would leave
+		the addon in a state where nobody attempts a new login.
 		"""
 		self.forget_session()
 		self.login_error(self._("Your sign-in has expired."))
@@ -631,7 +630,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 		return self.api.logged_in()
 
 	# ##############################################################################################################
-	# kanály
+	# channels
 
 	def timestamp_to_str(self, timestamp, format_str='%H:%M'):
 		if not timestamp:
@@ -639,7 +638,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 		return strftime(format_str, localtime(timestamp))
 
 	def load_channel_list(self, force=False):
-		"""Načíta zoznam kanálov - najviac raz za CHANNELS_CACHE_SECONDS."""
+		"""Loads the channel list - at most once per CHANNELS_CACHE_SECONDS."""
 		if not force and self.channels and int(time()) < self.channels_next_load_time:
 			return
 
@@ -647,12 +646,12 @@ class SkylinkContentProvider(ModuleContentProvider):
 
 		if not entries:
 			if not self.channels:
-				# bez kanálov by generátor prepísal userbouquet na prázdny a export
-				# programu by sa uložil ako úspešný bez jedinej relácie
+				# without channels the generator would overwrite the userbouquet with an empty one and the
+				# schedule export would be stored as successful without a single programme
 				self.log_error('Empty channel list received and no previous list is available')
 				raise Exception(self._("The server returned an empty channel list."))
 
-			# server nič nevrátil - radšej nechaj starý zoznam, inak by sa vyprázdnil userbouquet
+			# the server returned nothing - rather keep the old list, otherwise the userbouquet would be emptied
 			self.log_error('Empty channel list received - keeping the previous one')
 			self.channels_next_load_time = int(time()) + 60
 			return
@@ -688,7 +687,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 				cid=self.channel_numeric_id(key, used_ids),
 				name=name,
 				picon=asset_image(entry, 'la'),
-				# kanály pre dospelých sú na tejto platforme značené ako chránené PIN-om
+				# adult channels are marked as PIN protected on this platform
 				adult=bool(params.get('adult') or params.get('pinProtected')),
 				archive=archive,
 				lcn=params.get('lcn') if isinstance(params.get('lcn'), int) else None,
@@ -696,15 +695,15 @@ class SkylinkContentProvider(ModuleContentProvider):
 			channel.radio = bool(params.get('radio'))
 			channel.replay_delay = replay_delay
 
-			# niektoré odpovede nesú bežiaci program rovno pri kanáli
+			# some responses carry the running programme right next to the channel
 			now_event = params.get('now')
 			if isinstance(now_event, dict) and now_event.get('title'):
 				self.set_channel_epg(channel, now_event)
 
 			channels.append(channel)
 
-		# zoznam priraď až nakoniec, aby iné vlákno nevidelo nový zoznam
-		# so starými registrami
+		# assign the list at the very end, so another thread doesn't see the new list
+		# with the old registers
 		by_key = dict((ch.key, ch) for ch in channels)
 		by_norm_name = dict((channel_name_normalise(ch.name), ch) for ch in channels)
 
@@ -714,8 +713,8 @@ class SkylinkContentProvider(ModuleContentProvider):
 		self.channels_next_load_time = int(time()) + CHANNELS_CACHE_SECONDS
 		self.genre_cache = {}
 
-		# zostavenie je súčasťou súčtu zámerne - ak sa zmení výpočet číselných id,
-		# musí sa prepísať aj userbouquet, inak by mal iné service id než EPG
+		# the build is part of the checksum on purpose - if the computation of numeric ids changes,
+		# the userbouquet must be rewritten too, otherwise it would have other service ids than the EPG
 		source = 'build=%d|%s' % (ADDON_BUILD,
 		                          '|'.join('%s=%s' % (ch.key, ch.name) for ch in channels))
 		self.checksum = md5(source.encode('utf-8')).hexdigest()
@@ -724,7 +723,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 
 	@staticmethod
 	def set_channel_epg(channel, event):
-		"""Prenesie reláciu na kanál - názov, čas, obrázok a popis."""
+		"""Transfers the programme to the channel - title, time, image and description."""
 		params = event.get('params') or {}
 
 		channel.epg_id = event.get('id')
@@ -743,14 +742,14 @@ class SkylinkContentProvider(ModuleContentProvider):
 
 	@staticmethod
 	def channel_numeric_id(key, used_ids):
-		"""Stabilné číselné id kanála pre bouquet a EPG.
+		"""Stable numeric channel id for the bouquet and EPG.
 
-		Pri kolízii sa počíta znova z kľúča s príponou - poradie kanálov tak
-		rozhoduje až pri kolízii, inak je id dané len kľúčom.
+		On a collision it is computed again from the key with a suffix - the channel order
+		matters only on a collision, otherwise the id depends on the key alone.
 
-		Horná hranica je 0xFFFD, lebo generátor bouquetu počíta service id ako
-		(sid_start + id) % 0xFFFF, kým generátory programu bez zvyšku. Pri vyššom
-		id by kanál mal v bouquete iné service id než v EPG a zostal by bez programu.
+		The upper limit is 0xFFFD, because the bouquet generator computes the service id as
+		(sid_start + id) % 0xFFFF, while the EPG generators don't take the remainder. With a higher
+		id the channel would have a different service id in the bouquet than in the EPG and stay without a schedule.
 		"""
 		for attempt in range(0, 50):
 			source = key if attempt == 0 else '%s#%d' % (key, attempt)
@@ -766,7 +765,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 		return cid
 
 	def get_genre_channel_keys(self, query):
-		"""Kľúče kanálov v žánrovej skupine."""
+		"""Channel keys in a genre group."""
 		cached = self.genre_cache.get(query)
 		if cached is not None:
 			return cached
@@ -795,7 +794,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 		return keys
 
 	def load_epg(self, channels):
-		"""Doplní ku kanálom práve bežiaci program. Pýta sa len na tie, ktoré ho nemajú."""
+		"""Adds the running programme to the channels. Asks only for those that don't have it."""
 		now = int(time())
 
 		keys = [ch.key for ch in channels
@@ -823,7 +822,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 				if not isinstance(events, list) or not events:
 					continue
 
-				# odpoveď nesie viac relácií a bežiaca nemusí byť prvá
+				# the response carries several programmes and the running one need not be the first
 				event = None
 				for candidate in events:
 					if not isinstance(candidate, dict):
@@ -842,8 +841,8 @@ class SkylinkContentProvider(ModuleContentProvider):
 
 
 	def load_descriptions(self, channels):
-		"""Dotiahne skutočné popisy relácií. API ich pri programe neposiela,
-		sú len v detaile položky, čiže je to jedna požiadavka na kanál."""
+		"""Fetches the real programme descriptions. The API doesn't send them with the schedule,
+		they are only in the item detail, so it is one request per channel."""
 		if not self.get_setting('load_descriptions'):
 			return
 
@@ -868,14 +867,14 @@ class SkylinkContentProvider(ModuleContentProvider):
 				channel.epg_full_desc = True
 
 	def get_channel_epg(self, channel_key, time_from, time_to):
-		"""Program kanála pre bouquet a XML EPG."""
+		"""Channel schedule for the bouquet and XML EPG."""
 		return self.api.get_schedule(channel_key, time_from, time_to)
 
 	# ##############################################################################################################
-	# prehrávanie
+	# playback
 
 	def stream_headers(self, web=None):
-		"""Hlavičky, s ktorými si manifest a segmenty pýta ich webový prehrávač."""
+		"""Headers their web player uses to request the manifest and segments."""
 		web = web or self.api.web_url()
 		return {
 			'Origin': web,
@@ -884,7 +883,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 		}
 
 	def get_dash_info(self, stream_key):
-		"""Údaje pre DashHTTPRequestHandler - manifest a licenčná konfigurácia."""
+		"""Data for DashHTTPRequestHandler - manifest and license configuration."""
 		web = stream_key.get('web') or self.api.web_url()
 
 		license_headers = self.stream_headers(web)
@@ -897,7 +896,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 			'headers': self.stream_headers(web),
 		}
 
-		# licenčná adresa patrí systému, ktorý vybral server
+		# the license URL belongs to the system selected by the server
 		if str(stream_key.get('drm_system', '')).lower().startswith('play'):
 			license_headers['Content-Type'] = 'text/xml; charset=utf-8'
 			info['drm'] = {
@@ -921,12 +920,12 @@ class SkylinkContentProvider(ModuleContentProvider):
 		return not is_py2 and not self.drm_failed and self.get_setting('drm_playready')
 
 	def get_stream_info(self, asset_id):
-		"""Vráti adresu manifestu a licencie - používa aj HTTP handler pre bouquet."""
+		"""Returns the manifest and license URL - also used by the HTTP handler for the bouquet."""
 		stream = self.api.get_stream(asset_id, playready=self.playready_wanted())
 
 		mpd_url = stream.get('url') or ''
 		if mpd_url:
-			# len server - v adrese je prístupový token
+			# server only - the URL contains an access token
 			self.log_info('Stream from: %s' % (mpd_url.split('/')[2] if mpd_url.count('/') >= 2 else '?'))
 
 		return stream
@@ -981,8 +980,8 @@ class SkylinkContentProvider(ModuleContentProvider):
 			self.show_error(self._("Failed to load the DASH stream."))
 
 	def limit_streams(self, streams):
-		"""Odfiltruje streamy nad nastavené rozlíšenie. Keď by neostalo nič,
-		necháva ten najmenší, aby sa dalo prehrať aspoň niečo."""
+		"""Filters out streams above the configured resolution. When nothing would remain,
+		keeps the smallest one so that at least something can be played."""
 		try:
 			max_height = int(self.get_setting('max_resolution') or 0)
 		except Exception:
@@ -997,24 +996,24 @@ class SkylinkContentProvider(ModuleContentProvider):
 				height = int(s.get('height') or 0)
 			except Exception:
 				height = 0
-			# stream bez uvedeného rozlíšenia je u nich ten najvyšší (1920x1080
-			# je uvedené až na nadradenej skupine), pri nastavenom strope ho vynechaj
+			# a stream without a resolution is their highest one (1920x1080 is given
+			# only on the parent set), skip it when a limit is configured
 			if height and height <= max_height:
 				allowed.append(s)
 
 		if not allowed:
-			# žiadny nevyhovuje, vezmi najnižší dostupný
+			# none fits, take the lowest available
 			allowed = [min(streams, key=lambda x: int(x.get('height') or 0) or 99999)]
 
 		return allowed
 
 	def resolve_streams_for_channel(self, manifest_url):
-		"""Streamy manifestu podľa nastavení - používa aj HTTP handler pre bouquet."""
+		"""Manifest streams according to the settings - also used by the HTTP handler for the bouquet."""
 		streams = self.get_dash_streams(manifest_url, headers=self.stream_headers(),
 		                                max_bitrate=self.get_setting('max_bitrate'))
 
 		if streams:
-			# do logu, nech je vidieť, čo kanál vôbec ponúka
+			# to the log, so it is visible what the channel offers at all
 			self.log_debug('Streams offered by the channel: %s' % ', '.join(
 				'%sp/%s' % (s.get('height') or '?', s.get('bandwidth') or '?') for s in streams))
 
@@ -1041,7 +1040,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 
 			info_labels = {
 				'bandwidth': int(s['bandwidth']),
-				# niektoré streamy nemajú v manifeste uvedené rozlíšenie
+				# some streams don't have a resolution in the manifest
 				'quality': s['height'] + 'p' if s.get('height') else 'max',
 			}
 			self.add_play(title, url, info_labels=info_labels, live=live)
