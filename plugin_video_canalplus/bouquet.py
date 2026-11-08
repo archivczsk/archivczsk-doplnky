@@ -7,6 +7,10 @@ from .canalplus_api import event_details
 class CanalplusBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
 	def __init__(self, content_provider):
+		# Canal+ nema kanaly pre dospelych, nastavenie enable_adult v doplnku nie je -
+		# zoznam nastaveni, ktore spustaju prestavbu bouquetu, ho preto nesmie obsahovat
+		self.bouquet_settings_names = ['enable_userbouquet', 'enable_xmlepg', 'enable_picons',
+		                               'player_name', 'enable_tsconvert']
 		BouquetXmlEpgGenerator.__init__(self, content_provider,
 		                                login_settings_names=('brand',))
 

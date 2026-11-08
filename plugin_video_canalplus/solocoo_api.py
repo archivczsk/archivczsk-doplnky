@@ -434,3 +434,53 @@ class SolocooEpg(object):
 						bucket[ev['start']] = ev
 				win = win_end
 		return dict((cid, sorted(b.values(), key=lambda e: e['start'])) for cid, b in merged.items())
+
+	# ---- prehravanie cez Widevine (zalozna cesta) -----------------------------------------------
+	# Natívne prehrávanie Canal+ ide cez PlayReady (Full HD), ale PlayReady CDM v tools_cenc
+	# potrebuje Python 3. Na starších prijímačoch (Python 2.7) ide len Widevine, a ten vie
+	# Solocoo vydať pre to isté predplatné - v nižšej kvalite, ale funkčne.
+
+	def stream_headers(self):
+		"""Hlavičky pre manifest, segmenty aj licenciu Solocoo streamu."""
+		return {
+			'User-Agent': USER_AGENT,
+			'Origin': 'https://m7cpstatic.solocoo.tv',
+			'Referer': 'https://m7cpstatic.solocoo.tv/',
+		}
+
+	def get_stream(self, asset_id):
+		"""DASH manifest a Widevine licencia pre kanál (cc<EpgId>) alebo reláciu (id z programu)."""
+		self.ensure_session()
+		player = {
+			'name': 'RxPlayer',
+			'version': '4.3.0',
+			'capabilities': {
+				'mediaTypes': ['DASH'],
+				'drmSystems': ['Widevine'],
+				'audioQualities': ['DolbyAtmos', 'DolbyDigital', 'Stereo'],
+				'smartLib': True,
+				'embeddedSubtitles': True,
+				'cdnCallbacks': True,
+			},
+		}
+		r = self._post(TVAPI_URL + '/v1/assets/%s/play' % asset_id, {'player': player}, bearer=True)
+		if r.status_code == 401:
+			# session vypršala - obnov a skús raz znova
+			self.ensure_session(force=True)
+			r = self._post(TVAPI_URL + '/v1/assets/%s/play' % asset_id, {'player': player}, bearer=True)
+		if r.status_code != 200:
+			msg = ''
+			try:
+				j = r.json()
+				msg = j.get('message') or j.get('error') or j.get('code') or ''
+			except Exception:
+				msg = (r.text or '')[:200]
+			raise Exception('Solocoo play failed (HTTP %s): %s' % (r.status_code, msg))
+		j = r.json()
+		drm = j.get('drm') or {}
+		return {
+			'url': j.get('url') or '',
+			'license_url': drm.get('licenseUrl') or '',
+			'drm_system': drm.get('system') or '',
+			'title': j.get('statsChannelName') or '',
+		}
