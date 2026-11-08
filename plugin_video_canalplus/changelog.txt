@@ -1,8 +1,8 @@
-1.0.1 - 08.11.2026
+1.1 - 08.11.2026
 - kanály mimo predplatného sa už nezobrazujú (server ich posiela, ale prehrať sa nedajú);
   dá sa vypnúť v nastaveniach, potom sú v zozname sivé ako doteraz
 
-1.0.0 - 07.11.2026
+1.0 - 07.11.2026
 - prvé vydanie
 - podpora pre Live TV, archív 7 dní a userbouquet
 - prihlásenie kódom cez connect.canalplus.com
