@@ -1,5 +1,8 @@
+3.25 - 08.11.2026
+    - fixed type in exteplayer3 installation
+
 3.24 - 06.11.2026
-    - fixed crach when replacing exeplayer3 and no previous version was installed
+    - fixed crash when replacing exeplayer3 and no previous version was installed
 
 3.23 - 01.11.2026
     - added service to keep exteplayer3 up to date with ArchivCZSK

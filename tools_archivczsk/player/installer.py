@@ -25,7 +25,7 @@ def install_exteplayer3():
 		log.debug('No ArchivCZSK exteplayer3 binary found for this architecture: %s' % stbinfo.hw_arch)
 		return
 
-	if os.path.isfie(EXTEPLAYER3_BIN_PATH):
+	if os.path.isfile(EXTEPLAYER3_BIN_PATH):
 		log.info('Renaming original exteplayer3 binary to %s' % EXTEPLAYER3_BIN_BACKUP_PATH)
 		os.rename(EXTEPLAYER3_BIN_PATH, EXTEPLAYER3_BIN_BACKUP_PATH)
 	elif os.path.islink(EXTEPLAYER3_BIN_PATH):
