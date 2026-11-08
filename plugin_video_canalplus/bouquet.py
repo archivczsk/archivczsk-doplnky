@@ -11,8 +11,9 @@ class CanalplusBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 		# zoznam nastaveni, ktore spustaju prestavbu bouquetu, ho preto nesmie obsahovat
 		self.bouquet_settings_names = ['enable_userbouquet', 'enable_xmlepg', 'enable_picons',
 		                               'player_name', 'enable_tsconvert']
+		# only_subscribed meni zoznam kanalov - po zmene sa userbouquet aj EPG prestavaju
 		BouquetXmlEpgGenerator.__init__(self, content_provider,
-		                                login_settings_names=('brand',))
+		                                login_settings_names=('brand', 'only_subscribed'))
 
 	def logged_in(self):
 		return self.cp.logged_in()

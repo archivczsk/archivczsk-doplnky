@@ -365,6 +365,14 @@ class CanalplusContentProvider(ModuleContentProvider):
 			CanalplusModuleExtra(self),
 		]
 
+		# po zmene filtra predplatneho sa zoznam kanalov nacita znova hned, nie az po vyprsani pamate
+		self.add_setting_change_notifier(['only_subscribed'], self.subscription_filter_changed)
+
+	# ##############################################################################################################
+
+	def subscription_filter_changed(self, name, value):
+		self.channels_next_load_time = 0
+
 		# katalog ma len okno okolo aktualneho casu - program si priebezne ukladame,
 		# aby mal archiv nazvy relacii aj pre minule dni
 		try:
@@ -487,15 +495,22 @@ class CanalplusContentProvider(ModuleContentProvider):
 			return
 
 		raw = self.api.channels()
+		only_subscribed = bool(self.get_setting('only_subscribed'))
 
 		channels = []
 		by_key = {}
 		used_ids = set()
+		skipped = 0
 
 		for item in raw:
 			key = item.get('EpgId')
 			name = item.get('Name')
 			if not key or not name:
+				continue
+
+			# kanal mimo predplatneho (server ho posiela, ale prehrat sa neda) - podla nastavenia vynechat
+			if only_subscribed and _flag((item.get('AccessRights') or {}).get('NoAccess')):
+				skipped += 1
 				continue
 
 			try:
@@ -521,6 +536,7 @@ class CanalplusContentProvider(ModuleContentProvider):
 			by_key[channel.key] = channel
 
 		channels.sort(key=lambda c: (c.lcn or 99999, c.name))
+		self.log_debug('Channels: %d from server, %d usable, %d outside subscription' % (len(raw), len(channels), skipped))
 
 		self.channels = channels
 		self.channels_by_key = by_key
