@@ -121,7 +121,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		cache_data = self.scache.get(url_parts[0])
 
 		if not cache_data:
-			self.log_error("No cached data found for key: %s" % url_parts[0])
+			self.cp.log_error("No cached data found for key: %s" % url_parts[0])
 			return self.reply_error500(request)
 
 		base_url = cache_data['url']
@@ -181,7 +181,7 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		cache_data = self.scache.get(url_parts[0])
 
 		if not cache_data:
-			self.log_error("No cached data found for key: %s" % url_parts[0])
+			self.cp.log_error("No cached data found for key: %s" % url_parts[0])
 			return self.reply_error500(request)
 
 		segment_type = url_parts[1]

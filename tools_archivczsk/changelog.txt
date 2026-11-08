@@ -1,5 +1,8 @@
+3.26 - 08.11.2026
+    - fixed crash when segment is not in cache when handling MPD
+
 3.25 - 08.11.2026
-    - fixed type in exteplayer3 installation
+    - fixed typo in exteplayer3 installation
 
 3.24 - 06.11.2026
     - fixed crash when replacing exeplayer3 and no previous version was installed
