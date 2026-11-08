@@ -23,8 +23,9 @@ EPG_MAX_FAILURES = 5
 class SkylinkBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
 	def __init__(self, content_provider):
+		# only_subscribed mení zoznam kanálov rovnako ako iný účet - po zmene sa userbouquet aj EPG prestavajú
 		BouquetXmlEpgGenerator.__init__(self, content_provider,
-		                                login_settings_names=('brand', 'username', 'password'))
+		                                login_settings_names=('brand', 'username', 'password', 'only_subscribed'))
 		self.epg_failures = 0
 
 	# #################################################################################################

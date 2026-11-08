@@ -527,6 +527,14 @@ class SkylinkContentProvider(ModuleContentProvider):
 			SkylinkModuleExtra(self),
 		]
 
+		# po zmene filtra predplatného sa zoznam kanálov načíta znova hneď, nie až po vypršaní pamäte
+		self.add_setting_change_notifier(['only_subscribed'], self.subscription_filter_changed)
+
+	# ##############################################################################################################
+
+	def subscription_filter_changed(self, name, value):
+		self.channels_next_load_time = 0
+
 	# ##############################################################################################################
 	# prihlásenie
 
@@ -635,7 +643,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 		if not force and self.channels and int(time()) < self.channels_next_load_time:
 			return
 
-		entries = self.api.get_channels(force=force)
+		entries = self.api.get_channels(force=force, only_subscribed=bool(self.get_setting('only_subscribed')))
 
 		if not entries:
 			if not self.channels:
