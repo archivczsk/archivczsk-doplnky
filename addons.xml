@@ -16,7 +16,7 @@
 <addon id="plugin.video.mtr.sk" name="Mestská TV Ružomberok" version="1.4.0" hash="3448d87e3a93b98bd90cf2ddcca421f5" rhash="3448d87e3a93b98bd90cf2ddcca421f5" />
 <addon id="plugin.video.novaplus" name="TV Nova" version="3.16" hash="7924b5f8cf64cd93abd3cf5995bb3167" rhash="013563f1f0963fbd28cfc66fbf01af43" />
 <addon id="plugin.video.oneplay" name="Oneplay" version="1.31" hash="0847b00762b7a36de24a7acd50c7f2ac" rhash="33670e1874ae729158ffbdb5ca37df31" />
-<addon id="plugin.video.orangetv" name="OrangeTV" version="2.30" hash="666f75ebebcbf6d1c2139898b7087626" rhash="2da6f3f72fabe638b8c86ed2cfd49f59" />
+<addon id="plugin.video.orangetv" name="OrangeTV" version="2.31" hash="6d33cfc3b030c4f57524dc8dc305eb0d" rhash="827ab5a6f9ec737c0b1c5776190b6d13" />
 <addon id="plugin.video.pohadkar.cz" name="Pohádkář.cz" version="1.5.0" hash="2f30d87101b495adc0afb4cb95736753" rhash="2f30d87101b495adc0afb4cb95736753" />
 <addon id="plugin.video.prehrajto" name="Prehraj.to" version="1.6" hash="e3ffb4f832e2cecbfa72e0d63e0f33ac" rhash="02e9a1fa8192172079fff23e5021fbda" />
 <addon id="plugin.video.primaplus" name="Prima+" version="1.18" hash="ac440f7ede72f63e270f854dc9a77313" rhash="810f2ddc0bf92b20c50ec5e09e54bdd3" />
@@ -42,7 +42,7 @@
 <addon id="plugin.video.voyo" name="VOYO" version="1.13" hash="58cd7ab093d0b46d74bb09239e7350f7" rhash="eff4e3edb0757061407f18700ffb5662" />
 <addon id="plugin.video.webshare" name="Webshare.cz" version="1.8" hash="803dbf9e36598f70a807979c3088e17a" rhash="1e9184c3a0e9471bd52833d439d08bbd" />
 <addon id="plugin.video.yt" name="YouTube" version="3.5" hash="3e283adbfd0a729f26bec01f393791c3" rhash="58188baf22d557a303ab91eb85b8faf1" />
-<addon id="tools.archivczsk" name="Addons base" version="3.25" hash="5c19e9c2b25e7e9592e7ce242aa4f9ac" rhash="b344dd1f88ebe3b4285ba3f71f57bbef" />
+<addon id="tools.archivczsk" name="Addons base" version="3.26" hash="0b2fd53bf32a6d3d356b2536156a33b9" rhash="e4019ecbd203e3140d297e2601c99f25" />
 <addon id="tools.cenc" name="Content encryption support" version="1.14" hash="b8ae8b880ea6764cbbb3d74c9c481598" rhash="b8ae8b880ea6764cbbb3d74c9c481598" />
 <addon id="tools.player.armv7l" name="Exteplayer3 and ffmpeg" version="1.2" arch="armv7l" hash="9fbe9a9965957b8b43355fa714ad5773" rhash="9fbe9a9965957b8b43355fa714ad5773" />
 <addon id="tools.player.mips" name="Exteplayer3 and ffmpeg" version="1.2" arch="mips" hash="c852c5ab264368e11db82fae901e5329" rhash="c852c5ab264368e11db82fae901e5329" />
