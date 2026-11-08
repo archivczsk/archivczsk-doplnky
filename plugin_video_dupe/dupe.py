@@ -348,9 +348,15 @@ class Dupe(object):
 
 		if provider_name == 'SKTOR':
 			# the simplest one ...
+			try:
+				url = soup.find('video').find('source').get('src')
+			except:
+				self.cp.log_exception()
+				url = None
+
 			return {
 				'type': 'mp4',
-				'url': (soup.find('video') or {}).get('src')
+				'url': url
 			}
 
 		provider_url = (soup.find('iframe') or {}).get('src')

@@ -1,3 +1,6 @@
+1.9: 08.11.2026
+- oprava prehrávania zo zdroja SKTOR
+
 1.8: 18.10.2026
 - opravy pádov pri nesprávnych dátach vrátených serverom
 
