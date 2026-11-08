@@ -2,3 +2,7 @@
 - prvé vydanie
 - podpora pre Live TV, archív 7 dní a userbouquet
 - prihlásenie kódom cez connect.canalplus.com
+- Python 3: prehrávanie cez PlayReady vo Full HD
+- Python 2.7 (VTi, OE 2.5): PlayReady CDM nie je k dispozícii, prehrávanie ide automaticky
+  cez Widevine v SD kvalite; vyžaduje aktuálny exteplayer3 (tools.player)
+- prehrávanie vždy cez exteplayer3 (gstplayer DASH s DRM neprehrá)

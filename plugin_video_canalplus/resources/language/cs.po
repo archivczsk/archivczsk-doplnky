@@ -161,5 +161,14 @@ msgstr "Maximální šířka pásma nabízeného streamu"
 msgid "Session key (set automatically)"
 msgstr "Klíč relace (nastaví se automaticky)"
 
-msgid "Enable adult channels"
-msgstr "Povolit kanály pro dospělé"
+msgid "Userbouquet"
+msgstr "Userbouquet"
+
+msgid "Playback: %s"
+msgstr "Přehrávání: %s"
+
+msgid "PlayReady, Full HD"
+msgstr "PlayReady, Full HD"
+
+msgid "Widevine, SD (this receiver has Python 2.7)"
+msgstr "Widevine, SD (tento přijímač má Python 2.7)"

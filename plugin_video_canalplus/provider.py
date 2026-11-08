@@ -3,6 +3,7 @@
 # Canal+ (SK/CZ) - zive kanaly, archiv, userbouquet a XML EPG.
 # Prihlasenie kodom cez connect.canalplus.com (vid canalplus_api.py).
 
+import sys
 import base64
 from hashlib import md5
 from time import time, strftime, localtime
@@ -22,6 +23,8 @@ CHANNELS_CACHE_SECONDS = 600
 
 # dokedy siaha DVR okno (catch-up) a aky dlhy je blok v nahradnom vypise archivu
 ARCHIVE_HOURS = 168         # 7 dni
+# PlayReady CDM v tools_cenc potrebuje Python 3; na Python 2.7 ide prehravanie cez Widevine (Solocoo)
+is_py2 = sys.version_info[0] == 2
 ARCHIVE_BLOCK_SECONDS = 30 * 60
 
 # rozmer picon/loga (LogoUrl ma zastupny {resolutionXY})
@@ -291,6 +294,11 @@ class CanalplusModuleExtra(CPModuleTemplate):
 			self.cp.add_video(self._("Zone: %s") % info['zone'], None, {}, download=False, cmd=self.cp.noop)
 		self.cp.add_video(self._("Number of channels: %d") % len(self.cp.channels),
 		                  None, {}, download=False, cmd=self.cp.noop)
+		if self.cp.widevine_wanted():
+			drm = self._("Widevine, SD (this receiver has Python 2.7)")
+		else:
+			drm = self._("PlayReady, Full HD")
+		self.cp.add_video(self._("Playback: %s") % drm, None, {}, download=False, cmd=self.cp.noop)
 
 	def check_playback(self):
 		try:
@@ -318,7 +326,7 @@ class CanalplusModuleExtra(CPModuleTemplate):
 		self.cp.api.teardown(stream.get('teardown'))
 		self.cp.play_session = {}
 
-		if stream.get('url') and self.cp.api.live_token:
+		if stream.get('url') and (stream.get('license_url') or self.cp.api.live_token):
 			self.cp.show_info(self._("No error occured during playback check. Playback should work."))
 		else:
 			self.cp.show_error(self._("The server did not return a stream or a license token."))
@@ -607,6 +615,23 @@ class CanalplusContentProvider(ModuleContentProvider):
 		license_headers = dict(headers)
 		license_headers['Content-Type'] = 'application/json'
 
+		if stream_key.get('wv'):
+			# zalozna cesta cez Solocoo Widevine (Python 2.7)
+			wv_headers = self.api.solocoo.stream_headers()
+			wv_license_headers = dict(wv_headers)
+			wv_license_headers['Content-Type'] = 'application/octet-stream'
+			return {
+				'url': stream_key['url'],
+				'bandwidth': stream_key.get('bandwidth'),
+				'headers': wv_headers,
+				'drm': {
+					'wv': {
+						'license_url': stream_key['wv'],
+						'headers': wv_license_headers,
+					}
+				}
+			}
+
 		ctx = stream_key.get('license') or {}
 
 		return {
@@ -622,6 +647,47 @@ class CanalplusContentProvider(ModuleContentProvider):
 			}
 		}
 
+	def widevine_wanted(self):
+		"""Python 3 = PlayReady (Full HD), Python 2.7 = Widevine cez Solocoo (SD) - rozhoduje sa samo."""
+		return is_py2
+
+	def solocoo_asset_for(self, channel_key, begin=None, end=None):
+		"""Solocoo id na prehratie: zivy kanal = cc<EpgId>, archiv = id relacie z programu."""
+		if begin is None:
+			return self.api.solocoo_cc_id(channel_key)
+		t_from = int(begin)
+		t_to = int(end) if end else t_from + 1
+		events = self.api.get_epg_range(channel_key, t_from, t_to) or []
+		best = None
+		for ev in events:
+			if not ev.get('id'):
+				continue
+			if best is None or abs(int(ev['start']) - t_from) < abs(int(best['start']) - t_from):
+				best = ev
+		if best is None:
+			# program este nie je stiahnuty - skus ho dotiahnut a hladaj znova
+			try:
+				self.api.fetch_solocoo_channel(channel_key, t_from - 3600, t_to + 3600, with_desc=False)
+			except Exception:
+				self.log_exception()
+			for ev in self.api.get_epg_range(channel_key, t_from, t_to) or []:
+				if ev.get('id') and (best is None or abs(int(ev['start']) - t_from) < abs(int(best['start']) - t_from)):
+					best = ev
+		return best['id'] if best else None
+
+	def get_stream_info_wv(self, channel_key, begin=None, end=None):
+		"""Manifest a Widevine licencia zo Solocoo (bez keepalive relacie)."""
+		if not self.api.solocoo.is_paired():
+			raise CanalplusSessionError('Not paired')
+		asset_id = self.solocoo_asset_for(channel_key, begin, end)
+		if not asset_id:
+			raise Exception('No programme found for this time in the archive')
+		stream = self.api.solocoo.get_stream(asset_id)
+		if stream.get('url'):
+			self.log_info('Widevine stream from: %s' % (stream['url'].split('/')[2] if stream['url'].count('/') >= 2 else '?'))
+		self.play_session = {}
+		return stream
+
 	def get_stream_info(self, channel_key, begin=None, end=None):
 		"""Vrati adresu manifestu a licencny kontext - pouziva aj HTTP handler pre bouquet."""
 		channel = self.channels_by_key.get(channel_key)
@@ -630,6 +696,9 @@ class CanalplusContentProvider(ModuleContentProvider):
 			channel = self.channels_by_key.get(channel_key)
 		if not channel:
 			raise Exception('Unknown channel')
+
+		if self.widevine_wanted():
+			return self.get_stream_info_wv(channel_key, begin=begin, end=end)
 
 		raw = None
 		for item in self.api.channels():
@@ -698,12 +767,23 @@ class CanalplusContentProvider(ModuleContentProvider):
 			self.show_error(self._("No stream URL received from server."))
 			return
 
+		if stream.get('license_url'):
+			# Widevine cesta (Solocoo)
+			if not self.resolve_dash_streams_wv(stream, stream_title or stream.get('title') or '', live):
+				self.show_error(self._("Failed to load the DASH stream."))
+			return
+
 		if not self.api.live_token:
 			self.show_error(self._("No license token received. The stream cannot be played."))
 			return
 
 		if not self.resolve_dash_streams(stream, stream_title or stream.get('title') or '', live):
 			self.show_error(self._("Failed to load the DASH stream."))
+
+	def player_settings(self):
+		"""DASH s DRM vie prehrat len exteplayer3 - vynutime ho bez ohladu na predvoleny prehravac
+		v archivCZSK (gstplayer da len cierny obraz)."""
+		return {'stype': 5002}
 
 	def limit_streams(self, streams):
 		try:
@@ -721,6 +801,28 @@ class CanalplusContentProvider(ModuleContentProvider):
 		streams = self.get_dash_streams(manifest_url, headers=self.stream_headers(),
 		                                max_bitrate=self.get_setting('max_bitrate'))
 		return self.limit_streams(streams)
+
+	def resolve_dash_streams_wv(self, stream, title, live):
+		"""Widevine (Solocoo): s klucmi L3 dava Canal+ realne SD bez ohladu na stopu v manifeste,
+		preto sa ponukne jedna polozka (najvyssia povolena stopa) oznacena ako SD."""
+		streams = self.get_dash_streams(stream['url'], headers=self.api.solocoo.stream_headers(),
+		                                max_bitrate=self.get_setting('max_bitrate'))
+		streams = self.limit_streams(streams)
+		if not streams:
+			return False
+		s = max(streams, key=lambda x: int(x.get('bandwidth') or 0))
+		stream_key = {
+			'url': s['playlist_url'],
+			'bandwidth': s['bandwidth'],
+			'wv': stream.get('license_url') or '',
+		}
+		url = stream_key_to_dash_url(self.http_endpoint, stream_key)
+		info_labels = {
+			'bandwidth': int(s['bandwidth']),
+			'quality': 'SD (Widevine)',
+		}
+		self.add_play(title, url, info_labels=info_labels, settings=self.player_settings(), live=live)
+		return True
 
 	def resolve_dash_streams(self, stream, title, live):
 		streams = self.resolve_streams_for_channel(stream['url'])
@@ -743,6 +845,6 @@ class CanalplusContentProvider(ModuleContentProvider):
 				'bandwidth': int(s['bandwidth']),
 				'quality': s['height'] + 'p' if s.get('height') else 'max',
 			}
-			self.add_play(title, url, info_labels=info_labels, live=live)
+			self.add_play(title, url, info_labels=info_labels, settings=self.player_settings(), live=live)
 
 		return True

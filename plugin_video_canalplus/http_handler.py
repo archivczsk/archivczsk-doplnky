@@ -33,7 +33,10 @@ class CanalplusHTTPRequestHandler(DashHTTPRequestHandler, PlayliveTVHTTPRequestH
 	def sync_stream_headers(self):
 		"""Segmenty idu cez req_session, potrebuju rovnake hlavicky ako manifest."""
 		try:
-			self.req_session.headers.update(self.cp.stream_headers())
+			if self.cp.widevine_wanted():
+				self.req_session.headers.update(self.cp.api.solocoo.stream_headers())
+			else:
+				self.req_session.headers.update(self.cp.stream_headers())
 		except Exception:
 			self.cp.log_exception()
 
@@ -78,19 +81,28 @@ class CanalplusHTTPRequestHandler(DashHTTPRequestHandler, PlayliveTVHTTPRequestH
 
 		bandwidth = 1000000000
 		try:
-			streams = self.cp.resolve_streams_for_channel(stream['url'])
+			if stream.get('license_url'):
+				streams = self.cp.limit_streams(self.cp.get_dash_streams(stream['url'],
+				                                headers=self.cp.api.solocoo.stream_headers(),
+				                                max_bitrate=self.cp.get_setting('max_bitrate')))
+			else:
+				streams = self.cp.resolve_streams_for_channel(stream['url'])
 			if streams:
 				bandwidth = int(streams[0]['bandwidth'])
 		except Exception:
 			self.cp.log_exception()
 
-		return {
+		info = {
 			'url': stream['url'],
 			'bandwidth': bandwidth,
 			'license': stream.get('license') or {},
 			'web': self.cp.api.web_url(),
 			'created': int(time()),
 		}
+		if stream.get('license_url'):
+			# Widevine cesta (Solocoo)
+			info['wv'] = stream['license_url']
+		return info
 
 	# #################################################################################################
 

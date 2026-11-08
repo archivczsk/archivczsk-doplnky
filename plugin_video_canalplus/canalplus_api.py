@@ -30,7 +30,7 @@ SPYRO_BASE = 'https://spyro.prod.catalog.canal.canalplustech.pro/spyro/metadata'
 WEB_HOST = 'https://www.canalplus.com'
 
 ADDON_VERSION = '1.0.0'
-ADDON_BUILD = 8
+ADDON_BUILD = 11
 
 USER_AGENT = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
               '(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36')

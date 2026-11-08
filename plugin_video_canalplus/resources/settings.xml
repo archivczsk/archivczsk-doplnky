@@ -4,7 +4,6 @@
 	<setting label="Maximum resolution of the offered stream" id="max_resolution" type="keyenum" values="0;Unlimited|1080;1080p|720;720p|576;576p|480;480p|360;360p" default="0" />
 	<category label="Userbouquet">
 		<setting label="Automatically export channel list as userbouquet" id="enable_userbouquet" type="bool" default="false" />
-		<setting label="Enable adult channels" id="enable_adult" type="bool" default="true" />
 		<setting label="Generate XML EPG for epgimport plugin (if installed)" id="enable_xmlepg" type="bool" default="false" />
 		<setting label="Directory for XML EPG data (need at least 20MB of free space)" id="xmlepg_dir" type="text" default="/media/hdd" />
 		<setting label="For how many days to generate XML EPG" id="xmlepg_days" type="enum" lvalues="1|2|3|4|5|6|7" default="4"/>
