@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 #
-# Canal+ (SK/CZ) - platforma Canal+ nad CDN Solocoo / Broadpeak.
+# Canal+ (SK/CZ) - the Canal+ platform on top of the Solocoo / Broadpeak CDN.
 #
-# Doplnok je hybridny:
-#   - prihlasenie kodom cez connect.canalplus.com a program (EPG) s historiou ide cez
-#     Solocoo (solocoo_api.py); Solocoo session zaroven vrati Canal+ passToken,
-#   - prehravanie (zive aj archiv) ide nativne cez Canal+, kde box dostane HD cez PlayReady:
-#       1. InitLiveTV(passToken)                   -> kanaly, LiveToken, RMUToken
-#       2. WSXUrl(RMUToken) -> routemeup           -> adresa MPD
-#       3. GetLicence(LiveToken, EpgId, challenge) -> PlayReady licencia
+# The addon is hybrid:
+#   - sign-in by code via connect.canalplus.com and the schedule (EPG) with history go through
+#     Solocoo (solocoo_api.py); the Solocoo session also returns the Canal+ passToken,
+#   - playback (live and archive) goes natively through Canal+, where the box gets HD via PlayReady:
+#       1. InitLiveTV(passToken)                   -> channels, LiveToken, RMUToken
+#       2. WSXUrl(RMUToken) -> routemeup           -> MPD URL
+#       3. GetLicence(LiveToken, EpgId, challenge) -> PlayReady license
 #
-# Program sa uklada na disk (Solocoo historia + verejny katalog spyro pre aktualny cas)
-# a z ulozeneho programu cerpa zoznam kanalov, archiv aj XML EPG.
+# The schedule is stored on disk (Solocoo history + public spyro catalogue for the current time)
+# and the channel list, archive and XML EPG all read from the stored schedule.
 
 import calendar
 import json
@@ -29,8 +29,7 @@ LTV_BASE = 'https://ltv.services.canalplustech.pro/api/V4'
 SPYRO_BASE = 'https://spyro.prod.catalog.canal.canalplustech.pro/spyro/metadata'
 WEB_HOST = 'https://www.canalplus.com'
 
-ADDON_VERSION = '1.0.1'
-ADDON_BUILD = 12
+ADDON_BUILD = 19
 
 USER_AGENT = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
               '(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36')
@@ -42,15 +41,15 @@ LICENCE_PROVIDER = 'PlayReady'
 LICENCE_MODE = 'MKPL'
 
 BRANDS = {
-	'cpsvk': {'zone': 'cpsvk', 'loc': 'sk', 'lang': 'sk-SK', 'web': 'https://www.canalplus.com/sk/sk/'},
-	'cpscz': {'zone': 'cpscz', 'loc': 'cz', 'lang': 'cs-CZ', 'web': 'https://www.canalplus.com/cz/cs/'},
+	'cpsvk': {'zone': 'cpsvk', 'loc': 'sk'},
+	'cpscz': {'zone': 'cpscz', 'loc': 'cz'},
 }
 
-PASS_TOKEN_TTL = 1800       # passToken obnovujeme po tomto case
-INIT_TTL = 3 * 3600         # InitLiveTV (RMUToken/LiveToken) obnovujeme po tomto case
-EPG_TTL = 600               # program kanala drzime v pamati
-EPG_HISTORY_DAYS = 8        # kolko dni programu drzime na disku
-EPG_WORKERS = 10            # kolko kanalov nacitavame paralelne
+PASS_TOKEN_TTL = 1800       # passToken is refreshed after this time
+INIT_TTL = 3 * 3600         # InitLiveTV (RMUToken/LiveToken) is refreshed after this time
+EPG_TTL = 600               # channel schedule is kept in memory for this time
+EPG_HISTORY_DAYS = 8        # how many days of schedule are kept on disk
+EPG_WORKERS = 10            # how many channels are loaded in parallel
 TIMEOUT = 20
 
 
@@ -73,7 +72,7 @@ def spyro_image(url, size='320x180'):
 
 
 def error_text(e):
-	"""Text vynimky bezpecne pre Python 2 aj 3."""
+	"""Exception text safe for both Python 2 and 3."""
 	msg = None
 	try:
 		if getattr(e, 'args', None):
@@ -94,7 +93,7 @@ def error_text(e):
 
 
 def event_details(ev):
-	"""Popis relacie - plny popis zo Solocoo, inak aspon podnazov (epizoda)."""
+	"""Programme description - full description from Solocoo, otherwise at least the subtitle (episode)."""
 	if not isinstance(ev, dict):
 		return ''
 	desc = ev.get('desc') or ''
@@ -109,17 +108,17 @@ def new_user_key_id():
 
 
 def _new_device_key_id():
-	"""DeviceKeyId pre GetLicence vo formate <ms>-<12hex> (ako webovy klient)."""
+	"""DeviceKeyId for GetLicence in the <ms>-<12hex> format (like the web client)."""
 	return '%d-%012x' % (int(time() * 1000), random.getrandbits(48))
 
 
 def _bpk_time(ts):
-	"""unix timestamp -> YYYYMMDDTHHMMSS (UTC) pre broadpeak begin/end"""
+	"""unix timestamp -> YYYYMMDDTHHMMSS (UTC) for broadpeak begin/end"""
 	return strftime('%Y%m%dT%H%M%S', gmtime(int(ts)))
 
 
 def _strip_bpk_placeholders(src):
-	"""Odstrani z adresy zastupne parametre Broadpeak SmartLib (bkm-query, begin, end)."""
+	"""Removes the Broadpeak SmartLib placeholder parameters (bkm-query, begin, end) from the URL."""
 	if not src or '?' not in src:
 		return src
 	base, query = src.split('?', 1)
@@ -129,7 +128,7 @@ def _strip_bpk_placeholders(src):
 
 
 class CanalplusSessionError(Exception):
-	"""Neplatny alebo vyprsany passId/token."""
+	"""Invalid or expired passId/token."""
 	pass
 
 
@@ -155,10 +154,10 @@ class CanalplusApi(object):
 		self._epg_cache = {}
 		self._epg_saved_sig = {}
 		self._epg_lock = threading.Lock()
-		self._epg_file_lock = threading.Lock()   # nacitanie + zlucenie + zapis programu kanala
+		self._epg_file_lock = threading.Lock()   # load + merge + save of a channel schedule
 		self._lock = threading.RLock()
 
-		# Solocoo - prihlasenie a program s historiou
+		# Solocoo - sign-in and schedule with history
 		self.solocoo = SolocooEpg(self)
 		self._solocoo_fetch_time = 0
 
@@ -166,9 +165,6 @@ class CanalplusApi(object):
 
 	def _brand(self):
 		return BRANDS.get(self.brand) or BRANDS['cpsvk']
-
-	def web_url(self):
-		return self._brand()['web']
 
 	def logged_in(self):
 		return bool(self.pass_token) or self.solocoo.is_paired()
@@ -194,7 +190,7 @@ class CanalplusApi(object):
 		return value if value > 0 else TIMEOUT
 
 	def ensure_pass_token(self, force=False):
-		"""Canal+ passToken na nativne prehravanie - dava ho Solocoo session."""
+		"""Canal+ passToken for native playback - provided by the Solocoo session."""
 		with self._lock:
 			if not force and self.pass_token and (time() - self.pass_token_time) < PASS_TOKEN_TTL:
 				return
@@ -211,7 +207,7 @@ class CanalplusApi(object):
 			self.pass_token_time = time()
 
 	# ##############################################################################################################
-	# kanaly
+	# channels
 
 	def _ltv_url(self, device, job, provider=None):
 		b = self._brand()
@@ -285,7 +281,7 @@ class CanalplusApi(object):
 		return self.channels_raw
 
 	# ##############################################################################################################
-	# prehravanie
+	# playback
 
 	def _resolve_routemeup(self, wsx_url):
 		url = (wsx_url or '').replace('{RMUToken}', self.rmu_token or '')
@@ -297,10 +293,10 @@ class CanalplusApi(object):
 		return response.json()
 
 	def _routemeup(self, channel, dvr):
-		"""routemeup pre kanal, pri vyprsanom RMUTokene raz obnovi InitLiveTV."""
+		"""routemeup for a channel; on an expired RMUToken refreshes InitLiveTV once."""
 		def wsx():
 			url = channel.get('WSXUrl') or ''
-			# archiv ma samostatnu cestu dvr-dash s rovnakym RMUTokenom
+			# the archive has its own dvr-dash path with the same RMUToken
 			return url.replace('/dash/', '/dvr-dash/').replace('.json?', '?') if dvr else url
 
 		try:
@@ -313,12 +309,12 @@ class CanalplusApi(object):
 		except CanalplusSessionError as e:
 			if not dvr:
 				raise
-			# archiv odmietnuty aj s novym tokenom - nie je to vyprsane prihlasenie
+			# archive refused even with a new token - this is not an expired sign-in
 			raise Exception('Archive is not available (%s)' % error_text(e))
 
 	def get_stream(self, channel, live=True, begin=None, end=None):
-		"""Adresa manifestu a licencny kontext pre kanal (zaznam z InitLiveTV).
-		begin/end (unix timestamp) = prehravanie z archivu."""
+		"""Manifest URL and license context for a channel (InitLiveTV record).
+		begin/end (unix timestamp) = archive playback."""
 		self.ensure_channels()
 
 		if not channel.get('WSXUrl'):
@@ -350,7 +346,7 @@ class CanalplusApi(object):
 			'title': channel.get('Name') or '',
 			'keepalive': (callbacks.get('keepalive') or {}).get('url'),
 			'teardown': (callbacks.get('teardown') or {}).get('url'),
-			# LiveToken a UserKeyId nedavame do adresy (su dlhe), citaju sa pri licencii z pamate
+			# LiveToken and UserKeyId are not put into the URL (they are long), they are read from memory at license time
 			'license': {
 				'url': self._ltv_url(DEVICE_LICENCE, 'GetLicence', LICENCE_PROVIDER),
 				'epg_id': channel.get('EpgId'),
@@ -358,8 +354,8 @@ class CanalplusApi(object):
 		}
 
 	def get_license(self, ctx, challenge):
-		"""Zabali PlayReady challenge do GetLicence a vrati licenciu (bytes).
-		Ak server LiveToken odmietne, raz obnovi InitLiveTV a skusi znova."""
+		"""Wraps the PlayReady challenge into GetLicence and returns the license (bytes).
+		If the server refuses the LiveToken, refreshes InitLiveTV once and retries."""
 		self.ensure_channels()
 
 		if isinstance(challenge, bytes):
@@ -368,7 +364,7 @@ class CanalplusApi(object):
 			except Exception:
 				challenge = challenge.decode('latin-1')
 
-		# ChallengeInfo sa vklada do vacsieho XML, deklaracia <?xml ...?> tam byt nesmie
+		# ChallengeInfo is embedded into a larger XML, the <?xml ...?> declaration must not be there
 		challenge = challenge.lstrip()
 		if challenge.startswith('<?xml'):
 			pos = challenge.find('?>')
@@ -400,7 +396,7 @@ class CanalplusApi(object):
 			licence = (sr.get('OutData') or {}).get('LicenseInfo')
 			if licence or attempt == 2:
 				break
-			# token mohol vyprsat skor nez INIT_TTL - obnovime a skusime este raz
+			# the token may have expired before INIT_TTL - refresh and try once more
 			self.cp.log_debug('GetLicence failed (HTTP %d), refreshing InitLiveTV' % response.status_code)
 			try:
 				self.ensure_channels(force=True)
@@ -417,7 +413,7 @@ class CanalplusApi(object):
 		return licence.encode('utf-8')
 
 	def _session_callback(self, url, what):
-		"""Broadpeak keepalive/teardown - nikdy nevyhodi chybu."""
+		"""Broadpeak keepalive/teardown - never raises."""
 		if not url:
 			return
 		try:
@@ -432,7 +428,7 @@ class CanalplusApi(object):
 		self._session_callback(url, 'teardown')
 
 	# ##############################################################################################################
-	# program (EPG)
+	# schedule (EPG)
 
 	def _epg_store_path(self, epg_id):
 		if not self.data_dir:
@@ -440,7 +436,7 @@ class CanalplusApi(object):
 		return os.path.join(self.data_dir, 'epg', '%s.json' % epg_id)
 
 	def _epg_load_stored(self, epg_id):
-		"""Format suboru: [[start, end, nazov, podnazov, obrazok], ...]"""
+		"""File format: [[start, end, title, subtitle, image], ...]"""
 		path = self._epg_store_path(epg_id)
 		if not path:
 			return []
@@ -482,7 +478,7 @@ class CanalplusApi(object):
 		return '%s/%s/%s/canal-3.0/chid%s.json' % (SPYRO_BASE, b['zone'], b['loc'], epg_id)
 
 	def _fetch_epg(self, epg_id):
-		"""Program kanala z verejneho katalogu. Vrati None, ak sa nepodarilo nacitat."""
+		"""Channel schedule from the public catalogue. Returns None if it couldn't be loaded."""
 		try:
 			response = self.req_session.get(self._spyro_url(epg_id),
 			                                headers={'User-Agent': USER_AGENT, 'Origin': WEB_HOST},
@@ -512,7 +508,7 @@ class CanalplusApi(object):
 		return events
 
 	def get_epg(self, epg_id):
-		"""Program kanala (stiahnuty + ulozena historia) ako [{start, end, title, subtitle, image}]."""
+		"""Channel schedule (downloaded + stored history) as [{start, end, title, subtitle, image}]."""
 		epg_id = str(epg_id)
 		now = time()
 		with self._epg_lock:
@@ -530,7 +526,7 @@ class CanalplusApi(object):
 			events = sorted((ev for s, ev in merged.items() if s >= cutoff), key=lambda ev: ev['start'])
 
 			if fetched:
-				# zapisujeme len pri zmene
+				# write only when changed
 				sig = (len(events), events[0]['start'] if events else 0, events[-1]['start'] if events else 0)
 				if self._epg_saved_sig.get(epg_id) != sig:
 					self._epg_save(epg_id, events)
@@ -544,19 +540,19 @@ class CanalplusApi(object):
 
 	@staticmethod
 	def _merge_window(merged, stored, fresh):
-		"""Zluci ulozeny program s cerstvo stiahnutym.
+		"""Merges the stored schedule with a freshly downloaded one.
 
-		Ulozena relacia, ktora sa casovo prekryva s niektorou cerstvou, sa zahodi (pri posune
-		programu by inak ostali stare aj nove). Ak cerstva relacia s rovnakym zaciatkom a nazvom
-		nema popis, obrazok, podnazov alebo id, prevezmu sa z ulozenej. Kde cerstvy program
-		chyba (napr. zlyhal jeden dotaz), ulozeny ostava."""
+		A stored programme overlapping in time with a fresh one is dropped (otherwise both the old
+		and the new one would remain when the schedule shifts). If a fresh programme with the same
+		start and title lacks a description, image, subtitle or id, they are taken from the stored one.
+		Where the fresh schedule is missing (e.g. one request failed), the stored one stays."""
 		fresh = sorted(fresh, key=lambda e: e['start'])
 		starts = [ev['start'] for ev in fresh]
 		replaced = {}
 		for ev in stored:
 			s = ev['start']
 			e = ev['end'] or (s + 1)
-			i = bisect_left(starts, e) - 1     # posledna cerstva relacia, ktora zacina pred koncom
+			i = bisect_left(starts, e) - 1     # last fresh programme starting before the end
 			if i >= 0 and (fresh[i]['end'] or (fresh[i]['start'] + 1)) > s:
 				replaced[s] = ev
 				continue
@@ -570,7 +566,7 @@ class CanalplusApi(object):
 			merged[ev['start']] = ev
 
 	def get_epg_now_many(self, epg_ids, when=None):
-		"""Paralelne nacita program a vrati {epg_id: prave beziaca udalost alebo None}."""
+		"""Loads the schedule in parallel and returns {epg_id: currently running event or None}."""
 		when = when or int(time())
 		result = {}
 		todo = [str(e) for e in epg_ids if e]
@@ -605,14 +601,14 @@ class CanalplusApi(object):
 		return result
 
 	def get_epg_range(self, epg_id, time_from, time_to):
-		"""Udalosti kanala, ktore zasahuju do rozsahu."""
+		"""Channel events overlapping the range."""
 		return [ev for ev in self.get_epg(epg_id)
 		        if (ev['end'] or (ev['start'] + 1)) > time_from and ev['start'] < time_to]
 
 	# ##############################################################################################################
-	# Solocoo program (EPG s historiou) - zapisuje sa do toho isteho uloziska ako spyro,
-	# takze ho pouziju zoznam kanalov, archiv aj XML EPG.
-	# Solocoo id kanala = 'cc' + nativne EpgId.
+	# Solocoo schedule (EPG with history) - written into the same storage as spyro,
+	# so the channel list, archive and XML EPG all use it.
+	# Solocoo channel id = 'cc' + native EpgId.
 
 	@staticmethod
 	def solocoo_cc_id(epg_id):
@@ -620,7 +616,7 @@ class CanalplusApi(object):
 		return eid if eid.startswith('cc') else ('cc' + eid)
 
 	def _merge_solocoo(self, epg_id, events):
-		"""Zluci Solocoo udalosti s ulozenym programom kanala a ulozi."""
+		"""Merges Solocoo events with the stored channel schedule and saves it."""
 		if not events:
 			return 0
 		epg_id = str(epg_id)
@@ -631,13 +627,13 @@ class CanalplusApi(object):
 			out = sorted((ev for s, ev in merged.items() if s >= cutoff), key=lambda e: e['start'])
 			self._epg_save(epg_id, out)
 		with self._epg_lock:
-			self._epg_saved_sig[epg_id] = None   # dalsie zlucenie so spyro sa ulozi
+			self._epg_saved_sig[epg_id] = None   # the next merge with spyro will be saved
 			self._epg_cache.pop(epg_id, None)
 		return len(events)
 
 	def fetch_solocoo_channel(self, epg_id, time_from, time_to, with_desc=True):
-		"""Na poziadanie dotiahne Solocoo program jedneho kanala pre dany rozsah,
-		vratane plnych popisov relacii (synopsa). Vola sa pri otvoreni archivneho dna."""
+		"""Fetches the Solocoo schedule of one channel for the given range on demand,
+		including full programme descriptions (synopsis). Called when an archive day is opened."""
 		if not self.solocoo.is_paired():
 			return False
 		cc = self.solocoo_cc_id(epg_id)
@@ -663,8 +659,8 @@ class CanalplusApi(object):
 		return True
 
 	def fetch_solocoo_epg(self, channels, force=False):
-		"""Hromadne dotiahne Solocoo program (historia + par dni dopredu) pre vsetky kanaly.
-		Vola sa na pozadi. Vrati pocet kanalov, do ktorych sa nieco zapisalo."""
+		"""Bulk-fetches the Solocoo schedule (history + a few days ahead) for all channels.
+		Called in the background. Returns the number of channels that got something written."""
 		if not self.solocoo.is_paired() or not channels:
 			return 0
 		now = int(time())
@@ -697,8 +693,3 @@ class CanalplusApi(object):
 		self._solocoo_fetch_time = now
 		self.cp.log_debug('Solocoo schedule stored for %d channels' % count)
 		return count
-
-	# ##############################################################################################################
-
-	def account_summary(self):
-		return {'zone': self._brand()['zone']}

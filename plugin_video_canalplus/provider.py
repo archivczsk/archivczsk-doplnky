@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Canal+ (SK/CZ) - zive kanaly, archiv, userbouquet a XML EPG.
-# Prihlasenie kodom cez connect.canalplus.com (vid canalplus_api.py).
+# Canal+ (SK/CZ) - live channels, archive (catch-up), userbouquet and XML EPG.
+# Sign-in by code via connect.canalplus.com (see canalplus_api.py).
 
 import sys
 import base64
@@ -15,26 +15,27 @@ from tools_archivczsk.http_handler.dash import stream_key_to_dash_url
 from tools_archivczsk.generator.lamedb import channel_name_normalise
 
 from .canalplus_api import (CanalplusApi, CanalplusSessionError, USER_AGENT, error_text,
-                            event_details, new_user_key_id, ADDON_VERSION, ADDON_BUILD)
+                            event_details, new_user_key_id, ADDON_BUILD)
 from .bouquet import CanalplusBouquetXmlEpgGenerator
 
-# zoznam kanalov tahame najviac raz za tento cas
+# the channel list is fetched at most once per this interval
 CHANNELS_CACHE_SECONDS = 600
 
-# dokedy siaha DVR okno (catch-up) a aky dlhy je blok v nahradnom vypise archivu
-ARCHIVE_HOURS = 168         # 7 dni
-# PlayReady CDM v tools_cenc potrebuje Python 3; na Python 2.7 ide prehravanie cez Widevine (Solocoo)
-is_py2 = sys.version_info[0] == 2
+# how far the DVR (catch-up) window reaches and how long a block is in the fallback archive listing
+ARCHIVE_HOURS = 168         # 7 days
 ARCHIVE_BLOCK_SECONDS = 30 * 60
 
-# rozmer picon/loga (LogoUrl ma zastupny {resolutionXY})
+# PlayReady CDM in tools_cenc needs Python 3; on Python 2.7 playback goes via Widevine (Solocoo)
+is_py2 = sys.version_info[0] == 2
+
+# picon/logo size (LogoUrl contains the {resolutionXY} placeholder)
 LOGO_SIZE = '220x220'
 
 
 # ##################################################################################################################
 
 def _flag(value):
-	"""Priznak z API, ktore ho posiela ako retazec 'true' alebo ako bool."""
+	"""Flag from the API, which sends it either as the string 'true' or as a bool."""
 	return value in (True, 'true', 'True', 1, '1')
 
 
@@ -49,8 +50,8 @@ class CanalplusChannel(object):
 	             'epg_name', 'epg_desc', 'epg_img', 'epg_start', 'epg_stop')
 
 	def __init__(self, key, cid, name, picon=None, lcn=None, dvr=False, no_access=False):
-		self.key = key          # EpgId ako retazec
-		self.id = cid           # ciselne id pre bouquet
+		self.key = key          # EpgId as string
+		self.id = cid           # numeric id for the bouquet
 		self.name = name
 		self.picon = picon
 		self.lcn = lcn
@@ -147,7 +148,7 @@ class CanalplusModuleArchive(CPModuleArchive):
 		now = int(time())
 		oldest = now - ARCHIVE_HOURS * 3600
 
-		# pri otvoreni dna sa zo Solocoo dotiahne program aj s plnymi popismi relacii
+		# when a day is opened, the schedule including full programme descriptions is fetched from Solocoo
 		if self.cp.api.solocoo.is_paired():
 			try:
 				if self.cp.api.fetch_solocoo_channel(channel_id, ts_from - 3600, ts_to + 3600):
@@ -156,7 +157,7 @@ class CanalplusModuleArchive(CPModuleArchive):
 				self.cp.log_error('Solocoo schedule failed: %s' % error_text(e))
 
 		if not events:
-			# pre dni, z ktorych este nie je ulozeny program, ponukneme casove bloky
+			# for days without a stored schedule, time blocks are offered instead
 			self.archive_time_blocks(channel_id, channel_name, ts_from, ts_to, now)
 			return
 
@@ -174,7 +175,7 @@ class CanalplusModuleArchive(CPModuleArchive):
 			if start and stop:
 				info_labels['duration'] = stop - start
 			if start > now or stop <= oldest:
-				# este sa nevysielalo alebo uz je mimo archivu
+				# not broadcast yet or already outside the archive window
 				self.cp.add_video(_C('grey', title), ev.get('image'), info_labels, download=False, cmd=self.cp.noop)
 				continue
 
@@ -184,9 +185,9 @@ class CanalplusModuleArchive(CPModuleArchive):
 
 	def archive_time_blocks(self, channel_id, channel_name, ts_from, ts_to, now,
 	                        block=ARCHIVE_BLOCK_SECONDS):
-		"""Nahradny vypis archivu po casovych blokoch, ked pre dany den nemame program.
+		"""Fallback archive listing by time blocks when there is no schedule for the day.
 
-		Zobrazi len bloky, ktore uz prebehli a este su v DVR okne (ARCHIVE_HOURS)."""
+		Shows only blocks that already passed and are still inside the DVR window (ARCHIVE_HOURS)."""
 		oldest = now - ARCHIVE_HOURS * 3600
 		start = (int(ts_from) // block) * block
 		count = 0
@@ -212,7 +213,7 @@ class CanalplusModuleArchive(CPModuleArchive):
 	def get_archive_stream(self, channel_id, start, archive_title, stop=None):
 		return self.cp.play_asset(channel_id, archive_title, live=False, begin=start, end=stop)
 
-	# --- skratka do archivu z EPG prijimaca / z userbouquetu ---------------------------------------
+	# --- shortcut to the archive from the receiver EPG / userbouquet ------------------------------
 
 	def _archive_channel(self, channel_key):
 		try:
@@ -289,9 +290,7 @@ class CanalplusModuleExtra(CPModuleTemplate):
 			self.cp.show_error(self._("Failed to load account: %s") % error_text(e))
 			return
 
-		info = self.cp.api.account_summary()
-		if info.get('zone'):
-			self.cp.add_video(self._("Zone: %s") % info['zone'], None, {}, download=False, cmd=self.cp.noop)
+		self.cp.add_video(self._("Zone: %s") % self.cp.api.brand, None, {}, download=False, cmd=self.cp.noop)
 		self.cp.add_video(self._("Number of channels: %d") % len(self.cp.channels),
 		                  None, {}, download=False, cmd=self.cp.noop)
 		if self.cp.widevine_wanted():
@@ -322,7 +321,7 @@ class CanalplusModuleExtra(CPModuleTemplate):
 			self.cp.show_error(self._("Playback failed: %s") % error_text(e))
 			return
 
-		# kontrola nic neprehrava - Broadpeak relaciu hned zatvorime
+		# the check doesn't play anything - close the Broadpeak session right away
 		self.cp.api.teardown(stream.get('teardown'))
 		self.cp.play_session = {}
 
@@ -339,9 +338,10 @@ class CanalplusContentProvider(ModuleContentProvider):
 	def __init__(self):
 		ModuleContentProvider.__init__(self)
 
-		self.log_info('Canal+ %s (build %d)' % (ADDON_VERSION, ADDON_BUILD))
+		# the version is taken from addon.xml (via the framework) so the log matches the released version
+		self.add_initialised_callback(lambda: self.log_info('Canal+ %s (build %d)' % (self.get_addon_version(), ADDON_BUILD)))
 
-		# prihlasenie je ulozene v data_dir (Solocoo), nie v nastaveniach
+		# the sign-in is stored in data_dir (Solocoo), not in the settings
 		self.login_settings_names = ()
 		self.login_optional_settings_names = ('brand',)
 
@@ -352,7 +352,7 @@ class CanalplusContentProvider(ModuleContentProvider):
 		self.channels_next_load_time = 0
 		self.checksum = None
 
-		# callbacky prave prehravanej Broadpeak relacie (keepalive/teardown)
+		# callbacks of the currently playing Broadpeak session (keepalive/teardown)
 		self.play_session = {}
 
 		self.bxeg = CanalplusBouquetXmlEpgGenerator(self)
@@ -365,7 +365,7 @@ class CanalplusContentProvider(ModuleContentProvider):
 			CanalplusModuleExtra(self),
 		]
 
-		# po zmene filtra predplatneho sa zoznam kanalov nacita znova hned, nie az po vyprsani pamate
+		# after the subscription filter changes, the channel list is reloaded immediately, not after the cache expires
 		self.add_setting_change_notifier(['only_subscribed'], self.subscription_filter_changed)
 
 	# ##############################################################################################################
@@ -373,15 +373,15 @@ class CanalplusContentProvider(ModuleContentProvider):
 	def subscription_filter_changed(self, name, value):
 		self.channels_next_load_time = 0
 
-		# katalog ma len okno okolo aktualneho casu - program si priebezne ukladame,
-		# aby mal archiv nazvy relacii aj pre minule dni
+		# the catalogue only covers a window around the current time - the schedule is stored continuously
+		# so the archive has programme titles for past days too
 		try:
 			self.bgservice.run_in_loop('loop(epg)', (int(time()) % 1800) + 5400, self.collect_epg)
 		except Exception:
 			pass
 
 	# ##############################################################################################################
-	# prihlasenie
+	# sign-in
 
 	def login(self, silent):
 		brand = self.get_setting('brand') or 'cpsvk'
@@ -397,7 +397,7 @@ class CanalplusContentProvider(ModuleContentProvider):
 		self.channels_next_load_time = 0
 		self.checksum = None
 
-		# bez sparovania sa v menu ponukne prihlasenie kodom
+		# without pairing the menu offers sign-in by code
 		if not self.api.solocoo.is_paired():
 			self.needs_pairing = True
 			return True
@@ -424,7 +424,7 @@ class CanalplusContentProvider(ModuleContentProvider):
 			module.add()
 
 	def start_pairing(self):
-		"""Prihlasenie kodom cez connect.canalplus.com - plati pre program aj prehravanie."""
+		"""Sign-in by code via connect.canalplus.com - used for both the schedule and playback."""
 		try:
 			code, url = self.api.solocoo.request_pairing()
 		except Exception as e:
@@ -483,7 +483,7 @@ class CanalplusContentProvider(ModuleContentProvider):
 		return self.api.logged_in()
 
 	# ##############################################################################################################
-	# kanaly
+	# channels
 
 	def timestamp_to_str(self, timestamp, format_str='%H:%M'):
 		if not timestamp:
@@ -508,7 +508,7 @@ class CanalplusContentProvider(ModuleContentProvider):
 			if not key or not name:
 				continue
 
-			# kanal mimo predplatneho (server ho posiela, ale prehrat sa neda) - podla nastavenia vynechat
+			# channel outside the subscription (the server sends it, but it can't be played) - skip according to the setting
 			if only_subscribed and _flag((item.get('AccessRights') or {}).get('NoAccess')):
 				skipped += 1
 				continue
@@ -542,11 +542,11 @@ class CanalplusContentProvider(ModuleContentProvider):
 		self.channels_by_key = by_key
 		self.channels_next_load_time = int(time()) + CHANNELS_CACHE_SECONDS
 
-		# kontrolny sucet ponuky pre export bouquetu
+		# checksum of the channel offer for the bouquet export
 		self.checksum = md5(('%s|' % ADDON_BUILD + '|'.join(c.key for c in channels)).encode('utf-8')).hexdigest()
 
 	def load_epg(self, channels):
-		"""Doplni ku kanalom prave beziaci program (nazov, cas, popis, nahlad)."""
+		"""Adds the currently running programme (title, time, description, thumbnail) to the channels."""
 		now = int(time())
 		todo = [ch for ch in channels
 		        if not ch.epg_name or not ch.epg_stop or ch.epg_stop < now]
@@ -559,8 +559,8 @@ class CanalplusContentProvider(ModuleContentProvider):
 			self.log_error('Failed to load the EPG: %s' % error_text(e))
 			return
 
-		# popisy prave beziacich relacii zo Solocoo
-		now_desc = {}   # epg_id -> popis
+		# descriptions of the currently running programmes from Solocoo
+		now_desc = {}   # epg_id -> description
 		if self.api.solocoo.is_paired():
 			try:
 				cc_to_epg = {}
@@ -594,11 +594,11 @@ class CanalplusContentProvider(ModuleContentProvider):
 			channel.epg_desc = event_details(ev) or None
 
 	def get_channel_epg(self, channel_key, time_from, time_to):
-		"""Program kanala pre bouquet a XML EPG."""
+		"""Channel schedule for the bouquet and XML EPG."""
 		return self.api.get_epg_range(channel_key, time_from, time_to)
 
 	def collect_epg(self):
-		"""Na pozadi stiahne a ulozi program vsetkych kanalov (Solocoo historia + spyro)."""
+		"""Downloads and stores the schedule of all channels in the background (Solocoo history + spyro)."""
 		try:
 			if not self.logged_in():
 				return
@@ -616,7 +616,7 @@ class CanalplusContentProvider(ModuleContentProvider):
 			self.log_error('EPG collection failed: %s' % error_text(e))
 
 	# ##############################################################################################################
-	# prehravanie
+	# playback
 
 	def stream_headers(self):
 		return {
@@ -626,13 +626,13 @@ class CanalplusContentProvider(ModuleContentProvider):
 		}
 
 	def get_dash_info(self, stream_key):
-		"""Udaje pre DashHTTPRequestHandler - manifest a licencna konfiguracia."""
+		"""Data for DashHTTPRequestHandler - manifest and license configuration."""
 		headers = self.stream_headers()
 		license_headers = dict(headers)
 		license_headers['Content-Type'] = 'application/json'
 
 		if stream_key.get('wv'):
-			# zalozna cesta cez Solocoo Widevine (Python 2.7)
+			# fallback path via Solocoo Widevine (Python 2.7)
 			wv_headers = self.api.solocoo.stream_headers()
 			wv_license_headers = dict(wv_headers)
 			wv_license_headers['Content-Type'] = 'application/octet-stream'
@@ -664,11 +664,11 @@ class CanalplusContentProvider(ModuleContentProvider):
 		}
 
 	def widevine_wanted(self):
-		"""Python 3 = PlayReady (Full HD), Python 2.7 = Widevine cez Solocoo (SD) - rozhoduje sa samo."""
+		"""Python 3 = PlayReady (Full HD), Python 2.7 = Widevine via Solocoo (SD) - decided automatically."""
 		return is_py2
 
 	def solocoo_asset_for(self, channel_key, begin=None, end=None):
-		"""Solocoo id na prehratie: zivy kanal = cc<EpgId>, archiv = id relacie z programu."""
+		"""Solocoo id for playback: live channel = cc<EpgId>, archive = programme id from the schedule."""
 		if begin is None:
 			return self.api.solocoo_cc_id(channel_key)
 		t_from = int(begin)
@@ -681,7 +681,7 @@ class CanalplusContentProvider(ModuleContentProvider):
 			if best is None or abs(int(ev['start']) - t_from) < abs(int(best['start']) - t_from):
 				best = ev
 		if best is None:
-			# program este nie je stiahnuty - skus ho dotiahnut a hladaj znova
+			# the schedule isn't downloaded yet - try to fetch it and search again
 			try:
 				self.api.fetch_solocoo_channel(channel_key, t_from - 3600, t_to + 3600, with_desc=False)
 			except Exception:
@@ -692,7 +692,7 @@ class CanalplusContentProvider(ModuleContentProvider):
 		return best['id'] if best else None
 
 	def get_stream_info_wv(self, channel_key, begin=None, end=None):
-		"""Manifest a Widevine licencia zo Solocoo (bez keepalive relacie)."""
+		"""Manifest and Widevine license from Solocoo (no keepalive session)."""
 		if not self.api.solocoo.is_paired():
 			raise CanalplusSessionError('Not paired')
 		asset_id = self.solocoo_asset_for(channel_key, begin, end)
@@ -705,7 +705,7 @@ class CanalplusContentProvider(ModuleContentProvider):
 		return stream
 
 	def get_stream_info(self, channel_key, begin=None, end=None):
-		"""Vrati adresu manifestu a licencny kontext - pouziva aj HTTP handler pre bouquet."""
+		"""Returns the manifest URL and license context - also used by the HTTP handler for the bouquet."""
 		channel = self.channels_by_key.get(channel_key)
 		if not channel:
 			self.load_channel_list()
@@ -730,7 +730,7 @@ class CanalplusContentProvider(ModuleContentProvider):
 		if mpd_url:
 			self.log_info('Stream from: %s' % (mpd_url.split('/')[2] if mpd_url.count('/') >= 2 else '?'))
 
-		# zapamataj si callbacky relacie - stats() ich pouzije na keepalive a teardown
+		# remember the session callbacks - stats() uses them for keepalive and teardown
 		self.play_session = {
 			'keepalive': stream.get('keepalive'),
 			'teardown': stream.get('teardown'),
@@ -739,10 +739,10 @@ class CanalplusContentProvider(ModuleContentProvider):
 		return stream
 
 	def stats(self, data_item, action, duration=None, position=None, **extra_params):
-		"""Udrziava Broadpeak reláciu nažive a po skončení ju korektne zatvorí.
+		"""Keeps the Broadpeak session alive and closes it properly when playback ends.
 
-		Bez keepalive CDN reláciu po čase ukončí (stream spadne), bez teardown
-		ostávajú relácie otvorené a pri prepínaní kanálov sa hromadia."""
+		Without keepalive the CDN terminates the session after a while (the stream drops),
+		without teardown sessions stay open and pile up when switching channels."""
 		try:
 			session = self.play_session or {}
 			if action in ('play', 'watching', 'unpause', 'seek'):
@@ -784,7 +784,7 @@ class CanalplusContentProvider(ModuleContentProvider):
 			return
 
 		if stream.get('license_url'):
-			# Widevine cesta (Solocoo)
+			# Widevine path (Solocoo)
 			if not self.resolve_dash_streams_wv(stream, stream_title or stream.get('title') or '', live):
 				self.show_error(self._("Failed to load the DASH stream."))
 			return
@@ -795,11 +795,6 @@ class CanalplusContentProvider(ModuleContentProvider):
 
 		if not self.resolve_dash_streams(stream, stream_title or stream.get('title') or '', live):
 			self.show_error(self._("Failed to load the DASH stream."))
-
-	def player_settings(self):
-		"""DASH s DRM vie prehrat len exteplayer3 - vynutime ho bez ohladu na predvoleny prehravac
-		v archivCZSK (gstplayer da len cierny obraz)."""
-		return {'stype': 5002}
 
 	def limit_streams(self, streams):
 		try:
@@ -819,8 +814,8 @@ class CanalplusContentProvider(ModuleContentProvider):
 		return self.limit_streams(streams)
 
 	def resolve_dash_streams_wv(self, stream, title, live):
-		"""Widevine (Solocoo): s klucmi L3 dava Canal+ realne SD bez ohladu na stopu v manifeste,
-		preto sa ponukne jedna polozka (najvyssia povolena stopa) oznacena ako SD."""
+		"""Widevine (Solocoo): with L3 keys Canal+ delivers SD regardless of the track in the manifest,
+		so a single item (the highest allowed track) labelled as SD is offered."""
 		streams = self.get_dash_streams(stream['url'], headers=self.api.solocoo.stream_headers(),
 		                                max_bitrate=self.get_setting('max_bitrate'))
 		streams = self.limit_streams(streams)
@@ -837,7 +832,7 @@ class CanalplusContentProvider(ModuleContentProvider):
 			'bandwidth': int(s['bandwidth']),
 			'quality': 'SD (Widevine)',
 		}
-		self.add_play(title, url, info_labels=info_labels, settings=self.player_settings(), live=live)
+		self.add_play(title, url, info_labels=info_labels, live=live)
 		return True
 
 	def resolve_dash_streams(self, stream, title, live):
@@ -845,7 +840,6 @@ class CanalplusContentProvider(ModuleContentProvider):
 		if not streams:
 			return False
 
-		web = self.api.web_url()
 		license_ctx = stream.get('license') or {}
 
 		for s in streams:
@@ -853,7 +847,6 @@ class CanalplusContentProvider(ModuleContentProvider):
 				'url': s['playlist_url'],
 				'bandwidth': s['bandwidth'],
 				'license': license_ctx,
-				'web': web,
 			}
 			url = stream_key_to_dash_url(self.http_endpoint, stream_key)
 
@@ -861,6 +854,6 @@ class CanalplusContentProvider(ModuleContentProvider):
 				'bandwidth': int(s['bandwidth']),
 				'quality': s['height'] + 'p' if s.get('height') else 'max',
 			}
-			self.add_play(title, url, info_labels=info_labels, settings=self.player_settings(), live=live)
+			self.add_play(title, url, info_labels=info_labels, live=live)
 
 		return True

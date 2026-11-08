@@ -175,3 +175,4 @@ msgstr "Widevine, SD (tento přijímač má Python 2.7)"
 
 msgid "Show only channels included in my subscription"
 msgstr "Zobrazit jen kanály z mého předplatného"
+
