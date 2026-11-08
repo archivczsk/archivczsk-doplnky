@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Generátor userbouquetu a XML EPG pre Skylink.
-# Beží na pozadí a spúšťa sa pri zmene nastavení alebo zoznamu kanálov.
+# Userbouquet and XML EPG generator for Skylink.
+# Runs in the background and is triggered by a change of settings or the channel list.
 
 from tools_archivczsk.generator.bouquet_xmlepg import BouquetXmlEpgGenerator
 
@@ -10,11 +10,11 @@ import time
 from .skylink_api import (to_timestamp, event_description, error_text, EPG_ALIGN, ADDON_BUILD,
                           SkylinkSessionError)
 
-# server dáva program po dňoch, pýtame si ho v denných oknách
+# the server gives the schedule per day, it is requested in daily windows
 EPG_WINDOW = 24 * 3600
 
-# toľko kanálov po sebe smie zlyhať, kým export vzdáme - jeden zrušený kanál
-# nemá zhodiť celý beh, ale chybu spoločnú pre všetky kanály treba prepustiť
+# this many channels in a row may fail before the export is given up - one removed channel
+# must not bring down the whole run, but an error common to all channels must be propagated
 EPG_MAX_FAILURES = 5
 
 # #################################################################################################
@@ -23,7 +23,7 @@ EPG_MAX_FAILURES = 5
 class SkylinkBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
 	def __init__(self, content_provider):
-		# only_subscribed mení zoznam kanálov rovnako ako iný účet - po zmene sa userbouquet aj EPG prestavajú
+		# only_subscribed changes the channel list like another account - the userbouquet and EPG are rebuilt after a change
 		BouquetXmlEpgGenerator.__init__(self, content_provider,
 		                                login_settings_names=('brand', 'username', 'password', 'only_subscribed'))
 		self.epg_failures = 0
@@ -42,9 +42,9 @@ class SkylinkBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 	# #################################################################################################
 
 	def refresh_xmlepg(self, force=False):
-		"""Framework si po každom úspešnom exporte zapamätá čas a 20 hodín sa o nový
-		nepokúsi. Po aktualizácii doplnku si tú pamäť vynulujeme, aby nový export
-		nemusel čakať na uplynutie tých 20 hodín."""
+		"""The framework remembers the time of every successful export and doesn't attempt a new
+		one for 20 hours. After an addon update that memory is reset, so the new export
+		doesn't have to wait for those 20 hours to pass."""
 		try:
 			state = self.cp.load_cached_data('skylink')
 			if state.get('epg_build') != ADDON_BUILD:
@@ -66,7 +66,7 @@ class SkylinkBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 	def get_bouquet_channels(self, channel_type=None):
 		for channel in self.cp.channels:
 			if channel.radio:
-				# rádiá do TV bouquetu nepatria
+				# radios don't belong to the TV bouquet
 				continue
 			yield {
 				'name': channel.name,
@@ -89,13 +89,13 @@ class SkylinkBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 	# #################################################################################################
 
 	def get_epg(self, channel, fromts, tots):
-		"""Program kanála pre celý vyžiadaný rozsah.
+		"""Channel schedule for the whole requested range.
 
-		Server vracia program po dňoch, preto si rozsah rozdelíme na denné okná.
-		Ich vlastný klient to robí rovnako. Hranice zarovnáme na štvrťhodiny už tu,
-		aby každé okno vyšlo presne na jeden deň - server dlhší rozsah neprijme.
+		The server returns the schedule per day, so the range is split into daily windows.
+		Their own client does the same. The boundaries are aligned to quarter hours already
+		here, so that every window is exactly one day - the server doesn't accept a longer range.
 		"""
-		# pri stovkách kanálov nech sa server nezahltí
+		# with hundreds of channels don't flood the server
 		time.sleep(0.2)
 
 		seen = set()
@@ -114,11 +114,11 @@ class SkylinkBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 				self.epg_failures += 1
 				self.cp.log_error('EPG for %s failed: %s' % (channel['name'], error_text(e)))
 
-				# Vypršané prihlásenie alebo chyba opakovaná na viacerých kanáloch
-				# po sebe sa musí prepustiť ďalej - inak by framework uložil export
-				# ako úspešný bez jedinej relácie a 20 hodín by sa o nový nepokúsil.
-				# Jeden zrušený kanál (server naň odpovie 404) naopak celý export
-				# zhodiť nemá, lebo by sa potom nedokončil nikdy.
+				# An expired login or an error repeated on several channels in a row must be
+				# propagated - otherwise the framework would store the export as successful
+				# without a single programme and wouldn't attempt a new one for 20 hours.
+				# One removed channel (the server answers 404 for it) on the other hand must not
+				# bring down the whole export, because it would then never finish.
 				if isinstance(e, SkylinkSessionError) or self.epg_failures >= EPG_MAX_FAILURES:
 					raise
 
@@ -132,7 +132,7 @@ class SkylinkBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 				if not start or not end:
 					continue
 
-				# okná sa môžu prekrývať, tú istú reláciu pošli raz
+				# the windows may overlap, send the same programme once
 				key = event.get('id') or '%s-%s' % (start, end)
 				if key in seen:
 					continue

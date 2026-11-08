@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 #
-# Skylink Live TV (slovenský aj český) - platforma Solocoo / M7.
+# Skylink Live TV (Slovak and Czech) - Solocoo / M7 platform.
 #
-# Prihlásenie (bez captchy, obyčajný JSON):
-#   1. POST /v1/provision   {deviceInfo}                        -> provisionData (viaže sa na deviceSerial)
-#   2. POST .../login       {provisionData, deviceInfo}         -> ssoToken (lístok pre prihlásenie)
-#   3. POST .../login       {ticket, userInput:{username,...}}  -> ssoToken používateľa
-#   4. POST /v1/session     {ssoToken, provisionData, ...}      -> token do hlavičky Authorization
+# Login (no captcha, plain JSON):
+#   1. POST /v1/provision   {deviceInfo}                        -> provisionData (bound to deviceSerial)
+#   2. POST .../login       {provisionData, deviceInfo}         -> ssoToken (ticket for the login)
+#   3. POST .../login       {ticket, userInput:{username,...}}  -> user's ssoToken
+#   4. POST /v1/session     {ssoToken, provisionData, ...}      -> token for the Authorization header
 #
-# ssoToken je dlhodobý (ukladá sa do nastavení), token zo session platí cca pol hodiny
-# a obnovuje sa sám. deviceSerial sa generuje raz a ukladá, aby doplnok nezaberal
-# nové zariadenie pri každom štarte.
+# ssoToken is long-lived (stored in the settings), the session token is valid for about half
+# an hour and is refreshed automatically. deviceSerial is generated once and stored, so the
+# addon doesn't take a new device slot on every start.
 #
-# Obsah:  /v1/bouquet (zoznam kanálov), /v1/collections (žánre), /v1/assets, /v1/schedule
-# Prehrávanie: POST /v1/assets/<id>/play -> DASH manifest + licenčná adresa (Widevine)
+# Content:  /v1/bouquet (channel list), /v1/collections (genres), /v1/assets, /v1/schedule
+# Playback: POST /v1/assets/<id>/play -> DASH manifest + license URL (Widevine)
 #
-# Kód je písaný tak, aby bežal na Pythone 2 aj 3 (staršie Enigma2 image).
+# The code is written to run on Python 2 and 3 (older Enigma2 images).
 
 import base64
 import hashlib
@@ -27,7 +27,7 @@ import uuid
 from time import time, strftime, strptime, gmtime
 
 try:
-	# na Python 2 vie prvé strptime zlyhať, ak ho naraz zavolá viac vlákien
+	# on Python 2 the first strptime may fail when called by several threads at once
 	import _strptime
 	del _strptime
 except ImportError:
@@ -36,43 +36,41 @@ except ImportError:
 TVAPI_URL = 'https://tvapi.solocoo.tv'
 LOGIN_URL = 'https://m7.login.solocoo.tv/login'
 
-# Verzia doplnku a poradie zostavenia. Zostavenie sa zapisuje do logu a mení sa
-# s každým balíkom, takže z logu vidno, ktorá verzia práve beží. Zmena zostavenia
-# zároveň vynúti jeden nový export programu.
-ADDON_VERSION = '1.3'
-ADDON_BUILD = 6
+# Build number. It is written to the log and changes with every package, so the log shows
+# which build is running. A build change also forces one new schedule export.
+ADDON_BUILD = 8
 
 APP_VERSION = '13.3'
 FEATURE_LEVEL = 8
 
-# server prijme v programe len časy zarovnané na štvrťhodiny
+# the server accepts only schedule times aligned to quarter hours
 EPG_ALIGN = 900
 
-# Prihlasovacia služba vyžaduje podpísanú hlavičku Authorization. Kľúč a tajomstvo
-# sú zapečené v ich webovom klientovi - je to len kontrola, že požiadavka prišla od
-# ich klienta, s prihlásením používateľa to nesúvisí.
+# The login service requires a signed Authorization header. The key and secret are
+# baked into their web client - it is only a check that the request came from their
+# client, it has nothing to do with the user's login.
 CLIENT_KEY = 'web.NhFyz4KsZ54'
 CLIENT_SECRET = 'OXh0-pIwu3gEXz1UiJtqLPscZQot3a0q'
 
-# Hlásime sa ako ich webový prehrávač - server iné zariadenia na prihlásenie nepustí
+# we identify as their web player - the server doesn't let other devices log in
 DEVICE_OS = 'Windows 10'
 DEVICE_MODEL = 'Chrome'
 DEVICE_PRETTY_NAME = 'Chrome 138.0.0.0'
 USER_AGENT = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
               '(KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36')
-# Strop na čakanie na odpoveď. Framework inak použije nastavenie "loading_timeout",
-# kde nula znamená čakať donekonečna - to by pri exporte programu alebo vo vláknach
-# s popismi zablokovalo celý beh, preto si strop držíme.
+# Response timeout. The framework would otherwise use the "loading_timeout" setting,
+# where zero means wait forever - that would block the whole run during the schedule
+# export or in the description threads, so we keep our own limit.
 TIMEOUT = 20
-TOKEN_MARGIN = 120  # sekúnd pred vypršaním tokenu ho obnovíme
+TOKEN_MARGIN = 120  # seconds before the token expires it is refreshed
 
-# Značky platformy. Prihlásenie aj API sú rovnaké, líši sa len značka a krajina.
+# Platform brands. Login and API are the same, only the brand and country differ.
 BRANDS = {
 	'slsk': {'country': 'SK', 'language': 'sk_SK', 'web': 'https://livetv.skylink.sk', 'title': 'Skylink SK'},
 	'slcz': {'country': 'CZ', 'language': 'cs_CZ', 'web': 'https://livetv.skylink.cz', 'title': 'Skylink CZ'},
 }
 
-# Prehrávač, ktorý hlásime serveru - podľa neho vyberie DASH a Widevine
+# Player reported to the server - it selects DASH and Widevine based on it
 PLAYER_INFO = {
 	'name': 'RxPlayer',
 	'version': '4.3.0',
@@ -90,7 +88,7 @@ PLAYER_INFO = {
 # ##################################################################################################################
 
 def error_text(e):
-	"""Text výnimky bezpečne pre Python 2 aj 3 (py2 str() padá na diakritike)."""
+	"""Exception text safe for Python 2 and 3 (py2 str() fails on non-ASCII)."""
 	msg = None
 	try:
 		if getattr(e, 'args', None):
@@ -114,7 +112,7 @@ def error_text(e):
 
 
 def _b64url(data):
-	"""Base64 bez výplne a s bezpečnými znakmi - rovnako ako ich klient."""
+	"""Base64 without padding and with URL safe characters - like their client."""
 	text = base64.b64encode(data)
 	if not isinstance(text, str):
 		text = text.decode('ascii')
@@ -122,10 +120,10 @@ def _b64url(data):
 
 
 def sign_header(url, body):
-	"""Hlavička Authorization pre prihlasovaciu službu.
+	"""Authorization header for the login service.
 
-	Podpis sa počíta z adresy, odtlačku tela požiadavky a času:
-	sig = base64url(HMAC-SHA256(url + base64url(sha256(telo)) + čas, kľúč))
+	The signature is computed from the URL, the request body digest and the time:
+	sig = base64url(HMAC-SHA256(url + base64url(sha256(body)) + time, key))
 	"""
 	if not isinstance(body, bytes):
 		body = body.encode('utf-8')
@@ -141,7 +139,7 @@ def sign_header(url, body):
 
 
 def to_timestamp(value):
-	"""Prevedie čas z API (2026-10-27T05:00:00Z) na sekundy od epochy."""
+	"""Converts an API time (2026-10-27T05:00:00Z) to seconds since the epoch."""
 	if not value:
 		return 0
 
@@ -151,18 +149,18 @@ def to_timestamp(value):
 	except Exception:
 		return 0
 
-	# API dáva časy v UTC
+	# the API gives times in UTC
 	return calendar.timegm(struct)
 
 
 def api_time(timestamp):
-	"""Čas pre API - UTC vo formáte 2026-10-27T23:00:00.000Z."""
+	"""Time for the API - UTC in the 2026-10-27T23:00:00.000Z format."""
 	return strftime('%Y-%m-%dT%H:%M:%S.000Z', gmtime(timestamp))
 
 
 def event_description(event):
-	"""Popis relácie. Program z API popis neobsahuje, tak ho poskladáme z údajov,
-	ktoré v ňom sú - žáner, formát, séria a vekové hodnotenie."""
+	"""Programme description. The API schedule has no description, so it is assembled
+	from the data it has - genre, format, series and age rating."""
 	desc = event.get('desc')
 	if desc:
 		return desc
@@ -190,8 +188,8 @@ def event_description(event):
 
 
 def image_url(url, width=0, height=0):
-	"""Doplní do adresy obrázka požadovaný rozmer. Bez neho server vracia originál,
-	ktorý je priveľký a prijímač ho nestihne načítať."""
+	"""Adds the requested size to the image URL. Without it the server returns the original,
+	which is too big and the receiver fails to load it."""
 	if not url or not width:
 		return url
 
@@ -207,7 +205,7 @@ def image_url(url, width=0, height=0):
 
 
 def unwrap_asset(entry):
-	"""Zoznam kanálov vracia každý kanál zabalený v assetInfo - rozbalí ho."""
+	"""The channel list returns every channel wrapped in assetInfo - unwraps it."""
 	if not isinstance(entry, dict):
 		return entry
 	inner = entry.get('assetInfo')
@@ -217,7 +215,7 @@ def unwrap_asset(entry):
 
 
 def has_online_stream(entry):
-	"""Kanály dostupné len zo satelitu majú prázdne sources - stream pre ne nie je."""
+	"""Channels available only via satellite have empty sources - there is no stream for them."""
 	if not isinstance(entry, dict) or 'sources' not in entry:
 		return True
 
@@ -229,7 +227,7 @@ def has_online_stream(entry):
 
 
 def channel_id(asset):
-	"""Identifikátor kanála - podľa endpointu sa volá rôzne."""
+	"""Channel identifier - named differently depending on the endpoint."""
 	if not isinstance(asset, dict):
 		return None
 	for key in ('id', 'channelId', 'assetId', 'stationId'):
@@ -253,12 +251,12 @@ def channel_title(asset):
 
 
 class SkylinkSessionError(Exception):
-	"""Vypršané alebo neplatné prihlásenie - volajúci má skúsiť prihlásiť sa znova."""
+	"""Expired or invalid login - the caller should try to log in again."""
 	pass
 
 
 class SkylinkNoStreamError(Exception):
-	"""Kanál je v zozname, ale Skylink preň nemá internetový stream."""
+	"""The channel is in the list, but Skylink has no internet stream for it."""
 	pass
 
 
@@ -282,7 +280,7 @@ class SkylinkApi(object):
 		self._desc_lock = threading.Lock()
 
 	# ##############################################################################################################
-	# pomocné
+	# helpers
 
 	def _brand_info(self):
 		return BRANDS.get(self.brand) or BRANDS['slsk']
@@ -291,10 +289,10 @@ class SkylinkApi(object):
 		return self._brand_info()['web']
 
 	def device_info(self):
-		"""Údaje o zariadení - posielajú sa pri provisioningu aj prihlásení.
+		"""Device data - sent with provisioning and login.
 
-		Hlásime sa rovnako ako ich webový prehrávač. Pri vlastných hodnotách
-		(Enigma2 a podobne) prihlásenie končí chybou authorization_failed.
+		We identify like their web player. With custom values (Enigma2 and the like)
+		the login ends with authorization_failed.
 		"""
 		info = self._brand_info()
 		return {
@@ -322,7 +320,7 @@ class SkylinkApi(object):
 
 	@staticmethod
 	def _result_error(result):
-		"""Z odpovede platformy poskladá text chyby, ak nejaká je."""
+		"""Assembles the error text from the platform response, if there is any."""
 		if not isinstance(result, dict):
 			return None
 
@@ -336,7 +334,7 @@ class SkylinkApi(object):
 		return None
 
 	def request_timeout(self):
-		"""Čakanie na odpoveď - nastavenie používateľa, ak ho má, inak náš strop."""
+		"""Response timeout - the user setting if there is one, otherwise our limit."""
 		try:
 			value = int(self.cp.get_setting('loading_timeout'))
 		except Exception:
@@ -354,14 +352,14 @@ class SkylinkApi(object):
 		                                    headers=headers, timeout=self.request_timeout())
 
 		if response.status_code in (401, 403) and authorized:
-			# token alebo prihlásenie vypršalo
+			# the token or the login expired
 			self.token = None
 			self.token_valid_until = 0
 			if allow_retry:
 				self.cp.log_info('Token expired, creating a new session')
 				try:
 					with self._token_lock:
-						# iné vlákno mohlo session medzitým obnoviť - nerob to druhý raz
+						# another thread may have refreshed the session meanwhile - don't do it twice
 						if not self.token or not self.token_valid_until:
 							self.create_session()
 				except Exception as e:
@@ -406,7 +404,7 @@ class SkylinkApi(object):
 		if response.status_code >= 400:
 			raise Exception('HTTP %d' % response.status_code)
 
-		# hlavička hovorí, ako dlho token platí
+		# the header says how long the token is valid
 		expires = response.headers.get('x-expires-after')
 		if expires:
 			try:
@@ -421,10 +419,10 @@ class SkylinkApi(object):
 		                     TVAPI_URL + path, params=params, data=data, authorized=True)
 
 	# ##############################################################################################################
-	# prihlásenie
+	# login
 
 	def setup(self, brand, device_serial, sso_token):
-		"""Nastaví značku, sériové číslo zariadenia a uloženú session."""
+		"""Sets the brand, the device serial number and the stored session."""
 		if brand in BRANDS:
 			self.brand = brand
 		self.device_serial = device_serial or self.new_device_serial()
@@ -436,7 +434,7 @@ class SkylinkApi(object):
 
 	@staticmethod
 	def new_device_serial():
-		# predpona w = webový klient; iné predpony prihlasovacia služba odmieta
+		# prefix w = web client; the login service refuses other prefixes
 		return 'w' + str(uuid.uuid4())
 
 	@staticmethod
@@ -444,7 +442,7 @@ class SkylinkApi(object):
 		return bool(serial) and serial.startswith('w') and len(serial) == 37
 
 	def provision(self, force=False):
-		"""Zaregistruje zariadenie a získa provisionData + adresy prihlasovacích funkcií."""
+		"""Registers the device and gets provisionData + the login function URLs."""
 		if self.provision_data and not force:
 			return self.provision_data
 
@@ -472,7 +470,7 @@ class SkylinkApi(object):
 		return self.provision_data
 
 	def _login_request(self, data):
-		# telo si serializujeme sami - podpis sa počíta presne z odoslaných bajtov
+		# the body is serialised by us - the signature is computed from the exact bytes sent
 		body = json_mod.dumps(data, separators=(',', ':'))
 
 		headers = self._headers()
@@ -499,8 +497,8 @@ class SkylinkApi(object):
 		return result
 
 	def start_login(self):
-		"""Prvý krok - server vráti buď lístok na zadanie mena a hesla,
-		alebo rovno ssoToken, keď je zariadenie k účtu už priradené."""
+		"""First step - the server returns either a ticket for entering username and password,
+		or directly the ssoToken when the device is already assigned to the account."""
 		self.provision()
 
 		result = self._login_request({
@@ -520,7 +518,7 @@ class SkylinkApi(object):
 		return ticket, None
 
 	def login(self, username, password):
-		"""Prihlási používateľa a vráti dlhodobý ssoToken."""
+		"""Logs the user in and returns the long-lived ssoToken."""
 		ticket, sso = self.start_login()
 
 		if not sso:
@@ -540,7 +538,7 @@ class SkylinkApi(object):
 		return sso
 
 	def create_session(self, remove_device=None):
-		"""Vymení ssoToken za API token (hlavička Authorization)."""
+		"""Exchanges the ssoToken for an API token (Authorization header)."""
 		if not self.sso_token:
 			raise SkylinkSessionError('No sign-in data')
 
@@ -564,8 +562,8 @@ class SkylinkApi(object):
 
 		self.token = token
 		if result.get('ssoToken') and result['ssoToken'] != self.sso_token:
-			# platforma prihlasovací token pri obnove session občas vymení -
-			# ten nový treba uložiť, inak by uložená session prestala sedieť
+			# the platform sometimes replaces the login token when the session is refreshed -
+			# the new one must be stored, otherwise the stored session would stop matching
 			self.sso_token = result['ssoToken']
 			try:
 				self.cp.save_session(self.sso_token)
@@ -588,7 +586,7 @@ class SkylinkApi(object):
 		if self.token and (not self.token_valid_until or time() <= self.token_valid_until):
 			return
 
-		# o novú session sa môžu pokúsiť viaceré vlákna naraz, pustíme len jedno
+		# several threads may try to get a new session at once, only one is let through
 		with self._token_lock:
 			if not self.token or (self.token_valid_until and time() > self.token_valid_until):
 				self.create_session()
@@ -597,10 +595,10 @@ class SkylinkApi(object):
 		return bool(self.token)
 
 	# ##############################################################################################################
-	# obsah
+	# content
 
 	def _log_structure(self, name, data):
-		"""Do logu zapíše tvar odpovede - kľúče a vzorku prvej položky, bez hodnôt."""
+		"""Logs the shape of the response - keys and a sample of the first item, without values."""
 		try:
 			if isinstance(data, dict):
 				parts = []
@@ -631,7 +629,7 @@ class SkylinkApi(object):
 
 	@staticmethod
 	def _assets_from(data):
-		"""Z odpovede vyberie zoznam položiek - rôzne endpointy ich volajú rôzne."""
+		"""Picks the item list from the response - different endpoints name it differently."""
 		if isinstance(data, list):
 			return [x for x in data if isinstance(x, dict)]
 
@@ -643,7 +641,7 @@ class SkylinkApi(object):
 			if isinstance(value, list):
 				return [x for x in value if isinstance(x, dict)]
 
-		# neznámy tvar - vezmi prvý zoznam slovníkov s id
+		# unknown shape - take the first list of dicts with an id
 		for value in data.values():
 			if isinstance(value, list) and value and isinstance(value[0], dict) and 'id' in value[0]:
 				return value
@@ -651,8 +649,8 @@ class SkylinkApi(object):
 		return []
 
 	def get_entitled_offers(self):
-		"""Kódy ponúk (balíkov), ktoré má účet predplatené - z /v1/entitlements.
-		Pri chybe vráti None, vtedy sa podľa predplatného nefiltruje."""
+		"""Codes of the offers (packages) the account is subscribed to - from /v1/entitlements.
+		Returns None on error, then no filtering by subscription takes place."""
 		try:
 			data = self._api('/v1/entitlements')
 		except SkylinkSessionError:
@@ -676,7 +674,7 @@ class SkylinkApi(object):
 
 	@staticmethod
 	def asset_offers(asset):
-		"""Kódy ponúk, v ktorých je kanál zaradený (deals -> offers)."""
+		"""Codes of the offers the channel is part of (deals -> offers)."""
 		offers = set()
 		for deal in (asset or {}).get('deals') or []:
 			if isinstance(deal, dict):
@@ -685,9 +683,9 @@ class SkylinkApi(object):
 		return offers
 
 	def get_channels(self, force=False, only_subscribed=True):
-		"""Zoznam kanálov zoradený podľa čísla programu. Cache drží provider.
-		only_subscribed - vynechá kanály, ktoré nie sú v žiadnej predplatenej ponuke
-		(server ich v zozname posiela, ale prehrať sa nedajú: offer_missing)."""
+		"""Channel list sorted by channel number. The cache is kept by the provider.
+		only_subscribed - skips channels that are in no subscribed offer
+		(the server sends them in the list, but they can't be played: offer_missing)."""
 		channels = []
 		try:
 			data = self._api('/v1/bouquet')
@@ -699,7 +697,7 @@ class SkylinkApi(object):
 			self.cp.log_error('Failed to read the channel list: %s' % error_text(e))
 
 		if not channels:
-			# náhradná cesta - poskladaj kanály zo žánrových skupín
+			# fallback - assemble the channels from the genre groups
 			channels = self._channels_from_groups()
 
 		entitled = self.get_entitled_offers() if only_subscribed else None
@@ -718,7 +716,7 @@ class SkylinkApi(object):
 
 			if entitled is not None:
 				offers = self.asset_offers(ch)
-				# kanál bez ponúk necháme - o jeho dostupnosti nevieme nič povedať
+				# a channel without offers is kept - nothing can be said about its availability
 				if offers and not (offers & entitled):
 					skipped += 1
 					continue
@@ -751,14 +749,14 @@ class SkylinkApi(object):
 		return channels
 
 	def get_channel_groups(self):
-		"""Žánrové skupiny kanálov (každá nesie vlastný dopyt na zoznam kanálov)."""
+		"""Genre groups of channels (each carries its own query for the channel list)."""
 		data = self._api('/v1/collections/livetv,withadult', params={'group': 'supergenre', 'sort': 'default'})
 		if not isinstance(data, dict):
 			return []
 		return [g for g in (data.get('collection') or []) if isinstance(g, dict)]
 
 	def get_assets(self, query, limit=100, next_asset=None, params=None):
-		"""Zoznam položiek podľa dopytu. Vráti (položky, značka ďalšej strany)."""
+		"""Item list for a query. Returns (items, next page token)."""
 		request_params = {'query': query, 'limit': limit}
 		if isinstance(params, dict):
 			for key, value in params.items():
@@ -779,14 +777,14 @@ class SkylinkApi(object):
 		return assets, data.get('nextAsset')
 
 	def get_descriptions(self, asset_ids, workers=8, time_limit=45):
-		"""Popisy relácií k zoznamu položiek. API ich pri programe neposiela,
-		takže ich ťaháme z detailov - paralelne a s pamäťou, lebo popis sa už nemení.
+		"""Programme descriptions for a list of items. The API doesn't send them with the schedule,
+		so they are fetched from the details - in parallel and cached, because a description doesn't change.
 
-		Chyby sa do pamäte neukladajú, aby sa pri ďalšom otvorení skúsili znova.
-		Naraz beží len jedno kolo, inak by sa vlákna nakopili.
+		Errors are not cached, so they are retried on the next opening.
+		Only one round runs at a time, otherwise the threads would pile up.
 		"""
 		if not self._desc_lock.acquire(False):
-			# iné kolo ešte beží - vráť, čo už je načítané
+			# another round is still running - return what is loaded already
 			return self._desc_cache
 
 		try:
@@ -798,7 +796,7 @@ class SkylinkApi(object):
 			if not wanted:
 				return self._desc_cache
 
-			# token si obnovíme ešte pred rozbehnutím vlákien
+			# refresh the token before starting the threads
 			self._ensure_token()
 
 			headers = self._headers()
@@ -809,7 +807,7 @@ class SkylinkApi(object):
 			deadline = time() + time_limit
 
 			def fetch(ids):
-				# vlastná session na vlákno, bez opakovaní - inak by sa čakalo priveľa
+				# own session per thread, without retries - otherwise the wait would be too long
 				session = self.cp.get_requests_session(auto_retry=False)
 				try:
 					for asset_id in ids:
@@ -823,7 +821,7 @@ class SkylinkApi(object):
 							continue
 
 						if response.status_code in (401, 403):
-							# vypršaný token - ďalšie požiadavky už nemajú zmysel
+							# expired token - further requests make no sense
 							with lock:
 								state['stop'] = True
 							break
@@ -862,7 +860,7 @@ class SkylinkApi(object):
 				threads.append(thread)
 				thread.start()
 
-			# spoločný termín pre všetky vlákna, nie pre každé zvlášť
+			# common deadline for all threads, not for each one separately
 			for thread in threads:
 				remaining = deadline - time()
 				thread.join(remaining if remaining > 0 else 0.1)
@@ -870,7 +868,7 @@ class SkylinkApi(object):
 			self.cp.log_debug('Loaded %d of %d programme descriptions' % (state['loaded'], len(wanted)))
 
 			if state['stop']:
-				# token vypršal počas sťahovania - obnov ho, nech ďalšie kolo prejde
+				# the token expired during the download - refresh it so the next round passes
 				try:
 					self._ensure_token()
 				except Exception:
@@ -881,9 +879,9 @@ class SkylinkApi(object):
 			self._desc_lock.release()
 
 	def get_schedule(self, channel_id, time_from, time_until):
-		"""TV program kanála pre zadaný časový rozsah (sekundy od epochy).
+		"""TV schedule of a channel for the given time range (seconds since the epoch).
 
-		Server prijme len časy zarovnané na štvrťhodiny, inak odpovie chybou
+		The server accepts only times aligned to quarter hours, otherwise it responds with
 		"from must be a whole multiple of 15 minutes".
 		"""
 		start = (int(time_from) // EPG_ALIGN) * EPG_ALIGN
@@ -907,7 +905,7 @@ class SkylinkApi(object):
 		return [i for i in items if isinstance(i, dict)]
 
 	def get_schedule_now(self, channel_ids):
-		"""Práve bežiaci a nasledujúci program pre zoznam kanálov."""
+		"""Running and next programme for the channel list."""
 		if not channel_ids:
 			return {}
 
@@ -919,16 +917,16 @@ class SkylinkApi(object):
 		return epg if isinstance(epg, dict) else data
 
 	def get_devices(self):
-		"""Zariadenia zaregistrované na účte."""
+		"""Devices registered on the account."""
 		data = self._api('/v1/devices')
 		devices = self._assets_from(data) if not isinstance(data, list) else data
 		return [d for d in devices if isinstance(d, dict)]
 
 	def get_stream(self, asset_id, playready=False):
-		"""Vráti adresu DASH manifestu a licencie pre danú položku."""
+		"""Returns the DASH manifest and license URL for the given item."""
 		player = PLAYER_INFO
 		if playready:
-			# s PlayReady server vydá kľúč aj pre 1080p
+			# with PlayReady the server issues a key for 1080p too
 			player = dict(player)
 			player['capabilities'] = dict(player['capabilities'], drmSystems=['PlayReady'])
 
