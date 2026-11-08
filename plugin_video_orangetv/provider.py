@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from asyncio import streams
 import time
 import json
 from hashlib import md5
