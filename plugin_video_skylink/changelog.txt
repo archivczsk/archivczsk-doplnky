@@ -1,3 +1,8 @@
+1.3: 08.11.2026
+- kanály mimo predplatného sa už nezobrazujú (server ich v zozname posiela, ale prehrať sa nedajú);
+  dá sa vypnúť v nastaveniach
+- ikona doplnku sa zobrazuje aj na VTi (PNG s alfa kanálom)
+
 1.2: 30.10.2026
 - voliteľné streamy v rozlíšení 1080p (experimentálne, treba zapnúť v nastaveniach, len pre image s Python 3)
 - kanály, ktoré Skylink cez internet nevysiela, sa už nezobrazujú (týka sa aj rozhlasových staníc)
