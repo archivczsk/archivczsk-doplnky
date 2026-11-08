@@ -230,7 +230,7 @@ class CanalplusHTTPRequestHandler(DashHTTPRequestHandler, PlayliveTVHTTPRequestH
 		with a matching presentationTimeOffset, but gstplayer ignores the offset and takes
 		the decode time from the fragments, so it reports a position of many hours and
 		seeking fails. The timeline is rebased so that the first segment starts at (nearly)
-		zero and presentationTimeOffset is removed. The media URL uses $Time$, so the original
+		zero and presentationTimeOffset keeps only the small remaining part. The media URL uses $Time$, so the original
 		offset and the timescale are kept in the URL template as 'T<offset>s<timescale>o$Time$';
 		P_dsp adds the offset back before fetching the segment and sets the decode time
 		(tfdt/sidx) inside the fragment to the rebased segment time, whatever base the
@@ -251,7 +251,12 @@ class CanalplusHTTPRequestHandler(DashHTTPRequestHandler, PlayliveTVHTTPRequestH
 			if not segments or not segments[0].get('t'):
 				continue
 
-			offset = int(e_template.get('presentationTimeOffset') or segments[0].get('t'))
+			# the first segment may start a bit before the period start (presentationTimeOffset
+			# is then larger than its time) - shift by the smaller of the two so no time goes
+			# negative and keep the small remaining offset, which the player handles fine
+			pto = int(e_template.get('presentationTimeOffset') or 0)
+			first = int(segments[0].get('t'))
+			offset = min(pto, first) if pto else first
 			if offset == 0:
 				continue
 
@@ -261,7 +266,8 @@ class CanalplusHTTPRequestHandler(DashHTTPRequestHandler, PlayliveTVHTTPRequestH
 				e_s.set('t', str(t - offset))
 				t += int(e_s.get('d')) * (int(e_s.get('r') or 0) + 1)
 
-			e_template.attrib.pop('presentationTimeOffset', None)
+			if pto:
+				e_template.set('presentationTimeOffset', str(pto - offset))
 			e_template.set('media', media.replace('$Time$', 'T%ds%so$Time$' % (offset, e_template.get('timescale') or '1')))
 
 	# #################################################################################################
