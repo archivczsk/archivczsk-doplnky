@@ -29,7 +29,7 @@ LTV_BASE = 'https://ltv.services.canalplustech.pro/api/V4'
 SPYRO_BASE = 'https://spyro.prod.catalog.canal.canalplustech.pro/spyro/metadata'
 WEB_HOST = 'https://www.canalplus.com'
 
-ADDON_BUILD = 19
+ADDON_BUILD = 21
 
 USER_AGENT = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
               '(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36')
@@ -255,7 +255,10 @@ class CanalplusApi(object):
 				raise Exception('InitLiveTV: invalid response (HTTP %d)' % response.status_code)
 
 			if sr.get('Status') not in ('0', 0):
-				raise Exception('InitLiveTV status %s' % sr.get('Status'))
+				# the error details are needed to diagnose accounts the addon wasn't tested with (e.g. CZ)
+				details = dict((k, v) for k, v in sr.items() if k != 'OutData')
+				self.cp.log_error('InitLiveTV failed: %s' % json.dumps(details, ensure_ascii=False)[:600])
+				raise Exception('InitLiveTV status %s%s' % (sr.get('Status'), (' - %s' % sr.get('Message')) if sr.get('Message') else ''))
 
 			out = sr.get('OutData') or {}
 			self.live_token = out.get('LiveToken')
@@ -270,6 +273,7 @@ class CanalplusApi(object):
 				channels.extend(group.get('Channels') or [])
 
 			if not channels:
+				self.cp.log_error('InitLiveTV returned no channels, response keys: %s / %s' % (sorted(sr.keys()), sorted(out.keys())))
 				raise Exception('InitLiveTV returned no channels')
 
 			self.channels_raw = channels
