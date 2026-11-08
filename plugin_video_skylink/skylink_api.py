@@ -39,8 +39,8 @@ LOGIN_URL = 'https://m7.login.solocoo.tv/login'
 # Verzia doplnku a poradie zostavenia. Zostavenie sa zapisuje do logu a mení sa
 # s každým balíkom, takže z logu vidno, ktorá verzia práve beží. Zmena zostavenia
 # zároveň vynúti jeden nový export programu.
-ADDON_VERSION = '1.2'
-ADDON_BUILD = 5
+ADDON_VERSION = '1.3'
+ADDON_BUILD = 6
 
 APP_VERSION = '13.3'
 FEATURE_LEVEL = 8
@@ -650,8 +650,44 @@ class SkylinkApi(object):
 
 		return []
 
-	def get_channels(self, force=False):
-		"""Zoznam kanálov zoradený podľa čísla programu. Cache drží provider."""
+	def get_entitled_offers(self):
+		"""Kódy ponúk (balíkov), ktoré má účet predplatené - z /v1/entitlements.
+		Pri chybe vráti None, vtedy sa podľa predplatného nefiltruje."""
+		try:
+			data = self._api('/v1/entitlements')
+		except SkylinkSessionError:
+			raise
+		except Exception as e:
+			self.cp.log_error('Failed to read entitlements: %s' % error_text(e))
+			return None
+
+		if not isinstance(data, dict):
+			return None
+
+		offers = set()
+		for item in data.get('offers') or []:
+			if isinstance(item, dict) and item.get('id') is not None:
+				offers.add('%s' % (item['id'],))
+			elif isinstance(item, (str, int)):
+				offers.add('%s' % (item,))
+
+		self.cp.log_debug('Entitled offers: %s' % ', '.join(sorted(offers, key=lambda x: (len(x), x))))
+		return offers
+
+	@staticmethod
+	def asset_offers(asset):
+		"""Kódy ponúk, v ktorých je kanál zaradený (deals -> offers)."""
+		offers = set()
+		for deal in (asset or {}).get('deals') or []:
+			if isinstance(deal, dict):
+				for o in deal.get('offers') or []:
+					offers.add('%s' % (o,))
+		return offers
+
+	def get_channels(self, force=False, only_subscribed=True):
+		"""Zoznam kanálov zoradený podľa čísla programu. Cache drží provider.
+		only_subscribed - vynechá kanály, ktoré nie sú v žiadnej predplatenej ponuke
+		(server ich v zozname posiela, ale prehrať sa nedajú: offer_missing)."""
 		channels = []
 		try:
 			data = self._api('/v1/bouquet')
@@ -666,8 +702,11 @@ class SkylinkApi(object):
 			# náhradná cesta - poskladaj kanály zo žánrových skupín
 			channels = self._channels_from_groups()
 
+		entitled = self.get_entitled_offers() if only_subscribed else None
+
 		result = []
 		seen = set()
+		skipped = 0
 		for entry in channels:
 			if not has_online_stream(entry):
 				continue
@@ -676,10 +715,18 @@ class SkylinkApi(object):
 			cid = channel_id(ch)
 			if not cid or cid in seen:
 				continue
+
+			if entitled is not None:
+				offers = self.asset_offers(ch)
+				# kanál bez ponúk necháme - o jeho dostupnosti nevieme nič povedať
+				if offers and not (offers & entitled):
+					skipped += 1
+					continue
+
 			seen.add(cid)
 			result.append(ch)
 
-		self.cp.log_debug('Channels: %d from server, %d usable' % (len(channels), len(result)))
+		self.cp.log_debug('Channels: %d from server, %d usable, %d outside subscription' % (len(channels), len(result), skipped))
 
 		result.sort(key=lambda c: ((c.get('params') or {}).get('lcn') or 9999, c.get('title') or ''))
 

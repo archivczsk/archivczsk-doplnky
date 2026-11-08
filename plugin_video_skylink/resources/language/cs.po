@@ -292,3 +292,6 @@ msgstr "V nastavení doplňku máš zapnuté streamy v rozlišení 1080p. Tato m
 
 msgid "Skylink does not provide an internet stream for this channel."
 msgstr "Skylink pro tento kanál neposkytuje internetový stream."
+
+msgid "Show only channels included in my subscription"
+msgstr "Zobrazit jen kanály z mého předplatného"
