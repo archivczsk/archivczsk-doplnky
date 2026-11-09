@@ -38,7 +38,7 @@ LOGIN_URL = 'https://m7.login.solocoo.tv/login'
 
 # Build number. It is written to the log and changes with every package, so the log shows
 # which build is running. A build change also forces one new schedule export.
-ADDON_BUILD = 9
+ADDON_BUILD = 10
 
 APP_VERSION = '13.3'
 FEATURE_LEVEL = 8

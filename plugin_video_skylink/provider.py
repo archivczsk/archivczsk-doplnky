@@ -24,6 +24,7 @@ from tools_archivczsk.generator.lamedb import channel_name_normalise
 from .skylink_api import (SkylinkApi, SkylinkSessionError, SkylinkNoStreamError, BRANDS, USER_AGENT,
                           error_text, channel_id as asset_channel_id, channel_title, unwrap_asset,
                           to_timestamp, event_description, image_url, ADDON_BUILD)
+from tools_archivczsk.contentprovider.exception import AddonErrorException
 from .bouquet import SkylinkBouquetXmlEpgGenerator
 
 # the channel list is fetched at most once per this interval
@@ -649,7 +650,8 @@ class SkylinkContentProvider(ModuleContentProvider):
 				# without channels the generator would overwrite the userbouquet with an empty one and the
 				# schedule export would be stored as successful without a single programme
 				self.log_error('Empty channel list received and no previous list is available')
-				raise Exception(self._("The server returned an empty channel list."))
+				# shown to the user as a plain message, not as an unhandled addon error
+				raise AddonErrorException(self._("The server returned an empty channel list."))
 
 			# the server returned nothing - rather keep the old list, otherwise the userbouquet would be emptied
 			self.log_error('Empty channel list received - keeping the previous one')
