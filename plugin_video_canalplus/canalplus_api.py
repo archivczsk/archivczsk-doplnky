@@ -23,13 +23,15 @@ import uuid
 from bisect import bisect_left
 from time import time, strftime, strptime, gmtime
 
+from tools_archivczsk.contentprovider.exception import AddonErrorException
+
 from .solocoo_api import SolocooEpg, SolocooAuthError
 
 LTV_BASE = 'https://ltv.services.canalplustech.pro/api/V4'
 SPYRO_BASE = 'https://spyro.prod.catalog.canal.canalplustech.pro/spyro/metadata'
 WEB_HOST = 'https://www.canalplus.com'
 
-ADDON_BUILD = 23
+ADDON_BUILD = 26
 
 USER_AGENT = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
               '(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36')
@@ -236,7 +238,8 @@ class CanalplusApi(object):
 				'PassData': {'Id': 0, 'Token': self.pass_token},
 				'UserKeyId': self.user_key_id,
 				'DeviceKeyId': str(uuid.uuid4()),
-				'PDSData': {'GroupTypes': '1'},
+				# same channel groups as the official app requests
+				'PDSData': {'GroupTypes': '1;4'},
 				'DeviceSpecificities': {'BpkCompatibility': True},
 			}}}
 
@@ -265,16 +268,25 @@ class CanalplusApi(object):
 			self.rmu_token = out.get('RMUToken')
 
 			channels = []
+			seen = set()
 			try:
 				groups = out['PDS']['ChannelsGroups']['ChannelsGroup']
 			except Exception:
 				groups = []
 			for group in groups:
-				channels.extend(group.get('Channels') or [])
+				group_channels = group.get('Channels') or []
+				self.cp.log_debug('InitLiveTV: group %s - %d channels' % (group.get('GroupType'), len(group_channels)))
+				for ch in group_channels:
+					epg_id = ch.get('EpgId')
+					if epg_id in seen:
+						continue
+					seen.add(epg_id)
+					channels.append(ch)
 
 			if not channels:
-				self.cp.log_error('InitLiveTV returned no channels, response keys: %s / %s' % (sorted(sr.keys()), sorted(out.keys())))
-				raise Exception('InitLiveTV returned no channels')
+				pds = out.get('PDS')
+				self.cp.log_error('InitLiveTV returned no channels, PDS: %s' % json.dumps(pds, ensure_ascii=False)[:600])
+				raise AddonErrorException(self.cp._('Your Canal+ account has no live TV channels available. Check that your subscription includes TV channels.'))
 
 			self.channels_raw = channels
 			self.init_time = time()

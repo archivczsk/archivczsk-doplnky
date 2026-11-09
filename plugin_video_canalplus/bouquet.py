@@ -7,10 +7,6 @@ from .canalplus_api import event_details
 class CanalplusBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 
 	def __init__(self, content_provider):
-		# Canal+ has no adult channels and the addon has no enable_adult setting -
-		# the list of settings that trigger a bouquet rebuild must therefore not contain it
-		self.bouquet_settings_names = ['enable_userbouquet', 'enable_xmlepg', 'enable_picons',
-		                               'player_name', 'enable_tsconvert']
 		# only_subscribed changes the channel list - the userbouquet and EPG are rebuilt after a change
 		BouquetXmlEpgGenerator.__init__(self, content_provider,
 		                                login_settings_names=('brand', 'only_subscribed'))
@@ -28,6 +24,7 @@ class CanalplusBouquetXmlEpgGenerator(BouquetXmlEpgGenerator):
 		for channel in self.cp.channels:
 			yield {
 				'name': channel.name,
+				'adult': channel.adult,
 				'picon': channel.picon,
 				'id': channel.id,
 				'key': channel.key,
