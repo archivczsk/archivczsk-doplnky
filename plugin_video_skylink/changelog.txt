@@ -1,3 +1,6 @@
+1.5: 09.11.2026
+- prázdny zoznam kanálov zo servera sa zobrazí ako zrozumiteľná hláška namiesto neošetrenej chyby doplnku
+
 1.4: 08.11.2026
 - prehrávanie cez gstplayer: opravená čierna obrazovka pri živom vysielaní
 - userbouquet: prehrávač si adresu streamu obnovuje sám
