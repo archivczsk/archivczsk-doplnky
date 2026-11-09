@@ -29,7 +29,7 @@ LTV_BASE = 'https://ltv.services.canalplustech.pro/api/V4'
 SPYRO_BASE = 'https://spyro.prod.catalog.canal.canalplustech.pro/spyro/metadata'
 WEB_HOST = 'https://www.canalplus.com'
 
-ADDON_BUILD = 22
+ADDON_BUILD = 23
 
 USER_AGENT = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
               '(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36')
@@ -42,7 +42,7 @@ LICENCE_MODE = 'MKPL'
 
 BRANDS = {
 	'cpsvk': {'zone': 'cpsvk', 'loc': 'sk'},
-	'cpscz': {'zone': 'cpscz', 'loc': 'cz'},
+	'cpscz': {'zone': 'cpcze', 'loc': 'cz'},   # setting value kept, the service zone is cpcze
 }
 
 PASS_TOKEN_TTL = 1800       # passToken is refreshed after this time
