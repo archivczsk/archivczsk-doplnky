@@ -2,6 +2,7 @@
 <settings>
 	<setting label="Service" id="brand" type="keyenum" values="cpsvk;Canal+ SK|cpscz;Canal+ CZ" default="cpsvk" />
 	<setting label="Show only channels included in my subscription" id="only_subscribed" type="bool" default="true" />
+	<setting label="Enable adult channels" id="enable_adult" type="bool" default="true" />
 	<setting label="Maximum resolution of the offered stream" id="max_resolution" type="keyenum" values="0;Unlimited|1080;1080p|720;720p|576;576p|480;480p|360;360p" default="0" />
 	<category label="Userbouquet">
 		<setting label="Automatically export channel list as userbouquet" id="enable_userbouquet" type="bool" default="false" />

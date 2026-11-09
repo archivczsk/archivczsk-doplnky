@@ -46,10 +46,10 @@ def logo_url(url):
 
 
 class CanalplusChannel(object):
-	__slots__ = ('key', 'id', 'name', 'picon', 'lcn', 'dvr', 'no_access', 'epg_id',
+	__slots__ = ('key', 'id', 'name', 'picon', 'lcn', 'dvr', 'no_access', 'adult', 'epg_id',
 	             'epg_name', 'epg_desc', 'epg_img', 'epg_start', 'epg_stop')
 
-	def __init__(self, key, cid, name, picon=None, lcn=None, dvr=False, no_access=False):
+	def __init__(self, key, cid, name, picon=None, lcn=None, dvr=False, no_access=False, adult=False):
 		self.key = key          # EpgId as string
 		self.id = cid           # numeric id for the bouquet
 		self.name = name
@@ -57,6 +57,7 @@ class CanalplusChannel(object):
 		self.lcn = lcn
 		self.dvr = dvr
 		self.no_access = no_access
+		self.adult = adult
 		self.epg_id = key
 		self.epg_name = None
 		self.epg_desc = None
@@ -80,9 +81,13 @@ class CanalplusModuleLiveTV(CPModuleLiveTV):
 			self.cp.session_expired()
 			return
 
+		enable_adult = self.cp.get_setting('enable_adult')
 		enable_download = self.cp.get_setting('download_live')
 
 		for channel in self.cp.channels:
+			if not enable_adult and channel.adult:
+				continue
+
 			title = channel.name
 			if channel.lcn:
 				title = '%d. %s' % (channel.lcn, title)
@@ -95,12 +100,12 @@ class CanalplusModuleLiveTV(CPModuleLiveTV):
 				                    self.cp.timestamp_to_str(channel.epg_stop))
 				if channel.epg_desc:
 					plot += '\n' + channel.epg_desc
-				info_labels = {'title': channel.epg_name, 'plot': plot}
+				info_labels = {'title': channel.epg_name, 'plot': plot, 'adult': channel.adult}
 				if channel.epg_start and channel.epg_stop:
 					info_labels['duration'] = channel.epg_stop - channel.epg_start
 			else:
 				epg_str = ''
-				info_labels = {'title': channel.name}
+				info_labels = {'title': channel.name, 'adult': channel.adult}
 
 			menu = self.cp.create_ctx_menu()
 			if channel.dvr and self.cp.archive_module:
@@ -129,15 +134,22 @@ class CanalplusModuleArchive(CPModuleArchive):
 			self.cp.session_expired()
 			return
 
+		enable_adult = self.cp.get_setting('enable_adult')
+
 		for channel in self.cp.channels:
+			if not enable_adult and channel.adult:
+				continue
+
 			if channel.dvr and not channel.no_access:
-				self.add_archive_channel(channel.name, channel.key, ARCHIVE_HOURS, img=channel.picon)
+				self.add_archive_channel(channel.name, channel.key, ARCHIVE_HOURS, img=channel.picon,
+				                         info_labels={'adult': channel.adult})
 
 	def get_archive_program(self, channel_id, archive_day):
 		ts_from, ts_to = self.archive_day_to_datetime_range(archive_day, True)
 
 		channel = self.cp.channels_by_key.get(channel_id)
 		channel_name = channel.name if channel else ''
+		adult = channel.adult if channel else False
 
 		try:
 			events = self.cp.api.get_epg_range(channel_id, ts_from, ts_to)
@@ -158,7 +170,7 @@ class CanalplusModuleArchive(CPModuleArchive):
 
 		if not events:
 			# for days without a stored schedule, time blocks are offered instead
-			self.archive_time_blocks(channel_id, channel_name, ts_from, ts_to, now)
+			self.archive_time_blocks(channel_id, channel_name, ts_from, ts_to, now, adult=adult)
 			return
 
 		for ev in events:
@@ -171,7 +183,7 @@ class CanalplusModuleArchive(CPModuleArchive):
 			title = '%s - %s - %s' % (self.cp.timestamp_to_str(start),
 			                          self.cp.timestamp_to_str(stop), _I(name))
 
-			info_labels = {'title': ev['title'] or name, 'plot': event_details(ev)}
+			info_labels = {'title': ev['title'] or name, 'plot': event_details(ev), 'adult': adult}
 			if start and stop:
 				info_labels['duration'] = stop - start
 			if start > now or stop <= oldest:
@@ -184,7 +196,7 @@ class CanalplusModuleArchive(CPModuleArchive):
 			                  archive_title='%s - %s' % (channel_name, name))
 
 	def archive_time_blocks(self, channel_id, channel_name, ts_from, ts_to, now,
-	                        block=ARCHIVE_BLOCK_SECONDS):
+	                        block=ARCHIVE_BLOCK_SECONDS, adult=False):
 		"""Fallback archive listing by time blocks when there is no schedule for the day.
 
 		Shows only blocks that already passed and are still inside the DVR window (ARCHIVE_HOURS)."""
@@ -199,7 +211,7 @@ class CanalplusModuleArchive(CPModuleArchive):
 			if stop > oldest:
 				title = '%s - %s' % (self.cp.timestamp_to_str(start),
 				                     self.cp.timestamp_to_str(stop))
-				info_labels = {'title': '%s %s' % (channel_name, title), 'duration': block}
+				info_labels = {'title': '%s %s' % (channel_name, title), 'duration': block, 'adult': adult}
 				self.cp.add_video(title, None, info_labels, cmd=self.get_archive_stream,
 				                  channel_id=channel_id, start=start, stop=stop,
 				                  archive_title='%s %s' % (channel_name, title))
@@ -278,6 +290,11 @@ class CanalplusModuleExtra(CPModuleTemplate):
 		self.cp.add_dir(self._('Account'), cmd=self.list_account)
 		self.cp.add_video(self._("Sign out (pair again)"), cmd=self.sign_out)
 		self.cp.add_video(self._("Check playback"), cmd=self.check_playback)
+		self.cp.add_video(self._("Run EPG export to enigma or XML files"), cmd=self.export_epg)
+
+	def export_epg(self):
+		self.cp.bxeg.refresh_xmlepg_start(True)
+		self.cp.show_info(self._("EPG export started"), noexit=True)
 
 	def sign_out(self):
 		self.cp.sign_out()
@@ -523,7 +540,10 @@ class CanalplusContentProvider(ModuleContentProvider):
 				cid = 10000 + len(channels)
 			used_ids.add(cid)
 
-			no_access = _flag((item.get('AccessRights') or {}).get('NoAccess'))
+			access = item.get('AccessRights') or {}
+			no_access = _flag(access.get('NoAccess'))
+			# Cat5Access marks adult (category V) channels, the name prefix is a fallback
+			adult = _flag(access.get('Cat5Access')) or name.startswith('(18+)')
 
 			channel = CanalplusChannel(
 				key=str(key), cid=cid, name=name,
@@ -531,6 +551,7 @@ class CanalplusContentProvider(ModuleContentProvider):
 				lcn=lcn or None,
 				dvr=_flag(item.get('DVR')),
 				no_access=no_access,
+				adult=adult,
 			)
 			channels.append(channel)
 			by_key[channel.key] = channel
@@ -594,7 +615,8 @@ class CanalplusContentProvider(ModuleContentProvider):
 			channel.epg_desc = event_details(ev) or None
 
 	def get_channel_epg(self, channel_key, time_from, time_to):
-		"""Channel schedule for the bouquet and XML EPG."""
+		"""Channel schedule for the bouquet and XML EPG - downloaded from the server for the whole range."""
+		self.api.fetch_solocoo_channel(channel_key, time_from, time_to, with_desc=False)
 		return self.api.get_epg_range(channel_key, time_from, time_to)
 
 	def collect_epg(self):

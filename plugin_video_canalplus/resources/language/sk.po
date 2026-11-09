@@ -177,3 +177,14 @@ msgstr "Widevine, SD (tento prijímač má Python 2.7)"
 msgid "Show only channels included in my subscription"
 msgstr "Zobraziť len kanály z môjho predplatného"
 
+msgid "Your Canal+ account has no live TV channels available. Check that your subscription includes TV channels."
+msgstr "Váš účet Canal+ nemá k dispozícii žiadne živé TV kanály. Skontrolujte, či vaše predplatné obsahuje TV kanály."
+
+msgid "Run EPG export to enigma or XML files"
+msgstr "Spustiť export EPG do enigmy alebo XML súborov"
+
+msgid "EPG export started"
+msgstr "Export EPG sa spustil"
+
+msgid "Enable adult channels"
+msgstr "Povoliť kanály pre dospelých"
