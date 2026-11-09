@@ -3,7 +3,7 @@
 <addon id="plugin.video.aktualne" name="Aktuálně (video)" version="1.8" hash="73a61f12609e704164f094bcabfaae03" rhash="73a61f12609e704164f094bcabfaae03" />
 <addon id="plugin.video.antiktv" name="Antik TV" version="2.39" hash="f5eac3c8f607003dc44433961ccb65e2" rhash="11ca592941b2fb526fe48bdc419123f1" />
 <addon id="plugin.video.autosalontv" name="Autosalon" version="1.9" hash="e1836431641d28c728f02e2b0a0037e4" rhash="e1836431641d28c728f02e2b0a0037e4" />
-<addon id="plugin.video.canalplus" name="Canal+" version="1.2" hash="85d7f7335f53c66cc9c83758864fc9e0" rhash="445646f4aa3714e3267bf71be132ecc3" />
+<addon id="plugin.video.canalplus" name="Canal+" version="1.3" hash="be973eeddc4b54716cf0c2683ac016b1" rhash="81774cab7742bfdef0aa69d354d168a6" />
 <addon id="plugin.video.disneyplus" name="Disney+" version="2.8" hash="ab2fbbb3c48d15514211a8debd1641f1" rhash="adc394ba29fbde9c1c7e65d9adad6431" />
 <addon id="plugin.video.dupe" name="Dupe" version="1.9" hash="91c1a6424e4146bb98d07a6da84cc036" rhash="6fab901929cf26b7637c8368444a5adc" />
 <addon id="plugin.video.idnestv" name="iDNES.tv" version="1.8" hash="fc03240f747f08c9e8dbe5737e94002b" rhash="fc03240f747f08c9e8dbe5737e94002b" />
