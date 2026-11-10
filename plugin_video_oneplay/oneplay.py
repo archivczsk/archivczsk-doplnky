@@ -348,7 +348,7 @@ class Oneplay(object):
 
 
 		self.cp.log_debug("Checking for access token")
-		self.access_token = response.get('step', {}).get('bearerToken')
+		self.access_token = response.get('step', {}).get('bearerToken') or response.get('step', {}).get('user', {}).get('bearerToken')
 		if not self.access_token:
 			self.cp.log_error("No access token in response data:\n%s" % str(response))
 			raise LoginException(self._("Login failed - no access token in response data received"))
