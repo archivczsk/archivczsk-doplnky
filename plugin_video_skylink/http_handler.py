@@ -60,16 +60,21 @@ class SkylinkHTTPRequestHandler(DashHTTPRequestHandler, PlayliveTVHTTPRequestHan
 		max_bitrate = max_bitrate * 1000000 if max_bitrate > 0 else 1000000000
 
 		# pick the representation according to the configured resolution
+		url = stream['url']
 		bandwidth = max_bitrate
 		try:
 			streams = self.cp.resolve_streams_for_channel(stream['url'])
 			if streams:
 				bandwidth = int(streams[0]['bandwidth'])
+				# the URL from the server carries a token valid only for a few minutes and the
+				# player refreshes the manifest during the whole playback - use the URL after
+				# the redirect, the same as playback started from the addon menu does
+				url = streams[0].get('playlist_url') or url
 		except Exception:
 			self.cp.log_exception()
 
 		return {
-			'url': stream['url'],
+			'url': url,
 			'bandwidth': bandwidth,
 			'license_url': stream.get('license_url', ''),
 			'drm_system': stream.get('drm_system', ''),
