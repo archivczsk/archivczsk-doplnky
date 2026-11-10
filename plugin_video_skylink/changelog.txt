@@ -1,3 +1,6 @@
+1.6: 10.11.2026
+- userbouquet: opravené zamrznutie obrazu po niekoľkých minútach sledovania
+
 1.5: 09.11.2026
 - prázdny zoznam kanálov zo servera sa zobrazí ako zrozumiteľná hláška namiesto neošetrenej chyby doplnku
 
