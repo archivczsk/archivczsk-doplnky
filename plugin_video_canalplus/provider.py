@@ -574,32 +574,41 @@ class CanalplusContentProvider(ModuleContentProvider):
 		if not todo:
 			return
 
-		try:
-			epg = self.api.get_epg_now_many([ch.epg_id for ch in todo], now)
-		except Exception as e:
-			self.log_error('Failed to load the EPG: %s' % error_text(e))
-			return
-
-		# descriptions of the currently running programmes from Solocoo
+		epg = {}        # epg_id -> currently running event
 		now_desc = {}   # epg_id -> description
+
+		# with Solocoo the running programmes of all channels come in a few bulk requests
 		if self.api.solocoo.is_paired():
 			try:
 				cc_to_epg = {}
 				for ch in todo:
 					cc_to_epg[self.api.solocoo_cc_id(ch.epg_id)] = str(ch.epg_id)
-				now_map = self.api.solocoo.get_schedule_now(list(cc_to_epg.keys()))
-				id_by_epg = {}
-				for cc, e in now_map.items():
+				for cc, ev in self.api.solocoo.get_schedule_now(list(cc_to_epg.keys())).items():
 					eid = cc_to_epg.get(cc)
-					if eid and e.get('id'):
-						id_by_epg[eid] = e['id']
-				desc_map = self.api.solocoo.get_descriptions(list(id_by_epg.values()), time_limit=15)
-				for eid, aid in id_by_epg.items():
-					d = desc_map.get(aid)
-					if d:
-						now_desc[eid] = d
+					if eid:
+						epg[eid] = ev
 			except Exception as e:
-				self.log_error('Solocoo descriptions failed: %s' % error_text(e))
+				self.log_error('Solocoo schedule failed: %s' % error_text(e))
+
+			if epg and self.get_setting('load_descriptions'):
+				# the schedule has no descriptions, they are only in the programme detail
+				try:
+					id_by_epg = dict((eid, ev['id']) for eid, ev in epg.items() if ev.get('id'))
+					desc_map = self.api.solocoo.get_descriptions(list(id_by_epg.values()), workers=12, time_limit=15)
+					for eid, aid in id_by_epg.items():
+						d = desc_map.get(aid)
+						if d:
+							now_desc[eid] = d
+				except Exception as e:
+					self.log_error('Solocoo descriptions failed: %s' % error_text(e))
+
+		# channels without a Solocoo programme (or without pairing) use the public catalogue
+		missing = [ch.epg_id for ch in todo if str(ch.epg_id) not in epg]
+		if missing:
+			try:
+				epg.update(self.api.get_epg_now_many(missing, now))
+			except Exception as e:
+				self.log_error('Failed to load the EPG: %s' % error_text(e))
 
 		for channel in todo:
 			ev = epg.get(str(channel.epg_id))
@@ -611,7 +620,7 @@ class CanalplusContentProvider(ModuleContentProvider):
 			channel.epg_img = ev.get('image')
 			d = now_desc.get(str(channel.epg_id))
 			if d and not ev.get('desc'):
-				ev['desc'] = d
+				ev = dict(ev, desc=d)
 			channel.epg_desc = event_details(ev) or None
 
 	def get_channel_epg(self, channel_key, time_from, time_to):
