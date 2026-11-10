@@ -188,3 +188,6 @@ msgstr "Export EPG sa spustil"
 
 msgid "Enable adult channels"
 msgstr "Povoliť kanály pre dospelých"
+
+msgid "Load programme descriptions in the channel list (slower)"
+msgstr "Načítať popisy relácií v zozname kanálov (pomalšie)"

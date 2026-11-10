@@ -4,6 +4,7 @@
 - v sekcii Informácie a nastavenia pribudol okamžitý export TV programu (EPG)
 - export TV programu obsahuje program na celý nastavený počet dní, nie len na niekoľko hodín dopredu
 - kanály pre dospelých chráni rodičovský zámok archivCZSK a dajú sa v nastaveniach skryť
+- rýchlejšie načítanie zoznamu kanálov; načítanie popisov relácií sa dá v nastaveniach vypnúť
 
 1.3 - 09.11.2026
 - opravené načítanie kanálov pre českú službu (Canal+ CZ)

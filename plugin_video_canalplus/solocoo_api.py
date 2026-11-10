@@ -291,6 +291,17 @@ class SolocooEpg(object):
 			if v:
 				image = v
 				break
+		if not image:
+			# the schedule carries a list of images - the landscape one is preferred
+			for img in (item.get('images') or []):
+				if isinstance(img, dict) and img.get('url'):
+					if img.get('type') == 'la':
+						image = img['url']
+						break
+					image = image or img['url']
+		if image:
+			# the URL is a template - the size is filled in, the original is too big for the receiver
+			image = image.replace('{resolutionXY}', '320x180')
 		asset_id = item.get('id') or params.get('id') or ''
 		return {'start': int(start), 'end': int(end) or 0, 'title': title,
 		        'subtitle': subtitle or '', 'desc': desc or '', 'image': image, 'id': str(asset_id)}
