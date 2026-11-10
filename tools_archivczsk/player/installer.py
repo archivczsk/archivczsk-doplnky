@@ -65,7 +65,7 @@ def uninstall_exteplayer3():
 		log.info('exteplayer3 restored successfully')
 
 
-def check_installed_exteplayer3():
+def check_installed_exteplayer3(cfg_element=None):
 	try:
 		if config.plugins.archivCZSK.videoPlayer.replace_exteplayer3.value:
 			if not os.path.islink(EXTEPLAYER3_BIN_PATH):
@@ -78,18 +78,9 @@ def check_installed_exteplayer3():
 		log.error(traceback.format_exc())
 
 def run_exteplayer3_check_service():
-	ArchivCZSK.get_addon('tools.archivczsk').bgservice.run_in_loop('exteplayer3 check', 900, check_installed_exteplayer3)
+	addon = ArchivCZSK.get_addon('tools.archivczsk')
+	addon.bgservice.run_in_loop('exteplayer3 check', 900, check_installed_exteplayer3)
 	try:
-		# broken on OpenPLi
-		#config.plugins.archivCZSK.videoPlayer.replace_exteplayer3.clearNotifiers()
-
-		#workaround
-		config.plugins.archivCZSK.videoPlayer.replace_exteplayer3.notifiers_final = []
-		config.plugins.archivCZSK.videoPlayer.replace_exteplayer3.notifiers = []
-	except:
-		log.error(traceback.format_exc())
-
-	try:
-		config.plugins.archivCZSK.videoPlayer.replace_exteplayer3.addNotifier(lambda configElement: check_installed_exteplayer3(), initial_call=False, immediate_feedback=False)
+		addon.add_global_change_notifier(config.plugins.archivCZSK.videoPlayer.replace_exteplayer3, check_installed_exteplayer3, initial_call=False, immediate_feedback=False)
 	except:
 		log.error(traceback.format_exc())
