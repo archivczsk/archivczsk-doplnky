@@ -280,8 +280,8 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		try:
 			response = self.req_session.get(segment_url)
 			response.raise_for_status()
-		except:
-			self.cp.log_error('Failed to HLS segment data from %s\n%s' % (segment_url, str(response)))
+		except Exception as e:
+			self.cp.log_error('Failed to HLS segment data from %s\n%s' % (segment_url, str(e)))
 			request.send_response(403)
 			return
 
@@ -375,8 +375,8 @@ class HlsHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		try:
 			response = self.req_session.get(url)
 			response.raise_for_status()
-		except:
-			self.cp.log_error('Failed to retrieve HLS variant playlist data from %s\n%s' % (url, str(response)))
+		except Exception as e:
+			self.cp.log_error('Failed to retrieve HLS variant playlist data from %s\n%s' % (url, str(e)))
 			request.send_response(401)
 			return None
 
