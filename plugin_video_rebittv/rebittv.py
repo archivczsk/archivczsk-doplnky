@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-import time, json, requests, re
+import os, time, json, requests, re
 from datetime import datetime, timedelta
 from datetime import date
 import traceback
@@ -228,7 +228,7 @@ class RebitTV:
 
 		if 'data' not in data:
 			self.access_token = None
-			self.refresh_token_token = None
+			self.refresh_token = None
 			self.access_token_life = 0
 			self.user_id = None
 			self.save_login_data()
@@ -256,7 +256,7 @@ class RebitTV:
 
 		if 'data' not in data:
 			self.access_token = None
-			self.refresh_token_token = None
+			self.refresh_token = None
 			self.access_token_life = 0
 			self.user_id = None
 			self.save_login_data()
@@ -285,7 +285,7 @@ class RebitTV:
 		self.call_api('auth/auth', method='DELETE', enable_retry=False)
 
 		self.access_token = None
-		self.refresh_token_token = None
+		self.refresh_token = None
 		self.client_id = None
 		self.save_login_data()
 
