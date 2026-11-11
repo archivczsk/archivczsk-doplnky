@@ -179,7 +179,7 @@ class HlsPlaylist(object):
 
 	def process(self, mp_data=None):
 		if not mp_data:
-			mp_data = self.load_http_data(self.mp_url)
+			mp_data = self.load_http_data()
 		self.parse(mp_data)
 
 		# filter out not needed data from master playlist in order to speed up all another operations

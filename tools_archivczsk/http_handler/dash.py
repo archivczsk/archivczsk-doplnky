@@ -203,14 +203,15 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		try:
 
 			response = self.req_session.get(url, headers=headers)
-		except:
-			self.cp.log_error('Failed to retrieve segment data from %s\n%s' % (url, str(response)))
+		except Exception as e:
+			self.cp.log_error('Failed to retrieve segment data from %s\n%s' % (url, str(e)))
 			request.send_response(500)
 			return
 
 		if response.status_code >= 400:
 			self.cp.log_error("Response code for DASH segment: %d" % response.status_code)
 			request.send_response(403)
+			return
 
 		data = self.process_drm_protected_segment(segment_type, response.content, cache_data)
 
@@ -463,8 +464,8 @@ class DashHTTPRequestHandler(HTTPRequestHandlerTemplate):
 		try:
 			response = self.req_session.get(dash_info['url'], headers=dash_info.get('headers'))
 			response.raise_for_status()
-		except:
-			self.cp.log_error('Failed to retrieve DASH playlist data from %s\n%s' % (dash_info['url'], str(response)))
+		except Exception as e:
+			self.cp.log_error('Failed to retrieve DASH playlist data from %s\n%s' % (dash_info['url'], str(e)))
 			return None
 
 #		self.log_devel("MPD response received: %s" % response)
