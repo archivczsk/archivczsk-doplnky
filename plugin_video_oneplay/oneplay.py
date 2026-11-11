@@ -1140,6 +1140,9 @@ class Oneplay(object):
 		ret = []
 
 		for item in response['carousel']['tiles']:
+			content_id = None
+			item_type = None
+
 			if item.get('action',{}).get('params',{}).get('schema') == 'ContentPlayApiAction':
 				content_id = item.get('action',{}).get('params',{}).get('payload')
 				item_type = 'epg_video'
