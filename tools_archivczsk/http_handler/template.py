@@ -61,7 +61,7 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler):
 
 				cmd = "-r 1 -loop 1 -i %s -vf drawtext=text='{}':x=(w-tw)/2:y=4*(h-th)/5:fontsize=36:fontcolor=yellow:fontfile=/usr/share/fonts/DejaVuSans.ttf -c:v libx264 -pix_fmt yuv420p -preset ultrafast -tune stillimage -t 200ms -f mpegts %s" % (_icon('error.jpg'), error_ts_file)
 				cmd = [HTTPRequestHandlerTemplate.get_ffmpeg_path()] + cmd.split(' ')
-				cmd[8] = cmd[8].format(str(e).replace('\n', ' ').replace(':', 'x\:').replace('"', 'x\"').replace("'", "x\'"))
+				cmd[8] = cmd[8].format(str(e).replace('\n', ' ').replace(':', '\\:').replace('"', '\"').replace("'", "\'"))
 
 				try:
 					subprocess.check_call(cmd)

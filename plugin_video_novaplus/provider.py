@@ -405,7 +405,7 @@ class TVNovaContentProvider(CommonContentProvider):
 			response = self.call_api('https://media.cms.nova.cz/embed/' + url + '?autoplay=1', raw_response=True)
 
 			if response.status_code == 200:
-				data = re.search("processAdTagModifier\(\{(.*?)\}\)", response.text, re.S)
+				data = re.search(r'processAdTagModifier\(\{(.*?)\}\)', response.text, re.S)
 
 				if data:
 					plr = json.loads('{' + data.group(1) + '}')
@@ -441,7 +441,7 @@ class TVNovaContentProvider(CommonContentProvider):
 				json_data = None
 				for s in embeded.find_all('script'):
 					try:
-						json_data = get_js_data(s.string, '\s+player:\s+(\{.*?)\};.*')
+						json_data = get_js_data(s.string, r'\s+player:\s+(\{.*?)\};.*')
 						break
 					except:
 						pass

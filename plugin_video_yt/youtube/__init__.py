@@ -9,7 +9,7 @@ def resolve(url, settings=None, with_captions=False):
 	Returns playable url of the video
 	with_captions=True returns tuple (url, {'tracks': caption tracks, 'orig_lang': language of original audio track or None})
 	'''
-	id_object = re.search('((?<=(v|V)/)|(?<=be/)|(?<=(\?|\&)v=)|(?<=embed/))([\w-]+)', url, re.DOTALL)
+	id_object = re.search(r'((?<=(v|V)/)|(?<=be/)|(?<=(\?|\&)v=)|(?<=embed/))([\w-]+)', url, re.DOTALL)
 
 	if id_object is not None:
 		url = id_object.group(0)

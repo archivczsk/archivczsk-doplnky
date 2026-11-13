@@ -228,7 +228,7 @@ class RtvsContentProvider(ContentProvider):
 				return self.list_az_radio(util.request(self._fix_url_radio(url)))
 
 		elif url.find("#date_radio#") == 0:
-			d = re.search('#date(?:_radio|)#(?P<month>[\d]{1,2})\.(?P<year>[\d]{4})', url)
+			d = re.search(r'#date(?:_radio|)#(?P<month>[\d]{1,2})\.(?P<year>[\d]{4})', url)
 			month = d.group('month')
 			year = d.group('year')
 			self.base_url = self._get_url(True)
@@ -715,7 +715,7 @@ class RtvsContentProvider(ContentProvider):
 			item['menu'] = {'$30070':{'list':item['url'], 'action-type':'list'}}
 			self._filter(result, item)
 		if page2:
-			prev_url = re.search('page-item active">.+?href=\"(?P<url>\/[^\"]+)\".+?title=\"(?P<title>[^\"]+)\"', page, re.IGNORECASE | re.DOTALL).group('url')
+			prev_url = re.search(r'page-item active">.+?href="(?P<url>\/[^"]+)".+?title="(?P<title>[^"]+)"', page, re.IGNORECASE | re.DOTALL).group('url')
 
 			# self.info('prev_url = ' + prev_url)
 			item = self.dir_item()
@@ -906,7 +906,7 @@ class RtvsContentProvider(ContentProvider):
 			audio_id0 = item['url'].split('/')[-2]
 			self.info("<resolve> audioid: %s" % audio_id)
 			embed_data = util.request(HOST + "/embed/radio/archive/%s/%s"%(audio_id0, audio_id))
-			audio_id = re.search('audio5f\.json\?id=(?P<id>[^\"]+)', embed_data, re.IGNORECASE | re.DOTALL).group('id')
+			audio_id = re.search(r'audio5f\.json\?id=(?P<id>[^"]+)', embed_data, re.IGNORECASE | re.DOTALL).group('id')
 			audiodata = util.json.loads(util.request(HOST + "/json/audio5f.json?id=" + audio_id))
 			for v in audiodata['playlist'][0]['sources']:
 				url =  v['src']

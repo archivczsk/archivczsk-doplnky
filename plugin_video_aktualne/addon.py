@@ -97,14 +97,14 @@ class VideoAktualneContentProvider(ContentProvider):
 		result = []
 		self.info("URL: %s" % item['url'] )
 		html = util.request(item['url'], headers=HEADERS)
-		mp4 = re.search('"MP4":\[\{"src":"(.*?)","type":"video/mp4","label":"1080p"\}', html)
+		mp4 = re.search(r'"MP4":\[\{"src":"(.*?)","type":"video/mp4","label":"1080p"\}', html)
 		if not mp4:
 			mp4 = re.search('"contentUrl":"(.*?)"', html)
 		if not mp4:
 			iframe = re.search('iframe_url: "(.*?)"', html)
 			if iframe:
 				html = util.request("https:" + iframe.group(1), headers=HEADERS)
-				mp4 = re.search('"MP4":\[\{"src":"(.*?)","type":"video/mp4","label":"1080p"\}', html)
+				mp4 = re.search(r'"MP4":\[\{"src":"(.*?)","type":"video/mp4","label":"1080p"\}', html)
 		if mp4:
 			self.info("MP4: %s" % mp4.group(1) )
 			itm = self.video_item()

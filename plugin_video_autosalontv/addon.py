@@ -172,7 +172,7 @@ class autosalontvContentProvider(ContentProvider):
 		res = []
 		base_url = url[:url.rfind('/')]
 
-		for m in re.finditer('#EXT-X-STREAM-INF:.*?,NAME=(?P<resolution>[^\s]+)\s(?P<chunklist>[^\s]+)', req.text, re.DOTALL):
+		for m in re.finditer(r'#EXT-X-STREAM-INF:.*?,NAME=(?P<resolution>[^\s]+)\s(?P<chunklist>[^\s]+)', req.text, re.DOTALL):
 			itm = {}
 			itm['url'] = base_url + '/' + m.group('chunklist')
 			itm['quality'] = m.group('resolution')
@@ -195,7 +195,7 @@ class autosalontvContentProvider(ContentProvider):
 
 		html = requests.get("https://video.onnetwork.tv/frame" + ver + ".php?mid=" + mid, headers = {"referer": "https://www.autosalon.tv/"}).content
 
-		urls = re.findall('playerVideos\s*=\s*(.*?);', str(html), re.DOTALL)[1]
+		urls = re.findall(r'playerVideos\s*=\s*(.*?);', str(html), re.DOTALL)[1]
 		url = json.loads(urls)[0]["url"]
 		stream = url.replace("\\", "")
 

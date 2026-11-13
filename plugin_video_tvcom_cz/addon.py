@@ -55,7 +55,7 @@ class TvcomContentProvider(ContentProvider):
 		items = json.loads(data)
 		for item in (items.get('items') or []):
 			itm=self.video_item()
-			id = re.search("\/([0-9]+)\-.*?.htm", item['url'], re.DOTALL)
+			id = re.search(r'\/([0-9]+)\-.*?.htm', item['url'], re.DOTALL)
 			if id:
 				itm['img']='https://tvcom-static.ssl.cdn.cra.cz/VideoPicture/'+str(item['date'])[0:4]+'/'+str(item['date'])[4:6]+'/'+str(item['date'])[6:8]+'/b'+id.group(1)+'.png?v=637774123360000000'
 			itm['url']=item['url']
@@ -94,7 +94,7 @@ class TvcomContentProvider(ContentProvider):
 					itm['title']=item['Time']+" ["+item['Sport']+"] "+item['Name']
 					itm['plot']=item['Name']
 					itm['sort']=item['SortDateTime']
-					id = re.search("\/([0-9]+)\-.*?.htm", itm['url'], re.DOTALL)
+					id = re.search(r'\/([0-9]+)\-.*?.htm', itm['url'], re.DOTALL)
 					if id:
 						itm['img']='https://tvcom-static.ssl.cdn.cra.cz/VideoPicture/'+str(itm['sort'])[0:4]+'/'+str(itm['sort'])[4:6]+'/'+str(itm['sort'])[6:8]+'/b'+id.group(1)+'.png?v=637774123360000000'
 					# itm['img']=img
@@ -108,7 +108,7 @@ class TvcomContentProvider(ContentProvider):
 		result = []
 		headers = {"referer": self.base_url}
 		httpdata = util.request(self.base_url+item['url'], headers=headers)
-		items = re.compile("programDuration: (.*?),.*?programName: '(.*?)'.*?hls.*?src: '(.*?)\.m3u8", re.DOTALL).findall(httpdata)
+		items = re.compile(r"programDuration: (.*?),.*?programName: '(.*?)'.*?hls.*?src: '(.*?)\.m3u8", re.DOTALL).findall(httpdata)
 		for dur,name,link in items:
 			item = self.video_item()
 			item['surl'] = name

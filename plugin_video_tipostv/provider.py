@@ -241,7 +241,7 @@ class TiposTVContentProvider(CommonContentProvider):
 		video_url = None
 
 		for script in soup.find_all('script') or []:
-			match = re.findall('https?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', str(script))
+			match = re.findall(r'https?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', str(script))
 			for u in match:
 				if '.m3u8' in u:
 					video_url = u.rstrip(',').rstrip('\'')

@@ -166,11 +166,11 @@ class PrehrajTo(object):
 	def resolve_video(self, video_id):
 		soup = self.call_api(video_id)
 
-		pattern = re.compile('[{;\s]+var\s+sources\s+=\s+\[(.*?)\];.*', re.DOTALL)
+		pattern = re.compile(r'[{;\s]+var\s+sources\s+=\s+\[(.*?)\];.*', re.DOTALL)
 		script = soup.find("script", text=pattern).string
 
 		videos = []
-		for v in get_js_data(script, '[{;\s]+var\s+sources\s+=\s+(\[.*?\]);.*'):
+		for v in get_js_data(script, r'[{;\s]+var\s+sources\s+=\s+(\[.*?\]);.*'):
 			videos.append({
 				'url': v['file'],
 				'quality': v['label'],
@@ -178,7 +178,7 @@ class PrehrajTo(object):
 		videos.sort(key=lambda x: int(x['quality'].replace('p', '').replace('i','')), reverse=True)
 
 		subtitles = []
-		for s in get_js_data(script, '[{;\s]+var\s+tracks\s+=\s+(\[.*?\]);.*'):
+		for s in get_js_data(script, r'[{;\s]+var\s+tracks\s+=\s+(\[.*?\]);.*'):
 			lang = s['label'].split('-')
 			if len(lang) == 3:
 				lang = lang[2]
