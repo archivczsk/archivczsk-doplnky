@@ -223,7 +223,7 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler):
 			h['Range'] = r
 
 		try:
-			response = self.req_session.get(url, headers=headers, stream=True)
+			response = self.req_session.get(url, headers=h, stream=True)
 		except Exception as e:
 			self.cp.log_error('Request for url %s failed: %s' % (url, str(e)))
 			request.send_response(500)
