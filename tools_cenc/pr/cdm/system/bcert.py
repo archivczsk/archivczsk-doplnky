@@ -1,21 +1,15 @@
-from __future__ import annotations
+import collections
 
-import collections.abc
-
-# monkey patch for construct 2.8.8 compatibility
 if not hasattr(collections, 'Sequence'):
+	import collections.abc
 	collections.Sequence = collections.abc.Sequence
 
 import time
-import base64
-from pathlib import Path
-from typing import Union, Optional
-from enum import IntEnum
-
 try:
-	from Cryptodome.PublicKey import ECC
-except:
-	from Crypto.PublicKey import ECC
+	from typing import Union, Optional
+except ImportError:
+	pass
+from .compat import IntEnum, decode_binary, path_string
 
 from ...dep.construct import Bytes, Const, Int32ub, GreedyRange, Switch, Container, ListContainer, Embedded
 from ...dep.construct import Int16ub, Array
@@ -24,7 +18,7 @@ from ...dep.construct import Struct, this
 from ..system.util import Util
 from ..crypto import Crypto
 from ..misc.exceptions import InvalidCertificateChain, InvalidCertificate
-from ..crypto.ecc_key import ECCKey
+from ..crypto.ecc_key import ECC, ECCKey
 
 
 class BCertCertType(IntEnum):
@@ -130,7 +124,7 @@ class BCertFeatures(IntEnum):
 	DEPRECATED_SECURE_STOP = 0x0000000E
 
 
-class _BCertStructs:
+class _BCertStructs(object):
 	Header = Struct(
 		"flags" / Int16ub,
 		"tag" / Int16ub,
@@ -313,24 +307,27 @@ class Certificate(_BCertStructs):
 
 	def __init__(
 			self,
-			parsed_bcert: Container,
-			bcert_obj: _BCertStructs.BCert = _BCertStructs.BCert
+			parsed_bcert,  # type: Container
+			bcert_obj=None  # type: _BCertStructs.BCert
 	):
+		# type: (...) -> None
+		if bcert_obj is None:
+			bcert_obj = _BCertStructs.BCert
 		self.parsed = parsed_bcert
 		self._BCERT = bcert_obj
 
 	@classmethod
 	def new_leaf_cert(
 			cls,
-			cert_id: bytes,
-			security_level: int,
-			client_id: bytes,
-			signing_key: ECCKey,
-			encryption_key: ECCKey,
-			group_key: ECCKey,
-			parent: CertificateChain,
-			expiry: int = 0xFFFFFFFF
-	) -> Certificate:
+			cert_id,  # type: bytes
+			security_level,  # type: int
+			client_id,  # type: bytes
+			signing_key,  # type: ECCKey
+			encryption_key,  # type: ECCKey
+			group_key,  # type: ECCKey
+			parent,  # type: CertificateChain
+			expiry=0xFFFFFFFF  # type: int
+	):  # type: (...) -> Certificate
 		basic_info = Container(
 			cert_id=cert_id,
 			security_level=security_level,
@@ -455,11 +452,11 @@ class Certificate(_BCertStructs):
 		return cls(new_bcert_container)
 
 	@classmethod
-	def loads(cls, data: Union[str, bytes]) -> Certificate:
-		if isinstance(data, str):
-			data = base64.b64decode(data)
+	def loads(cls, data):
+		# type: (Union[str, bytes]) -> Certificate
+		data = decode_binary(data, prefix=b"CERT")
 		if not isinstance(data, bytes):
-			raise ValueError(f"Expecting Bytes or Base64 input, got {data!r}")
+			raise ValueError("Expecting Bytes or Base64 input, got {0!r}".format(data))
 
 		cert = _BCertStructs.BCert
 		return cls(
@@ -467,21 +464,24 @@ class Certificate(_BCertStructs):
 			bcert_obj=cert
 		)
 
-	def get_attribute(self, type_: int) -> Optional[Container]:
+	def get_attribute(self, type_):
+		# type: (int) -> Optional[Container]
 		for attribute in self.parsed.attributes:
 			if attribute.tag == type_:
 				return attribute
 
 		return None
 
-	def get_security_level(self) -> Optional[int]:
+	def get_security_level(self):
+		# type: () -> Optional[int]
 		basic_info = self.get_attribute(BCertObjType.BASIC)
 		if basic_info:
 			return basic_info.attribute.security_level
 
 		return None
 
-	def get_name(self) -> Optional[str]:
+	def get_name(self):
+		# type: () -> Optional[str]
 		manufacturer_info_attr = self.get_attribute(BCertObjType.MANUFACTURER)
 
 		if manufacturer_info_attr:
@@ -491,32 +491,36 @@ class Certificate(_BCertStructs):
 			model_name = Util.un_pad(manufacturer_info.model_name)
 			model_number = Util.un_pad(manufacturer_info.model_number)
 
-			return f"{manufacturer} {model_name} {model_number}"
+			return "{0} {1} {2}".format(manufacturer, model_name, model_number)
 
 		return None
 
-	def get_type(self) -> Optional[int]:
+	def get_type(self):
+		# type: () -> Optional[int]
 		basic_info = self.get_attribute(BCertObjType.BASIC)
 		if basic_info:
 			return basic_info.attribute.cert_type
 
 		return None
 
-	def get_expiration_date(self) -> Optional[int]:
+	def get_expiration_date(self):
+		# type: () -> Optional[int]
 		basic_info = self.get_attribute(BCertObjType.BASIC)
 		if basic_info:
 			return basic_info.attribute.expiration_date
 
 		return None
 
-	def get_issuer_key(self) -> Optional[bytes]:
+	def get_issuer_key(self):
+		# type: () -> Optional[bytes]
 		signature_object = self.get_attribute(BCertObjType.SIGNATURE)
 		if not signature_object:
 			return None
 
 		return signature_object.attribute.signature_key
 
-	def get_key_by_usage(self, key_usage: BCertKeyUsage) -> Optional[bytes]:
+	def get_key_by_usage(self, key_usage):
+		# type: (BCertKeyUsage) -> Optional[bytes]
 		key_info_object = self.get_attribute(BCertObjType.KEY)
 		if not key_info_object:
 			return None
@@ -528,7 +532,8 @@ class Certificate(_BCertStructs):
 
 		return None
 
-	def contains_public_key(self, public_key: Union[ECCKey, bytes]) -> bool:
+	def contains_public_key(self, public_key):
+		# type: (Union[ECCKey, bytes]) -> bool
 		if isinstance(public_key, ECCKey):
 			public_key = public_key.public_bytes()
 
@@ -542,10 +547,12 @@ class Certificate(_BCertStructs):
 
 		return False
 
-	def dumps(self) -> bytes:
+	def dumps(self):
+		# type: () -> bytes
 		return self._BCERT.build(self.parsed)
 
-	def _verify_extdata_signature(self) -> None:
+	def _verify_extdata_signature(self):
+		# type: () -> None
 		sign_key = self.get_attribute(BCertObjType.EXTDATASIGNKEY)
 		if not sign_key:
 			raise InvalidCertificate("No extdata sign key object found in certificate")
@@ -553,8 +560,8 @@ class Certificate(_BCertStructs):
 		sign_key_bytes = sign_key.attribute.key
 
 		signing_key = ECC.construct(
-			point_x=int.from_bytes(sign_key_bytes[:32], "big"),
-			point_y=int.from_bytes(sign_key_bytes[32:], "big"),
+			point_x=Util.from_bytes(sign_key_bytes[:32], "big"),
+			point_y=Util.from_bytes(sign_key_bytes[32:], "big"),
 			curve="P-256"
 		)
 
@@ -573,7 +580,8 @@ class Certificate(_BCertStructs):
 		):
 			raise InvalidCertificate("Signature of certificate extdata is not authentic")
 
-	def verify_signature(self) -> None:
+	def verify_signature(self):
+		# type: () -> None
 		signature_object = self.get_attribute(BCertObjType.SIGNATURE)
 		if not signature_object:
 			raise InvalidCertificate("No signature object found in certificate")
@@ -583,8 +591,8 @@ class Certificate(_BCertStructs):
 
 		signature_key = ECC.construct(
 			curve='P-256',
-			point_x=int.from_bytes(raw_signature_key[:32], 'big'),
-			point_y=int.from_bytes(raw_signature_key[32:], 'big')
+			point_x=Util.from_bytes(raw_signature_key[:32], 'big'),
+			point_y=Util.from_bytes(raw_signature_key[32:], 'big')
 		)
 
 		sign_payload = self.dumps()[:self.parsed.certificate_length]
@@ -607,27 +615,30 @@ class Certificate(_BCertStructs):
 class CertificateChain(_BCertStructs):
 	"""Represents a BCertChain"""
 
-	MSPlayReadyRootIssuerPubKey = bytes([
+	MSPlayReadyRootIssuerPubKey = bytes(bytearray([
 		0x86, 0x4D, 0x61, 0xCF, 0xF2, 0x25, 0x6E, 0x42, 0x2C, 0x56, 0x8B, 0x3C, 0x28, 0x00, 0x1C, 0xFB,
 		0x3E, 0x15, 0x27, 0x65, 0x85, 0x84, 0xBA, 0x05, 0x21, 0xB7, 0x9B, 0x18, 0x28, 0xD9, 0x36, 0xDE,
 		0x1D, 0x82, 0x6A, 0x8F, 0xC3, 0xE6, 0xE7, 0xFA, 0x7A, 0x90, 0xD5, 0xCA, 0x29, 0x46, 0xF1, 0xF6,
 		0x4A, 0x2E, 0xFB, 0x9F, 0x5D, 0xCF, 0xFE, 0x7E, 0x43, 0x4E, 0xB4, 0x42, 0x93, 0xFA, 0xC5, 0xAB
-	])
+	]))
 
 	def __init__(
 			self,
-			parsed_bcert_chain: Container,
-			bcert_chain_obj: _BCertStructs.BCertChain = _BCertStructs.BCertChain
+			parsed_bcert_chain,  # type: Container
+			bcert_chain_obj=None  # type: _BCertStructs.BCertChain
 	):
+		# type: (...) -> None
+		if bcert_chain_obj is None:
+			bcert_chain_obj = _BCertStructs.BCertChain
 		self.parsed = parsed_bcert_chain
 		self._BCERT_CHAIN = bcert_chain_obj
 
 	@classmethod
-	def loads(cls, data: Union[str, bytes]) -> CertificateChain:
-		if isinstance(data, str):
-			data = base64.b64decode(data)
+	def loads(cls, data):
+		# type: (Union[str, bytes]) -> CertificateChain
+		data = decode_binary(data, prefix=b"CHAI")
 		if not isinstance(data, bytes):
-			raise ValueError(f"Expecting Bytes or Base64 input, got {data!r}")
+			raise ValueError("Expecting Bytes or Base64 input, got {0!r}".format(data))
 
 		cert_chain = _BCertStructs.BCertChain
 		return cls(
@@ -636,26 +647,28 @@ class CertificateChain(_BCertStructs):
 		)
 
 	@classmethod
-	def load(cls, path: Union[Path, str]) -> CertificateChain:
-		if not isinstance(path, (Path, str)):
-			raise ValueError(f"Expecting Path object or path string, got {path!r}")
-		with Path(path).open(mode="rb") as f:
+	def load(cls, path):
+		# type: (Union[Path, str]) -> CertificateChain
+		with open(path_string(path), "rb") as f:
 			return cls.loads(f.read())
 
-	def dumps(self) -> bytes:
+	def dumps(self):
+		# type: () -> bytes
 		return self._BCERT_CHAIN.build(self.parsed)
 
-	def get_security_level(self) -> int:
+	def get_security_level(self):
+		# type: () -> int
 		return self.get(0).get_security_level()
 
-	def get_name(self) -> str:
+	def get_name(self):
+		# type: () -> str
 		return self.get(0).get_name()
 
 	def verify_chain(
 			self,
-			check_expiry: bool = False,
-			cert_type: Optional[BCertCertType] = None
-	) -> bool:
+			check_expiry=False,  # type: bool
+			cert_type=None  # type: Optional[BCertCertType]
+	):  # type: (...) -> bool
 		# There should be 1-6 certificates in a chain
 		if not (1 <= self.count() <= 6):
 			raise InvalidCertificateChain("An invalid maximum license chain depth")
@@ -669,7 +682,7 @@ class CertificateChain(_BCertStructs):
 
 			if check_expiry:
 				if time.time() >= self.get(i).get_expiration_date():
-					raise InvalidCertificateChain(f"Certificate {i} has expired")
+					raise InvalidCertificateChain("Certificate {0} has expired".format(i))
 
 			if i > 0:
 				if not self._verify_adjacent_certs(self.get(i - 1), self.get(i)):
@@ -682,7 +695,7 @@ class CertificateChain(_BCertStructs):
 		return True
 
 	@staticmethod
-	def _verify_adjacent_certs(child_cert: Certificate, parent_cert: Certificate) -> bool:
+	def _verify_adjacent_certs(child_cert, parent_cert):
 		if parent_cert.get_type() != BCertCertType.ISSUER:
 			return False
 
@@ -709,33 +722,36 @@ class CertificateChain(_BCertStructs):
 
 		return True
 
-	def append(self, bcert: Certificate) -> None:
+	def append(self, bcert):
 		self.parsed.certificate_count += 1
 		self.parsed.certificates.append(bcert.parsed)
 		self.parsed.total_length += len(bcert.dumps())
 
-	def prepend(self, bcert: Certificate) -> None:
+	def prepend(self, bcert):
 		self.parsed.certificate_count += 1
 		self.parsed.certificates.insert(0, bcert.parsed)
 		self.parsed.total_length += len(bcert.dumps())
 
-	def remove(self, index: int) -> None:
+	def remove(self, index):
+		# type: (int) -> None
 		if self.count() <= 0:
 			raise InvalidCertificateChain("CertificateChain does not contain any Certificates")
 		if index >= self.count():
-			raise IndexError(f"No Certificate at index {index}, {self.count()} total")
+			raise IndexError("No Certificate at index {0}, {1} total".format(index, self.count()))
 
 		self.parsed.certificate_count -= 1
 		self.parsed.total_length -= len(self.get(index).dumps())
 		self.parsed.certificates.pop(index)
 
-	def get(self, index: int) -> Certificate:
+	def get(self, index):
+		# type: (int) -> Certificate
 		if self.count() <= 0:
 			raise InvalidCertificateChain("CertificateChain does not contain any Certificates")
 		if index >= self.count():
-			raise IndexError(f"No Certificate at index {index}, {self.count()} total")
+			raise IndexError("No Certificate at index {0}, {1} total".format(index, self.count()))
 
 		return Certificate(self.parsed.certificates[index])
 
-	def count(self) -> int:
+	def count(self):
+		# type: () -> int
 		return self.parsed.certificate_count

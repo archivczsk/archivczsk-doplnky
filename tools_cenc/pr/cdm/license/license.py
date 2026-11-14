@@ -1,29 +1,29 @@
-from __future__ import annotations
-
 import base64
 import copy
 import hashlib
 import xml.etree.ElementTree as ET
-from typing import Union, Iterator
 
 try:
-	from Cryptodome.PublicKey import ECC
-except:
-	from Crypto.PublicKey import ECC
+	from typing import Union, Iterator
+except ImportError:
+	pass
 
 from .. import Crypto
+from ..crypto.ecc_key import ECC
 from ..license.xmrlicense import XMRLicense
 from ..misc.exceptions import InvalidLicense
 from ..system.bcert import CertificateChain, BCertKeyUsage
 from ..system.util import Util
+from ..system.compat import text_type, tostring
 
 
-class License:
-	def __init__(self, data: Union[str, bytes, ET.Element]):
+class License(object):
+	def __init__(self, data):
+		# type: (Union[str, bytes, ET.Element]) -> None
 		if not data:
 			raise InvalidLicense("Data must not be empty")
 
-		if isinstance(data, str):
+		if isinstance(data, text_type):
 			data = data.encode()
 
 		if isinstance(data, bytes):
@@ -63,18 +63,22 @@ class License:
 		cert_chain_str = self._LicenseResponse.findtext("SigningCertificateChain")
 		self.signing_certificate_chain = CertificateChain.loads(cert_chain_str) if cert_chain_str else None
 
-	def _find_element_raw(self, name: str) -> ET.Element:
-		return self._original_root.find(f".//{name}", {
-			"": "http://www.w3.org/2000/09/xmldsig#",
+	def _find_element_raw(self, name):
+		# type: (str) -> ET.Element
+		if ":" not in name:
+			name = "ds:" + name
+		return self._original_root.find(".//{0}".format(name), {
+			"ds": "http://www.w3.org/2000/09/xmldsig#",
 			"soap": "http://schemas.xmlsoap.org/soap/envelope/",
 			"proto": "http://schemas.microsoft.com/DRM/2007/03/protocols",
 			"msg": "http://schemas.microsoft.com/DRM/2007/03/protocols/messages"
 		})
 
-	def _load_licenses(self) -> Iterator[XMRLicense]:
+	def _load_licenses(self):
+		# type: () -> Iterator[XMRLicense]
 		Licenses = self._LicenseResponse.findall("Licenses/License")
 		if Licenses is None:
-			return iter([])
+			return
 
 		for license_ in Licenses:
 			yield XMRLicense.loads(license_.text)
@@ -100,7 +104,7 @@ class License:
 
 		ET.register_namespace("", "http://schemas.microsoft.com/DRM/2007/03/protocols")
 
-		license_response_xml = ET.tostring(self._find_element_raw("proto:LicenseResponse"), short_empty_elements=False)
+		license_response_xml = tostring(self._find_element_raw("proto:LicenseResponse"))
 		response_hash = hashlib.sha256(license_response_xml).digest()
 
 		Signature = self._Response.find("Signature")
@@ -113,13 +117,13 @@ class License:
 		signing_key_bytes = signing_leaf_cert.get_key_by_usage(BCertKeyUsage.SIGN_RESPONSE)
 
 		signing_key = ECC.construct(
-			point_x=int.from_bytes(signing_key_bytes[:32], "big"),
-			point_y=int.from_bytes(signing_key_bytes[32:], "big"),
+			point_x=Util.from_bytes(signing_key_bytes[:32], "big"),
+			point_y=Util.from_bytes(signing_key_bytes[32:], "big"),
 			curve="P-256"
 		)
 
 		ET.register_namespace("", "http://www.w3.org/2000/09/xmldsig#")
-		signed_info_xml = ET.tostring(self._find_element_raw("SignedInfo"), short_empty_elements=False)
+		signed_info_xml = tostring(self._find_element_raw("SignedInfo"))
 
 		signature_value = base64.b64decode(Signature.findtext("SignatureValue"))
 

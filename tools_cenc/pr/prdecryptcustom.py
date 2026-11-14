@@ -5,6 +5,7 @@ import os
 from .cdm.cdm import Cdm
 from .cdm.device import Device
 from .cdm.system.pssh import PSSH
+from .cdm.system.util import Util
 
 from Plugins.Extensions.archivCZSK.engine import client
 from Plugins.Extensions.archivCZSK.archivczsk import ArchivCZSK
@@ -59,7 +60,7 @@ class PrDecrypt(object):
 
 		self.cdm.parse_license(session, lic_response.decode('utf-8'))
 
-		keys = ["{}:{}".format(key.key_id.hex, key.key.hex())  for key in self.cdm.get_keys(session) ]
+		keys = ["{}:{}".format(key.key_id.hex, Util.bytes_to_hex(key.key)) for key in self.cdm.get_keys(session)]
 		self.cdm.close(session)
 
 		return keys

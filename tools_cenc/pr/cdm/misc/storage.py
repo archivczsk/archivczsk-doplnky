@@ -1,32 +1,35 @@
 import os
-from pathlib import Path
-from typing import Optional
+try:
+	from typing import Optional
+except ImportError:
+	pass
 
-class Storage:
+from ..system.compat import write_file
 
-	@staticmethod
-	def _get_initialized_path() -> Path:
-		storage_path = Path("/tmp")
-		storage_path.mkdir(parents=True, exist_ok=True)
-		return storage_path
+class Storage(object):
 
 	@staticmethod
-	def write_file(file_name: str, data: bytes) -> bool:
+	def _get_initialized_path():
+		return "/tmp"
+
+	@staticmethod
+	def write_file(file_name, data):
 		storage_path = Storage._get_initialized_path()
-		storage_file = storage_path / file_name
+		storage_file = os.path.join(storage_path, file_name)
 
-		new_file = not storage_file.exists()
+		new_file = not os.path.exists(storage_file)
 
-		storage_file.write_bytes(data)
+		write_file(storage_file, data)
 
 		return new_file
 
 	@staticmethod
-	def read_file(file_name: str) -> Optional[bytes]:
+	def read_file(file_name):
 		storage_path = Storage._get_initialized_path()
-		storage_file = storage_path / file_name
+		storage_file = os.path.join(storage_path, file_name)
 
-		if not storage_file.exists():
+		if not os.path.exists(storage_file):
 			return None
 
-		return storage_file.read_bytes()
+		with open(storage_file, "rb") as stream:
+			return stream.read()

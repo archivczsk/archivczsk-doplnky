@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#python 2 compatibility
-from builtins import int
 
+from ._compat import int_from_bytes, int_to_bytes
 from .curves     import Curve,Point
 from .keys       import ECPublicKey, ECPrivateKey
 from .formatters import decode_sig, encode_sig
@@ -70,7 +69,7 @@ def rnd_rfc6979(hashmsg, secret, q, hasher, VK = None):
         """
         bs(bytes): binary value
         """
-        i = int.from_bytes(bs,'big')
+        i = int_from_bytes(bs, 'big')
         blen = len(bs)*8
 
 
@@ -81,7 +80,7 @@ def rnd_rfc6979(hashmsg, secret, q, hasher, VK = None):
 
     def int2octets(i):
         rlen = ((q.bit_length()+7)&~7)//8
-        o = i.to_bytes(rlen, 'big')
+        o = int_to_bytes(i, rlen, 'big')
         return o
 
     def bits2octets(bs) :
@@ -146,7 +145,7 @@ def rnd_rfc6979(hashmsg, secret, q, hasher, VK = None):
 if __name__ == "__main__":
     import hashlib
     h = 0xaf9ae10ca04f826d5ff4727f97fb568c79e9ffa9686b9d5deb4ea4db44d6f23d
-    h = h.to_bytes(32,'big')
+    h = int_to_bytes(h, 32, 'big')
     secret = 0xe7244dd97b3558788fbf02f443d9a6ebd12a1ab01703a683aa12412354a43218
     q = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f
 

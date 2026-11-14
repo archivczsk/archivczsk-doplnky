@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#python 2 compatibility
-from builtins import int,pow
 
 import hashlib
 import random
 import binascii
 
+from ._compat import int_from_bytes, int_to_bytes
 from .curves     import Curve,Point
 from .keys       import ECPublicKey, ECPrivateKey
 from .formatters import decode_sig, encode_sig, list_formats
@@ -40,13 +39,13 @@ def _point_to_bytes(point, compressed = True):
 
     """
     if compressed:
-        b = point.x.to_bytes(32,'big')
+        b = int_to_bytes(point.x, 32, 'big')
         if point.y & 1:
             b = b"\x03"+b
         else:
             b = b"\x02"+b
     else:
-        b = b"\x04"+point.x.to_bytes(32,'big')+point.y.to_bytes(32,'big')
+        b = b"\x04"+int_to_bytes(point.x, 32, 'big')+int_to_bytes(point.y, 32, 'big')
     return b
 
 def _borromean_hash(m,e,i,j, H):
@@ -58,8 +57,8 @@ def _borromean_hash(m,e,i,j, H):
     i: int       ring index
     j: int       secret index
     """
-    i = int(i).to_bytes(4,'big')
-    j = int(j).to_bytes(4,'big')
+    i = int_to_bytes(int(i), 4, 'big')
+    j = int_to_bytes(int(j), 4, 'big')
     sha256 = H()
     sha256.update(e)
     sha256.update(m)
@@ -68,7 +67,7 @@ def _borromean_hash(m,e,i,j, H):
     d = sha256.digest()
     return d
 
-class Borromean:
+class Borromean(object):
     """ Borromean Ring signer implementation according to:
 
     https://github.com/Blockstream/borromean_paper/blob/master/borromean_draft_0.01_9ade1e49.pdf
@@ -148,7 +147,7 @@ class Borromean:
             for j in range(j0+1, rsizes[i]):
                 s[r0+j] = random.randint(1,order)
                 e_ij = _borromean_hash(m,e_ij,i,j, self._hash)
-                e_ij = int.from_bytes(e_ij,'big')
+                e_ij = int_from_bytes(e_ij, 'big')
                 sG_eP = s[r0+j]*G + e_ij*pubkeys[r0+j].W
                 e_ij = _point_to_bytes(sG_eP)
             sha256_e0.update(e_ij)
@@ -160,15 +159,15 @@ class Borromean:
         for i in range (0, ring_count):
             j0 = pv_keys_index[i]
             e_ij = _borromean_hash(m,e0,i,0, self._hash)
-            e_ij = int.from_bytes(e_ij,'big')
+            e_ij = int_from_bytes(e_ij, 'big')
             for j in range(0, j0):
                 s[r0+j] = random.randint(1,order)
                 sG_eP = s[r0+j]*G + e_ij*pubkeys[r0+j].W
                 e_ij = _borromean_hash(m,_point_to_bytes(sG_eP),i,j+1, self._hash)
-                e_ij = int.from_bytes(e_ij,'big')
+                e_ij = int_from_bytes(e_ij, 'big')
             s[r0+j0] = (k[i]-privkeys[i].d*e_ij)%order
             r0 += rsizes[i]
-        s = [int(sij).to_bytes(32,'big')  for sij in s]
+        s = [int_to_bytes(int(sij), 32, 'big')  for sij in s]
         return (e0,s)
 
     def verify(self, msg, sig, rings):
@@ -199,8 +198,8 @@ class Borromean:
         for i in range (0,ring_count):
             e_ij = _borromean_hash(m,e0,i,0, self._hash)
             for j in range(0,rsizes[i]):
-                e_ij = int.from_bytes(e_ij,'big')
-                s_ij = int.from_bytes(s[r0+j],'big')
+                e_ij = int_from_bytes(e_ij, 'big')
+                s_ij = int_from_bytes(s[r0+j], 'big')
                 sG_eP = s_ij*G + e_ij*pubkeys[r0+j].W
                 e_ij = _point_to_bytes(sG_eP)
                 if j != rsizes[i]-1:
@@ -266,7 +265,7 @@ if __name__ == "__main__":
         allsecs = [seckey0, seckey1, seckey2, seckey3, seckey4, seckey5,seckey6, seckey7]
 
         m = int(0x800102030405060708090a0b0c0d0e0f800102030405060708090a0b0c0d0e0f)
-        m = m.to_bytes(32,'big')
+        m = int_to_bytes(m, 32, 'big')
 
         borromean = Borromean()
 

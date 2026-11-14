@@ -1,15 +1,17 @@
-from __future__ import annotations
-
 import xml.etree.ElementTree as ET
-from typing import List, Union, Optional
+try:
+	from typing import List, Union, Optional, Dict
+except ImportError:
+	pass
+
 from uuid import UUID
 
 try:
 	from Cryptodome.Cipher import AES
-	from Cryptodome.Util.Padding import pad
-except:
+except ImportError:
 	from Crypto.Cipher import AES
-	from Crypto.Util.Padding import pad
+
+from ...wvl3.cdm.compat import Padding
 
 from ..dep.ecpy.curves import Point, Curve
 
@@ -25,19 +27,22 @@ from .system.bcert import CertificateChain
 from .system.builder import XmlBuilder
 from .system.session import Session
 from .system.wrmheader import WRMHeader
+from .system.util import Util
+from .system.compat import string_types
 
 
-class Cdm:
+class Cdm(object):
 	MAX_NUM_OF_SESSIONS = 16
 
 	def __init__(
 			self,
-			security_level: int,
-			certificate_chain: Optional[CertificateChain],
-			encryption_key: Optional[ECCKey],
-			signing_key: Optional[ECCKey],
-			client_version: str = "10.0.16384.10011",
+			security_level,  # type: int
+			certificate_chain,  # type: Optional[CertificateChain]
+			encryption_key,  # type: Optional[ECCKey]
+			signing_key,  # type: Optional[ECCKey]
+			client_version="10.0.16384.10011",  # type: str
 	):
+		# type: (...) -> None
 		self.security_level = security_level
 		self.certificate_chain = certificate_chain
 		self.encryption_key = encryption_key
@@ -50,10 +55,11 @@ class Cdm:
 			curve=Curve.get_curve("secp256r1")
 		)
 
-		self.__sessions: dict[bytes, Session] = {}
+		self.__sessions = {}  # type: Dict[bytes, Session]
 
 	@classmethod
-	def from_device(cls, device) -> Cdm:
+	def from_device(cls, device):
+		# type: (...) -> Cdm
 		"""Initialize a Playready CDM from a Playready Device (.prd) file"""
 		return cls(
 			security_level=device.security_level,
@@ -62,33 +68,36 @@ class Cdm:
 			signing_key=device.signing_key
 		)
 
-	def open(self) -> bytes:
+	def open(self):
+		# type: () -> bytes
 		"""Open a Playready Content Decryption Module (CDM) session"""
 		if len(self.__sessions) > self.MAX_NUM_OF_SESSIONS:
-			raise TooManySessions(f"Too many Sessions open ({self.MAX_NUM_OF_SESSIONS}).")
+			raise TooManySessions("Too many Sessions open ({0}).".format(self.MAX_NUM_OF_SESSIONS))
 
 		session = Session(len(self.__sessions) + 1)
 		self.__sessions[session.id] = session
 
 		return session.id
 
-	def close(self, session_id: bytes) -> None:
+	def close(self, session_id):
+		# type: (bytes) -> None
 		"""Close a Playready Content Decryption Module (CDM) session """
 		session = self.__sessions.get(session_id)
 		if not session:
-			raise InvalidSession(f"Session identifier {session_id.hex()} is invalid.")
+			raise InvalidSession("Session identifier {0} is invalid.".format(Util.bytes_to_hex(session_id)))
 		del self.__sessions[session_id]
 
-	def _get_cipher_data(self, session: Session) -> bytes:
+	def _get_cipher_data(self, session):
+		# type: (Session) -> bytes
 		body = XmlBuilder.ClientData([self.certificate_chain], ["AESCBCS"])
 
 		cipher = AES.new(
-			key=session.xml_key.aes_key,
-			mode=AES.MODE_CBC,
-			iv=session.xml_key.aes_iv
+			session.xml_key.aes_key,
+			AES.MODE_CBC,
+			session.xml_key.aes_iv
 		)
 
-		ciphertext = cipher.encrypt(pad(
+		ciphertext = cipher.encrypt(Padding.pad(
 			body.encode(),
 			AES.block_size
 		))
@@ -97,21 +106,22 @@ class Cdm:
 
 	def get_license_challenge(
 			self,
-			session_id: bytes,
-			wrm_header: Union[WRMHeader, str],
-			rev_lists: Optional[List[UUID]]=None  # default: RevocationList.SupportedListIds
-	) -> str:
+			session_id,  # type: bytes
+			wrm_header,  # type: Union[WRMHeader, str]
+			rev_lists=None  # type: Optional[List[UUID]]
+	):  # default: RevocationList.SupportedListIds
+		# type: (...) -> str
 		session = self.__sessions.get(session_id)
 		if not session:
-			raise InvalidSession(f"Session identifier {session_id.hex()} is invalid.")
+			raise InvalidSession("Session identifier {0} is invalid.".format(Util.bytes_to_hex(session_id)))
 
-		if isinstance(wrm_header, str):
+		if isinstance(wrm_header, string_types):
 			wrm_header = WRMHeader(wrm_header)
 		if not isinstance(wrm_header, WRMHeader):
-			raise ValueError(f"Expected wrm_header to be a {str} or {WRMHeader} not {wrm_header!r}")
+			raise ValueError("Expected wrm_header to be a {0} or {1} not {2!r}".format(str, WRMHeader, wrm_header))
 
 		if rev_lists and not isinstance(rev_lists, list):
-			raise ValueError(f"Expected rev_lists to be a {list} not {rev_lists!r}")
+			raise ValueError("Expected rev_lists to be a {0} not {1!r}".format(list, rev_lists))
 
 		if wrm_header.version == WRMHeader.Version.VERSION_4_3_0_0:
 			protocol_version = 5
@@ -136,15 +146,16 @@ class Cdm:
 
 		return soap_message.dumps()
 
-	def parse_license(self, session_id: bytes, soap_message: str) -> None:
+	def parse_license(self, session_id, soap_message):
+		# type: (bytes, str) -> None
 		session = self.__sessions.get(session_id)
 		if not session:
-			raise InvalidSession(f"Session identifier {session_id.hex()} is invalid.")
+			raise InvalidSession("Session identifier {0} is invalid.".format(Util.bytes_to_hex(session_id)))
 
 		if not soap_message:
 			raise InvalidXmrLicense("Cannot parse an empty licence message")
-		if not isinstance(soap_message, str):
-			raise InvalidXmrLicense(f"Expected licence message to be a {str}, not {soap_message!r}")
+		if not isinstance(soap_message, string_types):
+			raise InvalidXmrLicense("Expected licence message to be a {0}, not {1!r}".format(str, soap_message))
 		if not session.encryption_key or not session.signing_key:
 			raise InvalidSession("Cannot parse a license message without first making a license request")
 
@@ -174,9 +185,10 @@ class Cdm:
 		for xmr_license in licence.licenses:
 			session.keys.append(xmr_license.get_content_key(session.encryption_key))
 
-	def get_keys(self, session_id: bytes) -> List[Key]:
+	def get_keys(self, session_id):
+		# type: (bytes) -> List[Key]
 		session = self.__sessions.get(session_id)
 		if not session:
-			raise InvalidSession(f"Session identifier {session_id.hex()} is invalid.")
+			raise InvalidSession("Session identifier {0} is invalid.".format(Util.bytes_to_hex(session_id)))
 
 		return session.keys

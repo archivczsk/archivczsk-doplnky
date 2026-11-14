@@ -13,16 +13,15 @@
 # limitations under the License.
 
 
-#python 2 compatibility
-from builtins import int,pow
 
 import binascii
+from ._compat import int_from_bytes, int_to_bytes
 from .curves import Curve,Point
 from .keys import ECPublicKey, ECPrivateKey
 from .formatters import decode_sig, encode_sig
 import hashlib
 
-class EDDSA:
+class EDDSA(object):
     """EDDSA signer implemenation according to:
 
      - IETF `draft-irtf-cfrg-eddsa-05 <https://tools.ietf.org/html/draft-irtf-cfrg-eddsa-05>`_.
@@ -78,7 +77,7 @@ class EDDSA:
         n     = curve.order
         size  = curve._coord_size()
 
-        k = pv_key.d.to_bytes(size,'big')
+        k = int_to_bytes(pv_key.d, size, 'big')
         hasher = hasher()
         hasher.update(k)
         if hash_len:
@@ -103,7 +102,7 @@ class EDDSA:
             assert False, '%s not supported'%curve.name
 
         a = bytes(a)
-        a = int.from_bytes(a,'little')
+        a = int_from_bytes(a, 'little')
         A = a * B
 
         return a,A,h
@@ -140,7 +139,7 @@ class EDDSA:
         else :
             assert False, '%s not supported'%curve.name
 
-        r = int.from_bytes(r,'little')
+        r = int_from_bytes(r, 'little')
         r = r % n
         R = r*B
         eR = curve.encode_point(R)
@@ -161,13 +160,13 @@ class EDDSA:
         else:
             assert False, '%s not supported'%curve.name
 
-        i = int.from_bytes(H_eR_eA_m, 'little')
+        i = int_from_bytes(H_eR_eA_m, 'little')
         S = (r + i*a)%n
 
         #S = S.to_bytes(size,'little')
 
         #return eR+S
-        eR = int.from_bytes(eR,'little')
+        eR = int_from_bytes(eR, 'little')
         sig = encode_sig(eR,S,self.fmt,size)
         return sig
 
@@ -186,7 +185,7 @@ class EDDSA:
         eR,S = decode_sig(sig, self.fmt)
 
         #left
-        eR = eR.to_bytes(size,'little')
+        eR = int_to_bytes(eR, size, 'little')
         R  = curve.decode_point(eR)
 
         hasher = self._hasher()
@@ -205,7 +204,7 @@ class EDDSA:
         else:
             assert False, '%s not supported'%curve.name
 
-        h = int.from_bytes(h,'little')
+        h = int_from_bytes(h, 'little')
         h = h%n
         A = pu_key.W
         left  = R+h*A
@@ -243,12 +242,12 @@ if __name__ == "__main__":
         # 0x92a009a9f0d4cab8720e820b5f642540a2b27b5416503f8fb3762223ebdb69da
         # 0x085ac1e43e15996e458f3613d0f11d8c387b2eaeb4302aeeb00d291612bb0c00
         expected_sig = int(0x92a009a9f0d4cab8720e820b5f642540a2b27b5416503f8fb3762223ebdb69da085ac1e43e15996e458f3613d0f11d8c387b2eaeb4302aeeb00d291612bb0c00)
-        expected_sig  = expected_sig.to_bytes(64,'big')
+        expected_sig  = int_to_bytes(expected_sig, 64, 'big')
 
         #msg:
         # 72
         msg  = int(0x72)
-        msg  = msg.to_bytes(1,'big')
+        msg  = int_to_bytes(msg, 1, 'big')
 
         signer = EDDSA(hashlib.sha512)
         sig = signer.sign(msg,pv_key)
@@ -282,12 +281,12 @@ if __name__ == "__main__":
         # 477dedac6d8332708e00a7c06ceeda54f2086ba73e71e8988b3760ccd23e0c44
         # 08cf09c22ef497328579f6178e8a2a4d611d0c6cce0c684f958d150c5daf4902
         expected_sig = int(0x477dedac6d8332708e00a7c06ceeda54f2086ba73e71e8988b3760ccd23e0c4408cf09c22ef497328579f6178e8a2a4d611d0c6cce0c684f958d150c5daf4902 )
-        expected_sig  = expected_sig.to_bytes(64,'big')
+        expected_sig  = int_to_bytes(expected_sig, 64, 'big')
 
         #msg:
         # 72
         msg  = int(0xe8898b646cc2274b5daf7fb6e30f738b24203604d7849391056d0fe8093f6693)
-        msg  = msg.to_bytes(32,'big')
+        msg  = int_to_bytes(msg, 32, 'big')
 
         signer = EDDSA(hashlib.sha512)
         sig = signer.sign(msg,pv_key)
@@ -319,12 +318,12 @@ if __name__ == "__main__":
         #
         #
         expected_sig = int(0xa2ce8472cf883cca5f98ca76d5834831d9d121a755c00daa385d0bac145203269e572a3d1f221af1b1ca6feaae05141a9aa9d6990163a85ab8690da44c056d0f)
-        expected_sig  = expected_sig.to_bytes(64,'big')
+        expected_sig  = int_to_bytes(expected_sig, 64, 'big')
 
         #msg:
         # 72
         msg  = int(0xe8898b646cc2274b5daf7fb6e30f738b24203604d7849391056d0fe8093f669338b24203604d7849391056d0fe8093f6693e8898b646cc2274b5daf7fb6e30f7)
-        msg  = msg.to_bytes(64,'big')
+        msg  = int_to_bytes(msg, 64, 'big')
 
         signer = EDDSA(hashlib.sha512)
         sig = signer.sign(msg,pv_key)

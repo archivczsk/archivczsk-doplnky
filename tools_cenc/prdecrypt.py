@@ -23,4 +23,5 @@ except:
 			pass
 
 		def get_content_keys(self, *args, **kwargs):
+			client.log.error("Failed to get content keys - PR CDM not available")
 			return []

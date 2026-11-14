@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#python 2 compatibility
-from builtins import int,pow
 
+from ._compat import int_from_bytes, int_to_bytes
 from .curves     import Curve,Point
 from .keys       import ECPublicKey, ECPrivateKey
 from .formatters import decode_sig, encode_sig
@@ -22,7 +21,7 @@ from .            import ecrand
 
 import hashlib
 
-class ECDSA:
+class ECDSA(object):
     """ECDSA signer.
 
     Args:
@@ -87,7 +86,7 @@ class ECDSA:
         # if "msg (hash) bit length" is greater that the "domain bit length",
         # we only consider the left most "domain bit length" of message.
         msg_len = len(msg)*8;
-        msg = int.from_bytes(msg, 'big');
+        msg = int_from_bytes(msg, 'big');
         if msg_len > curve.size:
             msg = msg >> (msg_len-curve.size)
 
@@ -141,7 +140,7 @@ class ECDSA:
         # if "msg (hash) bit length" is greater that the "domain bit length",
         # we only consider the left most "domain bit length" of message.
         msg_len = len(msg)*8;
-        h = int.from_bytes(msg, 'big')
+        h = int_from_bytes(msg, 'big')
         if msg_len > curve.size:
             h = h >> (msg_len-curve.size)
 
@@ -190,8 +189,8 @@ if __name__ == "__main__":
 
         msg = int(0xba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad)
         sig = int(0x304502200623b4159c7112125be51716d1e706d68e52f5b321da68d8b86b3c7c7019a9da0221008dffe3c592a0c7e5168dcb3d4121a60ee727082be4fbf79eae564929156305fc)
-        msg  = msg.to_bytes(32,'big')
-        sig  = sig.to_bytes(0x47,'big')
+        msg  = int_to_bytes(msg, 32, 'big')
+        sig  = int_to_bytes(sig, 0x47, 'big')
 
         assert(signer.verify(msg,sig,pu_key))
 
@@ -208,7 +207,7 @@ if __name__ == "__main__":
         #           0220,
         #            6b4fad69fadf3053de1d4adf89aa3809c782b067778355cfd66486c86712c082
         expected_sig = int(0x304402204f123ed9de853836447782f0a436508d34e6609083cf97c9b9cd69673d8f04a502206b4fad69fadf3053de1d4adf89aa3809c782b067778355cfd66486c86712c082)
-        expected_sig = expected_sig.to_bytes(0x46,'big')
+        expected_sig = int_to_bytes(expected_sig, 0x46, 'big')
         k   = int(0xe5a8d1d529971c10ca2af378444fb544a211707892c8898f91dcb171584e3db9)
         sig = signer.sign_k(msg,pv_key,k)
         assert(sig == expected_sig)
@@ -235,7 +234,7 @@ if __name__ == "__main__":
         assert(W == pu_key.W)
 
         msg = int(0xba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015adabcd)
-        msg  = msg.to_bytes(34,'big')
+        msg  = int_to_bytes(msg, 34, 'big')
         sig = signer.sign(msg,pv_key)
         assert(signer.verify(msg,sig,pu_key))
 
@@ -251,7 +250,7 @@ if __name__ == "__main__":
         assert(W == pu_key.W)
 
         msg = int(0xba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad)
-        msg  = msg.to_bytes(32,'big')
+        msg  = int_to_bytes(msg, 32, 'big')
         sig = signer.sign(msg,pv_key)
         assert(signer.verify(msg,sig,pu_key))
 

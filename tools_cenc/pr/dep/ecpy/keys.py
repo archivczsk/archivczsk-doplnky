@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#python 2 compatibility
-from builtins import int,pow
 
-class ECPublicKey:
+class ECPublicKey(object):
     """ Public EC key.
 
     Can be used for both ECDSA and EDDSA signature
@@ -37,7 +35,7 @@ class ECPublicKey:
     def __str__(self):
         return "ECPublicKey:\n  x: %x\n  y: %x" % (self.W.x,self.W.y)
 
-class ECPrivateKey:
+class ECPrivateKey(object):
     """ Public EC key.
 
     Can be used for both ECDSA and EDDSA signature

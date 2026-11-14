@@ -75,11 +75,11 @@ else:
 
     def str2unicode(b):
         """Converts '...' str into u'...' unicode string. On PY3 they are equivalent."""
-        return b.encode("utf8")
+        return b.decode("utf8")
 
     def unicode2str(s):
         """Converts u'...' string into '...' str. On PY3 they are equivalent."""
-        return s.decode("utf8")
+        return s.encode("utf8")
 
     def iteratebytes(s):
         """Iterates though b'...' string yielding characters as b'...' characters. On PY2 iter is the same."""

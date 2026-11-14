@@ -1,10 +1,13 @@
-import base64
-from enum import Enum
 from uuid import UUID
-from typing import Union
+try:
+	from typing import Union
+except ImportError:
+	pass
+
+from ..system.compat import Enum, decode_binary
 
 
-class Key:
+class Key(object):
 	class KeyType(Enum):
 		INVALID = 0x0000
 		AES_128_CTR = 0x0001
@@ -35,11 +38,11 @@ class Key:
 
 	def __init__(
 			self,
-			key_id: UUID,
-			key_type: int,
-			cipher_type: int,
-			key_length: int,
-			key: bytes
+			key_id,
+			key_type,
+			cipher_type,
+			key_length,
+			key
 	):
 		self.key_id = key_id
 		self.key_type = self.KeyType(key_type)
@@ -48,9 +51,8 @@ class Key:
 		self.key = key
 
 	@staticmethod
-	def kid_to_uuid(kid: Union[str, bytes]) -> UUID:
-		if isinstance(kid, str):
-			kid = base64.b64decode(kid)
+	def kid_to_uuid(kid):
+		kid = decode_binary(kid, lengths=(16,))
 		if not kid:
 			kid = b"\x00" * 16
 

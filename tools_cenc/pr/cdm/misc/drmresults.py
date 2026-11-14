@@ -1,4 +1,4 @@
-from enum import Enum
+from ..system.compat import Enum
 
 
 class DrmResult(Enum):
@@ -900,7 +900,7 @@ class DrmResult(Enum):
 		return self.value[1]
 
 	@staticmethod
-	def from_code(code: str):
+	def from_code(code):
 		"""Get the error message for a given error code."""
 		for error in DrmResult:
 			if error.value[0] == int(code, 16):

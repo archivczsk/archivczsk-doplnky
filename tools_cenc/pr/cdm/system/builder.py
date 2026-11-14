@@ -1,9 +1,11 @@
 import base64
 import hashlib
-import html
 import time
 import xml.etree.ElementTree as ET
-from typing import Optional, List
+try:
+	from typing import Optional, List
+except ImportError:
+	pass
 from uuid import UUID
 
 try:
@@ -15,12 +17,13 @@ from .. import ECCKey, Crypto
 #from ..misc.revocation_list import RevocationList
 from ..misc.storage import Storage
 from ..system.bcert import CertificateChain
+from .compat import html_unescape, tostring
 
 
-class XmlBuilder:
+class XmlBuilder(object):
 
 	@staticmethod
-	def _ClientInfo(parent: ET.Element, client_version: str) -> ET.Element:
+	def _ClientInfo(parent, client_version):
 		ClientInfo = ET.SubElement(parent, "CLIENTINFO")
 
 		ClientVersion = ET.SubElement(ClientInfo, "CLIENTVERSION")
@@ -29,7 +32,7 @@ class XmlBuilder:
 		return ClientVersion
 
 	@staticmethod
-	def _RevListInfo(parent: ET.Element, list_id: UUID, version: int) -> ET.Element:
+	def _RevListInfo(parent, list_id, version):
 		RevListInfo = ET.SubElement(parent, "RevListInfo")
 
 		ListID = ET.SubElement(RevListInfo, "ListID")
@@ -68,14 +71,14 @@ class XmlBuilder:
 
 	@staticmethod
 	def _LicenseAcquisition(
-			parent: ET.Element,
-			wrmheader: str,
-			protocol_version: int,
-			wrmserver_data: bytes,
-			client_data: bytes,
-			client_info: Optional[str] = None,
-			revocation_lists: Optional[List[UUID]] = None
-	) -> ET.Element:
+			parent,
+			wrmheader,
+			protocol_version,
+			wrmserver_data,
+			client_data,
+			client_info = None,
+			revocation_lists = None
+	):
 		LA = ET.SubElement(parent, "LA", {
 			"xmlns": "http://schemas.microsoft.com/DRM/2007/03/protocols",
 			"Id": "SignedData",
@@ -134,7 +137,7 @@ class XmlBuilder:
 		return LA
 
 	@staticmethod
-	def _SignedInfo(parent: ET.Element, digest_value: bytes) -> ET.Element:
+	def _SignedInfo(parent, digest_value):
 		SignedInfo = ET.SubElement(parent, "SignedInfo", {
 			"xmlns": "http://www.w3.org/2000/09/xmldsig#"
 		})
@@ -158,14 +161,14 @@ class XmlBuilder:
 
 	@staticmethod
 	def AcquireLicenseMessage(
-			wrmheader: str,
-			protocol_version: int,
-			wrmserver_data: bytes,
-			client_data: bytes,
-			signing_key: ECCKey,
-			client_info: Optional[str] = None,
-			revocation_lists: Optional[List[UUID]] = None
-	) -> ET.Element:
+			wrmheader,
+			protocol_version,
+			wrmserver_data,
+			client_data,
+			signing_key,
+			client_info = None,
+			revocation_lists = None
+	):
 		AcquireLicense = ET.Element("AcquireLicense", {
 			"xmlns": "http://schemas.microsoft.com/DRM/2007/03/protocols"
 		})
@@ -180,22 +183,14 @@ class XmlBuilder:
 			"xmlns": "http://www.w3.org/2000/09/xmldsig#"
 		})
 
-		la_xml = ET.tostring(
-			LA,
-			encoding="utf-8",
-			short_empty_elements=False
-		)
+		la_xml = tostring(LA, encoding="utf-8")
 		# I don't like this but re-serializing the WRMHEADER XML could change it
-		unescaped_la_xml = html.unescape(la_xml.decode())
+		unescaped_la_xml = html_unescape(la_xml.decode())
 		la_digest = hashlib.sha256(unescaped_la_xml.encode()).digest()
 
 		SignedInfo = XmlBuilder._SignedInfo(Signature, la_digest)
 
-		signed_info_xml = ET.tostring(
-			SignedInfo,
-			encoding="utf-8",
-			short_empty_elements=False
-		)
+		signed_info_xml = tostring(SignedInfo, encoding="utf-8")
 
 		SignatureValue = ET.SubElement(Signature, "SignatureValue")
 		SignatureValue.text = base64.b64encode(
@@ -219,13 +214,13 @@ class XmlBuilder:
 		return AcquireLicense
 
 	@staticmethod
-	def ClientData(cert_chains: List[CertificateChain], ree_features: List[str]) -> str:
+	def ClientData(cert_chains, ree_features):
 		Data = ET.Element("Data")
 		CertificateChains = ET.SubElement(Data, "CertificateChains")
 
 		for cert_chain in cert_chains:
 			CertificateChainElement = ET.SubElement(CertificateChains, "CertificateChain")
-			CertificateChainElement.text = f" {base64.b64encode(cert_chain.dumps()).decode()} "
+			CertificateChainElement.text = " {0} ".format(base64.b64encode(cert_chain.dumps()).decode())
 
 		Features = ET.SubElement(Data, "Features")
 		ET.SubElement(Features, "Feature", {"Name": "AESCBC"})
@@ -234,8 +229,4 @@ class XmlBuilder:
 		for ree_feature in ree_features:
 			ET.SubElement(REE, ree_feature)
 
-		return ET.tostring(
-			Data,
-			encoding="utf-8",
-			short_empty_elements=False
-		).decode()
+		return tostring(Data, encoding="utf-8").decode()

@@ -7,6 +7,7 @@ from io import BytesIO, StringIO
 from binascii import hexlify, unhexlify
 import sys
 import collections
+from numbers import Integral
 
 from .lib import *
 
@@ -254,7 +255,7 @@ class Construct(object):
             min = 0 if count.start is None else count.start
             max = sys.maxsize if count.stop is None else count.stop
             return Range(min, max, self)
-        elif isinstance(count, int) or callable(count):
+        elif isinstance(count, Integral) or callable(count):
             return Range(count, count, self)
         else:
             raise TypeError("expected an int, a context lambda, or a slice thereof, but found %r" % count)
@@ -397,7 +398,7 @@ class Bytes(Construct):
         return _read_stream(stream, length)
     def _build(self, obj, stream, context, path):
         length = self.length(context) if callable(self.length) else self.length
-        data = integer2bytes(obj, length) if isinstance(obj, int) else obj
+        data = integer2bytes(obj, length) if isinstance(obj, Integral) else obj
         _write_stream(stream, length, data)
         return data
     def _sizeof(self, context, path):
@@ -1359,7 +1360,7 @@ class Union(Construct):
                     context[sc.name] = subobj
         if callable(self.buildfrom):
             self.buildfrom = self.buildfrom(context)
-        if isinstance(self.buildfrom, int):
+        if isinstance(self.buildfrom, Integral):
             jump = self.subcons[self.buildfrom].subcon._sizeof(context, path)
             stream.seek(jump, 1)
         if isinstance(self.buildfrom, str):
@@ -1396,7 +1397,7 @@ class Union(Construct):
                     return buildret
             else:
                 raise UnionError("none of subcons %s were found in the dictionary %s" % (self.subcons, obj))
-        if isinstance(self.buildfrom, int):
+        if isinstance(self.buildfrom, Integral):
             sc = self.subcons[self.buildfrom]
             # pass the full object if building an embedded union member
             obj2 = obj if sc.flagembedded else obj[sc.name]
@@ -1416,7 +1417,7 @@ class Union(Construct):
             return 0
         if self.buildfrom is None:
             raise SizeofError("cannot calculate size")
-        if isinstance(self.buildfrom, int):
+        if isinstance(self.buildfrom, Integral):
             return self.subcons[self.buildfrom].subcon._sizeof(context, path)
         if isinstance(self.buildfrom, str):
             index = [i for i,sc in enumerate(self.subcons) if sc.name == self.buildfrom][0]
@@ -3057,7 +3058,7 @@ class FocusedSeq(Construct):
     def _parse(self, stream, context, path):
         if callable(self.parsebuildfrom):
             self.parsebuildfrom = self.parsebuildfrom(context)
-        if isinstance(self.parsebuildfrom, int):
+        if isinstance(self.parsebuildfrom, Integral):
             index = self.parsebuildfrom
             self.subcons[index]  #IndexError check
         if isinstance(self.parsebuildfrom, str):
@@ -3073,7 +3074,7 @@ class FocusedSeq(Construct):
     def _build(self, obj, stream, context, path):
         if callable(self.parsebuildfrom):
             self.parsebuildfrom = self.parsebuildfrom(context)
-        if isinstance(self.parsebuildfrom, int):
+        if isinstance(self.parsebuildfrom, Integral):
             index = self.parsebuildfrom
             self.subcons[index]  #IndexError check
         if isinstance(self.parsebuildfrom, str):
@@ -3098,7 +3099,7 @@ class FocusedSeq(Construct):
                 self.parsebuildfrom = self.parsebuildfrom(context)
         except (KeyError, AttributeError):
             raise SizeofError("cannot calculate size, key not found in context")
-        if isinstance(self.parsebuildfrom, int):
+        if isinstance(self.parsebuildfrom, Integral):
             index = self.parsebuildfrom
             self.subcons[index]  #IndexError check
         if isinstance(self.parsebuildfrom, str):

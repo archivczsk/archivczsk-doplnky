@@ -1,28 +1,32 @@
-from typing import Tuple
+
+try:
+	from typing import Tuple
+except ImportError:
+	pass
 
 from ...dep.ecpy.curves import Curve, Point
-import secrets
+from random import SystemRandom
 
 
-class ElGamal:
+class ElGamal(object):
 	"""ElGamal ECC utility using ecpy"""
 
 	curve = Curve.get_curve("secp256r1")
 
 	@staticmethod
-	def encrypt(message_point: Point, public_key: Point) -> Tuple[Point, Point]:
+	def encrypt(message_point, public_key):
 		"""
 		Encrypt a single point with a given public key
 
 		Returns an encrypted point pair
 		"""
-		ephemeral_key = secrets.randbelow(ElGamal.curve.order)
+		ephemeral_key = SystemRandom().randrange(ElGamal.curve.order)
 		point1 = ephemeral_key * ElGamal.curve.generator
 		point2 = message_point + (ephemeral_key * public_key)
 		return point1, point2
 
 	@staticmethod
-	def decrypt(encrypted: Tuple[Point, Point], private_key: int) -> Point:
+	def decrypt(encrypted, private_key):
 		"""
 		Decrypt and encrypted point pair with a given private key
 

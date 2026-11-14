@@ -1,3 +1,9 @@
+1.15 - 14.11.2026
+- support PlayReady with legacy PyCrypto 2.5 using the existing cryptography dependency
+- make playready DRM compatible with python 2.7
+- fix Python 2.7 CDM loading, certificate handling and license challenges
+- fix Python 2.7 signed PlayReady requests and decrypted key formatting
+
 1.14 - 30.09.2026
 - rebuild of binary libs to support older boxes with lower version of glibc
 

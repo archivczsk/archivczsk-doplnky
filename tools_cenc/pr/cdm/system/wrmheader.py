@@ -1,7 +1,9 @@
 import base64
 import hashlib
-from enum import Enum
-from typing import List, Optional, Union
+try:
+	from typing import List, Optional, Union
+except ImportError:
+	pass
 from uuid import UUID
 import xml.etree.ElementTree as ET
 
@@ -12,12 +14,13 @@ except:
 
 from ..misc.exceptions import InvalidWrmHeader, InvalidChecksum
 from ..system.util import Util
+from .compat import Enum, PY2, decode_binary, text_type
 
 
-class WRMHeader:
+class WRMHeader(object):
     """Represents a PlayReady WRM Header"""
 
-    class SignedKeyID:
+    class SignedKeyID(object):
         class AlgId(Enum):
             AESCTR = "AESCTR"
             AESCBC = "AESCBC"
@@ -28,13 +31,13 @@ class WRMHeader:
             def _missing_(cls, value):
                 return cls.UNKNOWN
 
-        def __init__(self, value: UUID, alg_id, checksum: Optional[bytes]):
+        def __init__(self, value, alg_id, checksum):
             self.value = value
             self.alg_id = alg_id
             self.checksum = checksum
 
         @classmethod
-        def load(cls, value: str, alg_id: str, checksum: Optional[str]):
+        def load(cls, value, alg_id, checksum):
             return cls(
                 value=UUID(bytes_le=base64.b64decode(value)),
                 alg_id=cls.AlgId(alg_id),
@@ -42,9 +45,9 @@ class WRMHeader:
             )
 
         def __repr__(self):
-            return f'SignedKeyID(value="{self.value}", alg_id={self.alg_id}, checksum={self.checksum})'
+            return 'SignedKeyID(value="{0}", alg_id={1}, checksum={2})'.format(self.value, self.alg_id, self.checksum)
 
-        def verify(self, content_key: bytes) -> bool:
+        def verify(self, content_key):
             if self.value is None:
                 raise InvalidChecksum("Key ID must not be empty")
             if self.checksum is None:
@@ -75,15 +78,20 @@ class WRMHeader:
         def _missing_(cls, value):
             return cls.UNKNOWN
 
-    def __init__(self, data: Union[str, bytes]):
+    def __init__(self, data):
         if not data:
             raise InvalidWrmHeader("Data must not be empty")
 
-        if isinstance(data, str):
-            try:
-                data = base64.b64decode(data).decode()
-            except Exception:
+        if isinstance(data, text_type):
+            if data.lstrip().startswith("<"):
                 data = data.encode("utf-16-le")
+            else:
+                data = base64.b64decode(data)
+        elif PY2 and isinstance(data, bytes):
+            data = decode_binary(data)
+
+        if isinstance(data, bytes) and data.lstrip().startswith(b"<") and b"\x00" not in data[:4]:
+            data = data.decode("utf-8").encode("utf-16-le")
 
         self._raw_data = data
         self._root = ET.fromstring(data)
@@ -94,12 +102,12 @@ class WRMHeader:
 
         self.version = self.Version(self._root.attrib.get("version"))
 
-        self.key_ids: List[WRMHeader.SignedKeyID] = []
-        self.la_url: Optional[str] = None
-        self.lui_url: Optional[str] = None
-        self.ds_id: Optional[str] = None
-        self.custom_attributes: Optional[ET.Element] = None
-        self.decryptor_setup: Optional[str] = None
+        self.key_ids = []
+        self.la_url = None
+        self.lui_url = None
+        self.ds_id = None
+        self.custom_attributes = None
+        self.decryptor_setup = None
 
         if self.version == self.Version.VERSION_4_0_0_0:
             self._load_v4_0_data(self._root)
@@ -111,14 +119,14 @@ class WRMHeader:
             self._load_v4_3_data(self._root)
 
     def __repr__(self):
-        attrs = ", \n          ".join(f"{k}={v!r}" for k, v in self.__dict__.items())
-        return f"{self.__class__.__name__}({attrs})"
+        attrs = ", \n          ".join("{0}={1!r}".format(k, v) for k, v in self.__dict__.items())
+        return "{0}({1})".format(self.__class__.__name__, attrs)
 
     @staticmethod
     def _attr(element, name):
         return element.attrib.get(name) if element is not None else None
 
-    def _load_v4_0_data(self, parent: ET.Element):
+    def _load_v4_0_data(self, parent):
         Data = parent.find("DATA")
 
         Kid = Data.findtext("KID")
@@ -133,7 +141,7 @@ class WRMHeader:
 
         self.custom_attributes = Data.find("CUSTOMATTRIBUTES")
 
-    def _load_v4_1_data(self, parent: ET.Element):
+    def _load_v4_1_data(self, parent):
         Data = parent.find("DATA")
 
         Kid = Data.find("PROTECTINFO/KID")
@@ -151,7 +159,7 @@ class WRMHeader:
         self.custom_attributes = Data.find("CUSTOMATTRIBUTES")
         self.decryptor_setup = Data.findtext("DECRYPTORSETUP")
 
-    def _load_v4_2_data(self, parent: ET.Element):
+    def _load_v4_2_data(self, parent):
         Data = parent.find("DATA")
 
         for kid in Data.findall("PROTECTINFO/KIDS/KID"):
@@ -168,7 +176,7 @@ class WRMHeader:
         self.custom_attributes = Data.find("CUSTOMATTRIBUTES")
         self.decryptor_setup = Data.findtext("DECRYPTORSETUP")
 
-    def _load_v4_3_data(self, parent: ET.Element):
+    def _load_v4_3_data(self, parent):
         Data = parent.find("DATA")
 
         for kid in Data.findall("PROTECTINFO/KIDS/KID"):
@@ -185,5 +193,5 @@ class WRMHeader:
         self.custom_attributes = Data.find("CUSTOMATTRIBUTES")
         self.decryptor_setup = Data.findtext("DECRYPTORSETUP")
 
-    def dumps(self) -> str:
+    def dumps(self):
         return self._raw_data.decode("utf-16-le")

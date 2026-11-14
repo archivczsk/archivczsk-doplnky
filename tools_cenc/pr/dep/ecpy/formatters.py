@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#python 2 compatibility
-from builtins import int,pow
 
+from ._compat import int_from_bytes, int_to_bytes
 def list_formats():
     return ("DER","BTUPLE","ITUPLE","RAW","EDDSA")
 
@@ -39,14 +38,14 @@ def encode_sig(r,s,fmt="DER",size=0) :
     def _int2bin(x, size=None):
         if not size:
             size = (x.bit_length()+7)//8
-        return x.to_bytes(size, 'big')
+        return int_to_bytes(x, size, 'big')
 
     if fmt=="DER":
 
         def _strip_leading_zero(x):
-            while x[0] == 0:
+            while bytearray(x[:1])[0] == 0:
                 x = x[1:]
-            if x[0] &0x80:
+            if bytearray(x[:1])[0] &0x80:
                 x = b'\0'+x
             return x
 
@@ -56,7 +55,7 @@ def encode_sig(r,s,fmt="DER",size=0) :
             """
             l = _int2bin(len(v))
             if len(v) > 0x80:
-                l = bytes([0x80 + len(l)])+l
+                l = bytes(bytearray([0x80 + len(l)]))+l
             return t+l+v
 
         r = _tlv(b'\x02', _strip_leading_zero(_int2bin(r)))
@@ -82,8 +81,8 @@ def encode_sig(r,s,fmt="DER",size=0) :
     if fmt=="EDDSA":
         if size == 0:
             raise ECPyException("size must be specified when encoding in EDDSA")
-        r = r.to_bytes(size, 'little')
-        s = s.to_bytes(size, 'little')
+        r = int_to_bytes(r, size, 'little')
+        s = int_to_bytes(s, size, 'little')
         return r+s
 
 
@@ -99,6 +98,7 @@ def decode_sig(sig,fmt="DER") :
     """
 
     def _untlv(tlv):
+        tlv = bytearray(tlv)
         t = tlv[0]
         l = tlv[1]
         tlv = tlv[2:]
@@ -139,16 +139,16 @@ def decode_sig(sig,fmt="DER") :
         if ts != 0x02 or tr != 0x02 or len(tail) != 0:
            return None,None
 
-        r = int.from_bytes(vr, 'big')
-        s = int.from_bytes(vs, 'big')
+        r = int_from_bytes(vr, 'big')
+        s = int_from_bytes(vs, 'big')
         return r,s
 
     if fmt=="ITUPLE":
         return sig[0], sig[1]
 
     if fmt=="BTUPLE":
-        r = int.from_bytes(sig[0], 'big')
-        s = int.from_bytes(sig[1], 'big')
+        r = int_from_bytes(sig[0], 'big')
+        s = int_from_bytes(sig[1], 'big')
         return r,s
 
     if fmt=="RAW":
@@ -156,8 +156,8 @@ def decode_sig(sig,fmt="DER") :
         if l & 1:
             return None,None
         l = l>>1
-        r = int.from_bytes(sig[0:l], 'big')
-        s = int.from_bytes(sig[l:],  'big')
+        r = int_from_bytes(sig[0:l], 'big')
+        s = int_from_bytes(sig[l:], 'big')
         return r,s
 
     if fmt=="EDDSA":
@@ -165,6 +165,6 @@ def decode_sig(sig,fmt="DER") :
         if l & 1:
             return None,None
         l = l>>1
-        r = int.from_bytes(sig[0:l], 'little')
-        s = int.from_bytes(sig[l:],  'little')
+        r = int_from_bytes(sig[0:l], 'little')
+        s = int_from_bytes(sig[l:], 'little')
         return r,s

@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#python 2 compatibility
-from builtins import int,pow
 
+from ._compat import int_from_bytes, int_to_bytes
 from .curves     import Curve,Point
 from .keys       import ECPublicKey, ECPrivateKey
 from .formatters import decode_sig, encode_sig, list_formats
@@ -24,7 +23,7 @@ from .curves     import ECPyException
 import hashlib
 import binascii
 
-class ECSchnorr:
+class ECSchnorr(object):
     """ ECSchnorr signer implementation according to:
 
      - `BSI:TR03111 <https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03111/BSI-TR-03111_pdf.html>`_
@@ -170,11 +169,11 @@ class ECSchnorr:
         Q = G*k
         hasher = self._hasher()
         if self.option == "ISO":
-            xQ = (Q.x).to_bytes(size,'big')
-            yQ = (Q.y).to_bytes(size,'big')
+            xQ = int_to_bytes(Q.x, size, 'big')
+            yQ = int_to_bytes(Q.y, size, 'big')
             hasher.update(xQ+yQ+msg)
             r = hasher.digest()
-            r = int.from_bytes(r,'big')
+            r = int_from_bytes(r, 'big')
             if r % n == 0:
                 return None
             s = (k+r*pv_key.d)%n
@@ -182,10 +181,10 @@ class ECSchnorr:
                 return None
 
         elif self.option == "ISOx":
-            xQ = (Q.x).to_bytes(size,'big')
+            xQ = int_to_bytes(Q.x, size, 'big')
             hasher.update(xQ+msg)
             r = hasher.digest()
-            r = int.from_bytes(r,'big')
+            r = int_from_bytes(r, 'big')
             if r % n == 0:
                 return None
             s = (k+r*pv_key.d)%n
@@ -193,10 +192,10 @@ class ECSchnorr:
                 return None
 
         elif self.option == "BSI":
-            xQ = Q.x.to_bytes(size,'big')
+            xQ = int_to_bytes(Q.x, size, 'big')
             hasher.update(msg+xQ)
             r = hasher.digest()
-            r = int.from_bytes(r,'big')
+            r = int_from_bytes(r, 'big')
             if r%n == 0:
                 return None
             s = (k-r*pv_key.d)%n
@@ -207,10 +206,10 @@ class ECSchnorr:
             if Q.y & 1:
                 k = n-k
                 Q = G*k
-            r = (Q.x%n).to_bytes(size,'big')
+            r = int_to_bytes(Q.x%n, size, 'big')
             hasher.update(r+msg)
             h = hasher.digest()
-            h = int.from_bytes(h,'big')
+            h = int_from_bytes(h, 'big')
             if h > n:
                 return None
             r = Q.x % n
@@ -218,17 +217,17 @@ class ECSchnorr:
 
         elif self.option == "Z":
             if Q.y & 1:
-                xQ = b'\x03'+Q.x.to_bytes(size,'big')
+                xQ = b'\x03'+int_to_bytes(Q.x, size, 'big')
             else :
-                xQ = b'\x02'+Q.x.to_bytes(size,'big')
+                xQ = b'\x02'+int_to_bytes(Q.x, size, 'big')
             pu_key = pv_key.get_public_key()
             if pu_key.W.y & 1:
-                xPub = b'\x03'+pu_key.W.x.to_bytes(size,'big')
+                xPub = b'\x03'+int_to_bytes(pu_key.W.x, size, 'big')
             else :
-                xPub = b'\x02'+pu_key.W.x.to_bytes(size,'big')
+                xPub = b'\x02'+int_to_bytes(pu_key.W.x, size, 'big')
             hasher.update(xQ+xPub+msg)
             r = hasher.digest()
-            r = int.from_bytes(r,'big') % n
+            r = int_from_bytes(r, 'big') % n
             if r % n == 0:
                 return None
             s = (k - r*pv_key.d) %n
@@ -260,35 +259,35 @@ class ECSchnorr:
             sG = s * G
             rW = r*pu_key.W
             Q = sG - rW
-            xQ = Q.x.to_bytes(size,'big')
-            yQ = Q.y.to_bytes(size,'big')
+            xQ = int_to_bytes(Q.x, size, 'big')
+            yQ = int_to_bytes(Q.y, size, 'big')
             hasher.update(xQ+yQ+msg)
             v = hasher.digest()
-            v = int.from_bytes(v,'big')
+            v = int_from_bytes(v, 'big')
 
         elif self.option == "ISOx":
             sG = s * G
             rW = r*pu_key.W
             Q = sG - rW
-            xQ = Q.x.to_bytes(size,'big')
+            xQ = int_to_bytes(Q.x, size, 'big')
             hasher.update(xQ+msg)
             v = hasher.digest()
-            v = int.from_bytes(v,'big')
+            v = int_from_bytes(v, 'big')
 
         elif self.option == "BSI":
             sG = s * G
             rW = r*pu_key.W
             Q = sG + rW
-            xQ = (Q.x).to_bytes(size,'big')
+            xQ = int_to_bytes(Q.x, size, 'big')
             hasher.update(msg+xQ)
             v = hasher.digest()
-            v = int.from_bytes(v,'big')
+            v = int_from_bytes(v, 'big')
 
         elif self.option == "LIBSECP":
-            rb = r.to_bytes(size,'big')
+            rb = int_to_bytes(r, size, 'big')
             hasher.update(rb+msg)
             h = hasher.digest()
-            h = int.from_bytes(h,'big')
+            h = int_from_bytes(h, 'big')
             if h == 0 or h > n :
                 return 0
             sG = s * G
@@ -301,16 +300,16 @@ class ECSchnorr:
             rW = r*pu_key.W
             Q = sG + rW
             if Q.y & 1:
-                xQ = b'\x03'+Q.x.to_bytes(size,'big')
+                xQ = b'\x03'+int_to_bytes(Q.x, size, 'big')
             else :
-                xQ = b'\x02'+Q.x.to_bytes(size,'big')
+                xQ = b'\x02'+int_to_bytes(Q.x, size, 'big')
             if pu_key.W.y & 1:
-                xPub = b'\x03'+pu_key.W.x.to_bytes(size,'big')
+                xPub = b'\x03'+int_to_bytes(pu_key.W.x, size, 'big')
             else :
-                xPub = b'\x02'+pu_key.W.x.to_bytes(size,'big')
+                xPub = b'\x02'+int_to_bytes(pu_key.W.x, size, 'big')
             hasher.update(xQ+xPub+msg)
             v = hasher.digest()
-            v = int.from_bytes(v,'big')
+            v = int_from_bytes(v, 'big')
             v = v%n
 
         return v == r
@@ -326,7 +325,7 @@ if __name__ == "__main__":
                               cv)
 
         msg = int(0x616263)
-        msg  = msg.to_bytes(3,'big')
+        msg  = int_to_bytes(msg, 3, 'big')
 
         k = int(0xde7e0e5e663f24183414b7c72f24546b81e9e5f410bebf26f3ca5fa82f5192c8)
 
@@ -362,7 +361,7 @@ if __name__ == "__main__":
                               cv)
         pu_key = pv_key.get_public_key()
         msg = int(0xb46d1525379e02e232d97928265b7254ea2ed97813454388c1a08f62dccd70b3)
-        msg  = msg.to_bytes(32,'big')
+        msg  = int_to_bytes(msg, 32, 'big')
         signer = ECSchnorr(hashlib.sha256,"Z","ITUPLE")
         sig = signer.sign_k(msg,pv_key,k)
         assert(signer.verify(msg,sig,pu_key))
@@ -377,7 +376,7 @@ if __name__ == "__main__":
                               cv)
 
         msg = int(0x0101010101010101010101010101010101010101010101010101010101010101)
-        msg  = msg.to_bytes(32,'big')
+        msg  = int_to_bytes(msg, 32, 'big')
         k = int(0x4242424242424242424242424242424242424242424242424242424242424242)
         expect_r = 0x24653eac434488002cc06bbfb7f10fe18991e35f9fe4302dbea6d2353dc0ab1c
         expect_s = 0xacd417b277ab7e7d993cc4a601dd01a71696fd0dd2e93561d9de9b69dd4dc75c
@@ -398,11 +397,11 @@ if __name__ == "__main__":
         hashname = "sha256"
         for curvename in CURVES:
             for modename in MODES:
-                print(f"CURVE={curvename}, MODE={modename}, HASH={hashname}")
+                print("CURVE={}, MODE={}, HASH={}".format(curvename, modename, hashname))
                 i = 1
                 while i < SUCCESS_LIMIT:
-                    hasher = eval(f"hashlib.{hashname}")()
-                    hasherclass = eval(f"hashlib.{hashname}")
+                    hasher = getattr(hashlib, hashname)()
+                    hasherclass = getattr(hashlib, hashname)
                     curveobj = Curve.get_curve(curvename)
                     curvesize = _round8(curveobj.size)//8
                     signer = ECSchnorr(hasherclass, option=modename)
@@ -410,14 +409,14 @@ if __name__ == "__main__":
                     priv_key = ECPrivateKey(d, curveobj)
                     pub_key = priv_key.get_public_key()
                     msg = random.randint(0, pow(2, 256))
-                    msg = msg.to_bytes(32, 'big')
+                    msg = int_to_bytes(msg, 32, 'big')
                     hasher.update(msg)
                     msg = hasher.digest()
                     sig_host = signer.sign(msg, priv_key)
                     try:
                         assert(signer.verify(msg, sig_host, pub_key))
                     except AssertionError:
-                        print(f"failed at {i}th round")
+                        print("failed at {}th round".format(i))
                         break
                     else:
                         i += 1

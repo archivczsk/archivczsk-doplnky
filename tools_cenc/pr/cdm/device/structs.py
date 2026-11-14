@@ -1,7 +1,7 @@
 from ...dep.construct import Struct, Const, Int8ub, Bytes, this, Int32ub, Switch, Embedded
 
 
-class DeviceStructs:
+class DeviceStructs(object):
 	magic = Const(b"PRD")
 
 	# was never in production

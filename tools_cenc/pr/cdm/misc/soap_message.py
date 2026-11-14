@@ -1,14 +1,15 @@
-from __future__ import annotations
-
-import html
 import xml.etree.ElementTree as ET
-from typing import Union, Optional
+try:
+	from typing import Union, Optional
+except ImportError:
+	pass
 
 from ..misc.drmresults import DrmResult
 from ..misc.exceptions import InvalidSoapMessage, ServerException
+from ..system.compat import html_unescape, text_type, tostring
 
 
-class SoapMessage:
+class SoapMessage(object):
 	XML_DECLARATION = '<?xml version="1.0" encoding="utf-8"?>'
 
 	_NS = {
@@ -16,11 +17,13 @@ class SoapMessage:
 		"envelope": "http://www.w3.org/2003/05/soap-envelope"
 	}
 
-	def __init__(self, root: ET.Element):
+	def __init__(self, root):
+		# type: (ET.Element) -> None
 		self.root = root
 
 	@classmethod
-	def create(cls, message: ET.Element) -> SoapMessage:
+	def create(cls, message):
+		# type: (ET.Element) -> SoapMessage
 		Envelope = ET.Element("soap:Envelope", {
 			"xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
 			"xmlns:xsd": "http://www.w3.org/2001/XMLSchema",
@@ -33,11 +36,12 @@ class SoapMessage:
 		return cls(Envelope)
 
 	@classmethod
-	def loads(cls, data: Union[str, bytes]) -> SoapMessage:
+	def loads(cls, data):
+		# type: (Union[str, bytes]) -> SoapMessage
 		if not data:
 			raise InvalidSoapMessage("Data must not be empty")
 
-		if isinstance(data, str):
+		if isinstance(data, text_type):
 			data = data.encode()
 
 		parser = ET.XMLParser(encoding="utf-8")
@@ -48,7 +52,8 @@ class SoapMessage:
 
 		return cls(root)
 
-	def get_message(self) -> Optional[ET.Element]:
+	def get_message(self):
+		# type: () -> Optional[ET.Element]
 		Body = self.root.find("soap:Body", self._NS) or self.root.find("envelope:Body", self._NS)
 		if Body is None:
 			return None
@@ -59,7 +64,8 @@ class SoapMessage:
 		return Body[0]
 
 	@staticmethod
-	def read_namespace(element) -> Optional[str]:
+	def read_namespace(element):
+		# type: (...) -> Optional[str]
 		if element.tag.startswith("{"):
 			return element.tag.split("}")[0][1:]
 		return None
@@ -77,16 +83,13 @@ class SoapMessage:
 		fault_text = fault.findtext("faultstring") or fault.findtext("soap:Reason/soap:Text", namespaces=nsmap)
 
 		error_message = fault_text or getattr(drm_result, "message", "(No message)")
-		exception_message = (f"[{drm_result.name}] " if drm_result else "") + error_message
+		exception_message = ("[{0}] ".format(drm_result.name) if drm_result else "") + error_message
 
 		raise ServerException(exception_message)
 
-	def dumps(self) -> str:
-		xml_data = ET.tostring(
-			self.root,
-			short_empty_elements=False,
-			encoding="utf-8"
-		)
+	def dumps(self):
+		# type: () -> str
+		xml_data = tostring(self.root, encoding="utf-8")
 
 		# this shouldn't exist
-		return self.XML_DECLARATION + html.unescape(xml_data.decode())
+		return self.XML_DECLARATION + html_unescape(xml_data.decode())

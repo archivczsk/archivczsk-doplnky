@@ -21,18 +21,18 @@
 
 """
 
-#python 2 compatibility
-from builtins import int,pow
 
 import binascii
+import numbers
 import random
 
+from ._compat import int_from_bytes, int_to_bytes
 from . import curve_defs
 
 
 
 
-class Curve:
+class Curve(object):
     """Elliptic Curve abstraction
 
     You should not directly create such Object.
@@ -359,8 +359,8 @@ class WeierstrassCurve(Curve):
            bytes : encoded point [04 | x | y] or [02 | x | sign]
         """
         size = self.size+7 >> 3
-        x = bytearray(P.x.to_bytes(size,'big'))
-        y = bytearray(P.y.to_bytes(size,'big'))
+        x = bytearray(int_to_bytes(P.x, size, 'big'))
+        y = bytearray(int_to_bytes(P.y, size, 'big'))
         if compressed:
             enc = [2 | (P.y&1)]
             y = []
@@ -383,13 +383,13 @@ class WeierstrassCurve(Curve):
         xy    =  bytearray(eP)
         if xy[0] == 2 or xy[0] == 3:
             x = xy[1:1+size]
-            x = int.from_bytes(x,'big')
+            x = int_from_bytes(x, 'big')
             y = self.y_recover(x,xy[0]&1)
         elif xy[0] == 4:
             x = xy[1:1+size]
-            x = int.from_bytes(x,'big')
+            x = int_from_bytes(x, 'big')
             y = xy[1+size:1+size+size]
-            y = int.from_bytes(y,'big')
+            y = int_from_bytes(y, 'big')
         else:
             raise ECPyException("Invalid encoded point")
 
@@ -592,7 +592,7 @@ class TwistedEdwardCurve(Curve):
         """
         size = self._coord_size()
 
-        y = bytearray(P.y.to_bytes(size,'little'))
+        y = bytearray(int_to_bytes(P.y, size, 'little'))
         if P.x&1:
             y[len(y)-1] |= 0x80
         return bytes(y)
@@ -608,7 +608,7 @@ class TwistedEdwardCurve(Curve):
         y    =  bytearray(eP)
         sign = y[len(y)-1] & 0x80
         y[len(y)-1] &= ~0x80
-        y = int.from_bytes(y,'little')
+        y = int_from_bytes(y, 'little')
         x = self.x_recover(y,sign)
         return Point(x,y,self,True)
 
@@ -626,7 +626,7 @@ class TwistedEdwardCurve(Curve):
         k[0]  &= 0xF8
         k[31] = (k[31] &0x7F) | 0x40
         k = bytes(k)
-        k = int.from_bytes(k,'little')
+        k = int_from_bytes(k, 'little')
         return k
 
     @staticmethod
@@ -639,7 +639,7 @@ class TwistedEdwardCurve(Curve):
         Returns:
               bytes: encoded scalar
         """
-        k.to_bytes(32,'little')
+        int_to_bytes(k, 32, 'little')
         k = bytearray(k)
         k[0]  &= 0xF8
         k[31] = (k[31] &0x7F) | 0x40
@@ -804,7 +804,7 @@ class MontgomeryCurve(Curve):
            bytes : encoded point
         """
         size = self.size+7 >> 3
-        x = bytearray(P.x.to_bytes(size,'little'))
+        x = bytearray(int_to_bytes(P.x, size, 'little'))
         return bytes(x)
 
     def decode_point(self, eP):
@@ -818,7 +818,7 @@ class MontgomeryCurve(Curve):
         """
         x    =  bytearray(eP)
         x[len(x)-1] &= ~0x80
-        x = int.from_bytes(x,'little')
+        x = int_from_bytes(x, 'little')
         return Point(x,None,self)
 
     def _add_point(self, P, Q):
@@ -930,7 +930,7 @@ class MontgomeryCurve(Curve):
 
         return (x,y,z)
 
-class Point:
+class Point(object):
     """Immutable Elliptic Curve Point.
 
     A Point support the following operator:
@@ -1096,7 +1096,7 @@ class Point:
         raise ECPyException('__sub__: type not supported: %s'%type(Q))
 
     def __mul__(self, scal):
-        if isinstance(scal,int):
+        if isinstance(scal, numbers.Integral):
             if self.is_infinity:
                 return self
             scal = scal%self.curve.order

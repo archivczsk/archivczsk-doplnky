@@ -1,24 +1,23 @@
-from __future__ import annotations
-
-import base64
-from enum import IntEnum
-from typing import Union, Tuple
+try:
+	from typing import Union, Tuple
+except ImportError:
+	pass
 from uuid import UUID
 
 try:
 	from Cryptodome.Cipher import AES
-	from Cryptodome.Hash import CMAC
 	from Cryptodome.Util.strxor import strxor
-except:
+except ImportError:
 	from Crypto.Cipher import AES
-	from Crypto.Hash import CMAC
 	from Crypto.Util.strxor import strxor
 
+from ....wvl3.cdm.compat import CMAC_AES
 from ...dep.construct import Const, GreedyRange, Struct, Int32ub, Bytes, Int16ub, this, Switch, LazyBound, Array, Container
 
 from .. import ECCKey, Crypto
 from ..license.key import Key
 from ..misc.exceptions import InvalidXmrLicense
+from ..system.compat import IntEnum, decode_binary
 
 
 class XMRObjectTypes(IntEnum):
@@ -117,7 +116,7 @@ class XMRObjectTypes(IntEnum):
 	UNKNOWN_CONTAINERS = 0xFFFE
 
 
-class _XMRLicenseStructs:
+class _XMRLicenseStructs(object):
 	PlayEnablerType = Struct(
 		"player_enabler_type" / Bytes(16)
 	)
@@ -312,25 +311,28 @@ class _XMRLicenseStructs:
 class XMRLicense(_XMRLicenseStructs):
 	"""Represents an XMRLicense"""
 
-	MagicConstantZero = bytes([
+	MagicConstantZero = bytes(bytearray([
 		0x7e, 0xe9, 0xed, 0x4a, 0xf7, 0x73, 0x22, 0x4f,
 		0x00, 0xb8, 0xea, 0x7e, 0xfb, 0x02, 0x7c, 0xbb
-	])
+	]))
 
 	def __init__(
 			self,
-			parsed_license: Container,
-			license_obj: _XMRLicenseStructs.XmrLicense = _XMRLicenseStructs.XmrLicense
+			parsed_license,  # type: Container
+			license_obj=None  # type: _XMRLicenseStructs.XmrLicense
 	):
+		# type: (...) -> None
+		if license_obj is None:
+			license_obj = _XMRLicenseStructs.XmrLicense
 		self.parsed = parsed_license
 		self._license_obj = license_obj
 
 	@classmethod
-	def loads(cls, data: Union[str, bytes]) -> XMRLicense:
-		if isinstance(data, str):
-			data = base64.b64decode(data)
+	def loads(cls, data):
+		# type: (Union[str, bytes]) -> XMRLicense
+		data = decode_binary(data, prefix=b"XMR\x00")
 		if not isinstance(data, bytes):
-			raise ValueError(f"Expecting Bytes or Base64 input, got {data!r}")
+			raise ValueError("Expecting Bytes or Base64 input, got {0!r}".format(data))
 
 		licence = _XMRLicenseStructs.XmrLicense
 		return cls(
@@ -338,31 +340,38 @@ class XMRLicense(_XMRLicenseStructs):
 			license_obj=licence
 		)
 
-	def dumps(self) -> bytes:
+	def dumps(self):
+		# type: () -> bytes
 		return self._license_obj.build(self.parsed)
 
-	def _locate(self, container: Container):
+	def _locate(self, container):
+		# type: (Container) -> Container
 		if container.flags == 2 or container.flags == 3:
 			return self._locate(container.data)
 		else:
 			return container
 
-	def get_object(self, type_: int):
+	def get_object(self, type_):
+		# type: (int) -> None
 		for obj in self.parsed.containers:
 			container = self._locate(obj)
 			if container.type == type_:
 				yield container.data
 
-	def get_device_key_obj(self) -> Container:
+	def get_device_key_obj(self):
+		# type: () -> Container
 		return next(self.get_object(XMRObjectTypes.ECC_DEVICE_KEY_OBJECT), None)
 
-	def get_content_key_obj(self) -> Container:
+	def get_content_key_obj(self):
+		# type: () -> Container
 		return next(self.get_object(XMRObjectTypes.CONTENT_KEY_OBJECT), None)
 
-	def is_scalable(self) -> bool:
+	def is_scalable(self):
+		# type: () -> bool
 		return bool(next(self.get_object(XMRObjectTypes.AUX_KEY_OBJECT), None))
 
-	def get_content_key(self, encryption_key: ECCKey) -> Key:
+	def get_content_key(self, encryption_key):
+		# type: (ECCKey) -> Key
 		ecc_key = self.get_device_key_obj()
 		if ecc_key is None:
 			raise InvalidXmrLicense("No ECC public key in license")
@@ -374,7 +383,7 @@ class XMRLicense(_XMRLicenseStructs):
 		cipher_type = Key.CipherType(content_key.cipher_type)
 
 		if cipher_type not in (Key.CipherType.ECC_256, Key.CipherType.ECC_256_WITH_KZ, Key.CipherType.ECC_256_VIA_SYMMETRIC):
-			raise InvalidXmrLicense(f"Invalid cipher type {cipher_type}")
+			raise InvalidXmrLicense("Invalid cipher type {0}".format(cipher_type))
 
 		via_symmetric = Key.CipherType(content_key.cipher_type) == Key.CipherType.ECC_256_VIA_SYMMETRIC
 
@@ -412,8 +421,9 @@ class XMRLicense(_XMRLicenseStructs):
 			key=ck
 		)
 
-	def check_signature(self, integrity_key: bytes) -> bool:
-		cmac = CMAC.new(integrity_key, ciphermod=AES)
+	def check_signature(self, integrity_key):
+		# type: (bytes) -> bool
+		cmac = CMAC_AES(integrity_key)
 
 		signature_data = next(self.get_object(XMRObjectTypes.SIGNATURE_OBJECT))
 		cmac.update(self.dumps()[:-(signature_data.signature_data_length + 12)])
