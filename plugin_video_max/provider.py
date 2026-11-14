@@ -8,9 +8,6 @@ from tools_archivczsk.date_utils import iso8601_to_timestamp, iso8601_duration_t
 from time import time
 from .wbdmax import WBDMax
 import re
-import sys
-
-is_py2 = (sys.version_info[0] == 2)
 
 class WBDMaxContentProvider(CommonContentProvider):
 	def __init__(self):
@@ -590,7 +587,7 @@ class WBDMaxContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def resolve_dash_streams(self, url, video_title, drm_info, player_settings={}, data_item={}):
-		streams = self.get_dash_streams(url, self.wbdmax.req_session, max_bitrate=self.get_setting('max_bitrate'))
+		streams = self.get_dash_streams(url, self.wbdmax.req_session)
 		if not streams:
 			return
 
@@ -641,8 +638,6 @@ class WBDMaxContentProvider(CommonContentProvider):
 			self.show_info(self._("Full stream quality is available only for ArchivCZSK product supporters. Quality of the playback will be limited to SD resolution."), noexit=True)
 		elif self.drm_failed and self.get_setting('drm_playready'):
 			self.show_info(self._("Playback of stream with quality >=1080p failed. Switching back to 720p quality."), noexit=True)
-		elif self.get_setting('drm_playready') and is_py2:
-			self.show_info(self._("You have enabled 1080p and 4k streams support in addon settings. This option works only in distributions based on python 3.8+ like OpenATV 7.x, OpenPLi > 9.x etc. Update software in you receiver to get better quality streams."), noexit=True)
 
 		self.build_lang_lists()
 		data_item = None

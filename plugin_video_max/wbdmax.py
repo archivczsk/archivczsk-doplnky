@@ -6,8 +6,6 @@ from time import time
 import json
 import sys
 
-is_py2 = (sys.version_info[0] == 2)
-
 class Status204(Exception):
 	pass
 
@@ -451,7 +449,7 @@ class WBDMax(object):
 		playback_session_id = str(uuid.uuid4())
 		app_session_id = str(uuid.uuid1())
 
-		if (not self.cp.is_supporter()) or is_py2 or force_wv or (not self.cp.get_setting('drm_playready')):
+		if (not self.cp.is_supporter()) or force_wv or (not self.cp.get_setting('drm_playready')):
 			drm_info = {
 				'drmKeySystem': 'widevine',
 				'maxSecurityLevel': 'L3'

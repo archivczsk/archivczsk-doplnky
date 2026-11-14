@@ -1,3 +1,6 @@
+1.15 - 14.11.2026
+    - pridanie podpory pre 1080p+ streamy aj pre python 2.7
+
 1.14 - 01.11.2026
     - odstránenie kontroly exteplayer3 pri štarte doplnku
 
