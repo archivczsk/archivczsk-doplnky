@@ -1323,7 +1323,7 @@ class Oneplay(object):
 		item_detail = {}
 
 		for block in response.get('layout', {}).get('blocks', []):
-			if block['schema'] == 'OnAirContentInfoBlock' and block['template'] == 'fullInfo':
+			if block['schema'].lower() == 'onaircontentinfoblock' and block['template'] == 'fullInfo':
 				item_detail['plot'] = block.get('description')
 
 				for item in block.get('additionalContentData', {}).get('lists', []):

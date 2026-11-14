@@ -1,3 +1,6 @@
+1.33 - 14.11.2026
+- oprava zobrazenia informácií o filmoch
+
 1.32 - 10.11.2026
 - oprava prihlásenia po zmenách na strane Oneplay
 
