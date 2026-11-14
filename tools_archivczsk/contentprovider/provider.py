@@ -110,7 +110,6 @@ class CCPRequestsSession(requests.Session):
 					'backoff_factor': 1,
 					'total': 3,
 					'status_forcelist': [429, 504],
-					'allowed_methods': list(Retry.DEFAULT_ALLOWED_METHODS) + ['POST'],
 					'raise_on_status': False,
 				}
 
