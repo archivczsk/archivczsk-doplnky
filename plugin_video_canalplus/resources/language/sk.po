@@ -108,6 +108,9 @@ msgstr "Tento kanál nie je súčasťou tvojho predplatného."
 msgid "The broadcast is not available from this network (geoblocking)."
 msgstr "Vysielanie nie je z tejto siete dostupné (geoblokácia)."
 
+msgid "This channel is not available on older receivers (Python 2.7)."
+msgstr "Tento kanál nie je na starších prijímačoch (Python 2.7) dostupný."
+
 msgid "No stream URL received from server."
 msgstr "Server nevrátil adresu streamu."
 

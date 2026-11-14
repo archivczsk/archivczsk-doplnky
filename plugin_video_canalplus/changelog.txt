@@ -1,3 +1,7 @@
+1.5 - 14.11.2026
+- kanály, ktoré server na starších prijímačoch (Python 2.7) neposkytuje, už nekončia chybou „HTTP 404“,
+  ale zrozumiteľnou hláškou
+
 1.4 - 09.11.2026
 - načítanie kanálov upravené podľa oficiálnej aplikácie
 - zrozumiteľná hláška, ak účet nemá žiadne TV kanály

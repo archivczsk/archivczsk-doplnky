@@ -805,6 +805,9 @@ class CanalplusContentProvider(ModuleContentProvider):
 				self.show_error(self._("This channel is not part of your subscription."))
 			elif 'geo' in low:
 				self.show_error(self._("The broadcast is not available from this network (geoblocking)."))
+			elif live and self.widevine_wanted() and 'http 404' in low:
+				# the Widevine (Solocoo) catalogue doesn't carry every channel of the native list
+				self.show_error(self._("This channel is not available on older receivers (Python 2.7)."))
 			else:
 				self.show_error(self._("Playback failed: %s") % msg)
 			return
