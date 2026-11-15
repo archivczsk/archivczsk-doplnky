@@ -23,13 +23,9 @@ class CanalplusHTTPRequestHandler(DashHTTPRequestHandler, PlayliveTVHTTPRequestH
 
 		# Segments are downloaded via the handler's req_session (its own session, not the API one) and
 		# the framework doesn't pass dash_info headers to them - so the CDN headers are set on this
-		# session once here. The DRM path (PlayReady/Widevine) depends on the Python version and
-		# doesn't change at runtime.
+		# session once here.
 		try:
-			if content_provider.widevine_wanted():
-				self.req_session.headers.update(content_provider.api.solocoo.stream_headers())
-			else:
-				self.req_session.headers.update(content_provider.stream_headers())
+			self.req_session.headers.update(content_provider.stream_headers())
 		except Exception:
 			content_provider.log_exception()
 
@@ -61,26 +57,17 @@ class CanalplusHTTPRequestHandler(DashHTTPRequestHandler, PlayliveTVHTTPRequestH
 
 		bandwidth = 1000000000
 		try:
-			if stream.get('license_url'):
-				streams = self.cp.limit_streams(self.cp.get_dash_streams(stream['url'],
-				                                headers=self.cp.api.solocoo.stream_headers(),
-				                                max_bitrate=self.cp.get_setting('max_bitrate')))
-			else:
-				streams = self.cp.resolve_streams_for_channel(stream['url'])
+			streams = self.cp.resolve_streams_for_channel(stream['url'])
 			if streams:
 				bandwidth = int(streams[0]['bandwidth'])
 		except Exception:
 			self.cp.log_exception()
 
-		info = {
+		return {
 			'url': stream['url'],
 			'bandwidth': bandwidth,
 			'license': stream.get('license') or {},
 		}
-		if stream.get('license_url'):
-			# Widevine path (Solocoo)
-			info['wv'] = stream['license_url']
-		return info
 
 	# #################################################################################################
 
