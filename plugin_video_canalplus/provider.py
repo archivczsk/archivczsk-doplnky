@@ -3,7 +3,6 @@
 # Canal+ (SK/CZ) - live channels, archive (catch-up), userbouquet and XML EPG.
 # Sign-in by code via connect.canalplus.com (see canalplus_api.py).
 
-import sys
 import base64
 from hashlib import md5
 from time import time, strftime, localtime
@@ -25,8 +24,6 @@ CHANNELS_CACHE_SECONDS = 600
 ARCHIVE_HOURS = 168         # 7 days
 ARCHIVE_BLOCK_SECONDS = 30 * 60
 
-# PlayReady CDM in tools_cenc needs Python 3; on Python 2.7 playback goes via Widevine (Solocoo)
-is_py2 = sys.version_info[0] == 2
 
 # picon/logo size (LogoUrl contains the {resolutionXY} placeholder)
 LOGO_SIZE = '220x220'
@@ -310,11 +307,6 @@ class CanalplusModuleExtra(CPModuleTemplate):
 		self.cp.add_video(self._("Zone: %s") % self.cp.api.brand, None, {}, download=False, cmd=self.cp.noop)
 		self.cp.add_video(self._("Number of channels: %d") % len(self.cp.channels),
 		                  None, {}, download=False, cmd=self.cp.noop)
-		if self.cp.widevine_wanted():
-			drm = self._("Widevine, SD (this receiver has Python 2.7)")
-		else:
-			drm = self._("PlayReady, Full HD")
-		self.cp.add_video(self._("Playback: %s") % drm, None, {}, download=False, cmd=self.cp.noop)
 
 	def check_playback(self):
 		try:
@@ -342,7 +334,7 @@ class CanalplusModuleExtra(CPModuleTemplate):
 		self.cp.api.teardown(stream.get('teardown'))
 		self.cp.play_session = {}
 
-		if stream.get('url') and (stream.get('license_url') or self.cp.api.live_token):
+		if stream.get('url') and self.cp.api.live_token:
 			self.cp.show_info(self._("No error occured during playback check. Playback should work."))
 		else:
 			self.cp.show_error(self._("The server did not return a stream or a license token."))
@@ -662,23 +654,6 @@ class CanalplusContentProvider(ModuleContentProvider):
 		license_headers = dict(headers)
 		license_headers['Content-Type'] = 'application/json'
 
-		if stream_key.get('wv'):
-			# fallback path via Solocoo Widevine (Python 2.7)
-			wv_headers = self.api.solocoo.stream_headers()
-			wv_license_headers = dict(wv_headers)
-			wv_license_headers['Content-Type'] = 'application/octet-stream'
-			return {
-				'url': stream_key['url'],
-				'bandwidth': stream_key.get('bandwidth'),
-				'headers': wv_headers,
-				'drm': {
-					'wv': {
-						'license_url': stream_key['wv'],
-						'headers': wv_license_headers,
-					}
-				}
-			}
-
 		ctx = stream_key.get('license') or {}
 
 		return {
@@ -694,47 +669,6 @@ class CanalplusContentProvider(ModuleContentProvider):
 			}
 		}
 
-	def widevine_wanted(self):
-		"""Python 3 = PlayReady (Full HD), Python 2.7 = Widevine via Solocoo (SD) - decided automatically."""
-		return is_py2
-
-	def solocoo_asset_for(self, channel_key, begin=None, end=None):
-		"""Solocoo id for playback: live channel = cc<EpgId>, archive = programme id from the schedule."""
-		if begin is None:
-			return self.api.solocoo_cc_id(channel_key)
-		t_from = int(begin)
-		t_to = int(end) if end else t_from + 1
-		events = self.api.get_epg_range(channel_key, t_from, t_to) or []
-		best = None
-		for ev in events:
-			if not ev.get('id'):
-				continue
-			if best is None or abs(int(ev['start']) - t_from) < abs(int(best['start']) - t_from):
-				best = ev
-		if best is None:
-			# the schedule isn't downloaded yet - try to fetch it and search again
-			try:
-				self.api.fetch_solocoo_channel(channel_key, t_from - 3600, t_to + 3600, with_desc=False)
-			except Exception:
-				self.log_exception()
-			for ev in self.api.get_epg_range(channel_key, t_from, t_to) or []:
-				if ev.get('id') and (best is None or abs(int(ev['start']) - t_from) < abs(int(best['start']) - t_from)):
-					best = ev
-		return best['id'] if best else None
-
-	def get_stream_info_wv(self, channel_key, begin=None, end=None):
-		"""Manifest and Widevine license from Solocoo (no keepalive session)."""
-		if not self.api.solocoo.is_paired():
-			raise CanalplusSessionError('Not paired')
-		asset_id = self.solocoo_asset_for(channel_key, begin, end)
-		if not asset_id:
-			raise Exception('No programme found for this time in the archive')
-		stream = self.api.solocoo.get_stream(asset_id)
-		if stream.get('url'):
-			self.log_info('Widevine stream from: %s' % (stream['url'].split('/')[2] if stream['url'].count('/') >= 2 else '?'))
-		self.play_session = {}
-		return stream
-
 	def get_stream_info(self, channel_key, begin=None, end=None):
 		"""Returns the manifest URL and license context - also used by the HTTP handler for the bouquet."""
 		channel = self.channels_by_key.get(channel_key)
@@ -743,9 +677,6 @@ class CanalplusContentProvider(ModuleContentProvider):
 			channel = self.channels_by_key.get(channel_key)
 		if not channel:
 			raise Exception('Unknown channel')
-
-		if self.widevine_wanted():
-			return self.get_stream_info_wv(channel_key, begin=begin, end=end)
 
 		raw = None
 		for item in self.api.channels():
@@ -814,12 +745,6 @@ class CanalplusContentProvider(ModuleContentProvider):
 			self.show_error(self._("No stream URL received from server."))
 			return
 
-		if stream.get('license_url'):
-			# Widevine path (Solocoo)
-			if not self.resolve_dash_streams_wv(stream, stream_title or stream.get('title') or '', live):
-				self.show_error(self._("Failed to load the DASH stream."))
-			return
-
 		if not self.api.live_token:
 			self.show_error(self._("No license token received. The stream cannot be played."))
 			return
@@ -843,28 +768,6 @@ class CanalplusContentProvider(ModuleContentProvider):
 		streams = self.get_dash_streams(manifest_url, headers=self.stream_headers(),
 		                                max_bitrate=self.get_setting('max_bitrate'))
 		return self.limit_streams(streams)
-
-	def resolve_dash_streams_wv(self, stream, title, live):
-		"""Widevine (Solocoo): with L3 keys Canal+ delivers SD regardless of the track in the manifest,
-		so a single item (the highest allowed track) labelled as SD is offered."""
-		streams = self.get_dash_streams(stream['url'], headers=self.api.solocoo.stream_headers(),
-		                                max_bitrate=self.get_setting('max_bitrate'))
-		streams = self.limit_streams(streams)
-		if not streams:
-			return False
-		s = max(streams, key=lambda x: int(x.get('bandwidth') or 0))
-		stream_key = {
-			'url': s['playlist_url'],
-			'bandwidth': s['bandwidth'],
-			'wv': stream.get('license_url') or '',
-		}
-		url = stream_key_to_dash_url(self.http_endpoint, stream_key)
-		info_labels = {
-			'bandwidth': int(s['bandwidth']),
-			'quality': 'SD (Widevine)',
-		}
-		self.add_play(title, url, info_labels=info_labels, live=live)
-		return True
 
 	def resolve_dash_streams(self, stream, title, live):
 		streams = self.resolve_streams_for_channel(stream['url'])
