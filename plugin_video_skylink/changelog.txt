@@ -1,3 +1,6 @@
+1.7: 15.11.2026
+- streamy v rozlíšení 1080p fungujú aj na starších prijímačoch s Pythonom 2.7 (vyžaduje aktuálnu podporu šifrovania tools_cenc)
+
 1.6: 10.11.2026
 - userbouquet: opravené zamrznutie obrazu po niekoľkých minútach sledovania
 

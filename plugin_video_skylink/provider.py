@@ -10,7 +10,6 @@
 # like the other live TV addons.
 
 import base64
-import sys
 from time import time, strftime, localtime
 from hashlib import md5
 from binascii import crc32
@@ -32,9 +31,6 @@ CHANNELS_CACHE_SECONDS = 600
 
 # the server doesn't accept a schedule range longer than one day
 ARCHIVE_WINDOW = 24 * 3600
-
-# the PlayReady library in tools_cenc needs Python 3, under Python 2 only Widevine works
-is_py2 = (sys.version_info[0] == 2)
 
 # how many channels are asked for the schedule in one call and how many at most in parallel
 EPG_BATCH = 20
@@ -919,7 +915,7 @@ class SkylinkContentProvider(ModuleContentProvider):
 		return info
 
 	def playready_wanted(self):
-		return not is_py2 and not self.drm_failed and self.get_setting('drm_playready')
+		return not self.drm_failed and self.get_setting('drm_playready')
 
 	def get_stream_info(self, asset_id):
 		"""Returns the manifest and license URL - also used by the HTTP handler for the bouquet."""
@@ -940,11 +936,8 @@ class SkylinkContentProvider(ModuleContentProvider):
 			self.show_error(self._("Missing item identifier."))
 			return
 
-		if self.get_setting('drm_playready'):
-			if is_py2:
-				self.show_info(self._("You have enabled 1080p streams in addon settings. This option works only in distributions based on python 3.8+ like OpenATV 7.x, OpenPLi > 9.x etc. Update software in you receiver to get better quality streams."), noexit=True)
-			elif self.drm_failed:
-				self.show_info(self._("Playback of stream with 1080p quality failed. Switching back to 720p quality."), noexit=True)
+		if self.get_setting('drm_playready') and self.drm_failed:
+			self.show_info(self._("Playback of stream with 1080p quality failed. Switching back to 720p quality."), noexit=True)
 
 		try:
 			stream = self.get_stream_info(asset_id)
