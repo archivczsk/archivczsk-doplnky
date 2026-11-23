@@ -1,3 +1,6 @@
+3.29 - 23.11.2026
+    - use ffmpeg from tools_player by default
+
 3.28 - 14.11.2026
     - fixed bugs and typos in http handler
 

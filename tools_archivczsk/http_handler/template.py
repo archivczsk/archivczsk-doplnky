@@ -4,6 +4,7 @@ import os, base64
 from Plugins.Extensions.archivCZSK.engine.httpserver import AddonHttpRequestHandler
 from ..cache import SimpleAutokeyExpiringCache
 from ..contentprovider.archivczsk_provider import _icon
+from ..player.installer import get_archivczsk_exteplayer3_dir
 import json
 
 from tools_cenc.wvdecrypt import WvDecrypt
@@ -41,8 +42,12 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler):
 
 	@staticmethod
 	def get_ffmpeg_path():
-		if os.path.isfile('/usr/lib/exteplayer3_deps/ffmpeg'):
-			return '/usr/lib/exteplayer3_deps/ffmpeg'
+		exteplayer3_dir = get_archivczsk_exteplayer3_dir()
+		if exteplayer3_dir:
+			ffmpeg_path = os.path.join(exteplayer3_dir, 'ffmpeg')
+
+		if exteplayer3_dir and os.path.isfile(ffmpeg_path):
+			return ffmpeg_path
 		else:
 			return '/usr/bin/ffmpeg'
 
@@ -63,14 +68,7 @@ class HTTPRequestHandlerTemplate(AddonHttpRequestHandler):
 				cmd = [HTTPRequestHandlerTemplate.get_ffmpeg_path()] + cmd.split(' ')
 				cmd[8] = cmd[8].format(str(e).replace('\n', ' ').replace(':', '\\:').replace('"', '\"').replace("'", "\'"))
 
-				try:
-					subprocess.check_call(cmd)
-				except:
-					if cmd[0] != '/usr/bin/ffmpeg':
-						cmd[0] = '/usr/bin/ffmpeg'
-						subprocess.check_call(cmd)
-					else:
-						raise
+				subprocess.check_call(cmd)
 
 				cmd = '-nostdin -loglevel info -stream_loop -1 -i %s -map 0 -c copy -muxdelay 0 -muxpreload 0 -mpegts_flags +resend_headers -f mpegts pipe:1' % error_ts_file
 				cmd = [None] + cmd.split(' ')
