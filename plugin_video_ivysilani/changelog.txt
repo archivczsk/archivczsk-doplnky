@@ -1,3 +1,6 @@
+2026-11-24 [3.15]
+* oprava prehrávania DRM obsahu (momentálne funkčné len s exteplayer3)
+
 2026-11-01 [3.14]
 * odstránenie kontroly exteplayer3 pri štarte doplnku
 
