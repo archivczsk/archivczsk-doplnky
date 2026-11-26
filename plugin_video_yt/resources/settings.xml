@@ -3,6 +3,7 @@
   <setting label="Number of remembered searches" id="keep-searches" type="labelenum" values="0|5|10|15|20|25|30|35|40|45|50" default="20"/>
   <setting label="Number of channels on main page" type="number" id="channels" default="20"/>
   <setting label="Max watched items" id="max_watched" type="number" default="10"/>
+  <setting label="Load video description for Info button" id="video_desc" type="bool" default="true"/>
   <setting label="Preferred stream resolution" id="max_resolution" type="keyenum" values="38;4k|37;1080p|22;720p|35;480p|18;360p" default="37" />
   <setting label="Youtube API key" id="api_key" type="text" default=""/>
   <setting label="Subtitles" id="subtitles" type="keyenum" values="off;Off|lang;In subtitles language (otherwise original)|orig;In original language of the video" default="off" />

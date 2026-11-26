@@ -164,3 +164,21 @@ msgstr "Nepodarilo sa načítať súbor s odbermi"
 
 msgid "Imported channels"
 msgstr "Importovaných kanálov"
+
+msgid "Related videos"
+msgstr "Súvisiace videá"
+
+msgid "Comments"
+msgstr "Komentáre"
+
+msgid "Replies"
+msgstr "Odpovede"
+
+msgid "No related videos found"
+msgstr "Nenašli sa žiadne súvisiace videá"
+
+msgid "Comments are disabled or not available for this video"
+msgstr "Komentáre sú pri tomto videu vypnuté alebo nie sú dostupné"
+
+msgid "Load video description for Info button"
+msgstr "Načítať popis videa pre tlačidlo Info"

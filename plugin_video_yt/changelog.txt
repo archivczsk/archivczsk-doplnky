@@ -1,3 +1,9 @@
+3.6: 26.11.2026
+- zobrazení popisu videa přes tlačítko Info ve výpisu videí (dá se vypnout v nastavení)
+- přidané zobrazení souvisejících videí a komentářů do kontextového menu videa
+- seznam uložených kanálů se ukládá do channels.json namísto channels.txt (jednodušší úprava), při prvním spuštění se channels.txt automaticky převede a smaže
+- do watched.json se ukládá i název, popis, kanál, délka, datum a počet shlédnutí, takže Naposledy sledované se již nenačítá z internetu (pouze obrázek); starší záznamy se doplní při prvním zobrazení
+
 3.5: 01.11.2026
 - pridanie podpory pre titulky vo videách s možnosťou voľby originálnej stopy alebo automaticky preklad
 - pridanie kontextového menu pre spustenie videa s titulkami

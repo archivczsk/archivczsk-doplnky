@@ -6,7 +6,7 @@ from tools_archivczsk.debug.http import dump_json_request
 from time import time
 from datetime import timedelta, datetime
 from base64 import b64decode
-import re, os, io, json, requests, threading
+import re, os, io, json, shutil, requests, threading
 from .youtube import resolve as yt_resolve
 from .youtube.captions import choose_track_url, download_srt
 
@@ -14,8 +14,43 @@ CHANNEL_VIDEOS_PARAMS = "EgZ2aWRlb3PyBgQKAjoA"
 FEED_CACHE_TIME = 600
 SUBSCRIPTIONS_DIR = '/tmp'
 CHANNEL_ID_RE = re.compile(r'(UC[\w-]{22})')
+# lock protecting watched.json - it is a module level object on purpose: the provider instance must stay copyable (copy.deepcopy), what instance attribute with a lock is not
+FILE_LOCK = threading.RLock()
+
+# ##################################################################################################################
+
+def dig(obj, *path, **kw):
+	"""
+	Safe walk through nested dicts/lists returned by youtube API. Returns kw['default'] (None if not set), when any part of the path is missing.
+	"""
+	for p in path:
+		try:
+			obj = obj[p]
+		except (KeyError, IndexError, TypeError):
+			return kw.get('default')
+
+	return obj
+
+# ##################################################################################################################
+
+def yt_text(obj):
+	"""
+	Converts youtube text object ({'simpleText': ..} / {'runs': [..]} / {'content': ..}) to plain text
+	"""
+	if isinstance(obj, dict):
+		if 'simpleText' in obj:
+			return obj['simpleText'] or u''
+		if 'runs' in obj:
+			return u''.join([r.get('text', u'') for r in obj['runs'] if isinstance(r, dict)])
+		return obj.get('content') or u''
+
+	return obj or u''
+
+# ##################################################################################################################
 
 class YoutubeContentProvider(CommonContentProvider):
+	DETAILS_THREADS = 6        # number of parallel requests used to load video details
+	DETAILS_CACHE_MAX = 500    # max number of cached video details
 	SUBTITLES_DIR = '/tmp'
 	# YouTube refuses automatically translated subtitles quite often (HTTP 429), but later attempts usually succeed
 	SUBTITLES_RETRY_DELAYS = (60, 180)
@@ -29,6 +64,9 @@ class YoutubeContentProvider(CommonContentProvider):
 		self.api_keys = json.loads(b64decode(b'WyJBSXphU3lDVFdDNzVpNzBtb0pMenlOaDN0dDRqekNsalpjUmtVOFkiLCAiQUl6YVN5Q0lNNEV6TnFpMWluMjJmNFozUnUzaVl2TGFZOHRjM2JvIiwgIkFJemFTeUQySjJscW5qRTVWMGZIdmlFSUNITXRjMlBTS3FZN0lTayIsICJBSXphU3lCVV9vV0VJVUxpMy1uOTZ2V0tFVFlDTXNsZFlEQWx6Mk0iLCAiQUl6YVN5QzRDM2d6U1NFcnptYzJGZVVUbGVRcVpHenc4LXotZDZ3IiwgIkFJemFTeUNyRldpUGZHY2I1SXN5Uy13cEFNazZlYU5kTWFDOHBYcyIsICJBSXphU3lEbFpSMlVod1FYZUd3MkloQ1JucG9aQjhMSFprYWd3STQiLCAiQUl6YVN5Q1hxanMyWlBiMFBRUmVJV2lFTk1BQWtTeDBfdHZkNG5rIiwgIkFJemFTeUNzRTkxUFRELVhqVFUzT19JWnBZMFB2Vm9tMnR3NERyOCIsICJBSXphU3lBcnJoa2g0OWIyR05sQzhVZExvZHEzdVNwS3pjZ2R6ZWciLCAiQUl6YVN5Q1BjQUtDNzRTemdRQjhNU1hLY1BPNnpJb1ZmcXdsT2lnIiwgIkFJemFTeURCa29IZEQxSXc2SG9vTWhNb09iYkhGQ1hIRlN3S3pJVSIsICJBSXphU3lDNEMzZ3pTU0Vyem1jMkZlVVRsZVFxWkd6dzgtei1kNnciLCAiQUl6YVN5QUdQUDRqQTNoTDhmZXNqeGFWR2U4YmRWVW9RcUtMRExRIiwgIkFJemFTeUFfNW13aVZSWko5WkphaXR1cXYxbmdJQ2RMLTVGMTdQayIsICJBSXphU3lBLXV3T0taQnBieXBXcDFUV3B1WWY1SzAtNHd1UHp3RzgiLCAiQUl6YVN5RGpuZXdqNUpKRnVxWmFva3FkYkoybWE3bmhQa3V3VHBNIiwgIkFJemFTeUJ2Z1lVX1lEQkpWU3RDNkxEWDRHZ2tpWDkxMnZtSHJDZyIsICJBSXphU3lCODBoaFIySEc4aUxxV1AtTXdmWjhDdnlYV3NQX0tyQUEiLCAiQUl6YVN5QkRGcWJidDViMEo5Y3VvaGw1cWtnQUYyWUo5UVVfa0l3IiwgIkFJemFTeUJ0blR6YU00MHRWZXVEV1hrQ3FuWGFVVjhiMkotMk5iWSIsICJBSXphU3lEZF9zZnZRNE5BU2ItazBvS1lBcl9nOUZaY1FJTHR5S2MiLCAiQUl6YVN5QnRuVHphTTQwdFZldURXWGtDcW5YYVVWOGIySi0yTmJZIiwgIkFJemFTeUJqODBualdzMEtjZ0Q2QTQ0eTZjRGRHMnFpbmZ2Ylo0VSIsICJBSXphU3lENDktWFoySlY3UndzM0tETTJUN25BNTZKYmktTzdkalkiLCAiQUl6YVN5Qmo4MG5qV3MwS2NnRDZBNDR5NmNEZEcycWluZnZiWjRVIiwgIkFJemFTeUR5cTNucjJLamJGTUU5RWVOcEh5OTdBWDg3dms3NUhfWSIsICJBSXphU3lBbHd6X1ZqNm1XSUJncWdLRDByUXdJODJGYTRTM2Nza2siLCAiQUl6YVN5RC1vWjhBcXNWTUo3U3pYZDB5ZnBSVEF6SmFwbGVnYUIwIiwgIkFJemFTeUFTUExBV21qQ1BEUm9pTXR0MUFIR1EwVEd5Ung5d1RSVSIsICJBSXphU3lCaWhuWEtVbXg5aDZESEFsVE5rclotNnpuenJ6M01FMU0iLCAiQUl6YVN5QThIVlFFc3lST0xtZVo0UDNHaEtSQ1UyQmFqVG5KVU5jIiwgIkFJemFTeUFnRThKT1kwNmtKU1V4QllZWENHS2hRbmh4MXFEOGpkQSIsICJBSXphU3lDR3pfOGJFMzJxNE5Ba2pkQVhqcEFpaWdCUzZ6OVpBU1UiLCAiQUl6YVN5QnhUdjBSUEl6X0Rqdms5U1JmTUNUTzNpdV83WXNNanJRIiwgIkFJemFTeURGNDZJeVpZd1BsYjZaQnhBRDYtSXVMeFZOWXNiVEl3USIsICJBSXphU3lCa2lMQXRhYXYyZWNJN1Z2Z3MtaUJlZU1zX3YzWG5kRDgiLCAiQUl6YVN5Qkc5OENzQlVTTFhfd2FWTFNiMzRiQ2VTRjFxc0pxR2pFIiwgIkFJemFTeUM3VkdROU9qdmpPYUlUT01tNFR2TFRlRy1feVFaUmkwUSIsICJBSXphU3lCaWE1Szd3MFNEOGJBS0dhc2RhQzl0SDQwXzBnRTdsRHciLCAiQUl6YVN5Q3JZVHpxVUx2V045YjlOSW5EZFFNcGY1dDVoeTl6UlNvIiwgIkFJemFTeUF0R3Vyd042R2Zzc0N3VlNIWHpQUmJBNG9meFlNNUZSbyIsICJBSXphU3lDT1RaVEV6VHlkY1h1ZXRjb25reFpVakVYS2lQTURwRzAiLCAiQUl6YVN5Q0F5WDYzQlI5XzVYUzhqRmhYeFY0ZG9JR2h2YWpjWjdjIiwgIkFJemFTeUNrZ2xYcHNvWG83UWpzTERCQUw4bXpDZlg0WVp6cGR0ZyIsICJBSXphU3lBN19FTTZ5NVI4UzlFdExXcC1KUEZBNDN1dGF1aTMtdm8iLCAiQUl6YVN5QW1obFQ3c1YtT0JadlJCRzh4alVHc2tUM2VzajBtYzNrIiwgIkFJemFTeUJfYjhCcjd1MW1JM2Yzb193N1VJT0F4VUdHSklHeDktYyIsICJBSXphU3lBbWhsVDdzVi1PQlp2UkJHOHhqVUdza1QzZXNqMG1jM2siLCAiQUl6YVN5RGlSTURVY25tbV93U1ZoWUxvMHZoQWVrSHlHaEl6a2N3IiwgIkFJemFTeUNqVG1xVHhSRmZhb2FkcUp5U1EwQzNIS2l6Vm5kWnJJVSIsICJBSXphU3lDdGQ5N1plczdraFpZbTJHQ0hjWUFmRFQ1RWd2bVdxWmsiLCAiQUl6YVN5Q0ZqcnU4ZE9aYkd0WlVpX0FRdTFDejFNTG9BTmFZMjJrIiwgIkFJemFTeURYU1hiUVNHRUN3aWpIN1RhQUs5UnRmSkFPSngwNjJHMCIsICJBSXphU3lCVHByaTZJamVmZWQ2bThONDhjN3hHUlJlZXBmd3JXYzAiLCAiQUl6YVN5QmViQkcxTFp5Yk96NURORGRaTXEzNW53c1ZxUm5LZVVrIiwgIkFJemFTeUNaQ1NFbUtoZm5QT1FORzBTanU0aGx3MllEVXhnaTZwZyIsICJBSXphU3lCT185bHdGQ0lQTmYxT3lvQWZ3VnVOS3RFTXB0Z3U0NG8iLCAiQUl6YVN5QjFaenJUbUZwZFNOYzJnSG1GOW45UzExQTR2Z0hyS2JjIiwgIkFJemFTeUNUeVRBRnhCN1BTeTB2S0I0RGo1OHc2djNiUFFobVBUVSIsICJBSXphU3lDVjRmbWZkZ3NWYWxHTlIzc2MtMFczY2JwRVo4dU9kNjAiLCAiQUl6YVN5REZyUU12WFRaOVBBUkZYdkxwY09UU2VDOGJCT3U2UHcwIiwgIkFJemFTeURSWWhFY29VWGlqX2kzMGlkdnFha0JWRUVQU2xrWEtyayIsICJBSXphU3lCd1RxaDdHLXhWNFdXWmdfLVFGQjA0SzR2Q1BqTFh6QVkiLCAiQUl6YVN5REFlQmZVdmpaWnNjNFd4NTJDa3ZOakZMT19wczNXZ204IiwgIkFJemFTeUE2RmJVYkRxVDJ3amFsdWlvM0N2Umh2V1N5d1lKRWNQZyIsICJBSXphU3lDemxiU181dlN0cm9EbWNkYThSaGs5T2swV1JDS2k4blEiLCAiQUl6YVN5QUczR3lEUk1TZ2NfXzlZS00zN0RORHppMG9nX0tvejFRIiwgIkFJemFTeURKTGY3cGxkanZmNlFldlZGX0JhejBTcmNYMEludmVNSSJd').decode('utf-8'))
 		self.api_key_blacklist = {}
 		self.feed_cache = (0, None, [])
+		self.details_cache = {}
+		self.channels_invalid = False
+		self.migrate_channels()
 
 	# ##################################################################################################################
 
@@ -45,9 +83,9 @@ class YoutubeContentProvider(CommonContentProvider):
 	# ##################################################################################################################
 
 	def list_watched(self):
-		ids = [i[0] for i in sorted(self.watched.items(), key=lambda i: i[1]['time'], reverse=True)]
+		ids = [i[0] for i in sorted(self.watched.items(), key=lambda i: i[1].get('time', 0), reverse=True)]
 
-		self.list_videos(None, None, ids)
+		self.list_watched_items(ids)
 
 	# ##################################################################################################################
 
@@ -74,14 +112,14 @@ class YoutubeContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
-	def call_api(self, endpoint, params={}):
+	def call_api(self, endpoint, params={}, timeout=None):
 		while True:
 			api_key = self.get_api_key()
 			if not api_key:
 				raise AddonErrorException(self._("This addon reached available limit of requests to youtube API. Try again later."))
 
 			try:
-				response = requests.post("https://www.youtube.com/youtubei/v1/" + endpoint + "?key=" + api_key, json=params)
+				response = requests.post("https://www.youtube.com/youtubei/v1/" + endpoint + "?key=" + api_key, json=params, timeout=timeout)
 				if response.status_code >= 400:
 					# quota exceeded or wrong/revoked api key
 					self.log_error("Request using API KEY %s FAILED - blacklisting" % api_key[-8:])
@@ -134,35 +172,9 @@ class YoutubeContentProvider(CommonContentProvider):
 		cont = None
 		contItems = []
 		if ids is not None:   ###### WATCHED
-			params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"videoId":""}
-			for video_id in ids:
-				params['videoId'] = video_id
-				data = self.call_api("player", params)
-				if "videoDetails" in data:
-					title = data.get("videoDetails").get("title", "N/A")
-					length = data.get("videoDetails").get("lengthSeconds", 0)
-					channel_id = data.get("videoDetails").get("channelId", "")
-					desc = data.get("videoDetails").get("shortDescription", "")
-					views = data.get("videoDetails").get("viewCount", "0")
-					channel_title = data.get("microformat", {}).get("playerMicroformatRenderer", {}).get("ownerChannelName", "N/A")
-					published = data.get("microformat", {}).get("playerMicroformatRenderer", {}).get("publishDate", "N/A")
-					plot = '{} [{}] {} ({}x)\n{}'.format(
-						self.iso_to_cet(published),
-						channel_title,
-						self.format_time(int(length)),
-						views,
-						decode_html(desc)
-					)
-					info_labels = {
-						'plot': plot,
-						'duration': int(length)
-					}
-					menu = self.create_ctx_menu()
-					menu.add_menu_item(self._('Remove from watched'), cmd=self.remove_watched_item, video_id=video_id)
-					menu.add_menu_item(self._('Save channel'), cmd=self.save_channel, channel_name=channel_title, channel_id=channel_id)
-					self.add_subtitles_menu(menu, title, video_id)
-					self.add_video(title, "https://i.ytimg.com/vi/" + video_id + "/maxresdefault.jpg", info_labels, menu=menu, cmd=self.resolve_video, video_title=title, video_id=video_id)
+			self.list_watched_items(ids)
 		else:
+			pending = []   # items found on this page - they are added at once after parsing, so video details can be loaded in parallel
 			popular = None
 			latest = None
 			oldest = None
@@ -263,13 +275,7 @@ class YoutubeContentProvider(CommonContentProvider):
 					video_id = block["richItemRenderer"]["content"]["shortsLockupViewModel"].get("onTap", {}).get("innertubeCommand", {}).get("reelWatchEndpoint", {}).get("videoId", "N/A")
 					channel_title = data.get("metadata", {}).get("channelMetadataRenderer", {}).get("title", "N/A")
 					channel_id = data.get("metadata", {}).get("channelMetadataRenderer", {}).get("externalId", "")
-					info_labels = {}
-					menu = self.create_ctx_menu()
-					channel_params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"browseId":channel_id,"params":"EgZ2aWRlb3PyBgQKAjoA"}
-					menu.add_menu_item(self._('View channel videos'), cmd=self.list_videos, endpoint='browse', params=channel_params)
-					menu.add_menu_item(self._('Save channel'), cmd=self.save_channel, channel_name=channel_title, channel_id=channel_id)
-					self.add_subtitles_menu(menu, title, video_id)
-					self.add_video(title, "https://i.ytimg.com/vi/" + video_id + "/maxresdefault.jpg", info_labels, menu=menu, cmd=self.resolve_video, video_title=title, video_id=video_id)
+					pending.append(dict(title=title, video_id=video_id, plot='', duration=None, channel_title=channel_title, channel_id=channel_id))
 					continue
 				elif "richItemRenderer" in block and "content" in block["richItemRenderer"] and "lockupViewModel" in block["richItemRenderer"]["content"]:
 					one = block["richItemRenderer"]["content"]["lockupViewModel"]
@@ -279,7 +285,7 @@ class YoutubeContentProvider(CommonContentProvider):
 					cont = block.get("continuationItemRenderer").get("continuationEndpoint", {}).get("continuationCommand", {}).get("token", None)
 					continue
 				elif "channelRenderer" in block:
-					self.add_channel_dir(block["channelRenderer"])
+					pending.append({"channel_renderer": block["channelRenderer"]})
 					continue
 				else:
 					continue
@@ -320,16 +326,9 @@ class YoutubeContentProvider(CommonContentProvider):
 					"",
 					views
 				)
-				info_labels = {
-					'plot': plot,
-					'duration': self.to_seconds(duration)
-				}
-				menu = self.create_ctx_menu()
-				channel_params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"browseId":channel_id,"params":"EgZ2aWRlb3PyBgQKAjoA"}
-				menu.add_menu_item(self._('View channel videos'), cmd=self.list_videos, endpoint='browse', params=channel_params)
-				menu.add_menu_item(self._('Save channel'), cmd=self.save_channel, channel_name=channel_title, channel_id=channel_id)
-				self.add_subtitles_menu(menu, title, video_id)
-				self.add_video(title, "https://i.ytimg.com/vi/" + video_id + "/maxresdefault.jpg", info_labels, menu=menu, cmd=self.resolve_video, video_title=title, video_id=video_id)
+				pending.append(dict(title=title, video_id=video_id, plot=plot, duration=self.to_seconds(duration), channel_title=channel_title, channel_id=channel_id))
+
+			self.add_list_items(pending)
 
 			if not cont:
 				tabs = data.get("contents", {}).get("twoColumnSearchResultsRenderer", {}).get("primaryContents", {}).get("sectionListRenderer", {}).get("contents", [])
@@ -345,35 +344,107 @@ class YoutubeContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
+	def write_json_file(self, filename, data, indent=2):
+		''' Writes human readable (and easily editable) UTF-8 JSON file. File is written to temporary file first, so it can't be left half written '''
+		text = json.dumps(data, ensure_ascii=False, indent=indent, separators=(',', ': '))
+		if isinstance(text, bytes):
+			text = text.decode('utf-8')
+
+		tmp_filename = filename + '.tmp'
+		with io.open(tmp_filename, "w", encoding="utf-8") as file:
+			file.write(text + u'\n')
+
+		os.rename(tmp_filename, filename)
+
+	# ##################################################################################################################
+
 	def channels_file(self):
+		return os.path.join(self.data_dir, "channels.json")
+
+	# ##################################################################################################################
+
+	def legacy_channels_file(self):
 		return os.path.join(self.data_dir, "channels.txt")
 
 	# ##################################################################################################################
 
 	def read_channels(self):
-		''' Returns list of saved channels [(name, channel_id), ...] without duplicates '''
+		'''
+		Returns list of saved channels [(name, channel_id), ...] without duplicates.
+		Format of channels.json: [{"name": "Channel name", "id": "UC..."}, ...]
+		'''
 		channels = []
 		try:
 			with io.open(self.channels_file(), "r", encoding="utf-8") as file:
-				for line in file:
-					line = line.strip()
-					if ';' not in line:
-						continue
-					name, channel_id = line.rsplit(";", 1)
-					if channel_id and channel_id not in [c[1] for c in channels]:
-						channels.append((name, channel_id))
-		except IOError:
-			pass
+				data = json.load(file)
+		except (IOError, OSError):
+			# file doesn't exist yet
+			return channels
+		except ValueError:
+			# broken file (for example mistake done during manual editing) - it will be backed up before the next write
+			self.log_exception()
+			self.channels_invalid = True
+			return channels
+
+		if not isinstance(data, list):
+			self.log_error("Unsupported content of %s - list of channels expected" % self.channels_file())
+			self.channels_invalid = True
+			return channels
+
+		self.channels_invalid = False
+
+		for item in data:
+			if not isinstance(item, dict) or not item.get('id'):
+				continue
+
+			channel_id = item['id']
+			if channel_id not in [c[1] for c in channels]:
+				channels.append((item.get('name') or channel_id, channel_id))
+
 		return channels
 
 	# ##################################################################################################################
 
 	def write_channels(self, channels):
+		''' Saves list of channels [(name, channel_id), ...] to channels.json. Returns True on success '''
 		try:
-			with io.open(self.channels_file(), "w", encoding="utf-8") as file:
-				for name, channel_id in channels:
-					file.write(u'%s;%s\n' % (name.replace('\n', ' '), channel_id))
-		except:
+			if self.channels_invalid and os.path.isfile(self.channels_file()):
+				# don't lose manually edited file, that we were not able to read
+				shutil.copyfile(self.channels_file(), self.channels_file() + '.bak')
+				self.channels_invalid = False
+
+			self.write_json_file(self.channels_file(), [{'name': name, 'id': channel_id} for name, channel_id in channels])
+			return True
+		except Exception:
+			self.log_exception()
+			return False
+
+	# ##################################################################################################################
+
+	def migrate_channels(self):
+		''' Converts channels.txt saved by older versions to channels.json (only when channels.json doesn't exist yet) and removes channels.txt '''
+		txt_file = self.legacy_channels_file()
+
+		try:
+			if not os.path.isfile(txt_file) or os.path.exists(self.channels_file()):
+				return
+
+			channels = []
+			with io.open(txt_file, "r", encoding="utf-8") as file:
+				for line in file:
+					line = line.strip()
+					if ';' not in line:
+						continue
+					name, channel_id = line.rsplit(";", 1)
+					channel_id = channel_id.strip()
+					if channel_id and channel_id not in [c[1] for c in channels]:
+						channels.append((name, channel_id))
+
+			# txt file is removed only when the new file was written and can be read back
+			if self.write_channels(channels) and len(self.read_channels()) == len(channels):
+				os.remove(txt_file)
+				self.log_info("Saved channels converted from channels.txt to channels.json (%d channels)" % len(channels))
+		except Exception:
 			self.log_exception()
 
 	# ##################################################################################################################
@@ -392,9 +463,17 @@ class YoutubeContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
+	def refresh_root(self):
+		# refresh_screen() called from the root screen leaves the loading spinner running forever (ArchivCZSK core calls get_content() of the root item
+		# with wrong arguments), so the new root content is returned directly and the screen is only told to replace its list
+		self.root()
+		self.update_content()
+
+	# ##################################################################################################################
+
 	def remove_channel(self, channel_id):
 		self.write_channels([c for c in self.read_channels() if c[1] != channel_id])
-		self.refresh_screen()
+		self.refresh_root()
 
 	# ##################################################################################################################
 
@@ -462,11 +541,8 @@ class YoutubeContentProvider(CommonContentProvider):
 
 	def list_channels_feed(self):
 		for e in self.get_channels_feed(self.read_channels()):
-			plot = '{} [{}] ({}x)\n{}'.format(self.iso_to_cet(e['published']), e['channel'], e['views'], e['desc'])
-			menu = self.create_ctx_menu()
-			menu.add_menu_item(self._('View channel videos'), cmd=self.list_videos, endpoint='browse', params=self.channel_params(e['channel_id']))
-			self.add_subtitles_menu(menu, e['title'], e['id'])
-			self.add_video(e['title'], "https://i.ytimg.com/vi/" + e['id'] + "/maxresdefault.jpg", {'plot': plot}, menu=menu, cmd=self.resolve_video, video_title=e['title'], video_id=e['id'])
+			plot = u'{} [{}] ({}x)\n{}'.format(self.iso_to_cet(e['published']), e['channel'], e['views'], e['desc'])
+			self.add_video_item(e['title'], e['id'], plot, None, e['channel'], e['channel_id'], save_channel=False)
 
 	# ##################################################################################################################
 
@@ -562,7 +638,7 @@ class YoutubeContentProvider(CommonContentProvider):
 			self.set_setting('channels', len(channels))
 		self.write_channels(channels)
 		self.show_info(self._("Imported channels") + ': %d' % len(new), noexit=True)
-		self.refresh_screen()
+		self.refresh_root()
 
 	# ##################################################################################################################
 
@@ -741,26 +817,477 @@ class YoutubeContentProvider(CommonContentProvider):
 
 	# ##################################################################################################################
 
+	def save_watched(self):
+		with FILE_LOCK:
+			try:
+				self.write_json_file(os.path.join(self.data_dir, 'watched.json'), self.watched, indent=1)
+			except Exception:
+				self.log_exception()
+
+	# ##################################################################################################################
+
+	@staticmethod
+	def has_details(item):
+		''' True if watched item already holds all data needed to display it (older versions saved only the time) '''
+		return isinstance(item, dict) and 'title' in item and 'desc' in item
+
+	# ##################################################################################################################
+
 	def add_watched_item(self, video_id):
-		self.watched[video_id] = {
-			'time': int(time())
-		}
+		with FILE_LOCK:
+			entry = self.watched.get(video_id)
+			if not isinstance(entry, dict):
+				entry = {}
 
-		max_watched = int(self.get_setting('max_watched'))
+			# already known details of the video are kept
+			entry['time'] = int(time())
+			self.watched[video_id] = entry
 
-		if len(self.watched) > max_watched:
-			for k,_ in sorted(self.watched.items(), key=lambda i: i[1]['time'], reverse=True)[max_watched:]:
-				del self.watched[k]
+			max_watched = int(self.get_setting('max_watched'))
 
-		self.save_cached_data('watched', self.watched)
+			if len(self.watched) > max_watched:
+				for k,_ in sorted(self.watched.items(), key=lambda i: i[1].get('time', 0), reverse=True)[max_watched:]:
+					del self.watched[k]
+
+			self.save_watched()
+			need_details = video_id in self.watched and not self.has_details(entry)
+
+		if need_details:
+			# details (title, description, ...) are loaded in background, so they don't delay the playback
+			t = threading.Thread(target=self.update_watched_details, args=(video_id,))
+			t.daemon = True
+			t.start()
+
+	# ##################################################################################################################
+
+	def update_watched_details(self, video_id):
+		try:
+			details = self.load_details([video_id]).get(video_id)
+			if details:
+				with FILE_LOCK:
+					# video could be removed from watched in the meantime
+					if video_id in self.watched:
+						self.watched[video_id].update(details)
+						self.save_watched()
+		except Exception:
+			self.log_exception()
 
 	# ##################################################################################################################
 
 	def remove_watched_item(self, video_id):
-		if video_id in self.watched:
-			del self.watched[video_id]
+		with FILE_LOCK:
+			if video_id in self.watched:
+				del self.watched[video_id]
 
-		self.save_cached_data('watched', self.watched)
+			self.save_watched()
+
 		self.refresh_screen()
+
+	# ##################################################################################################################
+
+	def list_watched_items(self, ids):
+		''' Lists watched videos. All data are taken from watched.json - only videos saved by older version (without details) are loaded from internet and saved (once). '''
+		missing = [video_id for video_id in ids if not self.has_details(self.watched.get(video_id))]
+		if missing:
+			details = self.load_details(missing)
+			with FILE_LOCK:
+				for video_id, d in details.items():
+					if video_id in self.watched:
+						self.watched[video_id].update(d)
+
+				if details:
+					self.save_watched()
+
+		for video_id in ids:
+			item = self.watched.get(video_id)
+			if not self.has_details(item):
+				continue
+
+			try:
+				duration = int(item.get('duration') or 0)
+			except (TypeError, ValueError):
+				duration = 0
+
+			plot = u'{} [{}] {} ({}x)\n{}'.format(
+				self.iso_to_cet(item.get('published')),
+				item.get('channel') or u'N/A',
+				self.format_time(duration),
+				item.get('views') or 0,
+				decode_html(item.get('desc') or u'')
+			)
+			self.add_video_item(item['title'], video_id, plot, duration, item.get('channel') or u'N/A', item.get('channel_id') or u'', watched=True)
+
+	# ##################################################################################################################
+
+	def is_desc_enabled(self):
+		val = self.get_setting('video_desc')
+		return val is None or val is True or str(val).lower() == 'true'
+
+	# ##################################################################################################################
+
+	def fetch_video_details(self, video_id):
+		''' Loads details of the video from youtube. Returns dictionary, that is also saved to watched.json, or None if video is not available '''
+		params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"videoId":video_id}
+		data = self.call_api("player", params, timeout=15)
+
+		video_details = data.get("videoDetails")
+		if not video_details:
+			return None
+
+		microformat = dig(data, "microformat", "playerMicroformatRenderer", default={})
+
+		try:
+			duration = int(video_details.get("lengthSeconds") or 0)
+		except (TypeError, ValueError):
+			duration = 0
+
+		return {
+			'title': video_details.get("title") or u'N/A',
+			'channel': microformat.get("ownerChannelName") or video_details.get("author") or u'N/A',
+			'channel_id': video_details.get("channelId") or u'',
+			'duration': duration,
+			'published': microformat.get("publishDate") or u'',
+			'views': video_details.get("viewCount") or u'0',
+			'desc': video_details.get("shortDescription") or u'',
+		}
+
+	# ##################################################################################################################
+
+	def load_details(self, video_ids):
+		'''
+		Loads details of videos (using more parallel requests) and returns them as dictionary video_id -> details.
+		Videos, that can't be loaded, are missing in the result.
+		'''
+		result = {}
+		todo = []
+
+		for video_id in video_ids:
+			if video_id in self.details_cache:
+				result[video_id] = self.details_cache[video_id]
+			elif video_id not in todo:
+				todo.append(video_id)
+
+		if not todo:
+			return result
+
+		fetched = {}
+
+		def worker(ids):
+			for video_id in ids:
+				try:
+					details = self.fetch_video_details(video_id)
+				except Exception:
+					# details are only a bonus - they must never break listing of videos
+					self.log_error("Failed to load details of video %s" % video_id)
+					continue
+
+				if details:
+					fetched[video_id] = details
+
+		threads_cnt = min(self.DETAILS_THREADS, len(todo))
+		threads = []
+		for i in range(threads_cnt):
+			t = threading.Thread(target=worker, args=(todo[i::threads_cnt],))
+			t.daemon = True
+			t.start()
+			threads.append(t)
+
+		for t in threads:
+			t.join()
+
+		if len(self.details_cache) + len(fetched) > self.DETAILS_CACHE_MAX:
+			self.details_cache.clear()
+
+		self.details_cache.update(fetched)
+		result.update(fetched)
+		return result
+
+	# ##################################################################################################################
+
+	def create_video_menu(self, title, video_id, channel_title, channel_id, watched=False, save_channel=True):
+		menu = self.create_ctx_menu()
+		channel_known = bool(channel_id) and channel_id != 'N/A'
+
+		if watched:
+			menu.add_menu_item(self._('Remove from watched'), cmd=self.remove_watched_item, video_id=video_id)
+		elif channel_known:
+			menu.add_menu_item(self._('View channel videos'), cmd=self.list_videos, endpoint='browse', params=self.channel_params(channel_id))
+
+		if channel_known and save_channel:
+			menu.add_menu_item(self._('Save channel'), cmd=self.save_channel, channel_name=channel_title, channel_id=channel_id)
+
+		menu.add_menu_item(self._('Related videos'), cmd=self.list_related, video_id=video_id)
+		menu.add_menu_item(self._('Comments'), cmd=self.list_comments, video_id=video_id)
+		self.add_subtitles_menu(menu, title, video_id)
+		return menu
+
+	# ##################################################################################################################
+
+	def add_video_item(self, title, video_id, plot, duration, channel_title, channel_id, desc=None, watched=False, save_channel=True):
+		''' Adds one video to the list. Info button shows plot, so full description of the video (desc) is appended to it. '''
+		if desc:
+			plot = u'{}\n\n{}'.format(plot, desc) if plot else desc
+
+		info_labels = {}
+		if plot:
+			info_labels['plot'] = plot
+		if duration is not None:
+			info_labels['duration'] = duration
+
+		menu = self.create_video_menu(title, video_id, channel_title, channel_id, watched, save_channel)
+		self.add_video(title, "https://i.ytimg.com/vi/" + video_id + "/maxresdefault.jpg", info_labels, menu=menu, cmd=self.resolve_video, video_title=title, video_id=video_id)
+
+	# ##################################################################################################################
+
+	def add_list_items(self, entries):
+		'''
+		Adds items found on one page (in the same order as they were found): videos (dictionaries with arguments of add_video_item())
+		and channels ({'channel_renderer': ..}). Descriptions of all videos are loaded at once.
+		'''
+		details = {}
+		if self.is_desc_enabled():
+			video_ids = [e['video_id'] for e in entries if e.get('video_id') and e['video_id'] != 'N/A']
+			if video_ids:
+				details = self.load_details(video_ids)
+
+		for e in entries:
+			if 'channel_renderer' in e:
+				self.add_channel_dir(e['channel_renderer'])
+			else:
+				self.add_video_item(desc=(details.get(e['video_id']) or {}).get('desc'), **e)
+
+	# ##################################################################################################################
+
+	def flatten_items(self, blocks):
+		ret = []
+		for block in blocks or []:
+			if isinstance(block, dict) and "itemSectionRenderer" in block:
+				ret += self.flatten_items(dig(block, "itemSectionRenderer", "contents", default=[]))
+			else:
+				ret.append(block)
+
+		return ret
+
+	# ##################################################################################################################
+
+	def get_continuation_token(self, renderer):
+		for endpoint in (dig(renderer, "continuationEndpoint"), dig(renderer, "button", "buttonRenderer", "command")):
+			if not endpoint:
+				continue
+
+			token = dig(endpoint, "continuationCommand", "token")
+			if token:
+				return token
+
+			for command in dig(endpoint, "commandExecutorCommand", "commands", default=[]):
+				token = dig(command, "continuationCommand", "token")
+				if token:
+					return token
+
+		return None
+
+	# ##################################################################################################################
+
+	def parse_related_item(self, block):
+		'''
+		Converts one item from the list of related videos to the dictionary with arguments of add_video_item(). Returns None for unsupported items (playlists, ads, ...).
+		'''
+		if "lockupViewModel" in block:
+			one = block["lockupViewModel"]
+			if one.get("contentType", "LOCKUP_CONTENT_TYPE_VIDEO") != "LOCKUP_CONTENT_TYPE_VIDEO":
+				return None
+
+			video_id = one.get("contentId", "")
+			meta = dig(one, "metadata", "lockupMetadataViewModel", default={})
+			rows = dig(meta, "metadata", "contentMetadataViewModel", "metadataRows", default=[])
+			title = dig(meta, "title", "content", default=u'N/A')
+			channel_title = dig(rows, 0, "metadataParts", 0, "text", "content", default=u'N/A')
+			views = dig(rows, 1, "metadataParts", 0, "text", "content", default=u'')
+			published = dig(rows, 1, "metadataParts", 1, "text", "content", default=u'')
+			duration = dig(one, "contentImage", "thumbnailViewModel", "overlays", 0, "thumbnailBottomOverlayViewModel", "badges", 0, "thumbnailBadgeViewModel", "text", default=u'')
+			channel_id = (
+				dig(meta, "image", "decoratedAvatarViewModel", "rendererContext", "commandContext", "onTap", "innertubeCommand", "browseEndpoint", "browseId") or
+				dig(rows, 0, "metadataParts", 0, "text", "commandRuns", 0, "onTap", "innertubeCommand", "browseEndpoint", "browseId") or
+				u''
+			)
+			is_live = (duration == "LIVE")
+		elif "compactVideoRenderer" in block:
+			one = block["compactVideoRenderer"]
+			video_id = one.get("videoId", "")
+			title = yt_text(one.get("title")) or u'N/A'
+			channel_title = yt_text(one.get("longBylineText") or one.get("shortBylineText")) or u'N/A'
+			channel_id = dig(one, "longBylineText", "runs", 0, "navigationEndpoint", "browseEndpoint", "browseId", default=u'')
+			views = yt_text(one.get("viewCountText") or one.get("shortViewCountText"))
+			published = yt_text(one.get("publishedTimeText"))
+			duration = yt_text(one.get("lengthText"))
+			is_live = (dig(one, "thumbnailOverlays", 0, "thumbnailOverlayTimeStatusRenderer", "style") == "LIVE")
+		else:
+			return None
+
+		if not video_id:
+			return None
+
+		if is_live:
+			title = _C('green', u"* " + title)
+
+		plot = u'{} [{}] {}'.format(published, channel_title, duration)
+		if views:
+			plot += u'\n' + views
+
+		return dict(title=title, video_id=video_id, plot=plot, duration=self.to_seconds(duration), channel_title=channel_title, channel_id=channel_id)
+
+	# ##################################################################################################################
+
+	def list_related(self, video_id=None, continuation=None):
+		params = {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}}}
+		if continuation:
+			params["continuation"] = continuation
+		else:
+			params["videoId"] = video_id
+
+		data = self.call_api("next", params)
+
+		if continuation:
+			blocks = []
+			for action in (data.get("onResponseReceivedEndpoints") or []):
+				blocks += dig(action, "appendContinuationItemsAction", "continuationItems", default=[])
+		else:
+			blocks = dig(data, "contents", "twoColumnWatchNextResults", "secondaryResults", "secondaryResults", "results", default=[])
+
+		pending = []
+		cont = None
+
+		for block in self.flatten_items(blocks):
+			if "continuationItemRenderer" in block:
+				cont = self.get_continuation_token(block["continuationItemRenderer"]) or cont
+				continue
+
+			item = self.parse_related_item(block)
+			if item:
+				pending.append(item)
+
+		if not pending and not continuation:
+			self.show_info(self._("No related videos found"))
+
+		self.add_list_items(pending)
+
+		if cont:
+			self.add_next(cmd=self.list_related, continuation=cont)
+
+	# ##################################################################################################################
+
+	def find_comments_token(self, data):
+		for block in dig(data, "contents", "twoColumnWatchNextResults", "results", "results", "contents", default=[]):
+			section = block.get("itemSectionRenderer") if isinstance(block, dict) else None
+			if not section:
+				continue
+
+			if section.get("sectionIdentifier") != "comment-item-section" and section.get("targetId") != "comments-section":
+				continue
+
+			for item in section.get("contents", []):
+				token = self.get_continuation_token(item.get("continuationItemRenderer", {}))
+				if token:
+					return token
+
+		return None
+
+	# ##################################################################################################################
+
+	def parse_comment(self, thread, entities):
+		'''
+		Returns dictionary with comment data. Youtube uses two formats - the old one (data directly in commentRenderer) and the new one (data in entityBatchUpdate mutations)
+		'''
+		renderer = dig(thread, "comment", "commentRenderer")
+		if renderer:
+			return dict(
+				author=yt_text(renderer.get("authorText")),
+				text=yt_text(renderer.get("contentText")),
+				published=yt_text(renderer.get("publishedTimeText")),
+				likes=yt_text(renderer.get("voteCount")),
+				replies=renderer.get("replyCount") or u''
+			)
+
+		payload = entities.get(dig(thread, "commentViewModel", "commentViewModel", "commentKey"))
+		if payload:
+			return dict(
+				author=dig(payload, "author", "displayName", default=u''),
+				text=dig(payload, "properties", "content", "content", default=u''),
+				published=dig(payload, "properties", "publishedTime", default=u''),
+				likes=dig(payload, "toolbar", "likeCountNotliked", default=u''),
+				replies=dig(payload, "toolbar", "replyCount", default=u'')
+			)
+
+		return None
+
+	# ##################################################################################################################
+
+	def list_comments(self, video_id=None, continuation=None):
+		first_page = not continuation
+
+		if first_page:
+			data = self.call_api("next", {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"videoId":video_id})
+			continuation = self.find_comments_token(data)
+			if not continuation:
+				self.show_info(self._("Comments are disabled or not available for this video"))
+
+		data = self.call_api("next", {"context":{"client":{"clientName":"WEB","clientVersion":"2.9999099"}},"continuation":continuation})
+
+		blocks = []
+		for action in (data.get("onResponseReceivedEndpoints") or []):
+			for key in ("reloadContinuationItemsCommand", "appendContinuationItemsAction"):
+				blocks += dig(action, key, "continuationItems", default=[])
+
+		entities = {}
+		for mutation in dig(data, "frameworkUpdates", "entityBatchUpdate", "mutations", default=[]):
+			payload = dig(mutation, "payload", "commentEntityPayload")
+			if payload and mutation.get("entityKey"):
+				entities[mutation["entityKey"]] = payload
+
+		cont = None
+		count = 0
+
+		for block in blocks:
+			if "continuationItemRenderer" in block:
+				cont = self.get_continuation_token(block["continuationItemRenderer"]) or cont
+				continue
+
+			if "commentThreadRenderer" not in block:
+				continue
+
+			comment = self.parse_comment(block["commentThreadRenderer"], entities)
+			if not comment or not comment['text']:
+				continue
+
+			header = comment['author']
+			if comment['published']:
+				header += u' (%s)' % comment['published']
+
+			lines = [header]
+			stats = []
+			if comment['likes']:
+				stats.append(u'+%s' % comment['likes'])
+			if comment['replies']:
+				stats.append(u'%s: %s' % (self._('Replies'), comment['replies']))
+			if stats:
+				lines.append(u'  '.join(stats))
+
+			short_text = re.sub(r'\s+', ' ', comment['text']).strip()
+			if len(short_text) > 100:
+				short_text = short_text[:100] + u'...'
+
+			self.add_dir(u'{}: {}'.format(comment['author'], short_text), info_labels={'plot': u'\n'.join(lines) + u'\n\n' + comment['text']}, cmd=self.show_comment, author=comment['author'], text=comment['text'])
+			count += 1
+
+		if count == 0 and first_page:
+			self.show_info(self._("Comments are disabled or not available for this video"))
+
+		if cont:
+			self.add_next(cmd=self.list_comments, continuation=cont)
+
+	# ##################################################################################################################
+
+	def show_comment(self, author, text):
+		self.show_info(u'{}:\n\n{}'.format(author, text))
 
 	# ##################################################################################################################
