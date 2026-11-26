@@ -41,7 +41,7 @@
 <addon id="plugin.video.videacesky.cz" name="videacesky.cz" version="1.4.2" hash="2e3d511558b73d6ab24f35b703142716" rhash="2e3d511558b73d6ab24f35b703142716" />
 <addon id="plugin.video.voyo" name="VOYO" version="1.13" hash="58cd7ab093d0b46d74bb09239e7350f7" rhash="eff4e3edb0757061407f18700ffb5662" />
 <addon id="plugin.video.webshare" name="Webshare.cz" version="1.8" hash="803dbf9e36598f70a807979c3088e17a" rhash="1e9184c3a0e9471bd52833d439d08bbd" />
-<addon id="plugin.video.yt" name="YouTube" version="3.5" hash="3e283adbfd0a729f26bec01f393791c3" rhash="58188baf22d557a303ab91eb85b8faf1" />
+<addon id="plugin.video.yt" name="YouTube" version="3.6" hash="e3c5d91eb2cb9bbd5a5c855e7ea79e15" rhash="76bd66ceb52e56d8f2951400a1a35b45" />
 <addon id="tools.archivczsk" name="Addons base" version="3.29" hash="e1eaf59556fd2acc504f1588e912306e" rhash="f434114ceedf8c4f1fc4a298a2a08ba1" />
 <addon id="tools.cenc" name="Content encryption support" version="1.15" hash="49a402b1efdcacf1a3d2d93798e4b4a8" rhash="49a402b1efdcacf1a3d2d93798e4b4a8" />
 <addon id="tools.player.armv7l" name="Exteplayer3 and ffmpeg for ARM" version="1.6" arch="armv7l" hash="466d4feba8bf37153801bc5eb6d1d300" rhash="466d4feba8bf37153801bc5eb6d1d300" />
